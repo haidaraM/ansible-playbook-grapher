@@ -18,7 +18,7 @@ from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 # TODO: add more colors
 colors = ["red", "#007FFF", "green", "purple", "brown", "orange", "#F562FF", "#5ED4FF", "#50C878", "#0095B6", "#FFD700",
@@ -180,10 +180,6 @@ def main():
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
-
-    if args.version:
-        print(__version__)
-        exit(0)
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=args.inventory)
