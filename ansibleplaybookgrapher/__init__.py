@@ -167,7 +167,7 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, prog='ansible-playbook-grapher')
 
     parser.add_argument("playbook", help="The playbook to grah.")
     parser.add_argument("-i", "--inventory",
