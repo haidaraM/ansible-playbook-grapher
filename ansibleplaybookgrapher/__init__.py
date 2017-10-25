@@ -73,8 +73,8 @@ def dump_playbok(playbook, variable_manager, include_role_tasks):
     output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
 
     graph_attr = {'ratio': "fill", "rankdir": "LR", 'concentrate': 'true', 'ordering': 'in'}
-    dot = CustomDiagram(filename=output_file_name, comment="My webservers graph",
-                        edge_attr={'sep': "10", "esep": "5"}, graph_attr=graph_attr, format="svg")
+    dot = CustomDiagram(filename=output_file_name, edge_attr={'sep': "10", "esep": "5"}, graph_attr=graph_attr,
+                        format="svg")
 
     # the root node
     with dot.subgraph(name="cluster" + playbook_name) as root:
@@ -88,36 +88,36 @@ def dump_playbok(playbook, variable_manager, include_role_tasks):
 
         play_vars = variable_manager.get_vars(play)
 
-        with dot.subgraph(name=play_hosts) as subgraph:
+        with dot.subgraph(name=play_hosts) as play_subgraph:
 
             # role cluster color
-            subgraph.attr(color=color)
+            play_subgraph.attr(color=color)
 
             # play node
-            subgraph.node(play_hosts, style='filled', shape="box", color=color,
-                          tooltip="     ".join(play_vars['ansible_play_hosts']))
+            play_subgraph.node(play_hosts, style='filled', shape="box", color=color,
+                               tooltip="     ".join(play_vars['ansible_play_hosts']))
 
             # edge from root node to plays
-            subgraph.edge(playbook_name, play_hosts, style="bold", label=str(play_counter), color=color,
-                          fontcolor=color)
+            play_subgraph.edge(playbook_name, play_hosts, style="bold", label=str(play_counter), color=color,
+                               fontcolor=color)
 
             # loop through the roles
             for role_counter, role in enumerate(play.get_roles()):
                 role_name = str(role)
 
-                with dot.subgraph(name=role_name, node_attr={}) as role_sub_graph:
+                with dot.subgraph(name=role_name, node_attr={'style': 'bold'}) as role_subgraph:
                     current_counter = play_counter + role_counter
 
                     when = "".join(role.when)
                     label = str(current_counter) if len(when) == 0 else str(current_counter) + "  [when: " + when + "]"
 
-                    role_sub_graph.edge(play_hosts, role_name, label=label, color=color, fontcolor=color, style="bold")
+                    role_subgraph.edge(play_hosts, role_name, label=label, color=color, fontcolor=color)
 
                     # loop through the tasks of the roles
                     if include_role_tasks:
                         task_counter = 0
                         for block in role.get_task_blocks():
-                            task_counter = include_tasks_in_graph(role_sub_graph, role_name, block, color, task_counter)
+                            task_counter = include_tasks_in_graph(role_subgraph, role_name, block, color, task_counter)
                             task_counter += 1
 
     dot.render()
@@ -130,7 +130,7 @@ def main():
     parser.add_argument("-i", "--inventory",
                         help="The inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
-                        help="Include tasks in the graph.")
+                        help="Include tasks of the role in the graph. Can produce a big graph if you have lot of roles.")
     parser.add_argument("--save-dot-file", dest="save_dot", action='store_true',
                         help="Save the dot file use to generate the graph.")
     parser.add_argument("-V", "--version", dest="version", action="store_true", help="Print version and exits")
