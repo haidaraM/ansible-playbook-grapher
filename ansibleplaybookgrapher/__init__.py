@@ -88,8 +88,7 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
                         format="svg")
 
     # the root node
-    with dot.subgraph(name="cluster" + playbook_name) as root:
-        root.node(playbook_name, style="dotted")
+    dot.node(playbook_name, style="dotted")
 
     # loop through the plays
     for play_counter, play in enumerate(playbook.get_plays(), 1):
@@ -156,6 +155,7 @@ def main():
     inventory = InventoryManager(loader=loader, sources=args.inventory)
     variable_manager = VariableManager(loader=loader, inventory=inventory)
 
+    # Reading of the playbook: tasks, roles and so on...
     pb = Playbook.load(args.playbook, loader=loader, variable_manager=variable_manager)
 
     dump_playbok(pb, variable_manager, args.include_role_tasks, args.save_dot_file)

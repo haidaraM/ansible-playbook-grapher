@@ -7,8 +7,13 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 
 ## Pérequis
  * **Ansible** >= 2.4: The script has not been tested yet with an earlier version of Ansible. 
- ```sudo pip3 install 'ansible>=2.4'```
- * **graphviz**: The tool used to generate the graph in SVG. `sudo apt-get install graphviz`.
+ ```bash
+ $ sudo pip3 install 'ansible>=2.4'
+ ```
+ * **graphviz**: The tool used to generate the graph in SVG. 
+ ```bash
+ sudo apt-get install graphviz
+ ```
  
 ## Installation
 ```bash
