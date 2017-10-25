@@ -25,8 +25,13 @@ colors = ["red", "#007FFF", "green", "purple", "brown", "orange", "#F562FF", "#5
           "#61FF46", "#CC8899"]
 
 
-def clean_node_name(node_name):
-    return node_name.strip()
+def clean_name(name):
+    """
+    Clean a name for the node, edge...
+    :param name:
+    :return:
+    """
+    return name.strip()
 
 
 class CustomDiagram(Digraph):
@@ -36,8 +41,8 @@ class CustomDiagram(Digraph):
     _edge = '\t"%s" -> "%s"%s'
     _node = '\t"%s"%s'
     _subgraph = 'subgraph "%s"{'
-    _quote = staticmethod(clean_node_name)
-    _quote_edge = staticmethod(clean_node_name)
+    _quote = staticmethod(clean_name)
+    _quote_edge = staticmethod(clean_name)
 
 
 def include_tasks_in_graph(graph, role_name, block, color, current_counter):
@@ -54,7 +59,7 @@ def include_tasks_in_graph(graph, role_name, block, color, current_counter):
         if isinstance(task_or_block, Block):
             loop_counter = include_tasks_in_graph(graph, role_name, task_or_block, color, loop_counter)
         else:
-            task_name = clean_node_name(task_or_block.get_name())
+            task_name = clean_name(task_or_block.get_name())
             graph.node(task_name, shape="octagon")
             graph.edge(role_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color, style="bold")
 
@@ -63,7 +68,7 @@ def include_tasks_in_graph(graph, role_name, block, color, current_counter):
     return loop_counter
 
 
-def dump_playbok(playbook, variable_manager, include_tasks):
+def dump_playbok(playbook, variable_manager, include_role_tasks):
     playbook_name = playbook._file_name
     output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
 
@@ -78,7 +83,8 @@ def dump_playbok(playbook, variable_manager, include_tasks):
     # loop through the plays
     for play_counter, play in enumerate(playbook.get_plays(), 1):
         color = random.choice(colors)
-        play_hosts = clean_node_name("hosts: " + str(play).strip())
+
+        play_hosts = clean_name("hosts: " + clean_name(str(play)))
 
         play_vars = variable_manager.get_vars(play)
 
@@ -108,7 +114,7 @@ def dump_playbok(playbook, variable_manager, include_tasks):
                     role_sub_graph.edge(play_hosts, role_name, label=label, color=color, fontcolor=color, style="bold")
 
                     # loop through the tasks of the roles
-                    if include_tasks:
+                    if include_role_tasks:
                         task_counter = 0
                         for block in role.get_task_blocks():
                             task_counter = include_tasks_in_graph(role_sub_graph, role_name, block, color, task_counter)
@@ -123,7 +129,7 @@ def main():
     parser.add_argument("playbook", help="The playbook to grah.")
     parser.add_argument("-i", "--inventory",
                         help="The inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
-    parser.add_argument("--include-tasks", dest="include_tasks", action='store_true',
+    parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
                         help="Include tasks in the graph.")
     parser.add_argument("--save-dot-file", dest="save_dot", action='store_true',
                         help="Save the dot file use to generate the graph.")
@@ -141,7 +147,7 @@ def main():
 
     pb = Playbook.load(args.playbook, loader=loader, variable_manager=variable_manager)
 
-    dump_playbok(pb, variable_manager, args.include_tasks)
+    dump_playbok(pb, variable_manager, args.include_role_tasks)
 
 
 if __name__ == "__main__":
