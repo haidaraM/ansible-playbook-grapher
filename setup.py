@@ -25,6 +25,6 @@ setup(name="ansible-playbook-grapher",
       ],
       entry_points={
           'console_scripts': [
-              'ansible-playbook-grapher = ansibleinventorygrapher:main'
+              'ansible-playbook-grapher = ansibleplaybookgrapher:main'
           ]
       })
