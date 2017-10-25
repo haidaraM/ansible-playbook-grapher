@@ -68,7 +68,15 @@ def include_tasks_in_graph(graph, role_name, block, color, current_counter):
     return loop_counter
 
 
-def dump_playbok(playbook, variable_manager, include_role_tasks):
+def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
+    """
+    Dump the playbook in a svg file. Optionally save the dot file
+    :param save_dot_file:
+    :param playbook:
+    :param variable_manager:
+    :param include_role_tasks:
+    :return:
+    """
     playbook_name = playbook._file_name
     output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
 
@@ -120,7 +128,7 @@ def dump_playbok(playbook, variable_manager, include_role_tasks):
                             task_counter = include_tasks_in_graph(role_subgraph, role_name, block, color, task_counter)
                             task_counter += 1
 
-    dot.render()
+    dot.render(cleanup=save_dot_file)
 
 
 def main():
@@ -131,8 +139,8 @@ def main():
                         help="The inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
                         help="Include tasks of the role in the graph. Can produce a big graph if you have lot of roles.")
-    parser.add_argument("--save-dot-file", dest="save_dot", action='store_true',
-                        help="Save the dot file use to generate the graph.")
+    parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_true',
+                        help="Save the dot file used to generate the graph.")
     parser.add_argument("-V", "--version", dest="version", action="store_true", help="Print version and exits")
 
     args = parser.parse_args()
@@ -147,7 +155,7 @@ def main():
 
     pb = Playbook.load(args.playbook, loader=loader, variable_manager=variable_manager)
 
-    dump_playbok(pb, variable_manager, args.include_role_tasks)
+    dump_playbok(pb, variable_manager, args.include_role_tasks, args.save_dot_file)
 
 
 if __name__ == "__main__":
