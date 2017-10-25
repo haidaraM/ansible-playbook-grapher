@@ -46,13 +46,14 @@ class CustomDiagram(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-def include_tasks_in_blocks(graph, role_name, block, color, current_counter):
+def include_tasks_in_blocks(graph, parent_node_name, block, color, current_counter, node_name_prefix=''):
     """
     Recursively read all the tasks of the block and add it to the graph
+    :param node_name_prefix:
     :param color:
     :param current_counter:
     :param graph:
-    :param role_name:
+    :param parent_node_name:
     :param block:
     :return:
     """
@@ -60,11 +61,13 @@ def include_tasks_in_blocks(graph, role_name, block, color, current_counter):
     # loop through the tasks
     for counter, task_or_block in enumerate(block.block, 1):
         if isinstance(task_or_block, Block):
-            loop_counter = include_tasks_in_blocks(graph, role_name, task_or_block, color, loop_counter)
+            loop_counter = include_tasks_in_blocks(graph, parent_node_name, task_or_block, color, loop_counter,
+                                                   node_name_prefix)
         else:
-            task_name = clean_name(task_or_block.get_name())
+            task_name = clean_name(node_name_prefix + task_or_block.get_name())
             graph.node(task_name, shape="octagon")
-            graph.edge(role_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color, style="bold")
+            graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
+                       style="bold")
 
             loop_counter += 1
 
@@ -73,7 +76,17 @@ def include_tasks_in_blocks(graph, role_name, block, color, current_counter):
 
 def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
     """
-    Dump the playbook in a svg file. Optionally save the dot file
+    Dump the playbook in a svg file. Optionally save the dot file.
+
+    The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
+    for each play:
+        draw pre_tasks
+        draw roles
+            if  include_role_tasks
+                draw role_tasks
+        draw tasks
+        draw post_tasks
+
     :param save_dot_file:
     :param playbook:
     :param variable_manager:
@@ -94,41 +107,61 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
     for play_counter, play in enumerate(playbook.get_plays(), 1):
         color = random.choice(colors)
 
-        play_hosts = clean_name("hosts: " + clean_name(str(play)))
+        play_name = clean_name("hosts: " + clean_name(str(play)))
 
         play_vars = variable_manager.get_vars(play)
 
-        with dot.subgraph(name=play_hosts) as play_subgraph:
+        with dot.subgraph(name=play_name) as play_subgraph:
 
             # role cluster color
             play_subgraph.attr(color=color)
 
             # play node
-            play_subgraph.node(play_hosts, style='filled', shape="box", color=color,
+            play_subgraph.node(play_name, style='filled', shape="box", color=color,
                                tooltip="     ".join(play_vars['ansible_play_hosts']))
 
             # edge from root node to plays
-            play_subgraph.edge(playbook_name, play_hosts, style="bold", label=str(play_counter), color=color,
+            play_subgraph.edge(playbook_name, play_name, style="bold", label=str(play_counter), color=color,
                                fontcolor=color)
+
+            # loop through the pre_tasks
+            nb_pre_tasks = 0
+            for pre_task_block in play.pre_tasks:
+                nb_pre_tasks = include_tasks_in_blocks(play_subgraph, play_name, pre_task_block, color, nb_pre_tasks,
+                                                       '[pre_task] ')
 
             # loop through the roles
             for role_counter, role in enumerate(play.get_roles()):
-                role_name = str(role)
+                role_tasks_counter = 0
+                role_name = '[role] ' + clean_name(str(role))
 
                 with dot.subgraph(name=role_name, node_attr={'style': 'bold'}) as role_subgraph:
-                    current_counter = play_counter + role_counter
+                    current_counter = play_counter + role_counter + nb_pre_tasks
 
                     when = "".join(role.when)
                     label = str(current_counter) if len(when) == 0 else str(current_counter) + "  [when: " + when + "]"
 
-                    role_subgraph.edge(play_hosts, role_name, label=label, color=color, fontcolor=color)
+                    role_subgraph.edge(play_name, role_name, label=label, color=color, fontcolor=color)
 
                     # loop through the tasks of the roles
                     if include_role_tasks:
-                        task_counter = 0
                         for block in role.get_task_blocks():
-                            task_counter = include_tasks_in_blocks(role_subgraph, role_name, block, color, task_counter)
-                            task_counter += 1
+                            role_tasks_counter = include_tasks_in_blocks(role_subgraph, role_name, block, color,
+                                                                         role_tasks_counter, '[task] ')
+                            role_tasks_counter += 1
+
+            nb_roles = len(play.get_roles())
+            # loop through the tasks
+            nb_tasks = 0
+            for task_block in play.tasks:
+                nb_tasks = include_tasks_in_blocks(play_subgraph, play_name, task_block, color, nb_roles + nb_pre_tasks,
+                                                   '[task] ')
+
+            # loop through the post_tasks
+            nb_post_tasks = 0
+            for post_task_block in play.post_tasks:
+                nb_post_tasks = include_tasks_in_blocks(play_subgraph, play_name, post_task_block, color,
+                                                        nb_tasks, '[post_task] ')
 
     dot.render(cleanup=save_dot_file)
 
