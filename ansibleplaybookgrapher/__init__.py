@@ -36,7 +36,8 @@ def clean_name(name):
 
 class CustomDiagram(Digraph):
     """
-    Custom digraph to avoid quoting issue with node names
+    Custom digraph to avoid quoting issue with node names. Nothing special here expect I put some double quotes around
+    the node and edge names and overrided some methods.
     """
     _edge = '\t"%s" -> "%s"%s'
     _node = '\t"%s"%s'
@@ -45,9 +46,11 @@ class CustomDiagram(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-def include_tasks_in_graph(graph, role_name, block, color, current_counter):
+def include_tasks_in_blocks(graph, role_name, block, color, current_counter):
     """
-    Recursively read all the tasks of the role
+    Recursively read all the tasks of the block and add it to the graph
+    :param color:
+    :param current_counter:
     :param graph:
     :param role_name:
     :param block:
@@ -57,7 +60,7 @@ def include_tasks_in_graph(graph, role_name, block, color, current_counter):
     # loop through the tasks
     for counter, task_or_block in enumerate(block.block, 1):
         if isinstance(task_or_block, Block):
-            loop_counter = include_tasks_in_graph(graph, role_name, task_or_block, color, loop_counter)
+            loop_counter = include_tasks_in_blocks(graph, role_name, task_or_block, color, loop_counter)
         else:
             task_name = clean_name(task_or_block.get_name())
             graph.node(task_name, shape="octagon")
@@ -125,7 +128,7 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
                     if include_role_tasks:
                         task_counter = 0
                         for block in role.get_task_blocks():
-                            task_counter = include_tasks_in_graph(role_subgraph, role_name, block, color, task_counter)
+                            task_counter = include_tasks_in_blocks(role_subgraph, role_name, block, color, task_counter)
                             task_counter += 1
 
     dot.render(cleanup=save_dot_file)
