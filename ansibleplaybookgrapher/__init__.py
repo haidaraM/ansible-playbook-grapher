@@ -18,7 +18,7 @@ from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 # TODO: add more colors
 colors = ["red", "#007FFF", "green", "purple", "brown", "orange", "#F562FF", "#5ED4FF", "#50C878", "#0095B6", "#FFD700",
@@ -176,7 +176,8 @@ def main():
                         help="Include tasks of the role in the graph. Can produce a big graph if you have lot of roles.")
     parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_false',
                         help="Save the dot file used to generate the graph.")
-    parser.add_argument("-V", "--version", dest="version", action="store_true", help="Print version and exits")
+    parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exits",
+                        version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
 
