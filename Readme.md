@@ -32,6 +32,8 @@ TODO
 $ ansible-playbook-grapher examples/playbook.yml
 ```
 
+![Example](examples/example.png)
+
 Some options are available:
 
 ```bash

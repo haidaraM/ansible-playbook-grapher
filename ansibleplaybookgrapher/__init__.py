@@ -174,7 +174,7 @@ def main():
                         help="The inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
                         help="Include tasks of the role in the graph. Can produce a big graph if you have lot of roles.")
-    parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_true',
+    parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_false',
                         help="Save the dot file used to generate the graph.")
     parser.add_argument("-V", "--version", dest="version", action="store_true", help="Print version and exits")
 
