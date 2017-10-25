@@ -7,28 +7,22 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 
 ## Pérequis
  * **Ansible** >= 2.4: The script has not been tested yet with an earlier version of Ansible. 
- ```bash
+ ```
  $ sudo pip3 install 'ansible>=2.4'
  ```
  * **graphviz**: The tool used to generate the graph in SVG. 
- ```bash
+ ```
  sudo apt-get install graphviz
  ```
  
 ## Installation
-```bash
+```
 $ sudo pip3 install ansible-playbook-grapher
 ```
 
 ## Usage
 
-```yaml
-# file: examples/playbook.yml
-TODO
 ```
-
-
-```bash
 $ ansible-playbook-grapher examples/playbook.yml
 ```
 
@@ -36,7 +30,7 @@ $ ansible-playbook-grapher examples/playbook.yml
 
 Some options are available:
 
-```bash
+```
 $ ansible-playbook-grapher --help
 usage: ansible-playbook-grapher [-h] [-i INVENTORY] [--include-role-tasks]
                                 [--save-dot-file] [-V]
