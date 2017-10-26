@@ -158,10 +158,9 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
                                                    '[task] ')
 
             # loop through the post_tasks
-            nb_post_tasks = 0
             for post_task_block in play.post_tasks:
-                nb_post_tasks = include_tasks_in_blocks(play_subgraph, play_name, post_task_block, color,
-                                                        nb_tasks, '[post_task] ')
+                include_tasks_in_blocks(play_subgraph, play_name, post_task_block, color,
+                                        nb_tasks, '[post_task] ')
 
     dot.render(cleanup=save_dot_file)
 
@@ -170,12 +169,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, prog='ansible-playbook-grapher')
 
     parser.add_argument("playbook", help="The playbook to grah.")
+
     parser.add_argument("-i", "--inventory",
-                        help="The inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
+                        help="Ansible inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
+
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
-                        help="Include tasks of the role in the graph. Can produce a big graph if you have lot of roles.")
+                        help="Include the tasks of the role in the graph. Can produce a huge graph if you have lot of roles.")
+
     parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_false',
                         help="Save the dot file used to generate the graph.")
+
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exits",
                         version='%(prog)s ' + __version__)
 
