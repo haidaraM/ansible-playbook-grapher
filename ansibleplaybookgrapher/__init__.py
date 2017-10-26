@@ -134,19 +134,20 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file, 
 
             # loop through the roles
             for role_counter, role in enumerate(play.get_roles()):
-                role_tasks_counter = 0
                 role_name = '[role] ' + clean_name(str(role))
 
                 with dot.subgraph(name=role_name, node_attr={'style': 'bold'}) as role_subgraph:
-                    current_counter = play_counter + role_counter + nb_pre_tasks
+                    current_counter = role_counter + nb_pre_tasks + 1
 
                     when = "".join(role.when)
-                    label = str(current_counter) if len(when) == 0 else str(current_counter) + "  [when: " + when + "]"
+                    play_to_node_label = str(current_counter) if len(when) == 0 else str(
+                        current_counter) + "  [when: " + when + "]"
 
-                    role_subgraph.edge(play_name, role_name, label=label, color=color, fontcolor=color)
+                    role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color)
 
                     # loop through the tasks of the roles
                     if include_role_tasks:
+                        role_tasks_counter = 0
                         for block in role.get_task_blocks():
                             role_tasks_counter = include_tasks_in_blocks(role_subgraph, role_name, block, color,
                                                                          role_tasks_counter, '[task] ')
