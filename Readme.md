@@ -12,7 +12,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
  ```
  * **graphviz**: The tool used to generate the graph in SVG. 
  ```
- sudo apt-get install graphviz
+ $ sudo apt-get install graphviz
  ```
  
 ## Installation
