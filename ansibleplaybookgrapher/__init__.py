@@ -74,7 +74,7 @@ def include_tasks_in_blocks(graph, parent_node_name, block, color, current_count
     return loop_counter
 
 
-def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
+def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file, output_file_name):
     """
     Dump the playbook in a svg file. Optionally save the dot file.
 
@@ -91,10 +91,12 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file):
     :param playbook:
     :param variable_manager:
     :param include_role_tasks:
+    :param output_file_name:
     :return:
     """
     playbook_name = playbook._file_name
-    output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
+    if output_file_name is None:
+        output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
 
     graph_attr = {'ratio': "fill", "rankdir": "LR", 'concentrate': 'true', 'ordering': 'in'}
     dot = CustomDiagram(filename=output_file_name, edge_attr={'sep': "10", "esep": "5"}, graph_attr=graph_attr,
@@ -176,10 +178,13 @@ def main():
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
                         help="Include the tasks of the role in the graph. Can produce a huge graph if you have lot of roles.")
 
-    parser.add_argument("--save-dot-file", dest="save_dot_file", action='store_false',
+    parser.add_argument("-s", "--save-dot-file", dest="save_dot_file", action='store_false',
                         help="Save the dot file used to generate the graph.")
 
-    parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exits",
+    parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
+                        help="Output filename without the '.svg' extension. Default: <playbook_filename>.svg")
+
+    parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
@@ -191,7 +196,7 @@ def main():
     # Reading of the playbook: tasks, roles and so on...
     pb = Playbook.load(args.playbook, loader=loader, variable_manager=variable_manager)
 
-    dump_playbok(pb, variable_manager, args.include_role_tasks, args.save_dot_file)
+    dump_playbok(pb, variable_manager, args.include_role_tasks, args.save_dot_file, args.output_file_name)
 
 
 if __name__ == "__main__":

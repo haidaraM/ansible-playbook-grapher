@@ -33,7 +33,7 @@ Some options are available:
 ```
 $ ansible-playbook-grapher --help
 usage: ansible-playbook-grapher [-h] [-i INVENTORY] [--include-role-tasks]
-                                [--save-dot-file] [-V]
+                                [-s] [-o OUTPUT_FILE_NAME] [-v]
                                 playbook
 
 Simple grapher for an Ansible Playbook. You will need to install Ansible,
@@ -46,12 +46,15 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -i INVENTORY, --inventory INVENTORY
-                        The inventory. Useful if you want to have a tooltip
-                        with hostnames on the play nodes.
-  --include-role-tasks  Include tasks of the role in the graph. Can produce a
-                        big graph if you have lot of roles.
-  --save-dot-file       Save the dot file used to generate the graph.
-  -V, --version         Print version and exits
+                        Ansible inventory. Useful if you want to have a
+                        tooltip with hostnames on the play nodes.
+  --include-role-tasks  Include the tasks of the role in the graph. Can
+                        produce a huge graph if you have lot of roles.
+  -s, --save-dot-file   Save the dot file used to generate the graph.
+  -o OUTPUT_FILE_NAME, --ouput-file-name OUTPUT_FILE_NAME
+                        Output filename without the '.svg' extension. Default:
+                        <playbook_filename>.svg
+  -v, --version         Print version and exit.
 
 ```
 
