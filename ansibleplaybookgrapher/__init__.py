@@ -18,7 +18,7 @@ from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
-__version__ = "0.0.3"
+__version__ = "0.1.0"
 
 # TODO: add more colors
 colors = ["red", "#007FFF", "green", "purple", "brown", "orange", "#F562FF", "#5ED4FF", "#50C878", "#0095B6", "#FFD700",
