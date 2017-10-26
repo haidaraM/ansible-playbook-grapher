@@ -36,7 +36,7 @@ def clean_name(name):
 
 class CustomDiagram(Digraph):
     """
-    Custom digraph to avoid quoting issue with node names. Nothing special here expect I put some double quotes around
+    Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
     the node and edge names and overrided some methods.
     """
     _edge = '\t"%s" -> "%s"%s'
