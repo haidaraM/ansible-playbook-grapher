@@ -60,9 +60,6 @@ optional arguments:
 
 
 ## TODO
-
- - More colors: For the moment, a random color is chosen from a set of defined colors for each play
- found in the playbook. Maybe generate some colors specific automatically for each play.
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
  - Graphviz : find a way to avoid edges overlapping
  - Ansible: Variables interpolation in node name (when possible)

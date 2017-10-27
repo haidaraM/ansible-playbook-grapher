@@ -6,7 +6,6 @@ You will need to install Ansible, graphviz on your system (sudo apt-get install 
 Has been tested with Ansible 2.4.
 """
 
-import random
 import argparse
 import ntpath
 import os
@@ -17,12 +16,9 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
+from colour import Color
 
 __version__ = "0.1.1"
-
-# TODO: add more colors
-colors = ["red", "#007FFF", "green", "purple", "brown", "orange", "#F562FF", "#5ED4FF", "#50C878", "#0095B6", "#FFD700",
-          "#61FF46", "#CC8899"]
 
 
 def clean_name(name):
@@ -108,7 +104,9 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
 
     # loop through the plays
     for play_counter, play in enumerate(playbook.get_plays(), 1):
-        color = random.choice(colors)
+        picked_color = Color(pick_for=play)
+        color = picked_color.get_hex_l()
+        play_font_color = "black" if picked_color.get_luminance() > 0.6 else "white"
 
         play_name = clean_name("hosts: " + clean_name(str(play)))
 
@@ -120,7 +118,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             play_subgraph.attr(color=color)
 
             # play node
-            play_subgraph.node(play_name, style='filled', shape="box", color=color,
+            play_subgraph.node(play_name, style='filled', shape="box", color=color, fontcolor=play_font_color,
                                tooltip="     ".join(play_vars['ansible_play_hosts']))
 
             # edge from root node to plays
