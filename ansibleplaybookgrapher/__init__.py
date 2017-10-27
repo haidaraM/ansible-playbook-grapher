@@ -18,7 +18,7 @@ from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 from colour import Color
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 
 def clean_name(name):
