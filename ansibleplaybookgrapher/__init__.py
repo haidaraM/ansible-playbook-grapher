@@ -104,6 +104,9 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
 
     # loop through the plays
     for play_counter, play in enumerate(playbook.get_plays(), 1):
+
+        # TODO: Check the if the picked color is (almost) white. We can't obviously see a white edge on the graph
+
         picked_color = Color(pick_for=play)
         color = picked_color.get_hex_l()
         play_font_color = "black" if picked_color.get_luminance() > 0.6 else "white"
