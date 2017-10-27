@@ -74,7 +74,7 @@ def include_tasks_in_blocks(graph, parent_node_name, block, color, current_count
     return loop_counter
 
 
-def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file, output_file_name):
+def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_dot_file, output_file_name):
     """
     Dump the playbook in a svg file. Optionally save the dot file.
 
@@ -87,6 +87,7 @@ def dump_playbok(playbook, variable_manager, include_role_tasks, save_dot_file, 
         draw tasks
         draw post_tasks
 
+    :param loader:
     :param save_dot_file:
     :param playbook:
     :param variable_manager:
@@ -197,7 +198,7 @@ def main():
     # Reading of the playbook: tasks, roles and so on...
     pb = Playbook.load(args.playbook, loader=loader, variable_manager=variable_manager)
 
-    dump_playbok(pb, variable_manager, args.include_role_tasks, args.save_dot_file, args.output_file_name)
+    dump_playbok(pb, loader, variable_manager, args.include_role_tasks, args.save_dot_file, args.output_file_name)
 
 
 if __name__ == "__main__":
