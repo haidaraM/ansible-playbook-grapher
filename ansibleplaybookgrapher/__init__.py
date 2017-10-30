@@ -17,6 +17,7 @@ from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 from colour import Color
+from lxml import etree
 
 __version__ = "0.2.0"
 
@@ -192,6 +193,9 @@ def main():
 
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
                         help="Output filename without the '.svg' extension. Default: <playbook_filename>.svg")
+
+    parser.add_argument("-a", "--animations", dest='animations', action='store_true',
+                        help="Enable basic animations on the graph.")
 
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
