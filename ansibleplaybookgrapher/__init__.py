@@ -20,6 +20,8 @@ from colour import Color
 
 __version__ = "0.2.0"
 
+ID_DELIMITER = "|"
+
 
 def clean_name(name):
     """
@@ -120,9 +122,11 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             # role cluster color
             play_subgraph.attr(color=color)
 
+            play_node_id = 'play_' + str(play_counter)
+
             # play node
-            play_subgraph.node(play_name, style='filled', shape="box", color=color, fontcolor=play_font_color,
-                               tooltip="     ".join(play_vars['ansible_play_hosts']))
+            play_subgraph.node(play_name, id=play_node_id, style='filled', shape="box", color=color,
+                               fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
 
             # edge from root node to plays
             play_subgraph.edge(playbook_name, play_name, style="bold", label=str(play_counter), color=color,
@@ -140,6 +144,8 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
 
                 with dot.subgraph(name=role_name, node_attr={'style': 'bold'}) as role_subgraph:
                     current_counter = role_counter + nb_pre_tasks + 1
+                    role_node_id = "role_" + str(current_counter)
+                    role_subgraph.node(role_name, id=role_node_id)
 
                     when = "".join(role.when)
                     play_to_node_label = str(current_counter) if len(when) == 0 else str(
