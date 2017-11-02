@@ -48,6 +48,48 @@ def _read_java_script(filename="highlight-hover.js"):
         return javascript.read()
 
 
+def _read_css(filename):
+    style_path = get_data_absolute_path(filename)
+
+    with open(style_path) as style:
+        return style.read()
+
+
+def insert_javascript_elements(svg_root):
+    """
+    Insert the required elements needed to run javascript
+    :param svg_root:
+    :return:
+    """
+    # jquery tag
+    jquery_element = etree.Element("script", attrib={'type': 'text/javascript', 'xlink:href': JQUERY})
+
+    # insert jquery script tag
+    svg_root.insert(0, jquery_element)
+
+    javascript = _read_java_script()
+
+    javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
+    javascript_element.append(CDATA("\n" + javascript))
+
+    svg_root.insert(1, javascript_element)
+
+
+def insert_css_element(svg_root, css_filename="graph.css"):
+    """
+    Insert css style
+    :param css_filename:
+    :param svg_root:
+    :return:
+    """
+    style_element = etree.Element("style", attrib={'type': 'text/css'})
+
+    style = _read_css(css_filename)
+    style_element.append(CDATA("\n" + style))
+
+    svg_root.insert(2, style_element)
+
+
 def post_process_svg(svg_filename):
     """
     Post process the svg as xml to add the javascript files
@@ -60,17 +102,8 @@ def post_process_svg(svg_filename):
 
     svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
 
-    # jquery tag
-    jquery_element = etree.Element("script", attrib={'type': 'text/javascript', 'xlink:href': JQUERY})
-
-    # insert jquery script tag
-    svg_root.insert(0, jquery_element)
-
-    javascript = _read_java_script()
-
-    javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
-    javascript_element.append(CDATA(javascript))
-
-    svg_root.insert(1, javascript_element)
+    insert_javascript_elements(svg_root)
+    insert_css_element(svg_root)
+    insert_css_element(svg_root, "hover-min.css")
 
     tree.write(svg_filename, xml_declaration=True, encoding="UTF-8")
