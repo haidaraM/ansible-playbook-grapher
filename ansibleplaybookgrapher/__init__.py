@@ -15,13 +15,12 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.vars.manager import VariableManager
-from graphviz import Digraph
 from colour import Color
-from lxml import etree
+from graphviz import Digraph
+
+from ansibleplaybookgrapher.utils import post_process_svg
 
 __version__ = "0.2.0"
-
-ID_DELIMITER = "|"
 
 
 def clean_name(name):
@@ -175,6 +174,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
                                         nb_tasks, '[post_task] ')
 
     dot.render(cleanup=save_dot_file)
+    post_process_svg(output_file_name + ".svg")
 
 
 def main():
@@ -193,9 +193,6 @@ def main():
 
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
                         help="Output filename without the '.svg' extension. Default: <playbook_filename>.svg")
-
-    parser.add_argument("-a", "--animations", dest='animations', action='store_true',
-                        help="Enable basic animations on the graph.")
 
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
