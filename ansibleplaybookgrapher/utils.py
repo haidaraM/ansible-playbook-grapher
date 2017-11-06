@@ -75,7 +75,7 @@ def insert_javascript_elements(svg_root):
     svg_root.insert(1, javascript_element)
 
 
-def insert_css_element(svg_root, css_filename="graph.css"):
+def insert_css_element(svg_root, css_filename):
     """
     Insert css style
     :param css_filename:
@@ -103,7 +103,6 @@ def post_process_svg(svg_filename):
     svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
 
     insert_javascript_elements(svg_root)
-    insert_css_element(svg_root)
-    insert_css_element(svg_root, "hover-min.css")
+    insert_css_element(svg_root, "graph.css")
 
     tree.write(svg_filename, xml_declaration=True, encoding="UTF-8")

@@ -113,7 +113,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
         color = picked_color.get_hex_l()
         play_font_color = "black" if picked_color.get_luminance() > 0.6 else "white"
 
-        play_name = clean_name("hosts: " + clean_name(str(play)))
+        play_name = "hosts: " + clean_name(str(play))
 
         play_vars = variable_manager.get_vars(play)
 
@@ -142,7 +142,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             for role_counter, role in enumerate(play.get_roles()):
                 role_name = '[role] ' + clean_name(str(role))
 
-                with dot.subgraph(name=role_name, node_attr={'style': 'bold'}) as role_subgraph:
+                with dot.subgraph(name=role_name, node_attr={}) as role_subgraph:
                     current_counter = role_counter + nb_pre_tasks + 1
                     role_node_id = "role_" + str(current_counter)
                     role_subgraph.node(role_name, id=role_node_id)
