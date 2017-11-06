@@ -21,5 +21,6 @@ $("#svg").ready(function () {
 
     // each play
     $("g[id^=play_]").hover(hoverInPlay, hoverOutPlay);
+    $("g[id^=role_]").hover(hoverInPlay, hoverOutPlay);
 
 });

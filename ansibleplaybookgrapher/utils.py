@@ -6,9 +6,25 @@ JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
+def clean_name(name):
+    """
+    Clean a name for the node, edge...
+    :param name:
+    :return:
+    """
+    return name.strip()
+
+
+def clean_id(id):
+    chars = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}']
+    for c in chars:
+        id = id.replace(c, '')
+    return id
+
+
 class GraphRepresentation(object):
     """
-    https://www.python-course.eu/graphs_python.php
+
     """
 
     def __init__(self, graph_dict=None):
@@ -24,7 +40,8 @@ class GraphRepresentation(object):
         if node_name not in self.graph_dict:
             self.graph_dict[node_name] = []
 
-    def add_edge(self, node1, node2):
+    def add_link(self, node1, node2):
+        self.add_node(node1)
         edges = self.graph_dict[node1]
         edges.append(node2)
         self.graph_dict[node1] = edges
@@ -133,6 +150,7 @@ def insert_graph_representation(tree, graph_representation):
             root_subelement.append(etree.Element('link', attrib={'target': e}))
 
         element.append(root_subelement)
+
 
 def post_process_svg(svg_filename, graph_representation):
     """

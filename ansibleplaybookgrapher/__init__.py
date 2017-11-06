@@ -18,25 +18,10 @@ from ansible.vars.manager import VariableManager
 from colour import Color
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation
+from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation, clean_id, clean_name
 
 __version__ = "0.2.0"
 
-
-def clean_name(name):
-    """
-    Clean a name for the node, edge...
-    :param name:
-    :return:
-    """
-    return name.strip()
-
-
-def clean_id(id):
-    chars = [' ', '[', ']', ':', '-', ',']
-    for c in chars:
-        id = id.replace(c, '')
-    return id
 
 class CustomDigrah(Digraph):
     """
@@ -50,9 +35,13 @@ class CustomDigrah(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-def include_tasks_in_blocks(graph, parent_node_name, block, color, current_counter, node_name_prefix=''):
+def include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
+                            graph_representation,
+                            node_name_prefix=''):
     """
     Recursively read all the tasks of the block and add it to the graph
+    :param parent_node_id:
+    :param graph_representation:
     :param node_name_prefix:
     :param color:
     :param current_counter:
@@ -65,13 +54,19 @@ def include_tasks_in_blocks(graph, parent_node_name, block, color, current_count
     # loop through the tasks
     for counter, task_or_block in enumerate(block.block, 1):
         if isinstance(task_or_block, Block):
-            loop_counter = include_tasks_in_blocks(graph, parent_node_name, task_or_block, color, loop_counter,
-                                                   node_name_prefix)
+            loop_counter = include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block, color,
+                                                   loop_counter, graph_representation, node_name_prefix)
         else:
             task_name = clean_name(node_name_prefix + task_or_block.get_name())
-            graph.node(task_name, shape="octagon")
+            task_id = clean_id(task_name)
+            graph.node(task_name, shape="octagon", id=task_id)
+
+            edge_id = parent_node_id + task_id
+
             graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
-                       style="bold")
+                       style="bold", id=edge_id)
+            graph_representation.add_link(parent_node_id, task_id)
+            graph_representation.add_link(parent_node_id, edge_id)
 
             loop_counter += 1
 
@@ -144,8 +139,8 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             # loop through the pre_tasks
             nb_pre_tasks = 0
             for pre_task_block in play.pre_tasks:
-                nb_pre_tasks = include_tasks_in_blocks(play_subgraph, play_name, pre_task_block, color, nb_pre_tasks,
-                                                       '[pre_task] ')
+                nb_pre_tasks = include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block, color,
+                                                       nb_pre_tasks, graph_representation, '[pre_task] ')
 
             # loop through the roles
             for role_counter, role in enumerate(play.get_roles()):
@@ -160,29 +155,37 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
                     play_to_node_label = str(current_counter) if len(when) == 0 else str(
                         current_counter) + "  [when: " + when + "]"
 
-                    role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color)
+                    edge_id = clean_id(play_id + role_id)
 
-                    graph_representation.add_edge(play_id, role_id)
+                    role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
+                                       id=edge_id)
+
+                    graph_representation.add_link(play_id, edge_id)
+
+                    graph_representation.add_link(play_id, role_id)
 
                     # loop through the tasks of the roles
                     if include_role_tasks:
                         role_tasks_counter = 0
                         for block in role.get_task_blocks():
-                            role_tasks_counter = include_tasks_in_blocks(role_subgraph, role_name, block, color,
-                                                                         role_tasks_counter, '[task] ')
+                            role_tasks_counter = include_tasks_in_blocks(role_subgraph, role_name, role_id, block,
+                                                                         color, role_tasks_counter,
+                                                                         graph_representation,
+                                                                         '[task] ')
                             role_tasks_counter += 1
 
             nb_roles = len(play.get_roles())
             # loop through the tasks
             nb_tasks = 0
             for task_block in play.tasks:
-                nb_tasks = include_tasks_in_blocks(play_subgraph, play_name, task_block, color, nb_roles + nb_pre_tasks,
-                                                   '[task] ')
+                nb_tasks = include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
+                                                   nb_roles + nb_pre_tasks,
+                                                   graph_representation, '[task] ')
 
             # loop through the post_tasks
             for post_task_block in play.post_tasks:
-                include_tasks_in_blocks(play_subgraph, play_name, post_task_block, color,
-                                        nb_tasks, '_post_task_ ')
+                include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
+                                        graph_representation, '_post_task_ ')
 
     dot.render(cleanup=save_dot_file)
     post_process_svg(output_file_name + ".svg", graph_representation)
