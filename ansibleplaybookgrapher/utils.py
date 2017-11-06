@@ -6,6 +6,33 @@ JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
+class GraphRepresentation(object):
+    """
+    https://www.python-course.eu/graphs_python.php
+    """
+
+    def __init__(self, graph_dict=None):
+        """ initializes a graph object
+            If no dictionary or None is given,
+            an empty dictionary will be used
+        """
+        if graph_dict is None:
+            graph_dict = {}
+        self.graph_dict = graph_dict
+
+    def add_node(self, node_name):
+        if node_name not in self.graph_dict:
+            self.graph_dict[node_name] = []
+
+    def add_edge(self, node1, node2):
+        edges = self.graph_dict[node1]
+        edges.append(node2)
+        self.graph_dict[node1] = edges
+
+    def __str__(self):
+        print(self.graph_dict)
+
+
 # cdata support https://gist.github.com/zlalanne/5711847
 def CDATA(text=None):
     element = etree.Element('![CDATA[')
@@ -95,14 +122,26 @@ def insert_css_element(svg_root, css_filename):
     svg_root.insert(2, style_element)
 
 
-def post_process_svg(svg_filename):
+def insert_graph_representation(tree, graph_representation):
+    for node, node_edges in graph_representation.graph_dict.items():
+        element = tree.find("./ns:g/*[@id='%s']" % node,
+                            namespaces={'ns': 'http://www.w3.org/2000/svg'})
+
+        root_subelement = etree.Element('links')
+
+        for e in node_edges:
+            root_subelement.append(etree.Element('link', attrib={'target': e}))
+
+        element.append(root_subelement)
+
+def post_process_svg(svg_filename, graph_representation):
     """
     Post process the svg as xml to add the javascript files
     :param svg_filename:
     :return:
     """
-    tree = etree.parse(svg_filename)
     etree.register_namespace("", "http://www.w3.org/2000/svg")
+    tree = etree.parse(svg_filename)
     svg_root = tree.getroot()
 
     svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
@@ -113,4 +152,7 @@ def post_process_svg(svg_filename):
     insert_javascript_elements(svg_root)
     insert_css_element(svg_root, "graph.css")
 
+    insert_graph_representation(tree, graph_representation)
+
     tree.write(svg_filename, xml_declaration=True, encoding="UTF-8")
+    pass

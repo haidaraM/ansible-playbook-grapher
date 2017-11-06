@@ -18,7 +18,7 @@ from ansible.vars.manager import VariableManager
 from colour import Color
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import post_process_svg
+from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation
 
 __version__ = "0.2.0"
 
@@ -32,7 +32,13 @@ def clean_name(name):
     return name.strip()
 
 
-class CustomDiagram(Digraph):
+def clean_id(id):
+    chars = [' ', '[', ']', ':', '-', ',']
+    for c in chars:
+        id = id.replace(c, '')
+    return id
+
+class CustomDigrah(Digraph):
     """
     Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
     the node and edge names and overrided some methods.
@@ -98,11 +104,13 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
         output_file_name = os.path.splitext(ntpath.basename(playbook_name))[0]
 
     graph_attr = {'ratio': "fill", "rankdir": "LR", 'concentrate': 'true', 'ordering': 'in'}
-    dot = CustomDiagram(filename=output_file_name, edge_attr={'sep': "10", "esep": "5"}, graph_attr=graph_attr,
-                        format="svg")
+    dot = CustomDigrah(filename=output_file_name, edge_attr={'sep': "10", "esep": "5"}, graph_attr=graph_attr,
+                       format="svg")
 
     # the root node
     dot.node(playbook_name, style="dotted")
+
+    graph_representation = GraphRepresentation()
 
     # loop through the plays
     for play_counter, play in enumerate(playbook.get_plays(), 1):
@@ -114,18 +122,19 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
         play_font_color = "black" if picked_color.get_luminance() > 0.6 else "white"
 
         play_name = "hosts: " + clean_name(str(play))
-
+        play_id = clean_id("play_" + play_name)
         play_vars = variable_manager.get_vars(play)
+
+        graph_representation.add_node(play_id)
 
         with dot.subgraph(name=play_name) as play_subgraph:
 
             # role cluster color
             play_subgraph.attr(color=color)
 
-            play_node_id = 'play_' + str(play_counter)
-
             # play node
-            play_subgraph.node(play_name, id=play_node_id, style='filled', shape="box", color=color,
+
+            play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
                                fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
 
             # edge from root node to plays
@@ -144,14 +153,16 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
 
                 with dot.subgraph(name=role_name, node_attr={}) as role_subgraph:
                     current_counter = role_counter + nb_pre_tasks + 1
-                    role_node_id = "role_" + str(current_counter)
-                    role_subgraph.node(role_name, id=role_node_id)
+                    role_id = clean_id("role_" + role_name)
+                    role_subgraph.node(role_name, id=role_id)
 
                     when = "".join(role.when)
                     play_to_node_label = str(current_counter) if len(when) == 0 else str(
                         current_counter) + "  [when: " + when + "]"
 
                     role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color)
+
+                    graph_representation.add_edge(play_id, role_id)
 
                     # loop through the tasks of the roles
                     if include_role_tasks:
@@ -171,10 +182,10 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             # loop through the post_tasks
             for post_task_block in play.post_tasks:
                 include_tasks_in_blocks(play_subgraph, play_name, post_task_block, color,
-                                        nb_tasks, '[post_task] ')
+                                        nb_tasks, '_post_task_ ')
 
     dot.render(cleanup=save_dot_file)
-    post_process_svg(output_file_name + ".svg")
+    post_process_svg(output_file_name + ".svg", graph_representation)
 
 
 def main():
