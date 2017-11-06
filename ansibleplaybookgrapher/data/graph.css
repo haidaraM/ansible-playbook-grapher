@@ -1,11 +1,5 @@
-.node:hover {
+.node:hover, .edge:hover, path:hover, path + polygon:hover {
     cursor: pointer;
     stroke-width: 4;
-    font-weight: bolder;
-}
-
-.edge:hover, path:hover, path+polygon:hover {
-    cursor: pointer;
-    stroke-width: 5;
     font-weight: bolder;
 }
