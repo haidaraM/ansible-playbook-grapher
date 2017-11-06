@@ -67,12 +67,17 @@ def insert_javascript_elements(svg_root):
     # insert jquery script tag
     svg_root.insert(0, jquery_element)
 
+    snap = _read_java_script('snap.svg-min.js')
+    snap_element = etree.Element('script', attrib={'type': 'text/javascript'})
+    snap_element.append(CDATA("\n" + snap))
+    svg_root.insert(1, snap_element)
+
     javascript = _read_java_script()
 
     javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
     javascript_element.append(CDATA("\n" + javascript))
 
-    svg_root.insert(1, javascript_element)
+    svg_root.insert(2, javascript_element)
 
 
 def insert_css_element(svg_root, css_filename):
@@ -101,6 +106,9 @@ def post_process_svg(svg_filename):
     svg_root = tree.getroot()
 
     svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
+
+    # add an id to the root
+    svg_root.set("id", "svg")
 
     insert_javascript_elements(svg_root)
     insert_css_element(svg_root, "graph.css")
