@@ -36,8 +36,7 @@ class CustomDigrah(Digraph):
 
 
 def include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
-                            graph_representation,
-                            node_name_prefix=''):
+                            graph_representation, node_name_prefix=''):
     """
     Recursively read all the tasks of the block and add it to the graph
     :param parent_node_id:
