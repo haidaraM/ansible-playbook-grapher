@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from ansibleplaybookgrapher import __version__
 
 try:
-    long_description = open('README.md').read()
+    long_description = open('Readme.md').read()
 except:
     long_description = None
 
