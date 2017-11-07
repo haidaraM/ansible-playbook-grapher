@@ -22,7 +22,7 @@ def clean_id(identifier):
     :param identifier:
     :return:
     """
-    chars = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}']
+    chars = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}', '&', '~']
     for c in chars:
         identifier = identifier.replace(c, '')
     return identifier

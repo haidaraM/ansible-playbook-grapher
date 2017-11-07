@@ -184,7 +184,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
             # loop through the post_tasks
             for post_task_block in play.post_tasks:
                 include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
-                                        graph_representation, '_post_task_ ')
+                                        graph_representation, '[post_task] ')
 
     dot.render(cleanup=save_dot_file)
     post_process_svg(output_file_name + ".svg", graph_representation)
@@ -195,7 +195,7 @@ def main():
 
     parser.add_argument("playbook", help="The playbook to grah.")
 
-    parser.add_argument("-i", "--inventory",
+    parser.add_argument("-i", "--inventory", "--inventory-file",
                         help="Ansible inventory. Useful if you want to have a tooltip with hostnames on the play nodes.")
 
     parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true',
@@ -205,7 +205,7 @@ def main():
                         help="Save the dot file used to generate the graph.")
 
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
-                        help="Output filename without the '.svg' extension. Default: <playbook_filename>.svg")
+                        help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
