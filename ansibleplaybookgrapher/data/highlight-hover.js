@@ -1,31 +1,31 @@
 const HOVER_CLASS = "my_hover";
 
-function recursiveAddClass(rootElement) {
+function addClass(rootElement) {
     $(rootElement).find('link').each(function (index, element) {
         var target = $(element).attr('target');
         var currentElement = $('#' + target);
         currentElement.addClass(HOVER_CLASS);
 
-        recursiveAddClass(currentElement);
+        addClass(currentElement);
     })
 }
 
-function recursiveRemoveClass(rootElement) {
+function removeClass(rootElement) {
     $(rootElement).find('link').each(function (index, element) {
         var target = $(element).attr('target');
         var currentElement = $('#' + target);
         currentElement.removeClass(HOVER_CLASS);
 
-        recursiveRemoveClass(currentElement);
+        removeClass(currentElement);
     })
 }
 
 function hoverIn(event) {
-    recursiveAddClass(event.currentTarget);
+    addClass(event.currentTarget);
 }
 
 function hoverOut(event) {
-    recursiveRemoveClass(event.currentTarget);
+    removeClass(event.currentTarget);
 }
 
 
@@ -34,7 +34,6 @@ $("#svg").ready(function () {
 
     //svg.circle(150, 150, 100);
 
-    // each play
     $("g[id^=play_]").hover(hoverIn, hoverOut);
     $("g[id^=role_]").hover(hoverIn, hoverOut);
 

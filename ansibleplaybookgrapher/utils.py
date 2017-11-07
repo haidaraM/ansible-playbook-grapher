@@ -22,8 +22,8 @@ def clean_id(identifier):
     :param identifier:
     :return:
     """
-    chars = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}', '&', '~']
-    for c in chars:
+    chars_to_remove = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}', '&', '~']
+    for c in chars_to_remove:
         identifier = identifier.replace(c, '')
     return identifier
 
@@ -74,7 +74,7 @@ def _serialize_xml(write, elem, qnames, namespaces, short_empty_elements, **kwar
 etree._serialize_xml = etree._serialize['xml'] = _serialize_xml
 
 
-def get_data_absolute_path(path):
+def _get_data_absolute_path(path):
     """
     Return the data absolute path
     :param path:
@@ -89,7 +89,7 @@ def _read_data(filename):
     :param filename:
     :return:
     """
-    javascript_path = get_data_absolute_path(filename)
+    javascript_path = _get_data_absolute_path(filename)
 
     with open(javascript_path) as javascript:
         return javascript.read()
