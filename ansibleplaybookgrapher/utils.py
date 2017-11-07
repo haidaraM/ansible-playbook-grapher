@@ -2,7 +2,7 @@ import os
 import xml.etree.ElementTree as etree
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
-SVG_NAMPESPACE = "http://www.w3.org/2000/svg"
+SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -107,6 +107,7 @@ def insert_javascript_elements(svg_root):
     # insert jquery script tag
     svg_root.insert(0, jquery_element)
 
+    # TODO: remove snap if not needed
     snap = _read_data('snap.svg-min.js')
     snap_element = etree.Element('script', attrib={'type': 'text/javascript'})
     snap_element.append(CDATA("\n" + snap))
@@ -143,7 +144,7 @@ def insert_graph_representation(tree, graph_representation):
     :return:
     """
     for node, node_edges in graph_representation.graph_dict.items():
-        element = tree.find("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMPESPACE})
+        element = tree.find("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
 
         root_subelement = etree.Element('links')
 
@@ -160,7 +161,7 @@ def post_process_svg(svg_filename, graph_representation):
     :param svg_filename:
     :return:
     """
-    etree.register_namespace("", SVG_NAMPESPACE)
+    etree.register_namespace("", SVG_NAMESPACE)
     tree = etree.parse(svg_filename)
     svg_root = tree.getroot()
 
