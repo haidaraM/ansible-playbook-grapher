@@ -107,12 +107,6 @@ def insert_javascript_elements(svg_root):
     # insert jquery script tag
     svg_root.insert(0, jquery_element)
 
-    # TODO: remove snap if not needed
-    snap = _read_data('snap.svg-min.js')
-    snap_element = etree.Element('script', attrib={'type': 'text/javascript'})
-    snap_element.append(CDATA("\n" + snap))
-    svg_root.insert(1, snap_element)
-
     javascript = _read_data("highlight-hover.js")
 
     javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
@@ -167,7 +161,6 @@ def post_process_svg(svg_filename, graph_representation):
 
     svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
 
-    # add an id to the root
     svg_root.set("id", "svg")
 
     insert_javascript_elements(svg_root)

@@ -48,9 +48,6 @@ function clickOnElement(event) {
 
 
 $("#svg").ready(function () {
-    var svg = Snap("#svg");
-
-    //svg.circle(150, 150, 100);
 
     $("g[id^=play_]").hover(hoverIn, hoverOut);
     $("g[id^=role_]").hover(hoverIn, hoverOut);
