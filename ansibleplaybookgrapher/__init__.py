@@ -20,7 +20,7 @@ from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation, clean_id, clean_name
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 class CustomDigrah(Digraph):
