@@ -151,7 +151,7 @@ def insert_graph_representation(tree, graph_representation):
 
 def post_process_svg(svg_filename, graph_representation):
     """
-    Post process the svg as xml to add the javascript files
+    Post process the svg as xml to add the javascript and css and the links between the nodes
     :param graph_representation:
     :param svg_filename:
     :return:
