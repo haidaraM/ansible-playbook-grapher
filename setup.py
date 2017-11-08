@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from ansibleplaybookgrapher import __version__
 
 try:
-    long_description = open('README.md').read()
+    long_description = open('Readme.md').read()
 except:
     long_description = None
 
@@ -20,6 +20,8 @@ setup(name="ansible-playbook-grapher",
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: MIT License',
+          'Environment :: Console',
+          'Topic :: Utilities',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 2.7',
       ],
