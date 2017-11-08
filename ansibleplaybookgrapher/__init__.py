@@ -154,7 +154,7 @@ def dump_playbok(playbook, loader, variable_manager, include_role_tasks, save_do
                     play_to_node_label = str(current_counter) if len(when) == 0 else str(
                         current_counter) + "  [when: " + when + "]"
 
-                    edge_id = clean_id(play_id + role_id)
+                    edge_id = clean_id("edge_" + play_id + role_id)
 
                     role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
                                        id=edge_id)

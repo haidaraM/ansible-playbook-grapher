@@ -112,7 +112,7 @@ def insert_javascript_elements(svg_root):
     javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
     javascript_element.append(CDATA("\n" + javascript))
 
-    svg_root.insert(2, javascript_element)
+    svg_root.insert(1, javascript_element)
 
 
 def insert_css_element(svg_root, css_filename):
@@ -137,13 +137,14 @@ def insert_graph_representation(tree, graph_representation):
     :param graph_representation:
     :return:
     """
-    for node, node_edges in graph_representation.graph_dict.items():
+    for node, node_links in graph_representation.graph_dict.items():
+        # Find the group g with the specified id
         element = tree.find("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
 
         root_subelement = etree.Element('links')
 
-        for e in node_edges:
-            root_subelement.append(etree.Element('link', attrib={'target': e}))
+        for link in node_links:
+            root_subelement.append(etree.Element('link', attrib={'target': link}))
 
         element.append(root_subelement)
 
