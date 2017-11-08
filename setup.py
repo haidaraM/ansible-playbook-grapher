@@ -15,6 +15,8 @@ setup(name="ansible-playbook-grapher",
       license="MIT",
       install_requires=['graphviz', 'colour'],
       packages=find_packages(exclude=['tests']),
+      package_data={"ansible-playbook-grapher": ['data/*']},
+      include_package_data=True,
       download_url="https://github.com/haidaraM/ansible-playbook-grapher/archive/v" + __version__ + ".tar.gz",
       classifiers=[
           'Development Status :: 3 - Alpha',

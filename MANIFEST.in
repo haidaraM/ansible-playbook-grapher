@@ -1,0 +1,3 @@
+# Include the data files
+include Readme.md
+include ansibleplaybookgrapher/data/*
