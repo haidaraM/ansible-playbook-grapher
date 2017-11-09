@@ -58,9 +58,12 @@ optional arguments:
 
 ```
 
+## Contribution
+Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley: 
 
 ## TODO
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
  - Graphviz : find a way to avoid or reduce edges overlapping
  - Ansible: Variables interpolation in node name (when possible)
+ - Add support for tags
   
