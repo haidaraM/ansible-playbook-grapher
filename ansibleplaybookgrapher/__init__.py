@@ -207,6 +207,9 @@ def main():
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
                         help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
+    parser.add_argument('-t', '--tags', dest='tags', default=[], action='append',
+                        help="Only show plays and tasks tagged with these values.")
+
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
 
