@@ -9,6 +9,7 @@ except:
 setup(name="ansible-playbook-grapher",
       version=__version__,
       description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
+      long_description=long_description,
       url="https://github.com/haidaraM/ansible-playbook-grapher",
       author="HAIDARA Mohamed El Mouctar",
       author_email="elmhaidara@gmail.com",
