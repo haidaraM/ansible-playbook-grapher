@@ -207,13 +207,20 @@ def main():
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
                         help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
-    parser.add_argument('-t', '--tags', dest='tags', default=[], action='append',
+    parser.add_argument('-t', '--tags', dest='tags', default=['all'], action='append',
                         help="Only show plays and tasks tagged with these values.")
 
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
+
+    # set the tags properly to be compliant with the way Ansible parse it
+    # see the class
+    tags = set()
+    for tag_set in args:
+        for tag in tag_set.split(u','):
+            tags.add(tag.strip())
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=args.inventory)
