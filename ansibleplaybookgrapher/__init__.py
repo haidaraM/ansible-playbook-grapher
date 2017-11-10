@@ -216,11 +216,12 @@ def main():
     args = parser.parse_args()
 
     # set the tags properly to be compliant with the way Ansible parse it
-    # see the class
     tags = set()
-    for tag_set in args:
+    for tag_set in args.tags:
         for tag in tag_set.split(u','):
             tags.add(tag.strip())
+
+    tags = list(tags)
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=args.inventory)
