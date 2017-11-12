@@ -111,7 +111,9 @@ class Grapher(object):
             play_vars = self.variable_manager.get_vars(play)
 
             if not play.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=play_vars):
-                continue
+                # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
+                # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
+                pass
 
             self.graph_representation.add_node(play_id)
 
