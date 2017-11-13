@@ -50,9 +50,6 @@ class GraphRepresentation(object):
         edges.append(node2)
         self.graph_dict[node1] = edges
 
-    def __str__(self):
-        print(self.graph_dict)
-
 
 def _get_data_absolute_path(path):
     """
@@ -119,7 +116,9 @@ def insert_graph_representation(tree, graph_representation):
     """
     for node, node_links in graph_representation.graph_dict.items():
         # Find the group g with the specified id
-        element = tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
+        element = tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
+        if len(element) == 0:
+            print(node)
 
         root_subelement = etree.Element('links')
 

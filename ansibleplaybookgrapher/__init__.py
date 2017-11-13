@@ -113,7 +113,7 @@ class Grapher(object):
 
             tagged = ''
 
-            if not play.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=play_vars):
+            if not play.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
                 # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
                 # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
                 tagged = NOT_TAGGED
@@ -151,7 +151,7 @@ class Grapher(object):
                     role_name = '[role] ' + clean_name(str(role))
 
                     tagged = ''
-                    if not play.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=play_vars):
+                    if not role.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
                         # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
                         # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
                         tagged = NOT_TAGGED
