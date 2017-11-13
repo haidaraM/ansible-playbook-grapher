@@ -1,5 +1,6 @@
 import os
-import xml.etree.ElementTree as etree
+
+from lxml import etree
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -53,27 +54,6 @@ class GraphRepresentation(object):
         print(self.graph_dict)
 
 
-# cdata support https://gist.github.com/zlalanne/5711847
-def CDATA(text=None):
-    element = etree.Element('![CDATA[')
-    element.text = text
-    return element
-
-
-etree._original_serialize_xml = etree._serialize_xml
-
-
-def _serialize_xml(write, elem, qnames, namespaces, short_empty_elements, **kwargs):
-    if elem.tag == '![CDATA[':
-        write("<%s%s]]>" % (elem.tag, elem.text))
-        return
-    return etree._original_serialize_xml(
-        write, elem, qnames, namespaces, short_empty_elements, **kwargs)
-
-
-etree._serialize_xml = etree._serialize['xml'] = _serialize_xml
-
-
 def _get_data_absolute_path(path):
     """
     Return the data absolute path
@@ -102,7 +82,7 @@ def insert_javascript_elements(svg_root):
     :return:
     """
     # jquery tag
-    jquery_element = etree.Element("script", attrib={'type': 'text/javascript', 'xlink:href': JQUERY})
+    jquery_element = etree.Element("script", attrib={'type': 'text/javascript', 'href': JQUERY})
 
     # insert jquery script tag
     svg_root.insert(0, jquery_element)
@@ -110,7 +90,7 @@ def insert_javascript_elements(svg_root):
     javascript = _read_data("highlight-hover.js")
 
     javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
-    javascript_element.append(CDATA("\n" + javascript))
+    javascript_element.text = etree.CDATA("\n" + javascript)
 
     svg_root.insert(1, javascript_element)
 
@@ -125,7 +105,7 @@ def insert_css_element(svg_root, css_filename):
     style_element = etree.Element("style", attrib={'type': 'text/css'})
 
     style = _read_data(css_filename)
-    style_element.append(CDATA("\n" + style))
+    style_element.text = etree.CDATA("\n" + style)
 
     svg_root.insert(2, style_element)
 
@@ -156,11 +136,8 @@ def post_process_svg(svg_filename, graph_representation):
     :param svg_filename:
     :return:
     """
-    etree.register_namespace("", SVG_NAMESPACE)
     tree = etree.parse(svg_filename)
     svg_root = tree.getroot()
-
-    svg_root.set("xmlns:xlink", "http://www.w3.org/1999/xlink")  # xlink namespace
 
     svg_root.set("id", "svg")
 
