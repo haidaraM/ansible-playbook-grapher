@@ -22,6 +22,8 @@ from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation, 
 
 __version__ = "0.3.3"
 
+NOT_TAGGED = "not_tagged"
+
 
 class CustomDigrah(Digraph):
     """
@@ -107,16 +109,19 @@ class Grapher(object):
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
 
-            color, play_font_color = self._colors_for_play(play)
-
-            play_name = "hosts: " + clean_name(str(play))
-            play_id = clean_id("play_" + play_name)
             play_vars = self.variable_manager.get_vars(play)
+
+            tagged = ''
 
             if not play.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=play_vars):
                 # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
                 # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
-                pass
+                tagged = NOT_TAGGED
+
+            color, play_font_color = self._colors_for_play(play)
+
+            play_name = "hosts: " + clean_name(str(play))
+            play_id = clean_id("play_" + play_name + tagged)
 
             self.graph_representation.add_node(play_id)
 
@@ -130,8 +135,9 @@ class Grapher(object):
                                    fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
 
                 # edge from root node to plays
-                play_subgraph.edge(self.playbook_filename, play_name, style="bold", label=str(play_counter),
-                                   color=color, fontcolor=color)
+                play_edge_id = clean_id(self.playbook_filename + play_name + tagged)
+                play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
+                                   label=str(play_counter), color=color, fontcolor=color)
 
                 # loop through the pre_tasks
                 nb_pre_tasks = 0
@@ -144,16 +150,22 @@ class Grapher(object):
                 for role_counter, role in enumerate(play.get_roles()):
                     role_name = '[role] ' + clean_name(str(role))
 
+                    tagged = ''
+                    if not play.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=play_vars):
+                        # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
+                        # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
+                        tagged = NOT_TAGGED
+
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
                         current_counter = role_counter + nb_pre_tasks + 1
-                        role_id = clean_id("role_" + role_name)
+                        role_id = clean_id("role_" + role_name + tagged)
                         role_subgraph.node(role_name, id=role_id)
 
                         when = "".join(role.when)
                         play_to_node_label = str(current_counter) if len(when) == 0 else str(
                             current_counter) + "  [when: " + when + "]"
 
-                        edge_id = clean_id("edge_" + play_id + role_id)
+                        edge_id = clean_id("edge_" + play_id + role_id + tagged)
 
                         role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
                                            id=edge_id)
@@ -241,14 +253,15 @@ def _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, col
         else:
 
             # check if the task should be included
+            tagged = ''
             if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):
-                continue
+                tagged = NOT_TAGGED
 
             task_name = clean_name(node_name_prefix + task_or_block.get_name())
-            task_id = clean_id(task_name)
+            task_id = clean_id(task_name + tagged)
             graph.node(task_name, shape="octagon", id=task_id)
 
-            edge_id = parent_node_id + task_id
+            edge_id = parent_node_id + task_id + tagged
 
             graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
                        style="bold", id=edge_id)

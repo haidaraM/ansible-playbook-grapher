@@ -119,7 +119,7 @@ def insert_graph_representation(tree, graph_representation):
     """
     for node, node_links in graph_representation.graph_dict.items():
         # Find the group g with the specified id
-        element = tree.find("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
+        element = tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
 
         root_subelement = etree.Element('links')
 
