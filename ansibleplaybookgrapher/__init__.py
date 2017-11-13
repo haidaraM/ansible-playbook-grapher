@@ -81,7 +81,7 @@ class Grapher(object):
 
         return picked_color.get_hex_l(), play_font_color
 
-    def make_graph(self, include_role_tasks=False, tags=None):
+    def make_graph(self, include_role_tasks=False, tags=None, skip_tags=None):
         """
         Loop through the playbook and make the graph.
 
@@ -97,6 +97,9 @@ class Grapher(object):
         """
         if tags is None:
             tags = ['all']
+
+        if skip_tags is None:
+            skip_tags = []
 
         # the root node
         self.graph.node(self.playbook_filename, style="dotted")
@@ -135,7 +138,7 @@ class Grapher(object):
                 for pre_task_block in play.pre_tasks:
                     nb_pre_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block, color,
                                                             nb_pre_tasks, self.graph_representation, play_vars,
-                                                            '[pre_task] ', tags)
+                                                            '[pre_task] ', tags, skip_tags)
 
                 # loop through the roles
                 for role_counter, role in enumerate(play.get_roles()):
@@ -166,7 +169,7 @@ class Grapher(object):
                                 role_tasks_counter = _include_tasks_in_blocks(role_subgraph, role_name, role_id, block,
                                                                               color, role_tasks_counter,
                                                                               self.graph_representation, play_vars,
-                                                                              '[task] ', tags)
+                                                                              '[task] ', tags, skip_tags)
                                 role_tasks_counter += 1
 
                 nb_roles = len(play.get_roles())
@@ -175,12 +178,12 @@ class Grapher(object):
                 for task_block in play.tasks:
                     nb_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
                                                         nb_roles + nb_pre_tasks, self.graph_representation, play_vars,
-                                                        '[task] ', tags)
+                                                        '[task] ', tags, skip_tags)
 
                 # loop through the post_tasks
                 for post_task_block in play.post_tasks:
                     _include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
-                                             self.graph_representation, play_vars, '[post_task] ', tags)
+                                             self.graph_representation, play_vars, '[post_task] ', tags, skip_tags)
 
     def render_graph(self, output_filename=None, save_dot_file=False):
         """
@@ -207,7 +210,7 @@ class Grapher(object):
 
 
 def _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
-                             graph_representation, variables=None, node_name_prefix='', tags=None):
+                             graph_representation, variables=None, node_name_prefix='', tags=None, skip_tags=None):
     """
     Recursively read all the tasks of the block and add it to the graph
     :param variables:
@@ -224,17 +227,21 @@ def _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, col
     """
     if tags is None:
         tags = ['all']
+
+    if skip_tags is None:
+        skip_tags = []
+
     loop_counter = current_counter
     # loop through the tasks
     for counter, task_or_block in enumerate(block.block, 1):
         if isinstance(task_or_block, Block):
             loop_counter = _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block, color,
                                                     loop_counter, graph_representation, variables, node_name_prefix,
-                                                    tags)
+                                                    tags, skip_tags)
         else:
 
             # check if the task should be included
-            if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=[], all_vars=variables):
+            if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):
                 continue
 
             task_name = clean_name(node_name_prefix + task_or_block.get_name())
@@ -271,20 +278,29 @@ def main():
                         help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
     parser.add_argument('-t', '--tags', dest='tags', default=[], action='append',
-                        help="Only show plays and tasks tagged with these values.")
+                        help="Only show tasks tagged with these values.")
+
+    parser.add_argument('--skip-tags', dest='skip_tags', default=[], action='append',
+                        help="Only show tasks whose tags do not match these values.")
 
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
 
-    # set the tags properly to be compliant with the way Ansible parse it
+    # process tags
     tags = set()
     for tag_set in args.tags:
         for tag in tag_set.split(u','):
             tags.add(tag.strip())
 
     tags = list(tags)
+
+    skip_tags = set()
+    for skip_tag_set in args.skip_tags:
+        for skip_tag in skip_tag_set.split(u','):
+            skip_tags.add(skip_tag.strip())
+    skip_tags = list(skip_tags)
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=args.inventory)
@@ -293,7 +309,7 @@ def main():
     grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
                       playbook_filename=args.playbook, output_file_name=args.output_file_name)
 
-    grapher.make_graph(include_role_tasks=args.include_role_tasks, tags=tags)
+    grapher.make_graph(include_role_tasks=args.include_role_tasks, tags=tags, skip_tags=skip_tags)
 
     grapher.render_graph(save_dot_file=args.save_dot_file)
 
