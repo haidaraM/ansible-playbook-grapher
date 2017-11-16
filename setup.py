@@ -30,6 +30,6 @@ setup(name=__prog__,
       ],
       entry_points={
           'console_scripts': [
-              '%s = ansibleplaybookgrapher:main' % __prog__
+              '%s = ansibleplaybookgrapher.cli:main' % __prog__
           ]
       })
