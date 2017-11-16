@@ -33,7 +33,7 @@ class PlaybookGrapherCLI(CLI):
         variable_manager = VariableManager(loader=loader, inventory=inventory)
 
         grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=playbook, output_file_name=self.options.output_file_name)
+                          playbook_filename=playbook, output_filename=self.options.output_file_name)
 
         grapher.make_graph(include_role_tasks=self.options.include_role_tasks, tags=self.options.tags,
                            skip_tags=self.options.skip_tags)

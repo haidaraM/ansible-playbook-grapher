@@ -83,7 +83,7 @@ class Grapher(object):
     DEFAULT_EDGE_ATTR = {'sep': "10", "esep": "5"}
 
     def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, graph=None,
-                 output_file_name=None):
+                 output_filename=None):
         """
 
         :param data_loader:
@@ -91,15 +91,17 @@ class Grapher(object):
         :param variable_manager:
         :param playbook_filename:
         :param graph:
-        :param output_file_name: The output filename without the extension
+        :param output_filename: The output filename without the extension
         """
         self.variable_manager = variable_manager
         self.inventory_manager = inventory_manager
         self.data_loader = data_loader
         self.playbook_filename = playbook_filename
 
-        if output_file_name is None:
-            self.output_file_name = os.path.splitext(ntpath.basename(playbook_filename))[0]
+        if output_filename is None:
+            self.output_filename = os.path.splitext(ntpath.basename(playbook_filename))[0]
+        else:
+            self.output_filename = output_filename
 
         self.graph_representation = GraphRepresentation()
 
@@ -234,7 +236,7 @@ class Grapher(object):
         :return:
         """
         if output_filename is None:
-            output_filename = self.output_file_name
+            output_filename = self.output_filename
 
         self.graph.render(cleanup=save_dot_file, filename=output_filename)
 
@@ -245,6 +247,6 @@ class Grapher(object):
         :return:
         """
         if output_filename is None:
-            output_filename = self.output_file_name + ".svg"
+            output_filename = self.output_filename + ".svg"
 
         post_process_svg(output_filename, self.graph_representation)
