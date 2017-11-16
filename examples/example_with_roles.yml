@@ -1,0 +1,57 @@
+---
+- hosts: all
+  tags:
+    - play1
+  vars:
+    backport: "stretch-backports"
+    packages:
+      - git
+      - tree
+      - curl
+  pre_tasks:
+    - name: Pretask
+      debug: msg="Pretask"
+    - name: Pretask 2
+      debug: msg="Pretask"
+      tags:
+        - post
+  post_tasks:
+    - name: Posttask
+      debug: msg="Postask"
+    - name: Posttask 2
+      debug: msg="Postask"
+  roles:
+    - role: fake_role
+      tags:
+        - role_tag
+
+  tasks:
+    - name: Ajout du backport {{backport}}
+      become: yes
+      apt_repository:
+        repo: deb http://ftp.debian.org/debian {{backport}} main
+        filename: "{{backport}}"
+        state: present
+        update_cache: yes
+
+    - name: Install packages
+      become: yes
+      apt:
+        name: "{{item}}"
+        state: latest
+        default_release: "{{backport}}"
+      with_items: "{{packages}}"
+
+- hosts: machine2
+  tags:
+    - play2
+  tasks:
+    - name: Copy nginx conf
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx
+
+    - name: copy hosts
+      copy:
+        src: /etc/hosts
+        dest: /etc/hosts

@@ -1,0 +1,6 @@
+---
+- name: Debug 1
+  debug: msg="Fake role"
+
+- name: Debug 2
+  debug: msg="Fake role 2"

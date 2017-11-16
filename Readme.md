@@ -28,6 +28,15 @@ $ ansible-playbook-grapher examples/playbook.yml
 
 ![Example](examples/example.png)
 
+
+```
+$ ansible-playbook-grapher --include-role-tasks  examples/example_with_roles.yml
+```
+
+
+![Example](examples/example_with_roles.png)
+
+
 Some options are available:
 
 ```
