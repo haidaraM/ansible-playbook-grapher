@@ -6,7 +6,7 @@ from ansible.playbook.block import Block
 from colour import Color
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, post_process_svg
+from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor
 
 NOT_TAGGED = "not_tagged"
 
@@ -249,4 +249,8 @@ class Grapher(object):
         if output_filename is None:
             output_filename = self.output_filename + ".svg"
 
-        post_process_svg(output_filename, self.graph_representation)
+        post_processor = PostProcessor(svg_path=output_filename, graph_representation=self.graph_representation)
+
+        post_processor.post_process()
+
+        post_processor.write()

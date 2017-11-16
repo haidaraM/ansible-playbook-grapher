@@ -72,75 +72,55 @@ def _read_data(filename):
         return javascript.read()
 
 
-def insert_javascript_elements(svg_root):
+class PostProcessor(object):
     """
-    Insert the required elements needed to run javascript
-    :param svg_root:
-    :return:
+    Post process the svg by adding some javascript and css
     """
-    # jquery tag
-    jquery_element = etree.Element("script", attrib={'type': 'text/javascript', 'href': JQUERY})
 
-    # insert jquery script tag
-    svg_root.insert(0, jquery_element)
+    def __init__(self, svg_path, graph_representation):
+        self.svg_path = svg_path
+        self.graph_representation = graph_representation
+        self.tree = etree.parse(svg_path)
+        self.root = self.tree.getroot()
 
-    javascript = _read_data("highlight-hover.js")
+        self.root.set('id', 'svg')
 
-    javascript_element = etree.Element('script', attrib={'type': 'text/javascript'})
-    javascript_element.text = etree.CDATA("\n" + javascript)
+    def insert_script_tag(self, index, attrib):
+        element_script_tag = etree.Element('script', attrib=attrib)
 
-    svg_root.insert(1, javascript_element)
+        self.root.insert(index, element_script_tag)
 
+    def insert_cdata(self, index, tag, attrib, cdata_text):
+        element = etree.Element(tag, attrib=attrib)
+        element.text = etree.CDATA(cdata_text)
 
-def insert_css_element(svg_root, css_filename):
-    """
-    Insert css style
-    :param css_filename:
-    :param svg_root:
-    :return:
-    """
-    style_element = etree.Element("style", attrib={'type': 'text/css'})
+        self.root.insert(index, element)
 
-    style = _read_data(css_filename)
-    style_element.text = etree.CDATA("\n" + style)
+    def post_process(self):
+        # insert jquery
+        self.insert_script_tag(0, attrib={'type': 'text/javascript', 'href': JQUERY})
 
-    svg_root.insert(2, style_element)
+        highlight_script = _read_data("highlight-hover.js")
 
+        self.insert_cdata(1, 'script', attrib={'type': 'text/javascript'}, cdata_text=highlight_script)
 
-def insert_graph_representation(tree, graph_representation):
-    """
-    Insert the graph representation in the svg
-    :param tree:
-    :param graph_representation:
-    :return:
-    """
-    for node, node_links in graph_representation.graph_dict.items():
-        # Find the group g with the specified id
-        element = tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
+        css = _read_data("graph.css")
 
-        root_subelement = etree.Element('links')
+        self.insert_cdata(2, 'style', attrib={'type': 'text/css'}, cdata_text=css)
 
-        for link in node_links:
-            root_subelement.append(etree.Element('link', attrib={'target': link}))
+        self._insert_graph_representation()
 
-        element.append(root_subelement)
+    def write(self):
+        self.tree.write(self.svg_path, xml_declaration=True, encoding="UTF-8")
 
+    def _insert_graph_representation(self):
+        for node, node_links in self.graph_representation.graph_dict.items():
+            # Find the group g with the specified id
+            element = self.tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
 
-def post_process_svg(svg_filename, graph_representation):
-    """
-    Post process the svg as xml to add the javascript and css and the links between the nodes
-    :param graph_representation:
-    :param svg_filename:
-    :return:
-    """
-    tree = etree.parse(svg_filename)
-    svg_root = tree.getroot()
+            root_subelement = etree.Element('links')
 
-    svg_root.set("id", "svg")
+            for link in node_links:
+                root_subelement.append(etree.Element('link', attrib={'target': link}))
 
-    insert_javascript_elements(svg_root)
-    insert_css_element(svg_root, "graph.css")
-
-    insert_graph_representation(tree, graph_representation)
-
-    tree.write(svg_filename, xml_declaration=True, encoding="UTF-8")
+            element.append(root_subelement)
