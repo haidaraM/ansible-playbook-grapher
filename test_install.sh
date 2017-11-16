@@ -17,6 +17,8 @@ virtualenv --clear ${VIRTUALENV_DIR}
 
 source ${VIRTUALENV_DIR}/bin/activate
 
+pip -V
+
 package=dist/$(ls dist)
 
 echo -e "${GREEN}Installing the packages ${package} and ansible ${ANSIBLE_VERSION} ${NC}"

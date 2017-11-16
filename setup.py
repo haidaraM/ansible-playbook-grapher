@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
-from ansibleplaybookgrapher import __version__
+from ansibleplaybookgrapher import __version__, __prog__
 
 try:
     long_description = open('Readme.md').read()
 except:
     long_description = None
 
-setup(name="ansible-playbook-grapher",
+setup(name=__prog__,
       version=__version__,
       description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
       long_description=long_description,
@@ -30,6 +30,6 @@ setup(name="ansible-playbook-grapher",
       ],
       entry_points={
           'console_scripts': [
-              'ansible-playbook-grapher = ansibleplaybookgrapher:main'
+              '%s = ansibleplaybookgrapher:main' % __prog__
           ]
       })

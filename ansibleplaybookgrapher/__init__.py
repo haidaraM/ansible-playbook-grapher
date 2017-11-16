@@ -16,10 +16,11 @@ from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation, clean_id, clean_name
 
 __version__ = "0.4.0"
+__prog__ = "ansible-playbook-grapher"
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, prog='ansible-playbook-grapher')
+    parser = argparse.ArgumentParser(description=__doc__, prog=__prog__)
 
     parser.add_argument("playbook", help="The playbook to grah.")
 
