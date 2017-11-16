@@ -1,5 +1,7 @@
 # Ansible Playbook Grapher
 
+[![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
+
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a graph representing your Ansible playbook tasks and roles. The aim of
 this project is to quickly have an overview of your playbook.
 
