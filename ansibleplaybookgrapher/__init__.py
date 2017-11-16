@@ -111,31 +111,21 @@ class Grapher(object):
 
             play_vars = self.variable_manager.get_vars(play)
 
-            tagged = ''
-
-            if not play.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
-                # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
-                # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
-                tagged = NOT_TAGGED
-
             color, play_font_color = self._colors_for_play(play)
 
             play_name = "hosts: " + clean_name(str(play))
-            play_id = clean_id("play_" + play_name + tagged)
+            play_id = clean_id("play_" + play_name)
 
             self.graph_representation.add_node(play_id)
 
             with self.graph.subgraph(name=play_name) as play_subgraph:
-
-                # role cluster color
-                play_subgraph.attr(color=color)
 
                 # play node
                 play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
                                    fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
 
                 # edge from root node to plays
-                play_edge_id = clean_id(self.playbook_filename + play_name + tagged)
+                play_edge_id = clean_id(self.playbook_filename + play_name)
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
@@ -147,25 +137,26 @@ class Grapher(object):
                                                             '[pre_task] ', tags, skip_tags)
 
                 # loop through the roles
-                for role_counter, role in enumerate(play.get_roles()):
+                for role_counter, role in enumerate(play.get_roles(), 1):
                     role_name = '[role] ' + clean_name(str(role))
 
-                    tagged = ''
+                    # the role object doesn't inherit the tags from the play. So we add it manually
+                    role.tags = role.tags + play.tags
+
+                    role_not_tagged = ''
                     if not role.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
-                        # TODO: find a way to mark that play. We can't skip it because tags really affect only the tags.
-                        # Applying tags anywhere else is just a convenience so you don’t have to write it on every task.
-                        tagged = NOT_TAGGED
+                        role_not_tagged = NOT_TAGGED
 
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
-                        current_counter = role_counter + nb_pre_tasks + 1
-                        role_id = clean_id("role_" + role_name + tagged)
+                        current_counter = role_counter + nb_pre_tasks
+                        role_id = clean_id("role_" + role_name + role_not_tagged)
                         role_subgraph.node(role_name, id=role_id)
 
                         when = "".join(role.when)
                         play_to_node_label = str(current_counter) if len(when) == 0 else str(
                             current_counter) + "  [when: " + when + "]"
 
-                        edge_id = clean_id("edge_" + play_id + role_id + tagged)
+                        edge_id = clean_id("edge_" + play_id + role_id + role_not_tagged)
 
                         role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
                                            id=edge_id)
