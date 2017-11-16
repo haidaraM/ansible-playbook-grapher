@@ -45,7 +45,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INVENTORY, --inventory INVENTORY
+  -i INVENTORY, --inventory INVENTORY, --inventory-file INVENTORY
                         Ansible inventory. Useful if you want to have a
                         tooltip with hostnames on the play nodes.
   --include-role-tasks  Include the tasks of the role in the graph. Can
@@ -53,7 +53,10 @@ optional arguments:
   -s, --save-dot-file   Save the dot file used to generate the graph.
   -o OUTPUT_FILE_NAME, --ouput-file-name OUTPUT_FILE_NAME
                         Output filename without the '.svg' extension. Default:
-                        <playbook_filename>.svg
+                        <playbook>.svg
+  -t TAGS, --tags TAGS  Only show tasks tagged with these values.
+  --skip-tags SKIP_TAGS
+                        Only show tasks whose tags do not match these values.
   -v, --version         Print version and exit.
 
 ```

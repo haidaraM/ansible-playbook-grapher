@@ -22,6 +22,8 @@ from ansibleplaybookgrapher.utils import post_process_svg, GraphRepresentation, 
 
 __version__ = "0.3.3"
 
+NOT_TAGGED = "not_tagged"
+
 
 class CustomDigrah(Digraph):
     """
@@ -81,7 +83,7 @@ class Grapher(object):
 
         return picked_color.get_hex_l(), play_font_color
 
-    def make_graph(self, include_role_tasks=False, tags=None):
+    def make_graph(self, include_role_tasks=False, tags=None, skip_tags=None):
         """
         Loop through the playbook and make the graph.
 
@@ -96,7 +98,10 @@ class Grapher(object):
         :return:
         """
         if tags is None:
-            tags = []
+            tags = ['all']
+
+        if skip_tags is None:
+            skip_tags = []
 
         # the root node
         self.graph.node(self.playbook_filename, style="dotted")
@@ -104,47 +109,54 @@ class Grapher(object):
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
 
+            play_vars = self.variable_manager.get_vars(play)
+
             color, play_font_color = self._colors_for_play(play)
 
             play_name = "hosts: " + clean_name(str(play))
             play_id = clean_id("play_" + play_name)
-            play_vars = self.variable_manager.get_vars(play)
 
             self.graph_representation.add_node(play_id)
 
             with self.graph.subgraph(name=play_name) as play_subgraph:
-
-                # role cluster color
-                play_subgraph.attr(color=color)
 
                 # play node
                 play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
                                    fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
 
                 # edge from root node to plays
-                play_subgraph.edge(self.playbook_filename, play_name, style="bold", label=str(play_counter),
-                                   color=color, fontcolor=color)
+                play_edge_id = clean_id(self.playbook_filename + play_name)
+                play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
+                                   label=str(play_counter), color=color, fontcolor=color)
 
                 # loop through the pre_tasks
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
-                    nb_pre_tasks = include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block, color,
-                                                           nb_pre_tasks, self.graph_representation, '[pre_task] ')
+                    nb_pre_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block, color,
+                                                            nb_pre_tasks, self.graph_representation, play_vars,
+                                                            '[pre_task] ', tags, skip_tags)
 
                 # loop through the roles
-                for role_counter, role in enumerate(play.get_roles()):
+                for role_counter, role in enumerate(play.get_roles(), 1):
                     role_name = '[role] ' + clean_name(str(role))
 
+                    # the role object doesn't inherit the tags from the play. So we add it manually
+                    role.tags = role.tags + play.tags
+
+                    role_not_tagged = ''
+                    if not role.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
+                        role_not_tagged = NOT_TAGGED
+
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
-                        current_counter = role_counter + nb_pre_tasks + 1
-                        role_id = clean_id("role_" + role_name)
+                        current_counter = role_counter + nb_pre_tasks
+                        role_id = clean_id("role_" + role_name + role_not_tagged)
                         role_subgraph.node(role_name, id=role_id)
 
                         when = "".join(role.when)
                         play_to_node_label = str(current_counter) if len(when) == 0 else str(
                             current_counter) + "  [when: " + when + "]"
 
-                        edge_id = clean_id("edge_" + play_id + role_id)
+                        edge_id = clean_id("edge_" + play_id + role_id + role_not_tagged)
 
                         role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
                                            id=edge_id)
@@ -157,24 +169,24 @@ class Grapher(object):
                         if include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.get_task_blocks():
-                                role_tasks_counter = include_tasks_in_blocks(role_subgraph, role_name, role_id, block,
-                                                                             color, role_tasks_counter,
-                                                                             self.graph_representation,
-                                                                             '[task] ')
+                                role_tasks_counter = _include_tasks_in_blocks(role_subgraph, role_name, role_id, block,
+                                                                              color, role_tasks_counter,
+                                                                              self.graph_representation, play_vars,
+                                                                              '[task] ', tags, skip_tags)
                                 role_tasks_counter += 1
 
                 nb_roles = len(play.get_roles())
                 # loop through the tasks
                 nb_tasks = 0
                 for task_block in play.tasks:
-                    nb_tasks = include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
-                                                       nb_roles + nb_pre_tasks,
-                                                       self.graph_representation, '[task] ')
+                    nb_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
+                                                        nb_roles + nb_pre_tasks, self.graph_representation, play_vars,
+                                                        '[task] ', tags, skip_tags)
 
                 # loop through the post_tasks
                 for post_task_block in play.post_tasks:
-                    include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
-                                            self.graph_representation, '[post_task] ')
+                    _include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
+                                             self.graph_representation, play_vars, '[post_task] ', tags, skip_tags)
 
     def render_graph(self, output_filename=None, save_dot_file=False):
         """
@@ -200,10 +212,12 @@ class Grapher(object):
         post_process_svg(output_filename, self.graph_representation)
 
 
-def include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
-                            graph_representation, node_name_prefix=''):
+def _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
+                             graph_representation, variables=None, node_name_prefix='', tags=None, skip_tags=None):
     """
     Recursively read all the tasks of the block and add it to the graph
+    :param variables:
+    :param tags:
     :param parent_node_id:
     :param graph_representation:
     :param node_name_prefix:
@@ -214,18 +228,31 @@ def include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, colo
     :param block:
     :return:
     """
+    if tags is None:
+        tags = ['all']
+
+    if skip_tags is None:
+        skip_tags = []
+
     loop_counter = current_counter
     # loop through the tasks
     for counter, task_or_block in enumerate(block.block, 1):
         if isinstance(task_or_block, Block):
-            loop_counter = include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block, color,
-                                                   loop_counter, graph_representation, node_name_prefix)
+            loop_counter = _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block, color,
+                                                    loop_counter, graph_representation, variables, node_name_prefix,
+                                                    tags, skip_tags)
         else:
+
+            # check if the task should be included
+            tagged = ''
+            if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):
+                tagged = NOT_TAGGED
+
             task_name = clean_name(node_name_prefix + task_or_block.get_name())
-            task_id = clean_id(task_name)
+            task_id = clean_id(task_name + tagged)
             graph.node(task_name, shape="octagon", id=task_id)
 
-            edge_id = parent_node_id + task_id
+            edge_id = parent_node_id + task_id + tagged
 
             graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
                        style="bold", id=edge_id)
@@ -254,10 +281,30 @@ def main():
     parser.add_argument("-o", "--ouput-file-name", dest='output_file_name',
                         help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
+    parser.add_argument('-t', '--tags', dest='tags', default=[], action='append',
+                        help="Only show tasks tagged with these values.")
+
+    parser.add_argument('--skip-tags', dest='skip_tags', default=[], action='append',
+                        help="Only show tasks whose tags do not match these values.")
+
     parser.add_argument("-v", "--version", dest="version", action="version", help="Print version and exit.",
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
+
+    # process tags
+    tags = set()
+    for tag_set in args.tags:
+        for tag in tag_set.split(u','):
+            tags.add(tag.strip())
+
+    tags = list(tags)
+
+    skip_tags = set()
+    for skip_tag_set in args.skip_tags:
+        for skip_tag in skip_tag_set.split(u','):
+            skip_tags.add(skip_tag.strip())
+    skip_tags = list(skip_tags)
 
     loader = DataLoader()
     inventory = InventoryManager(loader=loader, sources=args.inventory)
@@ -266,7 +313,7 @@ def main():
     grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
                       playbook_filename=args.playbook, output_file_name=args.output_file_name)
 
-    grapher.make_graph(include_role_tasks=args.include_role_tasks)
+    grapher.make_graph(include_role_tasks=args.include_role_tasks, tags=tags, skip_tags=skip_tags)
 
     grapher.render_graph(save_dot_file=args.save_dot_file)
 
