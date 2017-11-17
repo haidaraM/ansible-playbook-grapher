@@ -1,6 +1,6 @@
 import pytest
 
-from ansibleplaybookgrapher.utils import PostProcessor
+from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE
 from tests import FIXTURES_DIR
 
 
@@ -16,12 +16,19 @@ def fixture_simple_postprocessor():
     return post_processor
 
 
-def test_post_processor_insert_tag():
-    assert False
+def test_post_processor_insert_tag(simple_post_processor):
+    simple_post_processor.insert_script_tag(0, attrib={'id': 'toto'})
+
+    assert simple_post_processor.root[0].tag == 'script'
+    assert simple_post_processor.root[0].get('id') == 'toto'
 
 
-def test_post_processor_remove_title():
-    assert False
+def test_post_processor_remove_title(simple_post_processor):
+    simple_post_processor._remove_title()
+    root = simple_post_processor.root
+    resultats = root.xpath("ns:g[@id='graph0']/ns:title", namespaces={'ns': SVG_NAMESPACE})
+
+    assert len(resultats) == 0
 
 
 def test_post_processor_without_graph_representation(simple_post_processor, tmpdir):

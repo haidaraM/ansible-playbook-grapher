@@ -83,7 +83,6 @@ class PostProcessor(object):
         self.tree = etree.parse(svg_path)
         self.root = self.tree.getroot()
 
-
     def insert_script_tag(self, index, attrib):
         element_script_tag = etree.Element('script', attrib=attrib)
 
