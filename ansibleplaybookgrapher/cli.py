@@ -28,9 +28,7 @@ class PlaybookGrapherCLI(CLI):
 
         playbook = self.args[0]
 
-        loader = DataLoader()
-        inventory = InventoryManager(loader=loader, sources=self.options.inventory)
-        variable_manager = VariableManager(loader=loader, inventory=inventory)
+        loader, inventory, variable_manager = self._play_prereqs(self.options)
 
         grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
                           playbook_filename=playbook, output_filename=self.options.output_file_name)
@@ -47,7 +45,8 @@ class PlaybookGrapherCLI(CLI):
         parser = CLI.base_parser(
             usage="%s [options] playbook.yml" % __prog__,
             subset_opts=True,
-            vault_opts=False,
+            vault_opts=True,
+            runtask_opts=True,
             desc="Make graph from your Playbook.",
         )
 

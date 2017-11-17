@@ -43,32 +43,38 @@ Some options are available:
 
 ```
 $ ansible-playbook-grapher --help
-usage: ansible-playbook-grapher [-h] [-i INVENTORY] [--include-role-tasks]
-                                [-s] [-o OUTPUT_FILE_NAME] [-v]
-                                playbook
+Usage: ansible-playbook-grapher [options] playbook.yml
 
-Simple grapher for an Ansible Playbook. You will need to install Ansible,
-graphviz on your system (sudo apt-get install graphviz). Has been tested with
-Ansible 2.4.
+Make graph from your Playbook.
 
-positional arguments:
-  playbook              The playbook to grah.
-
-optional arguments:
+Options:
+  --ask-vault-pass      ask for vault password
+  -e EXTRA_VARS, --extra-vars=EXTRA_VARS
+                        set additional variables as key=value or YAML/JSON, if
+                        filename prepend with @
   -h, --help            show this help message and exit
-  -i INVENTORY, --inventory INVENTORY, --inventory-file INVENTORY
-                        Ansible inventory. Useful if you want to have a
-                        tooltip with hostnames on the play nodes.
-  --include-role-tasks  Include the tasks of the role in the graph. Can
-                        produce a huge graph if you have lot of roles.
-  -s, --save-dot-file   Save the dot file used to generate the graph.
-  -o OUTPUT_FILE_NAME, --ouput-file-name OUTPUT_FILE_NAME
+  --include-role-tasks  Include the tasks of the role in the graph.
+  -i INVENTORY, --inventory=INVENTORY
+                        specify inventory host path (default=[%s]) or comma
+                        separated host list.
+  --new-vault-id=NEW_VAULT_ID
+                        the new vault identity to use for rekey
+  --new-vault-password-file=NEW_VAULT_PASSWORD_FILES
+                        new vault password file for rekey
+  -o OUTPUT_FILE_NAME, --ouput-file-name=OUTPUT_FILE_NAME
                         Output filename without the '.svg' extension. Default:
                         <playbook>.svg
-  -t TAGS, --tags TAGS  Only show tasks tagged with these values.
-  --skip-tags SKIP_TAGS
-                        Only show tasks whose tags do not match these values.
-  -v, --version         Print version and exit.
+  -s, --save-dot-file   Save the dot file used to generate the graph.
+  --skip-tags=SKIP_TAGS
+                        only run plays and tasks whose tags do not match these
+                        values
+  -t TAGS, --tags=TAGS  only run plays and tasks tagged with these values
+  --vault-id=VAULT_IDS  the vault identity to use
+  --vault-password-file=VAULT_PASSWORD_FILES
+                        vault password file
+  -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
+                        connection debugging)
+  --version             show program's version number and exit
 
 ```
 
