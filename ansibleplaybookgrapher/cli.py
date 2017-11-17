@@ -54,10 +54,10 @@ class PlaybookGrapherCLI(CLI):
         parser.add_option('-i', '--inventory', dest='inventory', action="append",
                           help="specify inventory host path (default=[%s]) or comma separated host list. ")
 
-        parser.add_option("--include-role-tasks", dest="include_role_tasks", action='store_true',
+        parser.add_option("--include-role-tasks", dest="include_role_tasks", action='store_true', default=False,
                           help="Include the tasks of the role in the graph.")
 
-        parser.add_option("-s", "--save-dot-file", dest="save_dot_file", action='store_false',
+        parser.add_option("-s", "--save-dot-file", dest="save_dot_file", action='store_false', default=True,
                           help="Save the dot file used to generate the graph.")
 
         parser.add_option("-o", "--ouput-file-name", dest='output_file_name',
