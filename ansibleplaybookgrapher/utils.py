@@ -96,6 +96,17 @@ class PostProcessor(object):
 
         self.root.insert(index, element)
 
+    def _remove_title(self):
+        """
+        There is title tag in the graph (<title>%3</title>) that I can't change for the moment. So I remove it
+        :return:
+        """
+        # element g with id=graph0 is the root group for the graph.
+        graph_group_element = self.root.xpath("ns:g[@id='graph0']", namespaces={'ns': SVG_NAMESPACE})[0]
+        title_element = graph_group_element.xpath("ns:title", namespaces={'ns': SVG_NAMESPACE})[0]
+
+        graph_group_element.remove(title_element)
+
     def post_process(self):
 
         jquery_tag_index = 0
@@ -115,6 +126,8 @@ class PostProcessor(object):
         # insert my css
         self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css'}, cdata_text=css)
 
+        self._remove_title()
+
         # insert the graph representation for the links between the nodes
         self._insert_graph_representation()
 
@@ -124,7 +137,7 @@ class PostProcessor(object):
     def _insert_graph_representation(self):
         for node, node_links in self.graph_representation.graph_dict.items():
             # Find the group g with the specified id
-            element = self.tree.xpath("./ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
+            element = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
 
             root_subelement = etree.Element('links')
 
