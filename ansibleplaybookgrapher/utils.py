@@ -83,7 +83,6 @@ class PostProcessor(object):
         self.tree = etree.parse(svg_path)
         self.root = self.tree.getroot()
 
-        self.root.set('id', 'svg')
 
     def insert_script_tag(self, index, attrib):
         element_script_tag = etree.Element('script', attrib=attrib)
@@ -108,6 +107,8 @@ class PostProcessor(object):
         graph_group_element.remove(title_element)
 
     def post_process(self, *args, **kwargs):
+
+        self.root.set('id', 'svg')
 
         jquery_tag_index = 0
         javascript_tag_index = 1
