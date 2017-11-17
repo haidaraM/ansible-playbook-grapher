@@ -107,7 +107,7 @@ class PostProcessor(object):
 
         graph_group_element.remove(title_element)
 
-    def post_process(self):
+    def post_process(self, *args, **kwargs):
 
         jquery_tag_index = 0
         javascript_tag_index = 1
@@ -128,11 +128,15 @@ class PostProcessor(object):
 
         self._remove_title()
 
-        # insert the graph representation for the links between the nodes
-        self._insert_graph_representation()
+        if self.graph_representation:
+            # insert the graph representation for the links between the nodes
+            self._insert_graph_representation()
 
-    def write(self):
-        self.tree.write(self.svg_path, xml_declaration=True, encoding="UTF-8")
+    def write(self, output_filename=None):
+        if output_filename is None:
+            output_filename = self.svg_path
+
+        self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
     def _insert_graph_representation(self):
         for node, node_links in self.graph_representation.graph_dict.items():
