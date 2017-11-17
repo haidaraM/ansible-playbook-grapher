@@ -118,13 +118,13 @@ class PostProcessor(object):
 
         # insert my javascript
         highlight_script = _read_data("highlight-hover.js")
-        self.insert_cdata(javascript_tag_index, 'script', attrib={'type': 'text/javascript'},
+        self.insert_cdata(javascript_tag_index, 'script', attrib={'type': 'text/javascript', 'id': 'my_javascript'},
                           cdata_text=highlight_script)
 
         css = _read_data("graph.css")
 
         # insert my css
-        self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css'}, cdata_text=css)
+        self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css', 'id': 'my_css'}, cdata_text=css)
 
         self._remove_title()
 
