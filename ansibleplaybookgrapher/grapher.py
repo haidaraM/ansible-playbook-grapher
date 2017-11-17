@@ -150,10 +150,13 @@ class Grapher(object):
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
 
             play_vars = self.variable_manager.get_vars(play)
+            play_hosts = play_vars['ansible_play_hosts']
+            nb_hosts = len(play_hosts)
 
             color, play_font_color = self._colors_for_play(play)
 
-            play_name = "hosts: " + clean_name(str(play))
+            play_name = "hosts: {} ({})".format(clean_name(str(play)), nb_hosts)
+
             play_id = clean_id("play_" + play_name)
 
             self.graph_representation.add_node(play_id)
@@ -162,7 +165,7 @@ class Grapher(object):
 
                 # play node
                 play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
-                                   fontcolor=play_font_color, tooltip="     ".join(play_vars['ansible_play_hosts']))
+                                   fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
                 play_edge_id = clean_id(self.playbook_filename + play_name)
