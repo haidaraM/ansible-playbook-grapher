@@ -17,6 +17,9 @@ setup_virtualenv:
 
 test_install: build setup_virtualenv
 
+test:
+	pytest
+
 clean:
 	@echo "Cleaning..."
 	@rm -rf ansible_playbook_grapher.egg-info build dist $(VIRTUALENV_DIR) example.svg
