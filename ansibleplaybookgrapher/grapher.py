@@ -3,10 +3,20 @@ import os
 
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
+from ansible.template import Templar
+from ansible.errors import AnsibleError
+
 from colour import Color
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor
+
+try:
+    from __main__ import display
+except ImportError:
+    from ansible.utils.display import Display
+
+    display = Display()
 
 NOT_TAGGED = "not_tagged"
 
@@ -112,6 +122,20 @@ class Grapher(object):
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
                                       format="svg")
 
+    def template(self, data, variables):
+        """
+        Template the data using Jinja. Return data if an error occurs during the templating
+        :param data:
+        :param variables:
+        :return:
+        """
+        try:
+            templar = Templar(loader=self.data_loader, variables=variables)
+            return templar.template(data, fail_on_undefined=False)
+        except AnsibleError as ansible_error:
+            display.warning(ansible_error)
+            return data
+
     def _colors_for_play(self, play):
         """
         Return two colors (in hex) for a given play: the main color and the color to use as a font color
@@ -156,6 +180,8 @@ class Grapher(object):
             color, play_font_color = self._colors_for_play(play)
 
             play_name = "hosts: {} ({})".format(clean_name(str(play)), nb_hosts)
+
+            play_name = self.template(play_name, play_vars)
 
             play_id = clean_id("play_" + play_name)
 
