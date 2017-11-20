@@ -122,7 +122,8 @@ class Grapher(object):
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
 
             play_vars = self.variable_manager.get_vars(play)
-            play_hosts = play_vars['ansible_play_hosts']
+            # get only the hosts name for the moment
+            play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             nb_hosts = len(play_hosts)
 
             color, play_font_color = self._colors_for_play(play)
