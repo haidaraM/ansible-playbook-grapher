@@ -3,64 +3,22 @@ import os
 
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
+from ansible.template import Templar
+from ansible.errors import AnsibleError
+
 from colour import Color
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor
 
+try:
+    from __main__ import display
+except ImportError:
+    from ansible.utils.display import Display
+
+    display = Display()
+
 NOT_TAGGED = "not_tagged"
-
-
-def _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, block, color, current_counter,
-                             graph_representation, variables=None, node_name_prefix='', tags=None, skip_tags=None):
-    """
-    Recursively read all the tasks of the block and add it to the graph
-    :param variables:
-    :param tags:
-    :param parent_node_id:
-    :param graph_representation:
-    :param node_name_prefix:
-    :param color:
-    :param current_counter:
-    :param graph:
-    :param parent_node_name:
-    :param block:
-    :return:
-    """
-    if tags is None:
-        tags = ['all']
-
-    if skip_tags is None:
-        skip_tags = []
-
-    loop_counter = current_counter
-    # loop through the tasks
-    for counter, task_or_block in enumerate(block.block, 1):
-        if isinstance(task_or_block, Block):
-            loop_counter = _include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block, color,
-                                                    loop_counter, graph_representation, variables, node_name_prefix,
-                                                    tags, skip_tags)
-        else:
-
-            # check if the task should be included
-            tagged = ''
-            if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):
-                tagged = NOT_TAGGED
-
-            task_name = clean_name(node_name_prefix + task_or_block.get_name())
-            task_id = clean_id(task_name + tagged)
-            graph.node(task_name, shape="octagon", id=task_id)
-
-            edge_id = parent_node_id + task_id + tagged
-
-            graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
-                       style="bold", id=edge_id)
-            graph_representation.add_link(parent_node_id, task_id)
-            graph_representation.add_link(parent_node_id, edge_id)
-
-            loop_counter += 1
-
-    return loop_counter
 
 
 class CustomDigrah(Digraph):
@@ -112,6 +70,20 @@ class Grapher(object):
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
                                       format="svg")
 
+    def template(self, data, variables):
+        """
+        Template the data using Jinja. Return data if an error occurs during the templating
+        :param data:
+        :param variables:
+        :return:
+        """
+        try:
+            templar = Templar(loader=self.data_loader, variables=variables)
+            return templar.template(data, fail_on_undefined=False)
+        except AnsibleError as ansible_error:
+            display.warning(ansible_error)
+            return data
+
     def _colors_for_play(self, play):
         """
         Return two colors (in hex) for a given play: the main color and the color to use as a font color
@@ -157,6 +129,8 @@ class Grapher(object):
 
             play_name = "hosts: {} ({})".format(clean_name(str(play)), nb_hosts)
 
+            play_name = self.template(play_name, play_vars)
+
             play_id = clean_id("play_" + play_name)
 
             self.graph_representation.add_node(play_id)
@@ -175,9 +149,9 @@ class Grapher(object):
                 # loop through the pre_tasks
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
-                    nb_pre_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block, color,
-                                                            nb_pre_tasks, self.graph_representation, play_vars,
-                                                            '[pre_task] ', tags, skip_tags)
+                    nb_pre_tasks = self._include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block,
+                                                                 color, nb_pre_tasks, play_vars, '[pre_task] ', tags,
+                                                                 skip_tags)
 
                 # loop through the roles
                 for role_counter, role in enumerate(play.get_roles(), 1):
@@ -212,24 +186,24 @@ class Grapher(object):
                         if include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.get_task_blocks():
-                                role_tasks_counter = _include_tasks_in_blocks(role_subgraph, role_name, role_id, block,
-                                                                              color, role_tasks_counter,
-                                                                              self.graph_representation, play_vars,
-                                                                              '[task] ', tags, skip_tags)
+                                role_tasks_counter = self._include_tasks_in_blocks(role_subgraph, role_name, role_id,
+                                                                                   block, color, role_tasks_counter,
+                                                                                   play_vars, '[task] ', tags,
+                                                                                   skip_tags)
                                 role_tasks_counter += 1
 
                 nb_roles = len(play.get_roles())
                 # loop through the tasks
                 nb_tasks = 0
                 for task_block in play.tasks:
-                    nb_tasks = _include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
-                                                        nb_roles + nb_pre_tasks, self.graph_representation, play_vars,
-                                                        '[task] ', tags, skip_tags)
+                    nb_tasks = self._include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
+                                                             nb_roles + nb_pre_tasks, play_vars, '[task] ', tags,
+                                                             skip_tags)
 
                 # loop through the post_tasks
                 for post_task_block in play.post_tasks:
-                    _include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
-                                             self.graph_representation, play_vars, '[post_task] ', tags, skip_tags)
+                    self._include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
+                                                  play_vars, '[post_task] ', tags, skip_tags)
 
     def render_graph(self, output_filename=None, save_dot_file=False):
         """
@@ -257,3 +231,54 @@ class Grapher(object):
         post_processor.post_process()
 
         post_processor.write()
+
+    def _include_tasks_in_blocks(self, graph, parent_node_name, parent_node_id, block, color, current_counter,
+                                 variables=None, node_name_prefix='', tags=None, skip_tags=None):
+        """
+       Recursively read all the tasks of the block and add it to the graph
+       :param variables:
+       :param tags:
+       :param parent_node_id:
+       :param graph_representation:
+       :param node_name_prefix:
+       :param color:
+       :param current_counter:
+       :param graph:
+       :param parent_node_name:
+       :param block:
+       :return:
+       """
+        if tags is None:
+            tags = ['all']
+
+        if skip_tags is None:
+            skip_tags = []
+
+        loop_counter = current_counter
+        # loop through the tasks
+        for counter, task_or_block in enumerate(block.block, 1):
+            if isinstance(task_or_block, Block):
+                loop_counter = self._include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block,
+                                                             color, loop_counter, variables, node_name_prefix, tags,
+                                                             skip_tags)
+            else:
+
+                # check if the task should be included
+                tagged = ''
+                if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):
+                    tagged = NOT_TAGGED
+
+                task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), variables))
+                task_id = clean_id(task_name + tagged)
+                graph.node(task_name, shape="octagon", id=task_id)
+
+                edge_id = parent_node_id + task_id + tagged
+
+                graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
+                           style="bold", id=edge_id)
+                self.graph_representation.add_link(parent_node_id, task_id)
+                self.graph_representation.add_link(parent_node_id, edge_id)
+
+                loop_counter += 1
+
+        return loop_counter
