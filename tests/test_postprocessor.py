@@ -1,4 +1,5 @@
 import pytest
+from lxml import etree
 
 from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE
@@ -69,7 +70,7 @@ def test_post_processor_without_graph_representation(post_processor, tmpdir):
 
     post_processor.write(output_filename=svg_post_proccessed_path.strpath)
 
-    root = post_processor.root
+    root = etree.parse(svg_post_proccessed_path.strpath).getroot()
     _assert_common_svg(root)
 
     # no links should be in the svg when there is no graph_representation
@@ -80,4 +81,4 @@ def test_post_processor_without_graph_representation(post_processor, tmpdir):
 def test_post_processor_with_graph_representation(grapher):
     grapher.make_graph()
 
-    post_processor = PostProcessor(svg_path=grapher.output_filename + ".svg")
+    #post_processor = PostProcessor(svg_path=grapher.output_filename + ".svg")
