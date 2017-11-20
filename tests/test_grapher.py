@@ -5,22 +5,6 @@ from ansibleplaybookgrapher.grapher import Grapher
 from tests import FIXTURES_DIR
 
 
-def _assert_common_svg(svg_tree):
-    """
-    Assert some common structures of the generated svg
-    :param svg_tree:
-    :return:
-    """
-    root = svg_tree.getroot()
-
-    assert root.get('id') == 'svg'
-
-    # jquery must be the first element because the next script need jquery
-    assert root[0].get('id') == 'jquery'
-    assert root[1].get('id') == 'my_javascript'
-    assert root[2].get('id') == 'my_css'
-
-
 def test_grapher_simple_playbook(data_loader, inventory_manager, variable_manager, tmpdir):
     playbook = FIXTURES_DIR + "simple_playbook.yml"
     output_filepath = tmpdir.join('output')
@@ -39,5 +23,3 @@ def test_grapher_simple_playbook(data_loader, inventory_manager, variable_manage
     assert os.path.isfile(svg_filepath)
 
     tree = etree.parse(svg_filepath)
-
-    _assert_common_svg(tree)

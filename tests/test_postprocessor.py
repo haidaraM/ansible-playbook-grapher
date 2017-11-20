@@ -4,6 +4,21 @@ from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE
 from tests import FIXTURES_DIR
 
 
+def _assert_common_svg(svg_root):
+    """
+    Assert some common structures of the generated svg
+    :param svg_root:
+    :return:
+    """
+
+    assert svg_root.get('id') == 'svg'
+
+    # jquery must be the first element because the next script need jquery
+    assert svg_root[0].get('id') == 'jquery'
+    assert svg_root[1].get('id') == 'my_javascript'
+    assert svg_root[2].get('id') == 'my_css'
+
+
 @pytest.fixture(name='simple_post_processor')
 def fixture_simple_postprocessor():
     """
@@ -35,4 +50,12 @@ def test_post_processor_without_graph_representation(simple_post_processor, tmpd
     svg_path_out = "simple_playbook_postproccess.svg"
     svg_post_proccessed_path = tmpdir.join(svg_path_out)
 
+    simple_post_processor.post_process()
+
     simple_post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+
+    root = simple_post_processor.root
+    _assert_common_svg(root)
+
+    # no links should be in the svg when there is no graph_representation
+    assert len(root.xpath("//links")) == 0
