@@ -1,7 +1,27 @@
 import pytest
 
+from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR, SIMPLE_PLAYBOOK_SVG, SIMPLE_PLAYBOOK_YML
+
+
+@pytest.fixture(name='post_processor')
+def fixture_simple_postprocessor(request):
+    """
+    Return a post processor without a graph representation and with the simple_playbook_no_postproccess
+    :return:
+    """
+
+    svg_path = SIMPLE_PLAYBOOK_SVG
+
+    post_processor = PostProcessor(svg_path=svg_path)
+    return post_processor
+
+
+@pytest.fixture(name='grapher')
+def fixture_simple_grapher(data_loader, inventory_manager, variable_manager, request):
+    return Grapher(data_loader=data_loader, inventory_manager=inventory_manager, variable_manager=variable_manager,
+                   playbook_filename=request.param)
 
 
 def _assert_common_svg(svg_root):
@@ -19,43 +39,45 @@ def _assert_common_svg(svg_root):
     assert svg_root[2].get('id') == 'my_css'
 
 
-@pytest.fixture(name='simple_post_processor')
-def fixture_simple_postprocessor():
-    """
-    Return a post processor without a graph representation and with the simple_playbook_no_postproccess
-    :return:
-    """
-    svg_path = FIXTURES_DIR + "simple_playbook_no_postproccess.svg"
+def test_post_processor_insert_tag(post_processor):
+    post_processor.insert_script_tag(0, attrib={'id': 'toto'})
 
-    post_processor = PostProcessor(svg_path=svg_path, graph_representation=None)
-    return post_processor
+    assert post_processor.root[0].tag == 'script'
+    assert post_processor.root[0].get('id') == 'toto'
 
 
-def test_post_processor_insert_tag(simple_post_processor):
-    simple_post_processor.insert_script_tag(0, attrib={'id': 'toto'})
-
-    assert simple_post_processor.root[0].tag == 'script'
-    assert simple_post_processor.root[0].get('id') == 'toto'
-
-
-def test_post_processor_remove_title(simple_post_processor):
-    simple_post_processor._remove_title()
-    root = simple_post_processor.root
+def test_post_processor_remove_title(post_processor):
+    post_processor._remove_title()
+    root = post_processor.root
     resultats = root.xpath("ns:g[@id='graph0']/ns:title", namespaces={'ns': SVG_NAMESPACE})
 
     assert len(resultats) == 0
 
 
-def test_post_processor_without_graph_representation(simple_post_processor, tmpdir):
+@pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
+def test_post_processor_without_graph_representation(post_processor, tmpdir):
+    """
+    Test the post processor without a graph representation
+    :param post_processor:
+    :param tmpdir:
+    :return:
+    """
     svg_path_out = "simple_playbook_postproccess.svg"
     svg_post_proccessed_path = tmpdir.join(svg_path_out)
 
-    simple_post_processor.post_process()
+    post_processor.post_process()
 
-    simple_post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
 
-    root = simple_post_processor.root
+    root = post_processor.root
     _assert_common_svg(root)
 
     # no links should be in the svg when there is no graph_representation
     assert len(root.xpath("//links")) == 0
+
+
+@pytest.mark.parametrize("grapher", [SIMPLE_PLAYBOOK_YML], indirect=True)
+def test_post_processor_with_graph_representation(grapher):
+    grapher.make_graph()
+
+    post_processor = PostProcessor(svg_path=grapher.output_filename + ".svg")
