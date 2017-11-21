@@ -1,10 +1,9 @@
 import sys
+import os
+import ntpath
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
-from ansible.vars.manager import VariableManager
 
 from ansibleplaybookgrapher.grapher import Grapher
 
@@ -31,7 +30,7 @@ class PlaybookGrapherCLI(CLI):
         loader, inventory, variable_manager = self._play_prereqs(self.options)
 
         grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=playbook, output_filename=self.options.output_file_name)
+                          playbook_filename=playbook, output_filename=self.options.output_filename)
 
         grapher.make_graph(include_role_tasks=self.options.include_role_tasks, tags=self.options.tags,
                            skip_tags=self.options.skip_tags)
@@ -56,10 +55,10 @@ class PlaybookGrapherCLI(CLI):
         parser.add_option("--include-role-tasks", dest="include_role_tasks", action='store_true', default=False,
                           help="Include the tasks of the role in the graph.")
 
-        parser.add_option("-s", "--save-dot-file", dest="save_dot_file", action='store_false', default=True,
+        parser.add_option("-s", "--save-dot-file", dest="save_dot_file", action='store_true', default=False,
                           help="Save the dot file used to generate the graph.")
 
-        parser.add_option("-o", "--ouput-file-name", dest='output_file_name',
+        parser.add_option("-o", "--ouput-file-name", dest='output_filename',
                           help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
         parser.version = "%s %s" % (__prog__, __version__)
@@ -72,9 +71,12 @@ class PlaybookGrapherCLI(CLI):
             raise AnsibleOptionsError("You must specify a playbook file to graph.")
 
         if len(self.args) > 1:
-            raise AnsibleOptionsError("You must specify only one playbook to graph.")
+            raise AnsibleOptionsError("You must specify only one playbook file to graph.")
 
         display.verbosity = self.options.verbosity
+
+        if self.options.output_filename is None:
+            self.options.output_filename = os.path.splitext(ntpath.basename(self.args[0]))[0]
 
 
 def main():

@@ -1,6 +1,3 @@
-import ntpath
-import os
-
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.template import Templar
@@ -55,11 +52,7 @@ class Grapher(object):
         self.inventory_manager = inventory_manager
         self.data_loader = data_loader
         self.playbook_filename = playbook_filename
-
-        if output_filename is None:
-            self.output_filename = os.path.splitext(ntpath.basename(playbook_filename))[0]
-        else:
-            self.output_filename = output_filename
+        self.output_filename = output_filename
 
         self.graph_representation = GraphRepresentation()
 
@@ -216,7 +209,7 @@ class Grapher(object):
         if output_filename is None:
             output_filename = self.output_filename
 
-        self.graph.render(cleanup=save_dot_file, filename=output_filename)
+        self.graph.render(cleanup=not save_dot_file, filename=output_filename)
 
     def post_process_svg(self, output_filename=None):
         """
