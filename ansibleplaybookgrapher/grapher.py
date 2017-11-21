@@ -143,7 +143,7 @@ class Grapher(object):
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = clean_id(self.playbook_filename + play_name)
+                play_edge_id = clean_id(self.playbook_filename + play_name + str(play_counter))
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
