@@ -2,7 +2,9 @@ from setuptools import setup, find_packages
 from ansibleplaybookgrapher import __version__, __prog__
 
 try:
-    long_description = open('Readme.md').read()
+    import pypandoc
+
+    long_description = pypandoc.convert_file('Readme.md', 'rst')
 except:
     long_description = None
 
