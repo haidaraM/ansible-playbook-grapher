@@ -1,5 +1,4 @@
 import pytest
-import os
 from lxml import etree
 
 from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE, GraphRepresentation
@@ -38,6 +37,11 @@ def _assert_common_svg(svg_root):
 
 
 def test_post_processor_insert_tag(post_processor):
+    """
+    Test method insert_tag of the PostProcessor
+    :param post_processor:
+    :return:
+    """
     post_processor.insert_script_tag(0, attrib={'id': 'toto'})
 
     assert post_processor.root[0].tag == 'script'
@@ -45,11 +49,28 @@ def test_post_processor_insert_tag(post_processor):
 
 
 def test_post_processor_remove_title(post_processor):
+    """
+    Test method _remove_title of the PostProcessor
+    :param post_processor:
+    :return:
+    """
     post_processor._remove_title()
     root = post_processor.root
     resultats = root.xpath("ns:g[@id='graph0']/ns:title", namespaces={'ns': SVG_NAMESPACE})
 
     assert len(resultats) == 0
+
+
+def test_post_processor_write(post_processor, tmpdir):
+    """
+    Test method write of the PostProcessor
+    :param post_processor:
+    :return:
+    """
+    svg_post_proccessed_path = tmpdir.join("test_post_processor_write.svg")
+    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+
+    assert svg_post_proccessed_path.check(file=1)
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
@@ -60,13 +81,13 @@ def test_post_processor_without_graph_representation(post_processor, tmpdir):
     :param tmpdir:
     :return:
     """
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess.svg")
+    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_no_graph.svg")
 
     post_processor.post_process()
 
     post_processor.write(output_filename=svg_post_proccessed_path.strpath)
 
-    assert os.path.isfile(svg_post_proccessed_path.strpath)
+    assert svg_post_proccessed_path.check(file=1)
 
     root = etree.parse(svg_post_proccessed_path.strpath).getroot()
     _assert_common_svg(root)
@@ -84,7 +105,7 @@ def test_post_processor_with_graph_representation(post_processor, tmpdir):
     :return:
     """
     graph_represention = GraphRepresentation()
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess.svg")
+    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
 
     play_id = "play_hostsall"
     # link from play to task edges
@@ -95,7 +116,7 @@ def test_post_processor_with_graph_representation(post_processor, tmpdir):
 
     post_processor.write(output_filename=svg_post_proccessed_path.strpath)
 
-    assert os.path.isfile(svg_post_proccessed_path.strpath)
+    assert svg_post_proccessed_path.check(file=1)
 
     root = etree.parse(svg_post_proccessed_path.strpath).getroot()
 
