@@ -13,8 +13,11 @@ before_install:
 
 install:
   - pip install -q ansible==$ANSIBLE_VERSION
-  - pip install -q -r requirements.txt
+  - pip install -q -r requirements_tests.txt
   - pip install .
 
 script:
   - make test
+
+after_success:
+  - coveralls
