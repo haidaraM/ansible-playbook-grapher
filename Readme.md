@@ -1,5 +1,6 @@
 # Ansible Playbook Grapher
 
+[![Build Status](https://travis-ci.org/haidaraM/ansible-playbook-grapher.svg?branch=master)](https://travis-ci.org/haidaraM/ansible-playbook-grapher)
 [![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
 
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a graph representing your Ansible playbook tasks and roles. The aim of
@@ -7,11 +8,9 @@ this project is to quickly have an overview of your playbook.
 
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
-## Pérequis
- * **Ansible** >= 2.4: The script has not been tested yet with an earlier version of Ansible. 
- ```
- $ sudo pip3 install 'ansible>=2.4'
- ```
+## Prerequisites
+ * **Ansible** >= 2.4: The script has not been tested with an earlier version of Ansible. If you still use an older version of Ansible, create an virtual environment and install ansible-playbook-grapher. **The installation process will install a version of Ansible >= 2.4** 
+
  * **graphviz**: The tool used to generate the graph in SVG. 
  ```
  $ sudo apt-get install graphviz
@@ -19,7 +18,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
  
 ## Installation
 ```
-$ sudo pip3 install ansible-playbook-grapher
+$ pip install ansible-playbook-grapher
 ```
 
 ## Usage

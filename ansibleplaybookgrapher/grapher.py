@@ -128,7 +128,7 @@ class Grapher(object):
 
             color, play_font_color = self._colors_for_play(play)
 
-            play_name = "hosts: {} ({})".format(clean_name(str(play)), nb_hosts)
+            play_name = "{} ({})".format(clean_name(str(play)), nb_hosts)
 
             play_name = self.template(play_name, play_vars)
 
@@ -227,9 +227,9 @@ class Grapher(object):
         if output_filename is None:
             output_filename = self.output_filename + ".svg"
 
-        post_processor = PostProcessor(svg_path=output_filename, graph_representation=self.graph_representation)
+        post_processor = PostProcessor(svg_path=output_filename)
 
-        post_processor.post_process()
+        post_processor.post_process(graph_representation=self.graph_representation)
 
         post_processor.write()
 

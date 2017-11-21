@@ -77,13 +77,10 @@ class PostProcessor(object):
     Post process the svg by adding some javascript and css
     """
 
-    def __init__(self, svg_path, graph_representation):
+    def __init__(self, svg_path):
         self.svg_path = svg_path
-        self.graph_representation = graph_representation
         self.tree = etree.parse(svg_path)
         self.root = self.tree.getroot()
-
-        self.root.set('id', 'svg')
 
     def insert_script_tag(self, index, attrib):
         element_script_tag = etree.Element('script', attrib=attrib)
@@ -107,7 +104,9 @@ class PostProcessor(object):
 
         graph_group_element.remove(title_element)
 
-    def post_process(self, *args, **kwargs):
+    def post_process(self, graph_representation=None, *args, **kwargs):
+
+        self.root.set('id', 'svg')
 
         jquery_tag_index = 0
         javascript_tag_index = 1
@@ -118,19 +117,19 @@ class PostProcessor(object):
 
         # insert my javascript
         highlight_script = _read_data("highlight-hover.js")
-        self.insert_cdata(javascript_tag_index, 'script', attrib={'type': 'text/javascript'},
+        self.insert_cdata(javascript_tag_index, 'script', attrib={'type': 'text/javascript', 'id': 'my_javascript'},
                           cdata_text=highlight_script)
 
         css = _read_data("graph.css")
 
         # insert my css
-        self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css'}, cdata_text=css)
+        self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css', 'id': 'my_css'}, cdata_text=css)
 
         self._remove_title()
 
-        if self.graph_representation:
+        if graph_representation:
             # insert the graph representation for the links between the nodes
-            self._insert_graph_representation()
+            self._insert_graph_representation(graph_representation)
 
     def write(self, output_filename=None):
         if output_filename is None:
@@ -138,8 +137,8 @@ class PostProcessor(object):
 
         self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
-    def _insert_graph_representation(self):
-        for node, node_links in self.graph_representation.graph_dict.items():
+    def _insert_graph_representation(self, graph_representation):
+        for node, node_links in graph_representation.graph_dict.items():
             # Find the group g with the specified id
             element = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
 
