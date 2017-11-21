@@ -181,7 +181,7 @@ class Grapher(object):
 
                         self.graph_representation.add_link(play_id, edge_id)
 
-                        self.graph_representation.add_link(play_id, role_id)
+                        self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
                         if include_role_tasks:
