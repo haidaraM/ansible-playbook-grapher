@@ -1,5 +1,6 @@
 import pytest
 
+from ansibleplaybookgrapher.grapher import Grapher
 from tests import INVENTORY_FILE
 
 
@@ -31,3 +32,9 @@ def fixture_variable_manager(data_loader, inventory_manager):
     """
     from ansible.vars.manager import VariableManager
     return VariableManager(loader=data_loader, inventory=inventory_manager)
+
+
+@pytest.fixture(name='grapher')
+def fixture_simple_grapher(data_loader, inventory_manager, variable_manager, request):
+    return Grapher(data_loader=data_loader, inventory_manager=inventory_manager, variable_manager=variable_manager,
+                   playbook_filename=request.param)
