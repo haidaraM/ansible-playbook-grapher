@@ -273,12 +273,12 @@ class Grapher(object):
                 task_id = clean_id(task_name + tagged)
                 graph.node(task_name, shape="octagon", id=task_id)
 
-                edge_id = parent_node_id + task_id + tagged
+                edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
 
                 graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
                            style="bold", id=edge_id)
-                self.graph_representation.add_link(parent_node_id, task_id)
                 self.graph_representation.add_link(parent_node_id, edge_id)
+                self.graph_representation.add_link(edge_id, task_id)
 
                 loop_counter += 1
 
