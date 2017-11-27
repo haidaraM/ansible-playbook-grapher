@@ -2,18 +2,14 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.template import Templar
 from ansible.errors import AnsibleError
+from ansible.utils.display import Display
 
 from colour import Color
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor
 
-try:
-    from __main__ import display
-except ImportError:
-    from ansible.utils.display import Display
-
-    display = Display()
+display = Display()
 
 NOT_TAGGED = "not_tagged"
 

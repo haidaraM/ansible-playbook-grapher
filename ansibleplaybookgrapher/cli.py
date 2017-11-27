@@ -4,17 +4,12 @@ import ntpath
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
+from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.grapher import Grapher
-
-try:
-    from __main__ import display
-except ImportError:
-    from ansible.utils.display import Display
-
-    display = Display()
-
 from ansibleplaybookgrapher import __prog__, __version__
+
+display = Display()
 
 
 class PlaybookGrapherCLI(CLI):
