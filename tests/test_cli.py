@@ -36,11 +36,7 @@ def test_cli_version(capfd):
         cli.parse()
 
     out, err = capfd.readouterr()
-    # https://bugs.python.org/issue18920
-    if sys.version_info >= (3, 4):
-        assert out == "%s %s\n" % (__prog__, __version__)
-    else:
-        assert err == "%s %s\n" % (__prog__, __version__)
+    assert out == "%s %s\n" % (__prog__, __version__)
 
 
 @pytest.mark.parametrize("save_dot_file_option, expected",
