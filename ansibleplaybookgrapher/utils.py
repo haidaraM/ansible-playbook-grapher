@@ -1,5 +1,5 @@
 import os
-
+import hashlib
 from lxml import etree
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
@@ -11,22 +11,30 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 def clean_name(name):
     """
     Clean a name for the node, edge...
-    :param name:
-    :return:
+    Because every name we use is double quoted,
+    then we just have to convert double quotes to html special char
+    See https://www.graphviz.org/doc/info/lang.html on the bottom.
+
+    :param name: pretty name of the object
+    :return: string with double quotes converted to html special char
     """
-    return name.strip()
+    return name.strip().replace('"', "&#34;")
 
 
 def clean_id(identifier):
     """
-    Remove special characters from the string
-    :param identifier:
-    :return:
+    Convert name to md5 to avoid issues with special chars,
+    The ID are not visible to end user in web/rendered graph so we do
+    not have to care to make them look pretty.
+    There are chances for hash collisions but we do not care for that
+    so much in here.
+    :param identifier: string which represents id
+    :return: string representing a hex hash
     """
-    chars_to_remove = [' ', '[', ']', ':', '-', ',', '.', '(', ')', '#', '/', '|', '{', '}', '&', '~']
-    for c in chars_to_remove:
-        identifier = identifier.replace(c, '')
-    return identifier
+
+    m = hashlib.md5()
+    m.update(identifier)
+    return m.hexdigest()
 
 
 class GraphRepresentation(object):
