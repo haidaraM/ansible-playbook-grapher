@@ -33,7 +33,7 @@ def clean_id(identifier):
     """
 
     m = hashlib.md5()
-    m.update(identifier)
+    m.update(identifier.encode('utf-8'))
     return m.hexdigest()
 
 
