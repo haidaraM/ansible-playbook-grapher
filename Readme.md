@@ -25,7 +25,7 @@ $ pip install ansible-playbook-grapher
 ## Usage
 
 ```
-$ ansible-playbook-grapher examples/playbook.yml
+$ ansible-playbook-grapher examples/example.yml
 ```
 
 ![Example](examples/example.png)
