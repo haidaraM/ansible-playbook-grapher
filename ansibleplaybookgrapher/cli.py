@@ -4,6 +4,7 @@ import sys
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
+from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
@@ -56,7 +57,7 @@ class PlaybookGrapherCLI(CLI):
         parser.add_option("-o", "--ouput-file-name", dest='output_filename',
                           help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
-        parser.version = "%s %s" % (__prog__, __version__)
+        parser.version = "%s %s (with ansible %s)" % (__prog__, __version__, ansible_version)
 
         self.parser = parser
 
