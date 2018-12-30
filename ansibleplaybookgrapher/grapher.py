@@ -3,10 +3,9 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.template import Templar
 from ansible.utils.display import Display
-from colour import Color
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor
+from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor, get_play_colors
 
 display = Display()
 
@@ -72,17 +71,6 @@ class Grapher(object):
             display.warning(ansible_error)
             return data
 
-    def _colors_for_play(self, play):
-        """
-        Return two colors (in hex) for a given play: the main color and the color to use as a font color
-        :return:
-        """
-        # TODO: Check the if the picked color is (almost) white. We can't see a white edge on the graph
-        picked_color = Color(pick_for=play)
-        play_font_color = "#000000" if picked_color.get_luminance() > 0.6 else "#ffffff"
-
-        return picked_color.get_hex_l(), play_font_color
-
     def make_graph(self, include_role_tasks=False, tags=None, skip_tags=None):
         """
         Loop through the playbook and make the graph.
@@ -114,7 +102,7 @@ class Grapher(object):
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             nb_hosts = len(play_hosts)
 
-            color, play_font_color = self._colors_for_play(play)
+            color, play_font_color = get_play_colors(play)
 
             play_name = "{} ({})".format(clean_name(str(play)), nb_hosts)
 

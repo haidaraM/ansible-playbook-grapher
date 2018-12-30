@@ -1,6 +1,7 @@
 import hashlib
 import os
 
+from colour import Color
 from lxml import etree
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
@@ -79,6 +80,18 @@ def _read_data(filename):
 
     with open(javascript_path) as javascript:
         return javascript.read()
+
+
+def get_play_colors(play):
+    """
+    Return two colors (in hex) for a given play: the main color and the color to use as a font color
+    :return:
+    """
+    # TODO: Check the if the picked color is (almost) white. We can't see a white edge on the graph
+    picked_color = Color(pick_for=play)
+    play_font_color = "#000000" if picked_color.get_luminance() > 0.6 else "#ffffff"
+
+    return picked_color.get_hex_l(), play_font_color
 
 
 class PostProcessor(object):
