@@ -4,8 +4,10 @@ python:
   - "3.5"
 
 env:
-  - ANSIBLE_VERSION=2.4.0
-  - ANSIBLE_VERSION=2.4.1
+  - ANSIBLE_VERSION=2.4
+  - ANSIBLE_VERSION=2.5
+  - ANSIBLE_VERSION=2.6
+  - ANSIBLE_VERSION=2.7
 
 before_install:
   - sudo apt-get -qq update
