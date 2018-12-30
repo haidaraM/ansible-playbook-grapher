@@ -1,9 +1,8 @@
+from ansible.errors import AnsibleError
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.template import Templar
-from ansible.errors import AnsibleError
 from ansible.utils.display import Display
-
 from colour import Color
 from graphviz import Digraph
 

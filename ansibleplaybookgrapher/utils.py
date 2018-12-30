@@ -1,5 +1,6 @@
-import os
 import hashlib
+import os
+
 from lxml import etree
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
@@ -39,8 +40,8 @@ def clean_id(identifier):
 
 class GraphRepresentation(object):
     """
-    A simple structure to represent the link between the node of the graph. It's used during the postprocessing of the svg
-    to add these links in order to highlight the nodes and edge on hover.
+    A simple structure to represent the link between the node of the graph. It's used during the postprocessing of the
+    svg to add these links in order to highlight the nodes and edge on hover.
     """
 
     def __init__(self, graph_dict=None):

@@ -1,13 +1,13 @@
-import sys
-import os
 import ntpath
+import os
+import sys
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher import __prog__, __version__
+from ansibleplaybookgrapher.grapher import Grapher
 
 display = Display()
 
