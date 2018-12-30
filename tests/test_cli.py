@@ -1,9 +1,9 @@
 import pytest
-import sys
 from ansible.errors import AnsibleOptionsError
+from ansible.release import __version__ as ansible_version
 
-from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher import __prog__, __version__
+from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize("help_option", ['-h', '--help'])
@@ -36,7 +36,7 @@ def test_cli_version(capfd):
         cli.parse()
 
     out, err = capfd.readouterr()
-    assert out == "%s %s\n" % (__prog__, __version__)
+    assert out == "%s %s (with ansible %s)\n" % (__prog__, __version__, ansible_version)
 
 
 @pytest.mark.parametrize("save_dot_file_option, expected",
