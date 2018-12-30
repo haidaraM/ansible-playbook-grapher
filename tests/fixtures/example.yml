@@ -32,6 +32,9 @@
       command: /bin/false
       ignore_errors: true
 
+    - name: This task has "double quotes" in the name
+      command: /bin/true
+
   post_tasks:
     - name: Post task 1
       debug: msg="Postask"

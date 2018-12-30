@@ -25,10 +25,10 @@ $ pip install ansible-playbook-grapher
 ## Usage
 
 ```
-$ ansible-playbook-grapher examples/example.yml
+$ ansible-playbook-grapher tests/fixtures/example.png
 ```
 
-![Example](examples/example.png)
+![Example](tests/fixtures/example.png)
 
 
 ```
@@ -36,7 +36,7 @@ $ ansible-playbook-grapher --include-role-tasks  examples/example_with_roles.yml
 ```
 
 
-![Example](examples/example_with_roles.png)
+![Example](tests/fixtures/example_with_roles.png)
 
 
 Some options are available:
