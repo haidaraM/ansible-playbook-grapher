@@ -272,7 +272,7 @@ class Grapher(object):
                     raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
 
                 # get the blocks from the include_tasks
-                blocks = load_list_of_blocks(data, play=current_play, variable_manager=play_vars)
+                blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager)
 
                 for b in blocks:  # loop through the blocks inside the included tasks
                     loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
