@@ -1,0 +1,13 @@
+---
+- hosts: all
+  tasks:
+    - name: Pre import
+      debug:
+        msg: "Pre import"
+
+    - name: Import some tasks
+      import_tasks: tasks.yml
+
+    - name: Post import
+      debug:
+        msg: "Post import"

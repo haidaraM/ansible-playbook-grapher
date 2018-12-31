@@ -1,6 +1,8 @@
-from ansible.errors import AnsibleError
+from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
+from ansible.playbook.helpers import load_list_of_blocks
+from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -50,8 +52,12 @@ class Grapher(object):
 
         self.graph_representation = GraphRepresentation()
 
-        self.playbook = self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
-                                                      variable_manager=self.variable_manager)
+        self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
+                                      variable_manager=self.variable_manager)
+
+        # need playbook basedir. It's used to get tasks included with `include_tasks`
+        # Ansible currently resets it to the CWD when the parsing is done
+        self.data_loader.set_basedir(self.playbook._basedir)
 
         if graph is None:
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
@@ -126,9 +132,9 @@ class Grapher(object):
                 # loop through the pre_tasks
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
-                    nb_pre_tasks = self._include_tasks_in_blocks(play_subgraph, play_name, play_id, pre_task_block,
-                                                                 color, nb_pre_tasks, play_vars, '[pre_task] ', tags,
-                                                                 skip_tags)
+                    nb_pre_tasks = self._include_tasks_in_blocks(play, play_subgraph, play_name, play_id,
+                                                                 pre_task_block, color, nb_pre_tasks, play_vars,
+                                                                 '[pre_task] ', tags, skip_tags)
 
                 # loop through the roles
                 for role_counter, role in enumerate(play.get_roles(), 1):
@@ -163,24 +169,24 @@ class Grapher(object):
                         if include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.get_task_blocks():
-                                role_tasks_counter = self._include_tasks_in_blocks(role_subgraph, role_name, role_id,
-                                                                                   block, color, role_tasks_counter,
-                                                                                   play_vars, '[task] ', tags,
-                                                                                   skip_tags)
+                                role_tasks_counter = self._include_tasks_in_blocks(play, role_subgraph, role_name,
+                                                                                   role_id, block, color,
+                                                                                   role_tasks_counter, play_vars,
+                                                                                   '[task] ', tags, skip_tags)
                                 role_tasks_counter += 1
 
                 nb_roles = len(play.get_roles())
                 # loop through the tasks
                 nb_tasks = 0
                 for task_block in play.tasks:
-                    nb_tasks = self._include_tasks_in_blocks(play_subgraph, play_name, play_id, task_block, color,
+                    nb_tasks = self._include_tasks_in_blocks(play, play_subgraph, play_name, play_id, task_block, color,
                                                              nb_roles + nb_pre_tasks, play_vars, '[task] ', tags,
                                                              skip_tags)
 
                 # loop through the post_tasks
                 for post_task_block in play.post_tasks:
-                    self._include_tasks_in_blocks(play_subgraph, play_name, play_id, post_task_block, color, nb_tasks,
-                                                  play_vars, '[post_task] ', tags, skip_tags)
+                    self._include_tasks_in_blocks(play, play_subgraph, play_name, play_id, post_task_block, color,
+                                                  nb_tasks, play_vars, '[post_task] ', tags, skip_tags)
 
     def render_graph(self, output_filename=None, save_dot_file=False):
         """
@@ -209,14 +215,14 @@ class Grapher(object):
 
         post_processor.write()
 
-    def _include_tasks_in_blocks(self, graph, parent_node_name, parent_node_id, block, color, current_counter,
-                                 variables=None, node_name_prefix='', tags=None, skip_tags=None):
+    def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
+                                 current_counter, variables=None, node_name_prefix='', tags=None, skip_tags=None):
         """
        Recursively read all the tasks of the block and add it to the graph
+        :param current_play:
        :param variables:
        :param tags:
        :param parent_node_id:
-       :param graph_representation:
        :param node_name_prefix:
        :param color:
        :param current_counter:
@@ -235,11 +241,30 @@ class Grapher(object):
         # loop through the tasks
         for counter, task_or_block in enumerate(block.block, 1):
             if isinstance(task_or_block, Block):
-                loop_counter = self._include_tasks_in_blocks(graph, parent_node_name, parent_node_id, task_or_block,
-                                                             color, loop_counter, variables, node_name_prefix, tags,
-                                                             skip_tags)
-            else:
+                loop_counter = self._include_tasks_in_blocks(current_play, graph, parent_node_name, parent_node_id,
+                                                             task_or_block, color, loop_counter, variables,
+                                                             node_name_prefix, tags, skip_tags)
+            elif isinstance(task_or_block, TaskInclude):
+                # here we have an `include_tasks` which is dynamic. So we need to process it explicitly because Ansible
+                # does it during th execution of the playbook
+                include_target = self.template(task_or_block.args['_raw_params'], variables)
+                include_file = self.data_loader.path_dwim(include_target)
+                data = self.data_loader.load_from_file(include_file)
+                if data is None:
+                    display.warning('file %s is empty and had no tasks to include' % include_file)
+                    continue
+                elif not isinstance(data, list):
+                    raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
 
+                # get the blocks from the include_tasks
+                blocks = load_list_of_blocks(data, play=current_play)
+
+                for b in blocks:  #
+                    loop_counter = self._include_tasks_in_blocks(current_play, graph, parent_node_name, parent_node_id,
+                                                                  b, color, loop_counter, variables, node_name_prefix,
+                                                                  tags, skip_tags)
+                pass
+            else:
                 # check if the task should be included
                 tagged = ''
                 if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=variables):

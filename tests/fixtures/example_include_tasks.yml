@@ -1,0 +1,19 @@
+---
+- hosts: all
+  tasks:
+    - name: Pre import
+      debug:
+        msg: "Pre import"
+
+    - name: Include some tasks
+      include_tasks: tasks2.yml
+
+    - name: Post import 1
+      debug:
+        msg: "Post import 1"
+
+    - name: Post import 2
+      debug:
+        msg: "Post import 2"
+
+
