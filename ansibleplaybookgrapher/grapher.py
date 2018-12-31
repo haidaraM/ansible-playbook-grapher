@@ -63,17 +63,21 @@ class Grapher(object):
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
                                       format="svg")
 
-    def template(self, data, variables):
+    def template(self, data, variables, fail_on_undefined=False):
         """
         Template the data using Jinja. Return data if an error occurs during the templating
+        :param fail_on_undefined:
         :param data:
         :param variables:
         :return:
         """
         try:
             templar = Templar(loader=self.data_loader, variables=variables)
-            return templar.template(data, fail_on_undefined=False)
+            return templar.template(data, fail_on_undefined=fail_on_undefined)
         except AnsibleError as ansible_error:
+            # Sometime we need to export
+            if fail_on_undefined:
+                raise
             display.warning(ansible_error)
             return data
 
@@ -262,7 +266,7 @@ class Grapher(object):
             elif isinstance(task_or_block, TaskInclude):
                 # here we have an `include_tasks` which is dynamic. So we need to process it explicitly because Ansible
                 # does it during th execution of the playbook
-                include_target = self.template(task_or_block.args['_raw_params'], play_vars)
+                include_target = self.template(task_or_block.args['_raw_params'], play_vars, fail_on_undefined=True)
                 include_file = self.data_loader.path_dwim(include_target)
                 data = self.data_loader.load_from_file(include_file)
                 if data is None:
