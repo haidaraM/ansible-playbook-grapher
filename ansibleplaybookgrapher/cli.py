@@ -75,8 +75,8 @@ class PlaybookGrapherCLI(CLI):
             self.options.output_filename = os.path.splitext(ntpath.basename(self.args[0]))[0]
 
 
-def main():
-    cli = PlaybookGrapherCLI(sys.argv)
+def main(args):
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -84,4 +84,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
