@@ -108,7 +108,7 @@ class Grapher(object):
 
             play_name = self.template(play_name, play_vars)
 
-            play_id = clean_id("play_" + play_name)
+            play_id = "play_" + clean_id(play_name)
 
             self.graph_representation.add_node(play_id)
 
@@ -143,14 +143,14 @@ class Grapher(object):
 
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
                         current_counter = role_counter + nb_pre_tasks
-                        role_id = clean_id("role_" + role_name + role_not_tagged)
+                        role_id = "role_" + clean_id(role_name + role_not_tagged)
                         role_subgraph.node(role_name, id=role_id)
 
                         when = "".join(role.when)
                         play_to_node_label = str(current_counter) if len(when) == 0 else str(
                             current_counter) + "  [when: " + when + "]"
 
-                        edge_id = clean_id("edge_" + play_id + role_id + role_not_tagged)
+                        edge_id = "edge_" + clean_id(play_id + role_id + role_not_tagged)
 
                         role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
                                            id=edge_id)
