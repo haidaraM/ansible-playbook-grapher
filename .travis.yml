@@ -12,6 +12,7 @@ env:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y graphviz
+  - pip install -U pip
 
 install:
   - pip install -q ansible==$ANSIBLE_VERSION
