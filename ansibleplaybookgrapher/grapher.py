@@ -102,7 +102,7 @@ class Grapher(object):
             skip_tags = []
 
         # the root node
-        self.graph.node(self.playbook_filename, style="dotted")
+        self.graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
@@ -129,7 +129,7 @@ class Grapher(object):
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = clean_id(self.playbook_filename + play_name + str(play_counter))
+                play_edge_id = "play_" + clean_id(self.playbook_filename + play_name + str(play_counter))
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
@@ -292,7 +292,7 @@ class Grapher(object):
                     tagged = NOT_TAGGED
 
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-                task_id = clean_id(task_name + tagged)
+                task_id = "task_" + clean_id(task_name + tagged)
                 graph.node(task_name, shape="octagon", id=task_id)
 
                 edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
