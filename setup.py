@@ -4,6 +4,25 @@ from setuptools import setup, find_packages
 
 from ansibleplaybookgrapher import __version__, __prog__
 
+
+def read_requirements(path):
+    """
+    Read requirements file
+    :param path:
+    :type path:
+    :return:
+    :rtype:
+    """
+    requirements = []
+    with open(path) as f_r:
+        for l in f_r:
+            requirements.append(l.strip())
+    return requirements
+
+
+install_requires = read_requirements('requirements.txt')
+test_require = read_requirements('requirements_tests.txt')[1:]
+
 with open('Readme.md') as f:
     long_description = f.read()
 
@@ -22,8 +41,8 @@ setup(name=__prog__,
       author="HAIDARA Mohamed El Mouctar",
       author_email="elmhaidara@gmail.com",
       license="MIT",
-      install_requires=['graphviz==0.10.1', 'colour==0.1.5', 'lxml==4.2.5', 'ansible>=2.4.0'],
-      tests_require=['pytest', 'pytest-cov', 'pyquery'],
+      install_requires=install_requires,
+      tests_require=test_require,
       setup_requires=setup_requires,
       packages=find_packages(exclude=['tests']),
       package_data={"ansible-playbook-grapher": ['data/*']},

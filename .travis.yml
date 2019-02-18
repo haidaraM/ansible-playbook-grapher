@@ -23,4 +23,5 @@ script:
   - make test
 
 after_success:
+  - pip install -U coveralls
   - coveralls
