@@ -81,7 +81,7 @@ def main(args=None):
 
     cli.parse()
 
-    return cli.run()
+    cli.run()
 
 
 if __name__ == "__main__":

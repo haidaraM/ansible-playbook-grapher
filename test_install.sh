@@ -25,7 +25,7 @@ package=dist/$(ls dist)
 
 echo -e "${GREEN}Installing the packages ${package} and ansible ${ANSIBLE_VERSION} ${NC}"
 
-pip install -q ${package}  ansible==${ANSIBLE_VERSION}
+pip install -q ${package} ansible==${ANSIBLE_VERSION}
 
 ${VIRTUALENV_DIR}/bin/ansible-playbook-grapher --version
-${VIRTUALENV_DIR}/bin/ansible-playbook-grapher --help
+${VIRTUALENV_DIR}/bin/ansible-playbook-grapher tests/fixtures/example.yml

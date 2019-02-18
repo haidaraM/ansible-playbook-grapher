@@ -3,8 +3,16 @@ import os
 from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__
-from ansibleplaybookgrapher.cli import main
+from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
+
+
+def run_grapher(args):
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    return cli.run()
 
 
 def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_tasks_number=0, pre_tasks_number=0):
@@ -53,7 +61,7 @@ def test_grapher_simple_playbook():
     """
     playbook_path = os.path.join(FIXTURES_DIR, "simple_playbook.yml")
     args = [__prog__, playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, post_tasks_number=2)
 
@@ -69,7 +77,7 @@ def test_grapher_example():
 
     path_playbook_path = os.path.join(FIXTURES_DIR, "example.yml")
     args = [__prog__, path_playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=path_playbook_path, plays_number=1, tasks_number=4,
                   post_tasks_number=2, pre_tasks_number=2)
@@ -85,7 +93,7 @@ def test_grapher_example_include_task():
     """
     playbook_path = os.path.join(FIXTURES_DIR, "example_include_tasks.yml")
     args = [__prog__, playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6)
 
@@ -100,7 +108,7 @@ def test_grapher_example_include_tasks():
     """
     playbook_path = os.path.join(FIXTURES_DIR, "example_import_tasks.yml")
     args = [__prog__, playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4)
 
@@ -115,7 +123,7 @@ def test_example_with_roles():
     """
     playbook_path = os.path.join(FIXTURES_DIR, "example_with_roles.yml")
     args = [__prog__, '--include-role-tasks', playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=7, post_tasks_number=2,
                   pre_tasks_number=2)
@@ -131,7 +139,7 @@ def test_example_with_block():
     """
     playbook_path = os.path.join(FIXTURES_DIR, "example_with_block.yml")
     args = [__prog__, "--include-role-tasks", playbook_path]
-    svg_path = main(args)
+    svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
 
