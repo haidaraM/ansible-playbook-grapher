@@ -1,3 +1,6 @@
+# 0.8.2
+ - Fix: Make entrypoint (main) args optional
+
 # 0.8.1
  - Pypi: Fix images URL in the description
 
