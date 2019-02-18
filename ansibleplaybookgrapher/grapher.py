@@ -231,6 +231,8 @@ class Grapher(object):
 
         post_processor.write()
 
+        return output_filename
+
     def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
                                  current_counter, play_vars=None, node_name_prefix='', tags=None, skip_tags=None):
         """
