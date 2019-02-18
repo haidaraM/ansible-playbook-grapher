@@ -86,6 +86,11 @@ To setup a new development environment:
  - Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
  - pip install -r requirements.txt
 
+Run the tests with:
+```bash
+$ make test
+```
+
 ## TODO
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
  - Graphviz : find a way to avoid or reduce edges overlapping
