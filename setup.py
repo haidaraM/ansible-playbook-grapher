@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+
 from ansibleplaybookgrapher import __version__, __prog__
 
 try:
@@ -17,7 +18,7 @@ setup(name=__prog__,
       author_email="elmhaidara@gmail.com",
       license="MIT",
       install_requires=['graphviz==0.10.1', 'colour==0.1.5', 'lxml==4.2.5', 'ansible>=2.4.0'],
-      tests_requires=['pytest==3.2.3', 'pytest-cov==2.5.1'],
+      tests_requires=['pytest', 'pytest-cov', 'pyquery'],
       packages=find_packages(exclude=['tests']),
       package_data={"ansible-playbook-grapher": ['data/*']},
       include_package_data=True,
