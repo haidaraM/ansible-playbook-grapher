@@ -19,10 +19,8 @@ deploy_test: clean build
 	@echo "Deploying to Pypi Test environment..."
 	@twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
-setup_virtualenv:
+test_install: build
 	@./test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_VERSION)
-
-test_install: build setup_virtualenv
 
 test:
 	pytest
