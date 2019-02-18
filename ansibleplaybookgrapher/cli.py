@@ -33,7 +33,7 @@ class PlaybookGrapherCLI(CLI):
 
         grapher.render_graph(save_dot_file=self.options.save_dot_file)
 
-        grapher.post_process_svg()
+        return grapher.post_process_svg()
 
     def parse(self):
         # create parser for CLI options
@@ -80,7 +80,7 @@ def main(args):
 
     cli.parse()
 
-    cli.run()
+    return cli.run()
 
 
 if __name__ == "__main__":

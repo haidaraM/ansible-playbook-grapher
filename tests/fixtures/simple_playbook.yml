@@ -4,5 +4,5 @@
     - name: Post task 1
       debug: msg="Postask"
 
-    - name: Posttask 2
+    - name: Post task 2
       debug: msg="Postask"
