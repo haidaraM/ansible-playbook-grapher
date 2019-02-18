@@ -16,7 +16,6 @@ before_install:
 
 install:
   - pip install -q -U -r requirements_tests.txt
-  - pip install .
   - pip install -q ansible==$ANSIBLE_VERSION
   - pip freeze
 
