@@ -1,3 +1,6 @@
+# 0.8.1
+ - Pypi: Fix images URL in the description
+
 # 0.8.0
  - Add support for include_tasks [\#13](https://github.com/haidaraM/ansible-playbook-grapher/issues/13)
  - Update Graphviz and lxml versions
