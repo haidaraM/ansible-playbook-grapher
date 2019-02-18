@@ -129,7 +129,7 @@ class Grapher(object):
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = "play_" + clean_id(self.playbook_filename + play_name + str(play_counter))
+                play_edge_id = "edge_" + clean_id(self.playbook_filename + play_name + str(play_counter))
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
@@ -255,6 +255,9 @@ class Grapher(object):
         if skip_tags is None:
             skip_tags = []
 
+        # get prefix id from node_name
+        id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
+
         loop_counter = current_counter
         # loop through the tasks
         for counter, task_or_block in enumerate(block.block, 1):
@@ -272,7 +275,7 @@ class Grapher(object):
                 include_file = self.data_loader.path_dwim(include_target)
                 data = self.data_loader.load_from_file(include_file)
                 if data is None:
-                    display.warning('file %s is empty and had no tasks to include' % include_file)
+                    display.warning("file %s is empty and had no tasks to include" % include_file)
                     continue
                 elif not isinstance(data, list):
                     raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
@@ -294,7 +297,8 @@ class Grapher(object):
                     tagged = NOT_TAGGED
 
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-                task_id = "task_" + clean_id(task_name + tagged)
+                task_id = id_prefix + clean_id(
+                    task_name + tagged)
                 graph.node(task_name, shape="octagon", id=task_id)
 
                 edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
