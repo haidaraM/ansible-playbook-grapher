@@ -121,3 +121,18 @@ def test_example_with_roles():
                   pre_tasks_number=2)
 
     os.remove(svg_path)
+
+
+def test_example_with_block():
+    """
+    Test example_with_roles.yml, an example with roles
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "example_with_block.yml")
+    args = [__prog__, "--include-role-tasks", playbook_path]
+    svg_path = main(args)
+
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+
+    os.remove(svg_path)

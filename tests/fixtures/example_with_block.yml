@@ -1,0 +1,19 @@
+---
+- hosts: all
+  tasks:
+    - name: Install Apache
+      block:
+        - name: Install some packages
+          yum:
+            name: "{{ item }}"
+            state: installed
+          with_items:
+            - httpd
+            - memcached
+        - template:
+            src: templates/src.j2
+            dest: /etc/foo.conf
+        - service:
+            name: bar
+            state: started
+            enabled: True
