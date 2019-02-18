@@ -75,7 +75,8 @@ class PlaybookGrapherCLI(CLI):
             self.options.output_filename = os.path.splitext(ntpath.basename(self.args[0]))[0]
 
 
-def main(args):
+def main(args=None):
+    args = args or sys.argv
     cli = PlaybookGrapherCLI(args)
 
     cli.parse()
