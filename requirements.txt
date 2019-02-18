@@ -2,4 +2,3 @@ ansible>=2.4.0
 graphviz==0.10.1
 colour==0.1.5
 lxml==4.2.5
-pypandoc==1.4

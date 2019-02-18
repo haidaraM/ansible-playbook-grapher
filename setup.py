@@ -2,17 +2,14 @@ from setuptools import setup, find_packages
 
 from ansibleplaybookgrapher import __version__, __prog__
 
-try:
-    import pypandoc
-
-    long_description = pypandoc.convert_file('Readme.md', 'rst')
-except:
-    long_description = None
+with open('Readme.md') as f:
+    long_description = f.read()
 
 setup(name=__prog__,
       version=__version__,
       description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
       long_description=long_description,
+      long_description_content_type='text/markdown',
       url="https://github.com/haidaraM/ansible-playbook-grapher",
       author="HAIDARA Mohamed El Mouctar",
       author_email="elmhaidara@gmail.com",

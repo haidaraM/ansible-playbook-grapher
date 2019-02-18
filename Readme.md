@@ -83,9 +83,7 @@ Contributions are welcome. Feel free to contribute by creating an issue or submi
 
 ### Dev environment
 To setup a new development environment:
- - Install graphviz `sudo apt-get install graphviz # or yum install or brew install`
- - [Install pandoc](https://pandoc.org/installing.html). I recommend downloading a binary package and install it. Pandoc
- is used to convert the readme in rst.
+ - Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
  - pip install -r requirements.txt
 
 ## TODO
