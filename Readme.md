@@ -28,7 +28,7 @@ $ pip install ansible-playbook-grapher
 $ ansible-playbook-grapher tests/fixtures/example.png
 ```
 
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/examples/example.png)
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/tests/fixtures/img/example.png)
 
 
 ```
@@ -36,7 +36,7 @@ $ ansible-playbook-grapher --include-role-tasks  examples/example_with_roles.yml
 ```
 
 
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/examples/example_with_roles.png)
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/tests/fixtures/img/example_with_roles.png)
 
 
 Some options are available:

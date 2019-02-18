@@ -29,6 +29,6 @@ test:
 
 clean:
 	@echo "Cleaning..."
-	@rm -rf ansible_playbook_grapher.egg-info build dist $(VIRTUALENV_DIR) htmlcov .pytest_cache
+	@rm -rf ansible_playbook_grapher.egg-info build dist $(VIRTUALENV_DIR) htmlcov .pytest_cache .eggs
 
 .PHONY: clean test_install
