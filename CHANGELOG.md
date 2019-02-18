@@ -1,3 +1,6 @@
+# 0.8.3
+ - Fix: Return code of the script
+
 # 0.8.2
  - Fix: Make entrypoint (main) args optional
 
