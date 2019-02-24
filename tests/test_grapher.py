@@ -138,7 +138,22 @@ def test_example_with_block():
     :rtype:
     """
     playbook_path = os.path.join(FIXTURES_DIR, "example_with_block.yml")
-    args = [__prog__, "--include-role-tasks", playbook_path]
+    args = [__prog__, playbook_path]
+    svg_path = run_grapher(args)
+
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+
+    os.remove(svg_path)
+
+
+def test_example_nested_include():
+    """
+    Test example_nested_include.yml, an example with an include tasks that include another tasks
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "example_nested_include.yml")
+    args = [__prog__, playbook_path]
     svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)

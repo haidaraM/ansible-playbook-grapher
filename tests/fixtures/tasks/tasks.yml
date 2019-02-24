@@ -1,0 +1,7 @@
+---
+- name: Debug
+  debug: msg="Debug"
+- name: Second include
+  include_tasks: "nested_tasks/nested_tasks.yml"
+- name: Fird include with variables
+  include_tasks: "nested_tasks/{{ import_path }}"

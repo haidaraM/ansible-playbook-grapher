@@ -7,7 +7,8 @@ from ansible.template import Templar
 from ansible.utils.display import Display
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor, get_play_colors
+from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor, get_play_colors, \
+    handle_include_path
 
 display = Display()
 
@@ -257,6 +258,7 @@ class Grapher(object):
                                  current_counter, play_vars=None, node_name_prefix='', tags=None, skip_tags=None):
         """
         Recursively read all the tasks of the block and add it to the graph
+        FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
         :param current_play:
         :type current_play: ansible.playbook.play.Play
         :param graph:
@@ -304,8 +306,14 @@ class Grapher(object):
             elif isinstance(task_or_block, TaskInclude):
                 # here we have an `include_tasks` which is dynamic. So we need to process it explicitly because Ansible
                 # does it during th execution of the playbook
-                include_target = self.template(task_or_block.args['_raw_params'], play_vars, fail_on_undefined=True)
-                include_file = self.data_loader.path_dwim(include_target)
+
+                # need to merge vars here because include can have variables
+                # FIXME: Don't think if this plays well with the recursion. Need to check the memory usage
+                mixed_variables = play_vars.copy()
+                mixed_variables.update(task_or_block.vars)
+                templar = Templar(loader=self.data_loader, variables=mixed_variables)
+                include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
+                                                   templar=templar)
                 data = self.data_loader.load_from_file(include_file)
                 if data is None:
                     display.warning("file %s is empty and had no tasks to include" % include_file)
@@ -314,13 +322,15 @@ class Grapher(object):
                     raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
 
                 # get the blocks from the include_tasks
-                blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager)
+                blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
+                                             loader=self.data_loader, parent_block=task_or_block)
 
                 for b in blocks:  # loop through the blocks inside the included tasks
                     loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
                                                                  parent_node_name=parent_node_name,
                                                                  parent_node_id=parent_node_id, block=b, color=color,
-                                                                 current_counter=loop_counter, play_vars=play_vars,
+                                                                 current_counter=loop_counter,
+                                                                 play_vars=mixed_variables,
                                                                  node_name_prefix=node_name_prefix, tags=tags,
                                                                  skip_tags=skip_tags)
             else:
@@ -330,8 +340,7 @@ class Grapher(object):
                     tagged = NOT_TAGGED
 
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-                task_id = id_prefix + clean_id(
-                    task_name + tagged)
+                task_id = id_prefix + clean_id(task_name + tagged)
                 graph.node(task_name, shape="octagon", id=task_id)
 
                 edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
