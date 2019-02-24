@@ -100,16 +100,43 @@ class PostProcessor(object):
     """
 
     def __init__(self, svg_path):
+        """
+
+        :param svg_path:
+        :type svg_path: str
+        """
         self.svg_path = svg_path
         self.tree = etree.parse(svg_path)
         self.root = self.tree.getroot()
 
     def insert_script_tag(self, index, attrib):
+        """
+
+        :param index:
+        :type index: int
+        :param attrib:
+        :type attrib: dict
+        :return:
+        :rtype:
+        """
         element_script_tag = etree.Element('script', attrib=attrib)
 
         self.root.insert(index, element_script_tag)
 
     def insert_cdata(self, index, tag, attrib, cdata_text):
+        """
+        Insert cdata in the SVG
+        :param index:
+        :type index: int
+        :param tag:
+        :type tag:
+        :param attrib:
+        :type attrib: dict
+        :param cdata_text:
+        :type cdata_text: str
+        :return:
+        :rtype:
+        """
         element = etree.Element(tag, attrib=attrib)
         element.text = etree.CDATA(cdata_text)
 
@@ -127,7 +154,17 @@ class PostProcessor(object):
         graph_group_element.remove(title_element)
 
     def post_process(self, graph_representation=None, *args, **kwargs):
+        """
 
+        :param graph_representation:
+        :type graph_representation: GraphRepresentation
+        :param args: 
+        :type args:
+        :param kwargs:
+        :type kwargs:
+        :return:
+        :rtype:
+        """
         self.root.set('id', 'svg')
 
         jquery_tag_index = 0

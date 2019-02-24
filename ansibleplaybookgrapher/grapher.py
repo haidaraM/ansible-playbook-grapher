@@ -36,13 +36,19 @@ class Grapher(object):
     def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, graph=None,
                  output_filename=None):
         """
-
+        Main grapher responsible to parse the playbook and draw graph
         :param data_loader:
+        :type data_loader: ansible.parsing.dataloader.DataLoader
         :param inventory_manager:
+        :type inventory_manager: ansible.inventory.manager.InventoryManager
         :param variable_manager:
+        :type variable_manager: ansible.vars.manager.VariableManager
         :param playbook_filename:
+        :type playbook_filename: str
         :param graph:
-        :param output_filename: The output filename without the extension
+        :type graph: Digraph
+        :param output_filename:
+        :type output_filename: str
         """
         self.variable_manager = variable_manager
         self.inventory_manager = inventory_manager
@@ -67,8 +73,11 @@ class Grapher(object):
         """
         Template the data using Jinja. Return data if an error occurs during the templating
         :param fail_on_undefined:
+        :type fail_on_undefined: bool
         :param data:
+        :type data: Union[str, ansible.parsing.yaml.objects.AnsibleUnicode]
         :param variables:
+        :type variables: dict
         :return:
         """
         try:
@@ -93,7 +102,14 @@ class Grapher(object):
                     draw role_tasks
             draw tasks
             draw post_tasks
+        :param include_role_tasks:
+        :type include_role_tasks: bool
+        :param tags:
+        :type tags: list
+        :param skip_tags:
+        :type skip_tags: list
         :return:
+        :rtype:
         """
         if tags is None:
             tags = ['all']
@@ -208,8 +224,11 @@ class Grapher(object):
         """
         Render the graph
         :param output_filename:
+        :type output_filename: str
         :param save_dot_file:
+        :type save_dot_file: bool
         :return:
+        :rtype:
         """
         if output_filename is None:
             output_filename = self.output_filename
@@ -220,6 +239,7 @@ class Grapher(object):
         """
         Post process the rendered svg
         :param output_filename: The output filename without the extension
+        :type output_filename: str
         :return:
         """
         if output_filename is None:
@@ -236,19 +256,32 @@ class Grapher(object):
     def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
                                  current_counter, play_vars=None, node_name_prefix='', tags=None, skip_tags=None):
         """
-       Recursively read all the tasks of the block and add it to the graph
+        Recursively read all the tasks of the block and add it to the graph
         :param current_play:
-       :param play_vars:
-       :param tags:
-       :param parent_node_id:
-       :param node_name_prefix:
-       :param color:
-       :param current_counter:
-       :param graph:
-       :param parent_node_name:
-       :param block:
-       :return:
-       """
+        :type current_play: ansible.playbook.play.Play
+        :param graph:
+        :type graph:
+        :param parent_node_name:
+        :type parent_node_name: str
+        :param parent_node_id:
+        :type parent_node_id: str
+        :param block:
+        :type block: Union[Block,TaskInclude]
+        :param color:
+        :type color: str
+        :param current_counter:
+        :type current_counter: int
+        :param play_vars:
+        :type play_vars: dict
+        :param node_name_prefix:
+        :type node_name_prefix: str
+        :param tags:
+        :type tags: list
+        :param skip_tags:
+        :type skip_tags: list
+        :return:
+        :rtype:
+        """
         if tags is None:
             tags = ['all']
 
