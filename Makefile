@@ -7,7 +7,7 @@ build: $(PACKAGE)
 
 $(PACKAGE): $(SRC)
 	@echo "Building the package..."
-	@python3 setup.py bdist_wheel
+	@python setup.py bdist_wheel
 
 # Deploy to Pypi Live environment
 deploy: clean build
