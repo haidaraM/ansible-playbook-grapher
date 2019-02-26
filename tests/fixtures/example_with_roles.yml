@@ -38,11 +38,3 @@
         name: "{{packages}}"
         state: latest
         default_release: "{{backport}}"
-
-- hosts: machine2
-  tags:
-    - play2
-  tasks:
-    - name: Include role
-      import_role:
-        name: fake_role_2

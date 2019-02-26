@@ -304,8 +304,8 @@ class Grapher(object):
                                                              play_vars=play_vars, node_name_prefix=node_name_prefix,
                                                              tags=tags, skip_tags=skip_tags)
             elif isinstance(task_or_block, TaskInclude):
-                # here we have an `include_tasks` which is dynamic. So we need to process it explicitly because Ansible
-                # does it during th execution of the playbook
+                # here we have an `include_tasks` or `include_role` which is dynamic.
+                # So we need to process it explicitly because Ansible does it during th execution of the playbook
 
                 # need to merge vars here because include can have variables
                 task_vars = task_or_block.get_vars()

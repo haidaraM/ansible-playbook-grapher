@@ -130,8 +130,38 @@ def test_example_with_roles():
     args = [__prog__, '--include-role-tasks', playbook_path]
     svg_path = run_grapher(args)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=7, post_tasks_number=2,
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=5, post_tasks_number=2,
                   pre_tasks_number=2)
+
+    os.remove(svg_path)
+
+
+def test_example_import_role():
+    """
+    Test example_import_role.yml, an example with import role
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "example_import_role.yml")
+    args = [__prog__, '--include-role-tasks', playbook_path]
+    svg_path = run_grapher(args)
+
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+
+    os.remove(svg_path)
+
+
+def test_example_include_role():
+    """
+    Test example_include_role.yml, an example with include_role
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "example_include_role.yml")
+    args = [__prog__, '--include-role-tasks', playbook_path]
+    svg_path = run_grapher(args)
+
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
 
     os.remove(svg_path)
 
@@ -151,13 +181,13 @@ def test_example_with_block():
     os.remove(svg_path)
 
 
-def test_example_nested_include():
+def test_example_nested_include_tasks():
     """
     Test example_nested_include.yml, an example with an include tasks that include another tasks
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "example_nested_include.yml")
+    playbook_path = os.path.join(FIXTURES_DIR, "example_nested_include_tasks.yml")
     args = [__prog__, playbook_path]
     svg_path = run_grapher(args)
 

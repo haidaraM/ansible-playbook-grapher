@@ -230,7 +230,8 @@ def handle_include_path(original_task, loader, templar):
     """
     parent_include = original_task._parent
     include_file = None
-    include_result = {'include': original_task.args['_raw_params']}
+    # task path or role name
+    include_param = original_task.args.get('_raw_params', original_task.args.get('name', None))
 
     cumulative_path = None
     while parent_include is not None:
@@ -246,7 +247,7 @@ def handle_include_path(original_task, loader, templar):
             cumulative_path = os.path.join(parent_include_dir, cumulative_path)
         else:
             cumulative_path = parent_include_dir
-        include_target = templar.template(include_result['include'])
+        include_target = templar.template(include_param)
         if original_task._role:
             new_basedir = os.path.join(original_task._role._role_path, 'tasks', cumulative_path)
             candidates = [loader.path_dwim_relative(original_task._role._role_path, 'tasks', include_target),
@@ -269,9 +270,9 @@ def handle_include_path(original_task, loader, templar):
 
     if include_file is None:
         if original_task._role:
-            include_target = templar.template(include_result['include'])
+            include_target = templar.template(include_param)
             include_file = loader.path_dwim_relative(original_task._role._role_path, 'tasks', include_target)
         else:
-            include_file = loader.path_dwim(include_result['include'])
+            include_file = loader.path_dwim(include_param)
 
     return include_file
