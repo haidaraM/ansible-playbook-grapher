@@ -45,12 +45,17 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     post_tasks = pq("g[id^='post_task_']")
     pre_tasks = pq("g[id^='pre_task_']")
 
-    assert plays_number == len(plays), "This playbook should contains {} play(s)".format(plays_number)
-    assert tasks_number == len(tasks), "This playbook should contains {} tasks(s)".format(tasks_number)
-    assert post_tasks_number == len(post_tasks), "This playbook should contains {} post tasks(s)".format(
-        post_tasks_number)
-    assert pre_tasks_number == len(pre_tasks), "This playbook should contains {} pre tasks(s)".format(
-        pre_tasks_number)
+    assert plays_number == len(plays), "The playbook '{}' should contains {} play(s) but we found {} plays(s)".format(
+        playbook_path, plays_number, len(plays))
+    assert tasks_number == len(tasks), "The playbook '{}' should contains {} tasks(s) we found {} tasks".format(
+        playbook_path, tasks_number, len(tasks))
+    assert post_tasks_number == len(
+        post_tasks), "The '{}' playbook should contains {} post tasks(s) we found {} post tasks".format(
+        playbook_path, post_tasks_number, len(post_tasks))
+    assert pre_tasks_number == len(
+        pre_tasks), "The playbook '{}' should contains {} pre tasks(s) but we found {} pre tasks".format(playbook_path,
+                                                                                                         pre_tasks_number,
+                                                                                                         len(pre_tasks))
 
     return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks}
 
@@ -125,7 +130,7 @@ def test_example_with_roles():
     args = [__prog__, '--include-role-tasks', playbook_path]
     svg_path = run_grapher(args)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=5, post_tasks_number=2,
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=7, post_tasks_number=2,
                   pre_tasks_number=2)
 
     os.remove(svg_path)
