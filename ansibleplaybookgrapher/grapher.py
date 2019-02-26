@@ -308,10 +308,8 @@ class Grapher(object):
                 # does it during th execution of the playbook
 
                 # need to merge vars here because include can have variables
-                # FIXME: Don't think if this plays well with the recursion. Need to check the memory usage
-                mixed_variables = play_vars.copy()
-                mixed_variables.update(task_or_block.vars)
-                templar = Templar(loader=self.data_loader, variables=mixed_variables)
+                task_vars = task_or_block.get_vars()
+                templar = Templar(loader=self.data_loader, variables=task_vars)
                 include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
                                                    templar=templar)
                 data = self.data_loader.load_from_file(include_file)
@@ -330,7 +328,7 @@ class Grapher(object):
                                                                  parent_node_name=parent_node_name,
                                                                  parent_node_id=parent_node_id, block=b, color=color,
                                                                  current_counter=loop_counter,
-                                                                 play_vars=mixed_variables,
+                                                                 play_vars=task_vars,
                                                                  node_name_prefix=node_name_prefix, tags=tags,
                                                                  skip_tags=skip_tags)
             else:
