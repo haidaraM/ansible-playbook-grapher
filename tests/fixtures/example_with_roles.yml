@@ -6,8 +6,6 @@
     backport: "stretch-backports"
     packages:
       - git
-      - tree
-      - curl
   pre_tasks:
     - name: Pretask
       debug: msg="Pretask"
@@ -26,7 +24,7 @@
         - role_tag
 
   tasks:
-    - name: Ajout du backport {{backport}}
+    - name: Add backport {{backport}}
       become: yes
       apt_repository:
         repo: deb http://ftp.debian.org/debian {{backport}} main
@@ -37,21 +35,14 @@
     - name: Install packages
       become: yes
       apt:
-        name: "{{item}}"
+        name: "{{packages}}"
         state: latest
         default_release: "{{backport}}"
-      with_items: "{{packages}}"
 
 - hosts: machine2
   tags:
     - play2
   tasks:
-    - name: Copy nginx conf
-      copy:
-        src: nginx.conf
-        dest: /etc/nginx
-
-    - name: copy hosts
-      copy:
-        src: /etc/hosts
-        dest: /etc/hosts
+    - name: Include role
+      import_role:
+        name: fake_role
