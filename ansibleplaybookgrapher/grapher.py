@@ -304,43 +304,33 @@ class Grapher(object):
                                                              color=color, current_counter=loop_counter,
                                                              play_vars=play_vars, node_name_prefix=node_name_prefix,
                                                              tags=tags, skip_tags=skip_tags)
-            elif isinstance(task_or_block, IncludeRole):
-                # here we have an include_role. The class IncludeRole is a subclass of TaskInclude. We do this because
-                # the management of an include_role is different.
-                # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-                role_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
-                                                              variable_manager=self.variable_manager)
-                for b in role_blocks:
-                    loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                 parent_node_name=parent_node_name,
-                                                                 parent_node_id=parent_node_id, block=b, color=color,
-                                                                 current_counter=loop_counter,
-                                                                 play_vars=self.variable_manager.get_vars(
-                                                                     play=current_play, task=task_or_block),
-                                                                 node_name_prefix=node_name_prefix, tags=tags,
-                                                                 skip_tags=skip_tags)
-
-            elif isinstance(task_or_block, TaskInclude):
-                # here we have an `include_tasks` which is dynamic.
+            elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process it explicitly because Ansible does it during th execution of the playbook
 
-                # need to merge vars here because include can have variables
                 task_vars = self.variable_manager.get_vars(play=current_play, task=task_or_block)
-                templar = Templar(loader=self.data_loader, variables=task_vars)
-                include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
-                                                   templar=templar)
-                data = self.data_loader.load_from_file(include_file)
-                if data is None:
-                    display.warning("file %s is empty and had no tasks to include" % include_file)
-                    continue
-                elif not isinstance(data, list):
-                    raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
 
-                # get the blocks from the include_tasks
-                blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
-                                             loader=self.data_loader, parent_block=task_or_block)
+                if isinstance(task_or_block, IncludeRole):
+                    # here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
+                    # We do this because the management of an include_role is different.
+                    # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
+                    my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
+                                                                variable_manager=self.variable_manager)
+                else:
+                    templar = Templar(loader=self.data_loader, variables=task_vars)
+                    include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
+                                                       templar=templar)
+                    data = self.data_loader.load_from_file(include_file)
+                    if data is None:
+                        display.warning("file %s is empty and had no tasks to include" % include_file)
+                        continue
+                    elif not isinstance(data, list):
+                        raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
 
-                for b in blocks:  # loop through the blocks inside the included tasks
+                    # get the blocks from the include_tasks
+                    my_blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
+                                                    loader=self.data_loader, parent_block=task_or_block)
+
+                for b in my_blocks:  # loop through the blocks inside the included tasks or role
                     loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
                                                                  parent_node_name=parent_node_name,
                                                                  parent_node_id=parent_node_id, block=b, color=color,
