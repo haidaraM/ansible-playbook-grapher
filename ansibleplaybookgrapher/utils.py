@@ -211,7 +211,6 @@ class PostProcessor(object):
             element.append(root_subelement)
 
 
-# /Users/mohamed.haidara/.local/share/virtualenvs/ansible-playbook-grapher-qWMOJnsj/lib/python3.6/site-packages/ansible/playbook/included_file.py
 def handle_include_path(original_task, loader, templar):
     """
     Handle include path. We may have some nested includes with relative paths to handle.
