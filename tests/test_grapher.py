@@ -15,7 +15,8 @@ def run_grapher(args):
     return cli.run()
 
 
-def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_tasks_number=0, pre_tasks_number=0):
+def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_tasks_number=0, pre_tasks_number=0,
+                  roles_number=0):
     """
     Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -44,18 +45,19 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     tasks = pq("g[id^='task_']")
     post_tasks = pq("g[id^='post_task_']")
     pre_tasks = pq("g[id^='pre_task_']")
+    roles = pq("g[id^='role_']")
 
-    assert plays_number == len(plays), "The playbook '{}' should contains {} play(s) but we found {} plays(s)".format(
+    assert plays_number == len(plays), "The playbook '{}' should contains {} play(s) but we found {} play(s)".format(
         playbook_path, plays_number, len(plays))
     assert tasks_number == len(tasks), "The playbook '{}' should contains {} tasks(s) we found {} tasks".format(
         playbook_path, tasks_number, len(tasks))
-    assert post_tasks_number == len(
-        post_tasks), "The '{}' playbook should contains {} post tasks(s) we found {} post tasks".format(
-        playbook_path, post_tasks_number, len(post_tasks))
-    assert pre_tasks_number == len(
-        pre_tasks), "The playbook '{}' should contains {} pre tasks(s) but we found {} pre tasks".format(playbook_path,
-                                                                                                         pre_tasks_number,
-                                                                                                         len(pre_tasks))
+    assert post_tasks_number == len(post_tasks), "The '{}' playbook should contains {} post tasks(s) we found {} " \
+                                                 "post tasks".format(playbook_path, post_tasks_number, len(post_tasks))
+    assert pre_tasks_number == len(pre_tasks), "The playbook '{}' should contains {} pre tasks(s) but we found {} " \
+                                               "pre tasks".format(playbook_path, pre_tasks_number, len(pre_tasks))
+
+    assert roles_number == len(roles), "The playbook '{}' should contains {} role(s) but we found {} role(s)".format(
+        playbook_path, roles_number, len(roles))
 
     return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks}
 
@@ -131,7 +133,7 @@ def test_example_with_roles():
     svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=5, post_tasks_number=2,
-                  pre_tasks_number=2)
+                  pre_tasks_number=2, roles_number=1)
 
     os.remove(svg_path)
 
@@ -146,7 +148,7 @@ def test_example_import_role():
     args = [__prog__, '--include-role-tasks', playbook_path]
     svg_path = run_grapher(args)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3, roles_number=1)
 
     os.remove(svg_path)
 
