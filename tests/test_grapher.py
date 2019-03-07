@@ -12,6 +12,10 @@ def run_grapher(args):
 
     cli.parse()
 
+    # put the generated svg in a dedicated folder
+    dir_path = os.path.dirname(os.path.realpath(__file__))  # current file directory
+    cli.options.output_filename = os.path.join(dir_path, "generated_svg", cli.options.output_filename)
+
     return cli.run()
 
 
@@ -72,8 +76,6 @@ def test_grapher_simple_playbook():
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, post_tasks_number=2)
 
-    os.remove(svg_path)
-
 
 def test_grapher_example():
     """
@@ -89,8 +91,6 @@ def test_grapher_example():
     _common_tests(svg_path=svg_path, playbook_path=path_playbook_path, plays_number=1, tasks_number=4,
                   post_tasks_number=2, pre_tasks_number=2)
 
-    os.remove(svg_path)
-
 
 def test_grapher_example_include_task():
     """
@@ -104,8 +104,6 @@ def test_grapher_example_include_task():
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6)
 
-    os.remove(svg_path)
-
 
 def test_grapher_example_include_tasks():
     """
@@ -118,8 +116,6 @@ def test_grapher_example_include_tasks():
     svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4)
-
-    os.remove(svg_path)
 
 
 def test_example_with_roles():
@@ -135,8 +131,6 @@ def test_example_with_roles():
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=5, post_tasks_number=2,
                   pre_tasks_number=2, roles_number=1)
 
-    os.remove(svg_path)
-
 
 def test_example_import_role():
     """
@@ -149,8 +143,6 @@ def test_example_import_role():
     svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3, roles_number=1)
-
-    os.remove(svg_path)
 
 
 def test_example_include_role():
@@ -165,8 +157,6 @@ def test_example_include_role():
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
 
-    os.remove(svg_path)
-
 
 def test_example_with_block():
     """
@@ -179,8 +169,6 @@ def test_example_with_block():
     svg_path = run_grapher(args)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
-
-    os.remove(svg_path)
 
 
 def test_example_nested_include_tasks():
