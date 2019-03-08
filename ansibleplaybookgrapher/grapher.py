@@ -9,7 +9,7 @@ from ansible.utils.display import Display
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor, get_play_colors, \
-    handle_include_path
+    handle_include_path, has_role_parent
 
 display = Display()
 
@@ -340,6 +340,11 @@ class Grapher(object):
                                                                  node_name_prefix=node_name_prefix, tags=tags,
                                                                  skip_tags=skip_tags)
             else:
+                # check if this task comes from a role and we dont want to include role's task
+                if has_role_parent(task_or_block) and not self.include_role_tasks:
+                    # skip role's task
+                    continue
+
                 # check if the task should be included
                 tagged = ''
                 if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):

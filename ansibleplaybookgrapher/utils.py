@@ -211,6 +211,23 @@ class PostProcessor(object):
             element.append(root_subelement)
 
 
+def has_role_parent(task_block):
+    """
+    Check if one of the parent of the task or block is a role
+    :param task_block:
+    :type task_block:
+    :return:
+    :rtype:
+    """
+    parent = task_block._parent
+    while parent:
+        if parent._role:
+            return True
+        parent = parent._parent
+
+    return False
+
+
 def handle_include_path(original_task, loader, templar):
     """
     Handle include path. We may have some nested includes with relative paths to handle.
