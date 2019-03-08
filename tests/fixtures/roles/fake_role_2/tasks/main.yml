@@ -8,3 +8,4 @@
 # This is just for testing purpose.
 - name: Include Debian task
   include_tasks: "{{ distribution }}.yml"
+  when: distribution == "debian"

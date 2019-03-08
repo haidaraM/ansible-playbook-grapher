@@ -36,7 +36,7 @@ class Grapher(object):
     DEFAULT_EDGE_ATTR = {'sep': "10", "esep": "5"}
 
     def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, graph=None,
-                 output_filename=None):
+                 output_filename=None, include_role_tasks=False):
         """
         Main grapher responsible to parse the playbook and draw graph
         :param data_loader:
@@ -51,12 +51,15 @@ class Grapher(object):
         :type graph: Digraph
         :param output_filename:
         :type output_filename: str
+        :param include_role_tasks
+        :type include_role_tasks: bool
         """
         self.variable_manager = variable_manager
         self.inventory_manager = inventory_manager
         self.data_loader = data_loader
         self.playbook_filename = playbook_filename
         self.output_filename = output_filename
+        self.include_role_tasks = include_role_tasks
 
         self.graph_representation = GraphRepresentation()
 
@@ -92,7 +95,7 @@ class Grapher(object):
             display.warning(ansible_error)
             return data
 
-    def make_graph(self, include_role_tasks=False, tags=None, skip_tags=None):
+    def make_graph(self, tags=None, skip_tags=None):
         """
         Loop through the playbook and make the graph.
 
@@ -104,8 +107,6 @@ class Grapher(object):
                     draw role_tasks
             draw tasks
             draw post_tasks
-        :param include_role_tasks:
-        :type include_role_tasks: bool
         :param tags:
         :type tags: list
         :param skip_tags:
@@ -191,7 +192,7 @@ class Grapher(object):
                         self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
-                        if include_role_tasks:
+                        if self.include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.get_task_blocks():
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,

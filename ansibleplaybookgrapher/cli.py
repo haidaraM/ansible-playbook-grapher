@@ -26,10 +26,10 @@ class PlaybookGrapherCLI(CLI):
         loader, inventory, variable_manager = self._play_prereqs(self.options)
 
         grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=playbook, output_filename=self.options.output_filename)
+                          playbook_filename=playbook, output_filename=self.options.output_filename,
+                          include_role_tasks=self.options.include_role_tasks)
 
-        grapher.make_graph(include_role_tasks=self.options.include_role_tasks, tags=self.options.tags,
-                           skip_tags=self.options.skip_tags)
+        grapher.make_graph(tags=self.options.tags, skip_tags=self.options.skip_tags)
 
         grapher.render_graph(save_dot_file=self.options.save_dot_file)
 
