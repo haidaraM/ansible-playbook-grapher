@@ -24,7 +24,9 @@ def run_grapher(playbook_path, output_filename=None, additional_args=None):
     args = [__prog__]
 
     if output_filename:  # the default filename is the playbook file name minus .yml
-        args.extend(['-o', output_filename])
+        # put the generated svg in a dedicated folder
+        dir_path = os.path.dirname(os.path.realpath(__file__))  # current file directory
+        args.extend(['-o', os.path.join(dir_path, "generated_svg", output_filename)])
 
     args.extend(additional_args)
 
@@ -33,10 +35,6 @@ def run_grapher(playbook_path, output_filename=None, additional_args=None):
     cli = PlaybookGrapherCLI(args)
 
     cli.parse()
-
-    # put the generated svg in a dedicated folder
-    dir_path = os.path.dirname(os.path.realpath(__file__))  # current file directory
-    cli.options.output_filename = os.path.join(dir_path, "generated_svg", cli.options.output_filename)
 
     return cli.run()
 
@@ -208,5 +206,3 @@ def test_example_nested_include_tasks(request):
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
-
-    os.remove(svg_path)
