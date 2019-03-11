@@ -15,7 +15,7 @@ before_install:
   - pip install -U pip setuptools wheel
 
 install:
-  - pip install -qUr requirements_tests.txt
+  - pip install -qUr tests/requirements_tests.txt
   - pip install -q ansible==$ANSIBLE_VERSION
   - pip freeze
 

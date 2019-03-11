@@ -160,6 +160,7 @@ def test_example_import_role(request, include_role_tasks_option, expected_tasks_
     :return:
     :rtype:
     """
+    # TODO: Check why this test makes the next tests to fail. Looks like a bug somewhere
     playbook_path = os.path.join(FIXTURES_DIR, "example_import_role.yml")
     svg_path = run_grapher(playbook_path, output_filename=request.node.name,
                            additional_args=[include_role_tasks_option])
