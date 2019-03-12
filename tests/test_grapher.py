@@ -154,24 +154,6 @@ def test_example_with_roles(request, include_role_tasks_option, expected_tasks_n
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
                          [("--", 0), ("--include-role-tasks", 3)],
                          ids=["no_include_role_tasks_option", "include_role_tasks_option"])
-def test_example_import_role(request, include_role_tasks_option, expected_tasks_number):
-    """
-    Test example_import_role.yml, an example with import role
-    :return:
-    :rtype:
-    """
-    # TODO: Check why this test makes the next tests to fail. Looks like a bug somewhere
-    playbook_path = os.path.join(FIXTURES_DIR, "example_import_role.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
-                           additional_args=[include_role_tasks_option])
-
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
-                  roles_number=1)
-
-
-@pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
-                         [("--", 0), ("--include-role-tasks", 3)],
-                         ids=["no_include_role_tasks_option", "include_role_tasks_option"])
 def test_example_include_role(request, include_role_tasks_option, expected_tasks_number):
     """
     Test example_include_role.yml, an example with include_role
@@ -207,3 +189,21 @@ def test_example_nested_include_tasks(request):
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+
+
+@pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
+                         [("--", 0), ("--include-role-tasks", 3)],
+                         ids=["no_include_role_tasks_option", "include_role_tasks_option"])
+def test_example_import_role(request, include_role_tasks_option, expected_tasks_number):
+    """
+    Test example_import_role.yml, an example with import role
+    :return:
+    :rtype:
+    """
+    # TODO: Check why this test makes the next tests to fail. Looks like a bug somewhere
+    playbook_path = os.path.join(FIXTURES_DIR, "example_import_role.yml")
+    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
+                           additional_args=[include_role_tasks_option])
+
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
+                  roles_number=1)
