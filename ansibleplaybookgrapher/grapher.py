@@ -35,8 +35,7 @@ class Grapher(object):
     DEFAULT_GRAPH_ATTR = {'ratio': "fill", "rankdir": "LR", 'concentrate': 'true', 'ordering': 'in'}
     DEFAULT_EDGE_ATTR = {'sep': "10", "esep": "5"}
 
-    def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, graph=None,
-                 output_filename=None, include_role_tasks=False):
+    def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, options, graph=None):
         """
         Main grapher responsible to parse the playbook and draw graph
         :param data_loader:
@@ -45,21 +44,26 @@ class Grapher(object):
         :type inventory_manager: ansible.inventory.manager.InventoryManager
         :param variable_manager:
         :type variable_manager: ansible.vars.manager.VariableManager
+        :param options Command line options
+        :type options: optparse.Values
         :param playbook_filename:
         :type playbook_filename: str
         :param graph:
         :type graph: Digraph
-        :param output_filename:
-        :type output_filename: str
-        :param include_role_tasks
-        :type include_role_tasks: bool
         """
+        self.options = options
         self.variable_manager = variable_manager
         self.inventory_manager = inventory_manager
         self.data_loader = data_loader
         self.playbook_filename = playbook_filename
-        self.output_filename = output_filename
-        self.include_role_tasks = include_role_tasks
+        self.options.output_filename = self.options.output_filename
+        self.rendered_file_path = None
+
+        if self.options.tags is None:
+            self.options.tags = ['all']
+
+        if self.options.skip_tags is None:
+            self.options.skip_tags = []
 
         self.graph_representation = GraphRepresentation()
 
@@ -95,7 +99,7 @@ class Grapher(object):
             display.warning(ansible_error)
             return data
 
-    def make_graph(self, tags=None, skip_tags=None):
+    def make_graph(self):
         """
         Loop through the playbook and make the graph.
 
@@ -107,18 +111,9 @@ class Grapher(object):
                     draw role_tasks
             draw tasks
             draw post_tasks
-        :param tags:
-        :type tags: list
-        :param skip_tags:
-        :type skip_tags: list
         :return:
         :rtype:
         """
-        if tags is None:
-            tags = ['all']
-
-        if skip_tags is None:
-            skip_tags = []
 
         # the root node
         self.graph.node(self.playbook_filename, style="dotted", id="root_node")
@@ -159,18 +154,18 @@ class Grapher(object):
                                                                  parent_node_name=play_name, parent_node_id=play_id,
                                                                  block=pre_task_block, color=color,
                                                                  current_counter=nb_pre_tasks, play_vars=play_vars,
-                                                                 node_name_prefix='[pre_task] ', tags=tags,
-                                                                 skip_tags=skip_tags)
+                                                                 node_name_prefix='[pre_task] ')
 
                 # loop through the roles
                 for role_counter, role in enumerate(play.get_roles(), 1):
-                    role_name = '[role] ' + clean_name(str(role))
+                    role_name = '[role] ' + clean_name(role.get_name())
 
                     # the role object doesn't inherit the tags from the play. So we add it manually
                     role.tags = role.tags + play.tags
 
                     role_not_tagged = ''
-                    if not role.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
+                    if not role.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                              all_vars=play_vars):
                         role_not_tagged = NOT_TAGGED
 
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
@@ -192,7 +187,7 @@ class Grapher(object):
                         self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
-                        if self.include_role_tasks:
+                        if self.options.include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.get_task_blocks():
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
@@ -201,8 +196,7 @@ class Grapher(object):
                                                                                    parent_node_id=role_id, block=block,
                                                                                    color=color, play_vars=play_vars,
                                                                                    current_counter=role_tasks_counter,
-                                                                                   node_name_prefix='[task] ',
-                                                                                   tags=tags, skip_tags=skip_tags)
+                                                                                   node_name_prefix='[task] ')
                                 role_tasks_counter += 1
 
                 nb_roles = len(play.get_roles())
@@ -213,51 +207,44 @@ class Grapher(object):
                                                              parent_node_name=play_name, parent_node_id=play_id,
                                                              block=task_block, color=color,
                                                              current_counter=nb_roles + nb_pre_tasks,
-                                                             play_vars=play_vars, node_name_prefix='[task] ', tags=tags,
-                                                             skip_tags=skip_tags)
+                                                             play_vars=play_vars, node_name_prefix='[task] ')
 
                 # loop through the post_tasks
                 for post_task_block in play.post_tasks:
                     self._include_tasks_in_blocks(current_play=play, graph=play_subgraph, parent_node_name=play_name,
                                                   parent_node_id=play_id, block=post_task_block, color=color,
                                                   current_counter=nb_tasks, play_vars=play_vars,
-                                                  node_name_prefix='[post_task] ', tags=tags, skip_tags=skip_tags)
+                                                  node_name_prefix='[post_task] ')
 
-    def render_graph(self, output_filename=None, save_dot_file=False):
+    def render_graph(self, save_dot_file=False):
         """
         Render the graph
-        :param output_filename:
-        :type output_filename: str
         :param save_dot_file:
         :type save_dot_file: bool
-        :return:
-        :rtype:
+        :return: The rendered file path
+        :rtype: str
         """
-        if output_filename is None:
-            output_filename = self.output_filename
 
-        self.graph.render(cleanup=not save_dot_file, filename=output_filename)
+        self.rendered_file_path = self.graph.render(cleanup=not save_dot_file, filename=self.options.output_filename)
+        return self.rendered_file_path
 
-    def post_process_svg(self, output_filename=None):
+    def post_process_svg(self):
         """
         Post process the rendered svg
-        :param output_filename: The output filename without the extension
-        :type output_filename: str
+        :return The post processed file path
+        :rtype: str
         :return:
         """
-        if output_filename is None:
-            output_filename = self.output_filename + ".svg"
-
-        post_processor = PostProcessor(svg_path=output_filename)
+        post_processor = PostProcessor(svg_path=self.rendered_file_path)
 
         post_processor.post_process(graph_representation=self.graph_representation)
 
         post_processor.write()
 
-        return output_filename
+        return self.rendered_file_path
 
     def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
-                                 current_counter, play_vars=None, node_name_prefix='', tags=None, skip_tags=None):
+                                 current_counter, play_vars=None, node_name_prefix=''):
         """
         Recursively read all the tasks of the block and add it to the graph
         FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
@@ -286,11 +273,6 @@ class Grapher(object):
         :return:
         :rtype:
         """
-        if tags is None:
-            tags = ['all']
-
-        if skip_tags is None:
-            skip_tags = []
 
         # get prefix id from node_name
         id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
@@ -303,8 +285,7 @@ class Grapher(object):
                                                              parent_node_name=parent_node_name,
                                                              parent_node_id=parent_node_id, block=task_or_block,
                                                              color=color, current_counter=loop_counter,
-                                                             play_vars=play_vars, node_name_prefix=node_name_prefix,
-                                                             tags=tags, skip_tags=skip_tags)
+                                                             play_vars=play_vars, node_name_prefix=node_name_prefix)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process it explicitly because Ansible does it during th execution of the playbook
 
@@ -337,17 +318,17 @@ class Grapher(object):
                                                                  parent_node_id=parent_node_id, block=b, color=color,
                                                                  current_counter=loop_counter,
                                                                  play_vars=task_vars,
-                                                                 node_name_prefix=node_name_prefix, tags=tags,
-                                                                 skip_tags=skip_tags)
+                                                                 node_name_prefix=node_name_prefix)
             else:
                 # check if this task comes from a role and we dont want to include role's task
-                if has_role_parent(task_or_block) and not self.include_role_tasks:
+                if has_role_parent(task_or_block) and not self.options.include_role_tasks:
                     # skip role's task
                     continue
 
                 # check if the task should be included
                 tagged = ''
-                if not task_or_block.evaluate_tags(only_tags=tags, skip_tags=skip_tags, all_vars=play_vars):
+                if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                                   all_vars=play_vars):
                     tagged = NOT_TAGGED
 
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
