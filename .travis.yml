@@ -7,6 +7,10 @@ env:
   - ANSIBLE_VERSION=2.7
   - ANSIBLE_VERSION=2.7.9
 
+branches:
+  only:
+    - master
+
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y graphviz
