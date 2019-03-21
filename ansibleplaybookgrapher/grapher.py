@@ -157,7 +157,15 @@ class Grapher(object):
                                                                  node_name_prefix='[pre_task] ')
 
                 # loop through the roles
-                for role_counter, role in enumerate(play.get_roles(), 1):
+                role_number = 0
+                for role in play.get_roles():
+                    # Don't insert tasks from ``import/include_role``, preventing
+                    # duplicate graphing
+                    if role.from_include:
+                        continue
+
+                    role_number += 1
+
                     role_name = '[role] ' + clean_name(role.get_name())
 
                     # the role object doesn't inherit the tags from the play. So we add it manually
@@ -169,7 +177,7 @@ class Grapher(object):
                         role_not_tagged = NOT_TAGGED
 
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
-                        current_counter = role_counter + nb_pre_tasks
+                        current_counter = role_number + nb_pre_tasks
                         role_id = "role_" + clean_id(role_name + role_not_tagged)
                         role_subgraph.node(role_name, id=role_id)
 
@@ -189,7 +197,7 @@ class Grapher(object):
                         # loop through the tasks of the roles
                         if self.options.include_role_tasks:
                             role_tasks_counter = 0
-                            for block in role.get_task_blocks():
+                            for block in role.compile(play):
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
                                                                                    graph=role_subgraph,
                                                                                    parent_node_name=role_name,
@@ -199,14 +207,13 @@ class Grapher(object):
                                                                                    node_name_prefix='[task] ')
                                 role_tasks_counter += 1
 
-                nb_roles = len(play.get_roles())
                 # loop through the tasks
                 nb_tasks = 0
                 for task_block in play.tasks:
                     nb_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
                                                              parent_node_name=play_name, parent_node_id=play_id,
                                                              block=task_block, color=color,
-                                                             current_counter=nb_roles + nb_pre_tasks,
+                                                             current_counter=role_number + nb_pre_tasks,
                                                              play_vars=play_vars, node_name_prefix='[task] ')
 
                 # loop through the post_tasks
@@ -266,10 +273,6 @@ class Grapher(object):
         :type play_vars: dict
         :param node_name_prefix:
         :type node_name_prefix: str
-        :param tags:
-        :type tags: list
-        :param skip_tags:
-        :type skip_tags: list
         :return:
         :rtype:
         """
@@ -316,8 +319,7 @@ class Grapher(object):
                     loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
                                                                  parent_node_name=parent_node_name,
                                                                  parent_node_id=parent_node_id, block=b, color=color,
-                                                                 current_counter=loop_counter,
-                                                                 play_vars=task_vars,
+                                                                 current_counter=loop_counter, play_vars=task_vars,
                                                                  node_name_prefix=node_name_prefix)
             else:
                 # check if this task comes from a role and we dont want to include role's task

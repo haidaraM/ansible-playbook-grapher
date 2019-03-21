@@ -192,15 +192,16 @@ def test_example_nested_include_tasks(request):
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
-                         [("--", 0), ("--include-role-tasks", 3)],
+                         [("--", 1), ("--include-role-tasks", 7)],
                          ids=["no_include_role_tasks_option", "include_role_tasks_option"])
 def test_example_import_role(request, include_role_tasks_option, expected_tasks_number):
     """
-    Test example_import_role.yml, an example with import role
+    Test example_import_role.yml, an example with import role.
+    Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is
+    parsed.
     :return:
     :rtype:
     """
-    # TODO: Check why this test makes the next tests to fail. Looks like a bug somewhere
     playbook_path = os.path.join(FIXTURES_DIR, "example_import_role.yml")
     svg_path = run_grapher(playbook_path, output_filename=request.node.name,
                            additional_args=[include_role_tasks_option])
