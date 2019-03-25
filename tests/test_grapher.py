@@ -208,3 +208,17 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
                   roles_number=1)
+
+
+def test_import_playbook(request):
+    """
+    Test import_playbook
+    :param request:
+    :type request:
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "import_playbook.yml")
+    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=2, tasks_number=4,
+                  post_tasks_number=2)
