@@ -70,10 +70,6 @@ class Grapher(object):
         self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
                                       variable_manager=self.variable_manager)
 
-        # need playbook basedir. It's used to get tasks included with `include_tasks`
-        # Ansible currently resets it to the CWD when the parsing is done
-        self.data_loader.set_basedir(self.playbook._basedir)
-
         if graph is None:
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
                                       format="svg")
@@ -120,6 +116,12 @@ class Grapher(object):
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
+
+            # the load basedir is relative to the playbook path
+            if play._included_path is not None:
+                self.data_loader.set_basedir(play._included_path)
+            else:
+                self.data_loader.set_basedir(self.playbook._basedir)
 
             play_vars = self.variable_manager.get_vars(play)
             # get only the hosts name for the moment
