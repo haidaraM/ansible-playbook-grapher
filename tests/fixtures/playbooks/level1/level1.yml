@@ -1,0 +1,3 @@
+---
+- name: Import my playbook
+  import_playbook: level2/level2.yml

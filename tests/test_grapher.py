@@ -222,3 +222,13 @@ def test_import_playbook(request):
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=2, tasks_number=4,
                   post_tasks_number=2)
+
+
+def test_nested_import_playbook(request):
+    """
+    Test some nested import playbook
+    :return:
+    :rtype:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "nested_import_playbook.yml")
+    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
