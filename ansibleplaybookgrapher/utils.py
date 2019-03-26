@@ -289,6 +289,6 @@ def handle_include_path(original_task, loader, templar):
             include_target = templar.template(include_param)
             include_file = loader.path_dwim_relative(original_task._role._role_path, 'tasks', include_target)
         else:
-            include_file = loader.path_dwim(include_param)
+            include_file = loader.path_dwim(templar.template(include_param))
 
-    return templar.template(include_file)
+    return include_file

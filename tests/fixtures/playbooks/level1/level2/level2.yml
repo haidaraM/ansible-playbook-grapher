@@ -1,11 +1,11 @@
 ---
 - hosts: all
   vars:
-    task_path: tasks
+    task_path: "{{ playbook_dir }}/tasks"
   tasks:
-    - name: Task in level 2
+    - name: Print playbook_dir
       debug:
-        msg: "Task in level 2"
+        msg: "Playbook dir {{ playbook_dir }}"
 
     - name: Include the nested relative tasks
       include_tasks: "{{ task_path }}/nested_tasks.yml"
