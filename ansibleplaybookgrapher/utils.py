@@ -291,4 +291,4 @@ def handle_include_path(original_task, loader, templar):
         else:
             include_file = loader.path_dwim(include_param)
 
-    return include_file
+    return templar.template(include_file)

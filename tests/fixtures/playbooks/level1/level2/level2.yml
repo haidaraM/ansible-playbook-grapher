@@ -1,9 +1,11 @@
 ---
 - hosts: all
+  vars:
+    task_path: tasks
   tasks:
     - name: Task in level 2
       debug:
         msg: "Task in level 2"
 
     - name: Include the nested relative tasks
-      include_tasks: tasks/nested_tasks.yml
+      include_tasks: "{{ task_path }}/nested_tasks.yml"
