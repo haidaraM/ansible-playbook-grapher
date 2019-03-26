@@ -232,3 +232,4 @@ def test_nested_import_playbook(request):
     """
     playbook_path = os.path.join(FIXTURES_DIR, "nested_import_playbook.yml")
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
