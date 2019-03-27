@@ -86,7 +86,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks}
 
 
-def test_grapher_simple_playbook(request):
+def test_simple_playbook(request):
     """
     Test simple_playbook.yml
     """
@@ -96,7 +96,7 @@ def test_grapher_simple_playbook(request):
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, post_tasks_number=2)
 
 
-def test_grapher_example(request):
+def test_example(request):
     """
     Test example.yml
     :return:
@@ -110,7 +110,7 @@ def test_grapher_example(request):
                   post_tasks_number=2, pre_tasks_number=2)
 
 
-def test_grapher_include_task(request):
+def test_include_tasks(request):
     """
     Test include_tasks.yml, an example with some included tasks
     :return:
@@ -122,7 +122,7 @@ def test_grapher_include_task(request):
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6)
 
 
-def test_grapher_include_tasks(request):
+def test_import_tasks(request):
     """
     Test include_tasks.yml, an example sime some imported tasks
     :return:
