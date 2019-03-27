@@ -8,6 +8,10 @@
     - name: Include some tasks
       include_tasks: tasks2.yml
 
+    # This should not fail. Some variables are only available during execution
+    - name: Task specific to {{ ansible_distribution }}
+      include_tasks: "{{ ansible_distribution }}.yml"
+
     - name: Post import 1
       debug:
         msg: "Post import 1"

@@ -119,7 +119,7 @@ def test_include_tasks(request):
     playbook_path = os.path.join(FIXTURES_DIR, "include_tasks.yml")
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=7)
 
 
 def test_import_tasks(request):

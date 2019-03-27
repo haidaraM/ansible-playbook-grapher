@@ -1,4 +1,6 @@
-from ansible.errors import AnsibleError, AnsibleParserError
+import uuid
+
+from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
@@ -134,7 +136,7 @@ class Grapher(object):
 
             play_name = self.template(play_name, play_vars)
 
-            play_id = "play_" + clean_id(play_name)
+            play_id = "play_" + str(uuid.uuid4())
 
             self.graph_representation.add_node(play_id)
 
@@ -145,7 +147,7 @@ class Grapher(object):
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = "edge_" + clean_id(self.playbook_filename + play_name + str(play_counter))
+                play_edge_id = "edge_" + str(uuid.uuid4())
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
@@ -180,10 +182,10 @@ class Grapher(object):
 
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
                         current_counter = role_number + nb_pre_tasks
-                        role_id = "role_" + clean_id(role_name + role_not_tagged)
+                        role_id = "role_" + str(uuid.uuid4()) + role_not_tagged
                         role_subgraph.node(role_name, id=role_id)
 
-                        edge_id = "edge_" + clean_id(play_id + role_id + role_not_tagged)
+                        edge_id = "edge_" + str(uuid.uuid4()) + role_not_tagged
 
                         role_subgraph.edge(play_name, role_name, label=str(current_counter), color=color,
                                            fontcolor=color, id=edge_id)
@@ -275,9 +277,6 @@ class Grapher(object):
         :rtype:
         """
 
-        # get prefix id from node_name
-        id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
-
         loop_counter = current_counter
         # loop through the tasks
         for counter, task_or_block in enumerate(block.block, 1):
@@ -300,8 +299,19 @@ class Grapher(object):
                                                                 variable_manager=self.variable_manager)
                 else:
                     templar = Templar(loader=self.data_loader, variables=task_vars)
-                    include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
-                                                       templar=templar)
+                    try:
+                        include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
+                                                           templar=templar)
+                    except AnsibleUndefinedVariable as e:
+                        # TODO: mark this task with some special shape or color
+                        display.warning("Unable to compute the task '{}' due an undefined variable: {}. "
+                                        "Some variables are available only during the real execution."
+                                        .format(task_or_block.get_name(), str(e)))
+                        loop_counter += 1
+                        self._include_task(task_or_block, loop_counter, task_vars, graph, node_name_prefix, color,
+                                           parent_node_id, parent_node_name)
+                        continue
+
                     data = self.data_loader.load_from_file(include_file)
                     if data is None:
                         display.warning("file %s is empty and had no tasks to include" % include_file)
@@ -325,28 +335,40 @@ class Grapher(object):
                     # skip role's task
                     continue
 
-                # check if the task should be included
-                tagged = ''
-                if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                                   all_vars=play_vars):
-                    tagged = NOT_TAGGED
-
-                task_edge_label = str(loop_counter + 1)
-                if len(task_or_block.when) > 0:
-                    when = "".join(map(str, task_or_block.when))
-                    task_edge_label += "  [when: " + when + "]"
-
-                task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-                task_id = id_prefix + clean_id(task_name) + tagged
-                graph.node(task_name, shape="octagon", id=task_id)
-
-                edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
-
-                graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color,
-                           style="bold", id=edge_id)
-                self.graph_representation.add_link(parent_node_id, edge_id)
-                self.graph_representation.add_link(edge_id, task_id)
+                self._include_task(task_or_block=task_or_block, loop_counter=loop_counter + 1, play_vars=play_vars,
+                                   graph=graph, node_name_prefix=node_name_prefix, color=color,
+                                   parent_node_id=parent_node_id, parent_node_name=parent_node_name)
 
                 loop_counter += 1
 
         return loop_counter
+
+    def _include_task(self, task_or_block, loop_counter, play_vars, graph, node_name_prefix, color, parent_node_id,
+                      parent_node_name):
+        """
+
+        :return:
+        :rtype:
+        """
+        # check if the task should be included
+        tagged = ''
+        if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                           all_vars=play_vars):
+            tagged = NOT_TAGGED
+
+        task_edge_label = str(loop_counter)
+        if len(task_or_block.when) > 0:
+            when = "".join(map(str, task_or_block.when))
+            task_edge_label += "  [when: " + when + "]"
+
+        task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
+        # get prefix id from node_name
+        id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
+        task_id = id_prefix + str(uuid.uuid4()) + tagged
+        edge_id = "edge_" + str(uuid.uuid4()) + tagged
+
+        graph.node(task_name, shape="octagon", id=task_id)
+        graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color,
+                   style="bold", id=edge_id)
+        self.graph_representation.add_link(parent_node_id, edge_id)
+        self.graph_representation.add_link(edge_id, task_id)
