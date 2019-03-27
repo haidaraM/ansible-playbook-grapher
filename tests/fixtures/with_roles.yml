@@ -20,6 +20,7 @@
       debug: msg="Postask"
   roles:
     - role: fake_role
+      when: ansible_distribution == "Debian"
       tags:
         - role_tag
 

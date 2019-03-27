@@ -183,14 +183,10 @@ class Grapher(object):
                         role_id = "role_" + clean_id(role_name + role_not_tagged)
                         role_subgraph.node(role_name, id=role_id)
 
-                        when = "".join(role.when)
-                        play_to_node_label = str(current_counter) if len(when) == 0 else str(
-                            current_counter) + "  [when: " + when + "]"
-
                         edge_id = "edge_" + clean_id(play_id + role_id + role_not_tagged)
 
-                        role_subgraph.edge(play_name, role_name, label=play_to_node_label, color=color, fontcolor=color,
-                                           id=edge_id)
+                        role_subgraph.edge(play_name, role_name, label=str(current_counter), color=color,
+                                           fontcolor=color, id=edge_id)
 
                         self.graph_representation.add_link(play_id, edge_id)
 
@@ -335,13 +331,18 @@ class Grapher(object):
                                                    all_vars=play_vars):
                     tagged = NOT_TAGGED
 
+                task_edge_label = str(loop_counter + 1)
+                if len(task_or_block.when) > 0:
+                    when = "".join(map(str, task_or_block.when))
+                    task_edge_label += "  [when: " + when + "]"
+
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
                 task_id = id_prefix + clean_id(task_name + tagged)
                 graph.node(task_name, shape="octagon", id=task_id)
 
                 edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
 
-                graph.edge(parent_node_name, task_name, label=str(loop_counter + 1), color=color, fontcolor=color,
+                graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color,
                            style="bold", id=edge_id)
                 self.graph_representation.add_link(parent_node_id, edge_id)
                 self.graph_representation.add_link(edge_id, task_id)
