@@ -337,7 +337,7 @@ class Grapher(object):
                     task_edge_label += "  [when: " + when + "]"
 
                 task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-                task_id = id_prefix + clean_id(task_name + tagged)
+                task_id = id_prefix + clean_id(task_name) + tagged
                 graph.node(task_name, shape="octagon", id=task_id)
 
                 edge_id = "edge_" + parent_node_id + task_id + str(loop_counter) + tagged
