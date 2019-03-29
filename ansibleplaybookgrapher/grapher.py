@@ -133,7 +133,7 @@ class Grapher(object):
 
             color, play_font_color = get_play_colors(play)
 
-            play_name = "{} ({})".format(clean_name(play.get_name()), nb_hosts)
+            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), nb_hosts)
 
             play_name = self.template(play_name, play_vars)
 
