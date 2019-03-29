@@ -232,16 +232,15 @@ class Grapher(object):
             self.display.v("Done graphing play {}: {}".format(play_counter, play.get_name()))
             # moving to the next play
 
-    def render_graph(self, save_dot_file=False):
+    def render_graph(self):
         """
         Render the graph
-        :param save_dot_file:
-        :type save_dot_file: bool
         :return: The rendered file path
         :rtype: str
         """
 
-        self.rendered_file_path = self.graph.render(cleanup=not save_dot_file, filename=self.options.output_filename)
+        self.rendered_file_path = self.graph.render(cleanup=not self.options.save_dot_file,
+                                                    filename=self.options.output_filename)
         return self.rendered_file_path
 
     def post_process_svg(self):
