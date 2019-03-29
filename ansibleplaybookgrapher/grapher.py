@@ -10,10 +10,8 @@ from ansible.template import Templar
 from ansible.utils.display import Display
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, clean_id, PostProcessor, get_play_colors, \
+from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, PostProcessor, get_play_colors, \
     handle_include_path, has_role_parent
-
-display = Display()
 
 NOT_TAGGED = "not_tagged"
 
@@ -60,6 +58,7 @@ class Grapher(object):
         self.playbook_filename = playbook_filename
         self.options.output_filename = self.options.output_filename
         self.rendered_file_path = None
+        self.display = Display(verbosity=options.verbosity)
 
         if self.options.tags is None:
             self.options.tags = ['all']
@@ -94,7 +93,7 @@ class Grapher(object):
             # Sometime we need to export
             if fail_on_undefined:
                 raise
-            display.warning(ansible_error)
+            self.display.warning(ansible_error)
             return data
 
     def make_graph(self):
@@ -118,12 +117,14 @@ class Grapher(object):
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
+            self.display.banner("Graphing play {}: {}".format(play_counter, play.get_name()))
 
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
                 self.data_loader.set_basedir(play._included_path)
             else:
                 self.data_loader.set_basedir(self.playbook._basedir)
+            self.display.vvv("Loader basedir set to {}".format(self.data_loader.get_basedir()))
 
             play_vars = self.variable_manager.get_vars(play)
             # get only the hosts name for the moment
@@ -132,7 +133,7 @@ class Grapher(object):
 
             color, play_font_color = get_play_colors(play)
 
-            play_name = "{} ({})".format(clean_name(str(play)), nb_hosts)
+            play_name = "{} ({})".format(clean_name(play.get_name()), nb_hosts)
 
             play_name = self.template(play_name, play_vars)
 
@@ -152,6 +153,7 @@ class Grapher(object):
                                    label=str(play_counter), color=color, fontcolor=color)
 
                 # loop through the pre_tasks
+                self.display.v("Graphing pre_tasks...")
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
                     nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
@@ -161,6 +163,7 @@ class Grapher(object):
                                                                  node_name_prefix='[pre_task] ')
 
                 # loop through the roles
+                self.display.v("Graphing roles...")
                 role_number = 0
                 for role in play.get_roles():
                     # Don't insert tasks from ``import/include_role``, preventing
@@ -206,8 +209,10 @@ class Grapher(object):
                                                                                    current_counter=role_tasks_counter,
                                                                                    node_name_prefix='[task] ')
                                 role_tasks_counter += 1
+                self.display.v("{} roles added to the graph".format(role_number))
 
                 # loop through the tasks
+                self.display.v("Graphing tasks...")
                 nb_tasks = 0
                 for task_block in play.tasks:
                     nb_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
@@ -217,11 +222,15 @@ class Grapher(object):
                                                              play_vars=play_vars, node_name_prefix='[task] ')
 
                 # loop through the post_tasks
+                self.display.v("Graphing post_tasks...")
                 for post_task_block in play.post_tasks:
                     self._include_tasks_in_blocks(current_play=play, graph=play_subgraph, parent_node_name=play_name,
                                                   parent_node_id=play_id, block=post_task_block, color=color,
                                                   current_counter=nb_tasks, play_vars=play_vars,
                                                   node_name_prefix='[post_task] ')
+
+            self.display.v("Done graphing play {}: {}".format(play_counter, play.get_name()))
+            # moving to the next play
 
     def render_graph(self, save_dot_file=False):
         """
@@ -247,6 +256,8 @@ class Grapher(object):
         post_processor.post_process(graph_representation=self.graph_representation)
 
         post_processor.write()
+
+        self.display.display("The graph has been exported to {}.".format(self.rendered_file_path))
 
         return self.rendered_file_path
 
@@ -292,21 +303,27 @@ class Grapher(object):
                 task_vars = self.variable_manager.get_vars(play=current_play, task=task_or_block)
 
                 if isinstance(task_or_block, IncludeRole):
+
+                    self.display.v("An 'include_role' found. Importing tasks from '{}'"
+                                   .format(task_or_block.args["name"]))
                     # here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an include_role is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                 variable_manager=self.variable_manager)
                 else:
+                    self.display.v("An 'include_tasks' found. Importing the task '{}'"
+                                   .format(task_or_block.get_name()))
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
                         include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
                                                            templar=templar)
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
-                        display.warning("Unable to compute the task '{}' due an undefined variable: {}. "
-                                        "Some variables are available only during the real execution."
-                                        .format(task_or_block.get_name(), str(e)))
+                        self.display.warning(
+                            "Unable to translate the include task '{}' due to an undefined variable: {}. "
+                            "Some variables are available only during the real execution."
+                                .format(task_or_block.get_name(), str(e)))
                         loop_counter += 1
                         self._include_task(task_or_block, loop_counter, task_vars, graph, node_name_prefix, color,
                                            parent_node_id, parent_node_name)
@@ -314,7 +331,7 @@ class Grapher(object):
 
                     data = self.data_loader.load_from_file(include_file)
                     if data is None:
-                        display.warning("file %s is empty and had no tasks to include" % include_file)
+                        self.display.warning("file %s is empty and had no tasks to include" % include_file)
                         continue
                     elif not isinstance(data, list):
                         raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
@@ -333,6 +350,8 @@ class Grapher(object):
                 # check if this task comes from a role and we dont want to include role's task
                 if has_role_parent(task_or_block) and not self.options.include_role_tasks:
                     # skip role's task
+                    self.display.vv("The task '{}' has a role as parent and include_role_tasks is false. "
+                                    "It will be skipped.".format(task_or_block.get_name()))
                     continue
 
                 self._include_task(task_or_block=task_or_block, loop_counter=loop_counter + 1, play_vars=play_vars,
@@ -346,14 +365,17 @@ class Grapher(object):
     def _include_task(self, task_or_block, loop_counter, play_vars, graph, node_name_prefix, color, parent_node_id,
                       parent_node_name):
         """
-
+        Include the task in the graph
         :return:
         :rtype:
         """
+        self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
         # check if the task should be included
         tagged = ''
         if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
                                            all_vars=play_vars):
+            self.display.vv("The task '{}' should not be executed. It will be marked as NOT_TAGGED"
+                            .format(task_or_block.get_name()))
             tagged = NOT_TAGGED
 
         task_edge_label = str(loop_counter)
@@ -368,7 +390,7 @@ class Grapher(object):
         edge_id = "edge_" + str(uuid.uuid4()) + tagged
 
         graph.node(task_name, shape="octagon", id=task_id)
-        graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color,
-                   style="bold", id=edge_id)
+        graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color, style="bold",
+                   id=edge_id)
         self.graph_representation.add_link(parent_node_id, edge_id)
         self.graph_representation.add_link(edge_id, task_id)
