@@ -117,7 +117,13 @@ class Grapher(object):
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
-            self.display.banner("Graphing play {}: {}".format(play_counter, play.get_name()))
+
+            play_vars = self.variable_manager.get_vars(play)
+            play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
+            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
+            play_name = self.template(play_name, play_vars)
+
+            self.display.banner("Graphing " + play_name)
 
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
@@ -126,23 +132,12 @@ class Grapher(object):
                 self.data_loader.set_basedir(self.playbook._basedir)
             self.display.vvv("Loader basedir set to {}".format(self.data_loader.get_basedir()))
 
-            play_vars = self.variable_manager.get_vars(play)
-            # get only the hosts name for the moment
-            play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
-            nb_hosts = len(play_hosts)
-
-            color, play_font_color = get_play_colors(play)
-
-            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), nb_hosts)
-
-            play_name = self.template(play_name, play_vars)
-
             play_id = "play_" + str(uuid.uuid4())
 
             self.graph_representation.add_node(play_id)
 
             with self.graph.subgraph(name=play_name) as play_subgraph:
-
+                color, play_font_color = get_play_colors(play)
                 # play node
                 play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
@@ -229,7 +224,7 @@ class Grapher(object):
                                                   current_counter=nb_tasks, play_vars=play_vars,
                                                   node_name_prefix='[post_task] ')
 
-            self.display.v("Done graphing play {}: {}".format(play_counter, play.get_name()))
+            self.display.banner("Done graphing {}".format(play_name))
             # moving to the next play
 
     def render_graph(self):

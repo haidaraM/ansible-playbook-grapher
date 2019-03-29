@@ -86,7 +86,10 @@ def _read_data(filename):
 
 def get_play_colors(play):
     """
-    Return two colors (in hex) for a given play: the main color and the color to use as a font color
+    Generate two colors (in hex) for a given play: the main color and the color to use as a font color
+    :param play
+    :type play:
+    :rtype (str, str)
     :return:
     """
     # TODO: Check the if the picked color is (almost) white. We can't see a white edge on the graph
