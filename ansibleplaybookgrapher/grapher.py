@@ -298,7 +298,7 @@ class Grapher(object):
 
                 if isinstance(task_or_block, IncludeRole):
 
-                    self.display.v("An 'include_role' found. Importing tasks from '{}'"
+                    self.display.v("An 'include_role' found. Including tasks from '{}'"
                                    .format(task_or_block.args["name"]))
                     # here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an include_role is different.
@@ -306,7 +306,7 @@ class Grapher(object):
                     my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                 variable_manager=self.variable_manager)
                 else:
-                    self.display.v("An 'include_tasks' found. Importing the task '{}'"
+                    self.display.v("An 'include_tasks' found. Including tasks from '{}'"
                                    .format(task_or_block.get_name()))
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
@@ -332,7 +332,8 @@ class Grapher(object):
 
                     # get the blocks from the include_tasks
                     my_blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
-                                                    loader=self.data_loader, parent_block=task_or_block)
+                                                    role=task_or_block._role, loader=self.data_loader,
+                                                    parent_block=task_or_block)
 
                 for b in my_blocks:  # loop through the blocks inside the included tasks or role
                     loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
