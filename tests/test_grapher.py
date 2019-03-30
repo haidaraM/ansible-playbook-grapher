@@ -224,12 +224,16 @@ def test_import_playbook(request):
                   post_tasks_number=2)
 
 
-def test_nested_import_playbook(request):
+@pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
+                         [("--", 4), ("--include-role-tasks", 7)],
+                         ids=["no_include_role_tasks_option", "include_role_tasks_option"])
+def test_nested_import_playbook(request, include_role_tasks_option, expected_tasks_number):
     """
-    Test some nested import playbook
+    Test nested import playbook with an import_role and include_tasks
     :return:
     :rtype:
     """
     playbook_path = os.path.join(FIXTURES_DIR, "nested_import_playbook.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
+                           additional_args=[include_role_tasks_option])
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=expected_tasks_number)

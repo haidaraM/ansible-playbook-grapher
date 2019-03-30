@@ -1,0 +1,5 @@
+---
+- hosts: all
+  tasks:
+    - name: Include cinder tasks
+      include_tasks: tasks/manage-cinder-disk.yml

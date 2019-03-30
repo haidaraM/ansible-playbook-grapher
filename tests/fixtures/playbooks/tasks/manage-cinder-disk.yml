@@ -1,0 +1,7 @@
+---
+- name: Managing my volume
+  debug:
+    msg: "Managing my volume"
+- name: Import cinder-volume role
+  import_role:
+    name: cinder-volume
