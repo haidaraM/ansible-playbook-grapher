@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
@@ -21,9 +22,9 @@ class CustomDigrah(Digraph):
     Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
     the node and edge names and overrided some methods.
     """
-    _edge = '\t"%s" -> "%s"%s'
-    _node = '\t"%s"%s'
-    _subgraph = 'subgraph "%s"{'
+    _edge = "\t\"%s\" -> \"%s\"%s"
+    _node = "\t\"%s\"%s"
+    _subgraph = "subgraph \"%s\"{"
     _quote = staticmethod(clean_name)
     _quote_edge = staticmethod(clean_name)
 
@@ -32,8 +33,8 @@ class Grapher(object):
     """
     Main class to make the graph
     """
-    DEFAULT_GRAPH_ATTR = {'ratio': "fill", "rankdir": "LR", 'concentrate': 'true', 'ordering': 'in'}
-    DEFAULT_EDGE_ATTR = {'sep': "10", "esep": "5"}
+    DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
+    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
     def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, options, graph=None):
         """
@@ -61,7 +62,7 @@ class Grapher(object):
         self.display = Display(verbosity=options.verbosity)
 
         if self.options.tags is None:
-            self.options.tags = ['all']
+            self.options.tags = ["all"]
 
         if self.options.skip_tags is None:
             self.options.skip_tags = []
@@ -139,7 +140,7 @@ class Grapher(object):
             with self.graph.subgraph(name=play_name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
-                play_subgraph.node(play_name, id=play_id, style='filled', shape="box", color=color,
+                play_subgraph.node(play_name, id=play_id, style="filled", shape="box", color=color,
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
@@ -155,7 +156,7 @@ class Grapher(object):
                                                                  parent_node_name=play_name, parent_node_id=play_id,
                                                                  block=pre_task_block, color=color,
                                                                  current_counter=nb_pre_tasks, play_vars=play_vars,
-                                                                 node_name_prefix='[pre_task] ')
+                                                                 node_name_prefix="[pre_task] ")
 
                 # loop through the roles
                 self.display.v("Graphing roles...")
@@ -168,12 +169,12 @@ class Grapher(object):
 
                     role_number += 1
 
-                    role_name = '[role] ' + clean_name(role.get_name())
+                    role_name = "[role] " + clean_name(role.get_name())
 
                     # the role object doesn't inherit the tags from the play. So we add it manually
                     role.tags = role.tags + play.tags
 
-                    role_not_tagged = ''
+                    role_not_tagged = ""
                     if not role.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
                                               all_vars=play_vars):
                         role_not_tagged = NOT_TAGGED
@@ -185,11 +186,11 @@ class Grapher(object):
 
                         edge_id = "edge_" + str(uuid.uuid4()) + role_not_tagged
 
+                        # edge from play to role
                         role_subgraph.edge(play_name, role_name, label=str(current_counter), color=color,
                                            fontcolor=color, id=edge_id)
 
                         self.graph_representation.add_link(play_id, edge_id)
-
                         self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
@@ -202,7 +203,7 @@ class Grapher(object):
                                                                                    parent_node_id=role_id, block=block,
                                                                                    color=color, play_vars=play_vars,
                                                                                    current_counter=role_tasks_counter,
-                                                                                   node_name_prefix='[task] ')
+                                                                                   node_name_prefix="[task] ")
                                 role_tasks_counter += 1
                 self.display.v("{} roles added to the graph".format(role_number))
 
@@ -214,7 +215,7 @@ class Grapher(object):
                                                              parent_node_name=play_name, parent_node_id=play_id,
                                                              block=task_block, color=color,
                                                              current_counter=role_number + nb_pre_tasks,
-                                                             play_vars=play_vars, node_name_prefix='[task] ')
+                                                             play_vars=play_vars, node_name_prefix="[task] ")
 
                 # loop through the post_tasks
                 self.display.v("Graphing post_tasks...")
@@ -222,7 +223,7 @@ class Grapher(object):
                     self._include_tasks_in_blocks(current_play=play, graph=play_subgraph, parent_node_name=play_name,
                                                   parent_node_id=play_id, block=post_task_block, color=color,
                                                   current_counter=nb_tasks, play_vars=play_vars,
-                                                  node_name_prefix='[post_task] ')
+                                                  node_name_prefix="[post_task] ")
 
             self.display.banner("Done graphing {}".format(play_name))
             # moving to the next play
@@ -256,7 +257,7 @@ class Grapher(object):
         return self.rendered_file_path
 
     def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
-                                 current_counter, play_vars=None, node_name_prefix=''):
+                                 current_counter, play_vars=None, node_name_prefix=""):
         """
         Recursively read all the tasks of the block and add it to the graph
         FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
