@@ -21,7 +21,7 @@ def read_requirements(path):
 
 
 install_requires = read_requirements('requirements.txt')
-test_require = read_requirements('requirements_tests.txt')[1:]
+test_require = read_requirements('tests/requirements_tests.txt')[1:]
 
 with open('Readme.md') as f:
     long_description = f.read()

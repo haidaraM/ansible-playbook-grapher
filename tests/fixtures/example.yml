@@ -23,10 +23,9 @@
     - name: Install packages
       become: yes
       apt:
-        name: "{{item}}"
+        name: "{{packages}}"
         state: present
         default_release: "{{backport}}"
-      with_items: "{{packages}}"
 
     - name: Command that should fails
       command: /bin/false

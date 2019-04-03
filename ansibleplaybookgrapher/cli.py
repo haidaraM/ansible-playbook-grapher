@@ -26,17 +26,21 @@ class PlaybookGrapherCLI(CLI):
         loader, inventory, variable_manager = self._play_prereqs(self.options)
 
         grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=playbook, output_filename=self.options.output_filename)
+                          playbook_filename=playbook, options=self.options)
 
-        grapher.make_graph(include_role_tasks=self.options.include_role_tasks, tags=self.options.tags,
-                           skip_tags=self.options.skip_tags)
+        grapher.make_graph()
 
-        grapher.render_graph(save_dot_file=self.options.save_dot_file)
+        grapher.render_graph()
 
         return grapher.post_process_svg()
 
     def parse(self):
-        # create parser for CLI options
+        """
+        Add the grapher specific options
+        FIXME: In Ansible 2.9, optparse will be replaced by argparse https://github.com/ansible/ansible/pull/50610
+        :return:
+        :rtype:
+        """
         parser = CLI.base_parser(
             usage="%s [options] playbook.yml" % __prog__,
             subset_opts=True,
@@ -72,6 +76,7 @@ class PlaybookGrapherCLI(CLI):
         display.verbosity = self.options.verbosity
 
         if self.options.output_filename is None:
+            # use the playbook name (without the extension) as output filename
             self.options.output_filename = os.path.splitext(ntpath.basename(self.args[0]))[0]
 
 

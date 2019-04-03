@@ -1,0 +1,16 @@
+---
+- hosts: all
+  tags:
+    - play2
+  roles:
+    - role: fake_role
+      tags:
+        - role_tag
+
+  tasks:
+    - name: Hello world
+      debug:
+        msg: Hello world
+    - name: Import role
+      import_role:
+        name: fake_role_2

@@ -1,13 +1,15 @@
 language: python
 python:
   - "2.7"
-  - "3.5"
+  - "3.6"
 
 env:
-  - ANSIBLE_VERSION=2.4
-  - ANSIBLE_VERSION=2.5
-  - ANSIBLE_VERSION=2.6
   - ANSIBLE_VERSION=2.7
+  - ANSIBLE_VERSION=2.7.9
+
+branches:
+  only:
+    - master
 
 before_install:
   - sudo apt-get -qq update
@@ -15,7 +17,7 @@ before_install:
   - pip install -U pip setuptools wheel
 
 install:
-  - pip install -qUr requirements_tests.txt
+  - pip install -qUr tests/requirements_tests.txt
   - pip install -q ansible==$ANSIBLE_VERSION
   - pip freeze
 

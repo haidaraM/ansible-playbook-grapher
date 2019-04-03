@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tags:
+    - play2
+  tasks:
+    - name: Include role
+      include_role:
+        name: fake_role_2

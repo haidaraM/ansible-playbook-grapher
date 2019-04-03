@@ -1,0 +1,6 @@
+---
+- name: Import playbook
+  import_playbook: playbooks/level1/level1.yml
+
+- name: Import playbook 2
+  import_playbook: playbooks/manage-servers.yml

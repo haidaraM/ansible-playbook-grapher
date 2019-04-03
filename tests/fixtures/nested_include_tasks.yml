@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+    - name: First include
+      vars:
+        import_path: "nested_tasks_2.yml"
+      include_tasks: "tasks/tasks.yml"

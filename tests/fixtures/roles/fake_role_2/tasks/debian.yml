@@ -1,0 +1,3 @@
+---
+- name: Specific included task for Debian
+  debug: msg="Specific task for Debian"

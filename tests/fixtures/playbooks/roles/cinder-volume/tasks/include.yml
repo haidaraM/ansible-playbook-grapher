@@ -1,0 +1,6 @@
+---
+- name: Hello world 2
+  debug: msg="Hello world"
+
+- name: Include tasks 2
+  include_tasks: include2.yml

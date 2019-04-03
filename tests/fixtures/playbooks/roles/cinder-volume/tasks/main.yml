@@ -1,0 +1,7 @@
+---
+- name: Hello world
+  debug: msg="Hello world"
+
+- name: Include tasks from role
+  include_tasks: include.yml
+
