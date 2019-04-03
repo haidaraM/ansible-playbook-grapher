@@ -226,6 +226,7 @@ class Grapher(object):
                                                   node_name_prefix="[post_task] ")
 
             self.display.banner("Done graphing {}".format(play_name))
+            self.display.display("")  # just an empty line
             # moving to the next play
 
     def render_graph(self):
@@ -237,6 +238,12 @@ class Grapher(object):
 
         self.rendered_file_path = self.graph.render(cleanup=not self.options.save_dot_file,
                                                     filename=self.options.output_filename)
+        if self.options.save_dot_file:
+            # add .gv extension. The render doesn't add an extension
+            final_name = self.options.output_filename + ".dot"
+            os.rename(self.options.output_filename, final_name)
+            self.display.display("Graphviz dot file has been exported to {}".format(final_name))
+
         return self.rendered_file_path
 
     def post_process_svg(self):
@@ -252,7 +259,7 @@ class Grapher(object):
 
         post_processor.write()
 
-        self.display.display("The graph has been exported to {}.".format(self.rendered_file_path))
+        self.display.display("The graph has been exported to {}".format(self.rendered_file_path))
 
         return self.rendered_file_path
 
