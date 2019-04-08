@@ -1,9 +1,10 @@
-# 0.9.0 (Unreleased)
+# 0.9.0
  - New Feature: Add the support for include_role, import_role, include_playbook,...
  - Fix https://github.com/haidaraM/ansible-playbook-grapher/issues/16
  - Add more tests
- - Some code optimization
- 
+ - CLI more verbose: `-v` or `-vv` etc...
+ - Add `.dot` extension to graphviz exported file (option `-s`) 
+ - ...
 
 # 0.8.3
  - Fix: Return code of the script
