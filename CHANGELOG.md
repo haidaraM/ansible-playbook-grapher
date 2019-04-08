@@ -1,5 +1,5 @@
 # 0.9.0
- - New Feature: Add the support for include_role, import_role, include_playbook,...
+ - New Feature: Add the support for include_role, import_role, import_playbook
  - Fix https://github.com/haidaraM/ansible-playbook-grapher/issues/16
  - Add more tests
  - CLI more verbose: `-v` or `-vv` etc...
