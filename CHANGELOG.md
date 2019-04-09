@@ -1,4 +1,5 @@
 # 0.9.0
+ - The grapher now requires Ansible >= 2.7.0
  - New Feature: Add the support for include_role, import_role, import_playbook
  - Fix https://github.com/haidaraM/ansible-playbook-grapher/issues/16
  - Add more tests
