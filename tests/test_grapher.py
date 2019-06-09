@@ -4,7 +4,7 @@ import pytest
 from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__
-from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
+from ansibleplaybookgrapher.cli import get_cli_class
 from tests import FIXTURES_DIR
 
 
@@ -32,7 +32,7 @@ def run_grapher(playbook_path, output_filename=None, additional_args=None):
 
     args.append(playbook_path)
 
-    cli = PlaybookGrapherCLI(args)
+    cli = get_cli_class()(args)
 
     cli.parse()
 
