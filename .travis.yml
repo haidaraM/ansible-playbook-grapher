@@ -7,7 +7,7 @@ env:
   - ANSIBLE_VERSION=2.7
   - ANSIBLE_VERSION=2.7.9
   - ANSIBLE_VERSION=2.8
-  - ANSIBLE_VERSION=2.8.2
+  - ANSIBLE_VERSION=2.8.6
 
 branches:
   only:
