@@ -1,3 +1,6 @@
+# 0.10 (Unreleased)
+ - Add support for Ansible 2.9 ([\#25](https://github.com/haidaraM/ansible-playbook-grapher/pull/25))
+
 # 0.9.1
 Fix issue [\#18](https://github.com/haidaraM/ansible-playbook-grapher/issues/18) with Ansible 2.8: the CLI was refactored in https://github.com/ansible/ansible/pull/50069. See https://github.com/haidaraM/ansible-playbook-grapher/pull/19 for the related changes. 
 
