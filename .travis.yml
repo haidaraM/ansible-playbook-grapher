@@ -6,6 +6,7 @@ python:
 env:
   - ANSIBLE_VERSION=2.8.6
   - ANSIBLE_VERSION=2.9.0
+  - ANSIBLE_VERSION=2.9.5
 
 branches:
   only:
