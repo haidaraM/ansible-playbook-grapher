@@ -1,4 +1,4 @@
-# 0.10 (Unreleased)
+# 0.9.2
  - Add support for Ansible 2.9 ([\#25](https://github.com/haidaraM/ansible-playbook-grapher/pull/25))
 
 # 0.9.1
