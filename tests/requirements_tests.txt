@@ -1,4 +1,4 @@
 -r ../requirements.txt
-pytest
-pytest-cov
-pyquery
+pytest==5.3.5
+pytest-cov==2.8.1
+pyquery==1.4.1
