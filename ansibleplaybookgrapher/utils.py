@@ -204,8 +204,8 @@ class PostProcessor(object):
     def _insert_graph_representation(self, graph_representation):
         for node, node_links in graph_representation.graph_dict.items():
             # Find the group g with the specified id
-            element = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
-
+            if self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE}):
+                element = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
             root_subelement = etree.Element('links')
 
             for link in node_links:
