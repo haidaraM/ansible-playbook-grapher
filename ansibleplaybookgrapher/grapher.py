@@ -119,19 +119,19 @@ class Grapher(object):
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
 
-            play_vars = self.variable_manager.get_vars(play)
-            play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
-            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
-            play_name = self.template(play_name, play_vars)
-
-            self.display.banner("Graphing " + play_name)
-
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
                 self.data_loader.set_basedir(play._included_path)
             else:
                 self.data_loader.set_basedir(self.playbook._basedir)
             self.display.vvv("Loader basedir set to {}".format(self.data_loader.get_basedir()))
+
+            play_vars = self.variable_manager.get_vars(play)
+            play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
+            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
+            play_name = self.template(play_name, play_vars)
+
+            self.display.banner("Graphing " + play_name)
 
             play_id = "play_" + str(uuid.uuid4())
 
