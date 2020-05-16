@@ -247,4 +247,8 @@ def test_relative_var_files(request):
     """
     playbook_path = os.path.join(FIXTURES_DIR, "relative_var_files.yml")
     svg_path = run_grapher(playbook_path, output_filename=request.node.name)
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
+    res = _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
+
+    # check if the plays title contains the interpolated variables
+    assert 'Cristiano Ronaldo' in res['tasks'][0].find('title').text, 'The title should contain player name'
+    assert 'Lionel Messi' in res['tasks'][1].find('title').text, 'The title should contain player name'
