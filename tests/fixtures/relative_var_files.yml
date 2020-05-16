@@ -1,0 +1,12 @@
+- hosts: all
+  gather_facts: no
+  vars_files:
+    - ./vars/some_vars.yml
+  tasks:
+    - name: "{{ player_1 }}"
+      debug:
+        msg: "Hello {{ player_1 }}"
+
+    - name: "{{ player_2 }}"
+      debug:
+        msg: "Hello {{ player_2 }}"

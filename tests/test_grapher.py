@@ -237,3 +237,14 @@ def test_nested_import_playbook(request, include_role_tasks_option, expected_tas
     svg_path = run_grapher(playbook_path, output_filename=request.node.name,
                            additional_args=[include_role_tasks_option])
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=expected_tasks_number)
+
+
+def test_relative_var_files(request):
+    """
+    Test a playbook with a relative var file
+    :param request:
+    :return:
+    """
+    playbook_path = os.path.join(FIXTURES_DIR, "relative_var_files.yml")
+    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
