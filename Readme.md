@@ -25,8 +25,8 @@ $ pip install ansible-playbook-grapher
 
 ## Usage
 
-```
-$ ansible-playbook-grapher tests/fixtures/example.png
+```shell
+$ ansible-playbook-grapher tests/fixtures/example.yml
 ```
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/tests/fixtures/img/example.png)
