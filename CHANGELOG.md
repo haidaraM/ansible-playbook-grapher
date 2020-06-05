@@ -1,3 +1,8 @@
+# 0.10.0 (Unreleased)
+ - Fix [\#13](https://github.com/haidaraM/ansible-playbook-grapher/issues/13): Tasks with same names are not mapped
+  anymore to the same nodes.
+ - pytest-cov from 2.8.1 to 2.9.0 via Dependant bot
+
 # 0.9.4
  - Fix playbook with relative var_file. Fix #35
  - Add dependant bot to the repo:
