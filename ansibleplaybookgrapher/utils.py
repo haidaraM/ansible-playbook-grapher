@@ -30,7 +30,7 @@ def clean_id(identifier):
     Convert name to md5 to avoid issues with special chars,
     The ID are not visible to end user in web/rendered graph so we do
     not have to care to make them look pretty.
-    There are chances for hash collisions but we do not care for that
+    There are chances for hash collisions, but we do not care for that
     so much in here.
     :param identifier: string which represents id
     :return: string representing a hex hash

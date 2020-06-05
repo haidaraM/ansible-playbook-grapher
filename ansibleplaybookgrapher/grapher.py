@@ -168,10 +168,9 @@ class Grapher(object):
                         continue
 
                     role_number += 1
-
                     role_name = "[role] " + clean_name(role.get_name())
 
-                    # the role object doesn't inherit the tags from the play. So we add it manually
+                    # the role object doesn't inherit the tags from the play. So we add it manually.
                     role.tags = role.tags + play.tags
 
                     role_not_tagged = ""
@@ -350,7 +349,7 @@ class Grapher(object):
                                                                  current_counter=loop_counter, play_vars=task_vars,
                                                                  node_name_prefix=node_name_prefix)
             else:
-                # check if this task comes from a role and we dont want to include role's task
+                # check if this task comes from a role, and we don't want to include role's task
                 if has_role_parent(task_or_block) and not self.options.include_role_tasks:
                     # skip role's task
                     self.display.vv("The task '{}' has a role as parent and include_role_tasks is false. "
