@@ -35,8 +35,9 @@
       command: /bin/true
 
   post_tasks:
-    - name: Post task 1
-      debug: msg="Postask"
+    - name: Post task
+      debug: msg="Post task 1"
 
-    - name: Posttask 2
-      debug: msg="Postask"
+    # We use the same name here just to test if we have two distinct nodes in the graph.
+    - name: Post task
+      debug: msg="Post task"

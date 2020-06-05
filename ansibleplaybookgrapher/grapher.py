@@ -391,8 +391,8 @@ class Grapher(object):
         task_id = id_prefix + str(uuid.uuid4()) + tagged
         edge_id = "edge_" + str(uuid.uuid4()) + tagged
 
-        graph.node(task_name, shape="octagon", id=task_id)
-        graph.edge(parent_node_name, task_name, label=task_edge_label, color=color, fontcolor=color, style="bold",
+        graph.node(task_id, label=task_name, shape="octagon", id=task_id)
+        graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
                    id=edge_id)
         self.graph_representation.add_link(parent_node_id, edge_id)
         self.graph_representation.add_link(edge_id, task_id)
