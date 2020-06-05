@@ -1,4 +1,3 @@
-import hashlib
 import os
 
 from ansible.playbook.role_include import IncludeRole
@@ -23,22 +22,6 @@ def clean_name(name):
     :return: string with double quotes converted to html special char
     """
     return name.strip().replace('"', "&#34;")
-
-
-def clean_id(identifier):
-    """
-    Convert name to md5 to avoid issues with special chars,
-    The ID are not visible to end user in web/rendered graph so we do
-    not have to care to make them look pretty.
-    There are chances for hash collisions, but we do not care for that
-    so much in here.
-    :param identifier: string which represents id
-    :return: string representing a hex hash
-    """
-
-    m = hashlib.md5()
-    m.update(identifier.encode('utf-8'))
-    return m.hexdigest()
 
 
 class GraphRepresentation(object):
