@@ -6,7 +6,7 @@
         msg: "Pre import"
 
     - name: Import some tasks
-      import_tasks: tasks.yml
+      import_tasks: tasks/tasks.yml
 
     - name: Post import
       debug:

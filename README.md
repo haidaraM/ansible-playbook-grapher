@@ -40,7 +40,7 @@ $ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 
 Some options are available:
 
-```shell script
+```
 $ ansible-playbook-grapher --help
 usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--include-role-tasks] [-s]
@@ -81,6 +81,15 @@ optional arguments:
                         connection debugging)
 
 ```
+
+## Configuration: ansible.cfg
+The content of `ansible.cfg` is loaded automatically when running the grapher according to Ansible's behavior. The 
+corresponding environment variables are also loaded. 
+ 
+The values in the config file (and their corresponding environment variables) may affect the behavior of the grapher. 
+For example `TAGS_RUN` and `TAGS_SKIP` or vault configuration.
+
+More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
 ## Contribution
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley: 

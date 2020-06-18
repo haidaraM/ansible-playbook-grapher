@@ -1,0 +1,16 @@
+---
+- hosts: all
+  pre_tasks:
+    - name: Pretask 1
+      debug: msg="Pretask"
+      tags:
+        - pre_task_tag_1
+    - name: Pretask 2
+      debug: msg="Pretask"
+      tags:
+        - pre_task_tag_2
+
+  roles:
+    - role: fake_role
+      tags:
+        - role_tag

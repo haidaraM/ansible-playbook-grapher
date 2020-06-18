@@ -1,6 +1,0 @@
----
-- name: Imported tasks one
-  command: /bin/foo
-- name: Imported tasks two
-  command: /bin/bar
-  when: ansible_distribution == "Ubuntu"

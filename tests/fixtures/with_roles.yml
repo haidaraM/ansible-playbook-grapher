@@ -12,7 +12,7 @@
     - name: Pretask 2
       debug: msg="Pretask"
       tags:
-        - post
+        - pre_task_tags
   post_tasks:
     - name: Posttask
       debug: msg="Postask"

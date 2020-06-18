@@ -6,7 +6,7 @@
         msg: "Pre import"
 
     - name: Include some tasks
-      include_tasks: tasks2.yml
+      include_tasks: tasks/tasks2.yml
 
     # This should not fail. Some variables are only available during execution
     - name: Task specific to {{ ansible_distribution }}

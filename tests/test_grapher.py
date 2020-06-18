@@ -52,7 +52,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     :type plays_number: int
     :param tasks_number: Number of tasks in the playbook
     :type tasks_number: int
-    :param post_tasks_number Number of post tasks in the playbook
+    :param post_tasks_number: Number of post tasks in the playbook
     :type post_tasks_number: int
     :return: dict[str, PyQuery]
     """
@@ -60,7 +60,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     pq = PyQuery(filename=svg_path)
     pq.remove_namespaces()
 
-    # test if the file exist. It will exist only if we write in it
+    # test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(svg_path), "The svg file should exist"
     assert pq('#root_node text').text() == playbook_path
 
@@ -82,7 +82,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     assert roles_number == len(roles), "The playbook '{}' should contains {} role(s) but we found {} role(s)".format(
         playbook_path, roles_number, len(roles))
 
-    return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks}
+    return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
 
 
 def test_simple_playbook(request):
@@ -119,7 +119,7 @@ def test_import_tasks(request):
     """
     svg_path, playbook_path = run_grapher("import_tasks.yml", output_filename=request.node.name)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=5)
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
@@ -174,8 +174,7 @@ def test_nested_include_tasks(request):
 def test_import_role(request, include_role_tasks_option, expected_tasks_number):
     """
     Test import_role.yml, an example with import role.
-    Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is
-    parsed.
+    Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is parsed.
     """
     svg_path, playbook_path = run_grapher("import_role.yml", output_filename=request.node.name,
                                           additional_args=[include_role_tasks_option])
@@ -216,3 +215,22 @@ def test_relative_var_files(request):
     # check if the plays title contains the interpolated variables
     assert 'Cristiano Ronaldo' in res['tasks'][0].find('text').text, 'The title should contain player name'
     assert 'Lionel Messi' in res['tasks'][1].find('text').text, 'The title should contain player name'
+
+
+def test_tags(request):
+    """
+    Test a playbook by only graphing a specific tasks based on the given tags
+    """
+    svg_path, playbook_path = run_grapher("tags.yml", output_filename=request.node.name,
+                                          additional_args=["-t", "pre_task_tag_1"])
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=1)
+
+
+def test_skip_tags(request):
+    """
+    Test a playbook by only graphing a specific tasks based on the given tags
+    """
+    svg_path, playbook_path = run_grapher("tags.yml", output_filename=request.node.name,
+                                          additional_args=["--skip-tags", "pre_task_tag_1", "--include-role-tasks"])
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=1, roles_number=1,
+                  tasks_number=3)
