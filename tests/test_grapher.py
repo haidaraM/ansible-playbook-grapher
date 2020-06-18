@@ -8,19 +8,20 @@ from ansibleplaybookgrapher.cli import get_cli_class
 from tests import FIXTURES_DIR
 
 
-def run_grapher(playbook_path, output_filename=None, additional_args=None):
+def run_grapher(playbook_file, output_filename=None, additional_args=None):
     """
     Utility function to run the grapher
     :param output_filename:
     :type output_filename: str
     :param additional_args:
     :type additional_args: list
-    :param playbook_path:
-    :type playbook_path: str
+    :param playbook_file:
+    :type playbook_file: str
     :return:
     :rtype:
     """
     additional_args = additional_args or []
+    playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
     args = [__prog__]
 
     if output_filename:  # the default filename is the playbook file name minus .yml
@@ -36,7 +37,7 @@ def run_grapher(playbook_path, output_filename=None, additional_args=None):
 
     cli.parse()
 
-    return cli.run()
+    return cli.run(), playbook_path
 
 
 def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_tasks_number=0, pre_tasks_number=0,
@@ -90,8 +91,7 @@ def test_simple_playbook(request):
     """
     Test simple_playbook.yml
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "simple_playbook.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("simple_playbook.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, post_tasks_number=2)
 
@@ -103,8 +103,7 @@ def test_example(request):
     :rtype:
     """
 
-    playbook_path = os.path.join(FIXTURES_DIR, "example.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("example.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4,
                   post_tasks_number=2, pre_tasks_number=2)
@@ -116,8 +115,7 @@ def test_include_tasks(request):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "include_tasks.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("include_tasks.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=7)
 
@@ -128,8 +126,7 @@ def test_import_tasks(request):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "import_tasks.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("import_tasks.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4)
 
@@ -143,9 +140,9 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "with_roles.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
-                           additional_args=[include_role_tasks_option])
+
+    svg_path, playbook_path = run_grapher("with_roles.yml", output_filename=request.node.name,
+                                          additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
                   post_tasks_number=2, pre_tasks_number=2, roles_number=1)
@@ -160,9 +157,8 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "include_role.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
-                           additional_args=[include_role_tasks_option])
+    svg_path, playbook_path = run_grapher("include_role.yml", output_filename=request.node.name,
+                                          additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number)
 
@@ -173,8 +169,7 @@ def test_with_block(request):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "with_block.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
 
@@ -185,8 +180,7 @@ def test_nested_include_tasks(request):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "nested_include_tasks.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("nested_include_tasks.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
 
@@ -202,9 +196,8 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "import_role.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
-                           additional_args=[include_role_tasks_option])
+    svg_path, playbook_path = run_grapher("import_role.yml", output_filename=request.node.name,
+                                          additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
                   roles_number=1)
@@ -218,8 +211,8 @@ def test_import_playbook(request):
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "import_playbook.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+
+    svg_path, playbook_path = run_grapher("import_playbook.yml", output_filename=request.node.name)
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=2, tasks_number=4,
                   post_tasks_number=2)
 
@@ -233,9 +226,8 @@ def test_nested_import_playbook(request, include_role_tasks_option, expected_tas
     :return:
     :rtype:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "nested_import_playbook.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name,
-                           additional_args=[include_role_tasks_option])
+    svg_path, playbook_path = run_grapher("nested_import_playbook.yml", output_filename=request.node.name,
+                                          additional_args=[include_role_tasks_option])
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=2, tasks_number=expected_tasks_number)
 
 
@@ -245,8 +237,7 @@ def test_relative_var_files(request):
     :param request:
     :return:
     """
-    playbook_path = os.path.join(FIXTURES_DIR, "relative_var_files.yml")
-    svg_path = run_grapher(playbook_path, output_filename=request.node.name)
+    svg_path, playbook_path = run_grapher("relative_var_files.yml", output_filename=request.node.name)
     res = _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
 
     # check if the plays title contains the interpolated variables
