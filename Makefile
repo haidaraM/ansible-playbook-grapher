@@ -23,7 +23,10 @@ test_install: build
 	@./test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_VERSION)
 
 test:
-	cd tests && pytest
+	# Ansible 2.8 CLI sets some global variables causing the tests to fail if the cli tests are run before
+	# the grapher tests. It works in Ansible 2.9. So here we explicitly set the tests order.
+	# TODO: Remove pytest arguments when we drop support for Ansible 2.8
+	cd tests && pytest test_grapher.py test_cli.py test_postprocessor.py
 
 clean:
 	@echo "Cleaning..."

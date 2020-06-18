@@ -1,7 +1,7 @@
 import ntpath
 import os
-
 import sys
+
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
@@ -28,7 +28,7 @@ def get_cli_class():
 
 class PlaybookGrapherCLI28(CLI):
     """
-    Dedicated playbook for Ansible 2.8
+    The dedicated playbook CLI for Ansible 2.8
     """
 
     def __init__(self, args, callback=None):
@@ -105,7 +105,7 @@ class PlaybookGrapherCLI28(CLI):
 
 class PlaybookGrapherCLI29(CLI):
     """
-    Dedicated playbook for Ansible 2.9 and above.
+    The dedicated playbook CLI for Ansible 2.9 and above.
     Note: Use this class as the main CLI when we drop support for ansible < 2.9
     """
 

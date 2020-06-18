@@ -14,13 +14,11 @@ from graphviz import Digraph
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, PostProcessor, get_play_colors, \
     handle_include_path, has_role_parent
 
-NOT_TAGGED = "not_tagged"
-
 
 class CustomDigrah(Digraph):
     """
     Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
-    the node and edge names and overrided some methods.
+    the node and edge names and override some methods.
     """
     _head = "digraph \"%s\"{"
     _edge = "\t\"%s\" -> \"%s\"%s"
@@ -163,29 +161,27 @@ class Grapher(object):
                 self.display.v("Graphing roles...")
                 role_number = 0
                 for role in play.get_roles():
-                    # Don't insert tasks from ``import/include_role``, preventing
-                    # duplicate graphing
+                    # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
                     if role.from_include:
+                        continue
+
+                    # the role object doesn't inherit the tags from the play. So we add it manually.
+                    role.tags = role.tags + play.tags
+                    if not role.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                              all_vars=play_vars):
+                        self.display.vv("The role '{}' is skipped due to the tags.".format(role.get_name()))
+                        # Go to the next role
                         continue
 
                     role_number += 1
                     role_name = "[role] " + clean_name(role.get_name())
 
-                    # the role object doesn't inherit the tags from the play. So we add it manually.
-                    role.tags = role.tags + play.tags
-
-                    role_not_tagged = ""
-                    if not role.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                              all_vars=play_vars):
-                        role_not_tagged = NOT_TAGGED
-
                     with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
                         current_counter = role_number + nb_pre_tasks
-                        role_id = "role_" + str(uuid.uuid4()) + role_not_tagged
+                        role_id = "role_" + str(uuid.uuid4())
+                        edge_id = "edge_" + str(uuid.uuid4())
+
                         role_subgraph.node(role_name, id=role_id)
-
-                        edge_id = "edge_" + str(uuid.uuid4()) + role_not_tagged
-
                         # edge from play to role
                         role_subgraph.edge(play_name, role_name, label=str(current_counter), color=color,
                                            fontcolor=color, id=edge_id)
@@ -308,7 +304,7 @@ class Grapher(object):
 
                     self.display.v("An 'include_role' found. Including tasks from '{}'"
                                    .format(task_or_block.args["name"]))
-                    # here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
+                    # Here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an include_role is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
@@ -350,36 +346,38 @@ class Grapher(object):
                                                                  current_counter=loop_counter, play_vars=task_vars,
                                                                  node_name_prefix=node_name_prefix)
             else:
-                # check if this task comes from a role, and we don't want to include role's task
+                # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.options.include_role_tasks:
                     # skip role's task
                     self.display.vv("The task '{}' has a role as parent and include_role_tasks is false. "
                                     "It will be skipped.".format(task_or_block.get_name()))
+                    # skipping
                     continue
 
-                self._include_task(task_or_block=task_or_block, loop_counter=loop_counter + 1, play_vars=play_vars,
-                                   graph=graph, node_name_prefix=node_name_prefix, color=color,
-                                   parent_node_id=parent_node_id, parent_node_name=parent_node_name)
-
-                loop_counter += 1
+                task_included = self._include_task(task_or_block=task_or_block, loop_counter=loop_counter + 1,
+                                                   play_vars=play_vars,
+                                                   graph=graph, node_name_prefix=node_name_prefix, color=color,
+                                                   parent_node_id=parent_node_id, parent_node_name=parent_node_name)
+                if task_included:
+                    # only increment the counter if task has been successfully included.
+                    loop_counter += 1
 
         return loop_counter
 
     def _include_task(self, task_or_block, loop_counter, play_vars, graph, node_name_prefix, color, parent_node_id,
                       parent_node_name):
         """
-        Include the task in the graph
-        :return:
-        :rtype:
+        Include the task in the graph.
+        :return: True if the task has been included, false otherwise
+        :rtype: bool
         """
+
         self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
-        # check if the task should be included
-        tagged = ''
+
         if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
                                            all_vars=play_vars):
-            self.display.vv("The task '{}' should not be executed. It will be marked as NOT_TAGGED"
-                            .format(task_or_block.get_name()))
-            tagged = NOT_TAGGED
+            self.display.vv("The task '{}' is skipped due to the tags.".format(task_or_block.get_name()))
+            return False
 
         task_edge_label = str(loop_counter)
         if len(task_or_block.when) > 0:
@@ -389,11 +387,13 @@ class Grapher(object):
         task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
         # get prefix id from node_name
         id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
-        task_id = id_prefix + str(uuid.uuid4()) + tagged
-        edge_id = "edge_" + str(uuid.uuid4()) + tagged
+        task_id = id_prefix + str(uuid.uuid4())
+        edge_id = "edge_" + str(uuid.uuid4())
 
         graph.node(task_id, label=task_name, shape="octagon", id=task_id)
         graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
                    id=edge_id)
         self.graph_representation.add_link(parent_node_id, edge_id)
         self.graph_representation.add_link(edge_id, task_id)
+
+        return True
