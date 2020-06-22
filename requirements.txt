@@ -2,4 +2,4 @@ ansible>=2.8.0
 graphviz==0.14
 colour==0.1.5
 lxml==4.5.0
-packaging==20.3
+packaging==20.4
