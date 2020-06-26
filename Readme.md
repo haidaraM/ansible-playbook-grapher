@@ -76,21 +76,8 @@ Options:
   -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
                         connection debugging)
   --version             show program's version number and exit
+
 ```
-
-## Configuration: ansible.cfg
-The content of `ansible.cfg` is loaded automatically when running the grapher. Their corresponding environment variables
-are also loaded. 
- 
-Currently, the following configurations are explicitly used:
- - `display_skipped_hosts` or `ANSIBLE_DISPLAY_SKIPPED_HOSTS`: When `false` or `0`, the skipped tasks/roles are removed
- from the graph. By default, skipped tags have a lower opacity.
- - ...
-
-Note that some other params in the config file can affect the behavior of the grapher. For example `TAGS_RUN` and `TAGS_SKIP`
-or vault configuration.
-
-More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
 ## Contribution
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley: 
