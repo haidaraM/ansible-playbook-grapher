@@ -23,7 +23,7 @@ def read_requirements(path):
 install_requires = read_requirements('requirements.txt')
 test_require = read_requirements('tests/requirements_tests.txt')[1:]
 
-with open('Readme.md') as f:
+with open('README.md') as f:
     long_description = f.read()
 
 # add `pytest-runner` distutils plugin for test;

@@ -14,12 +14,12 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
  If you still use an older version of Ansible, create an virtual environment and install ansible-playbook-grapher. **`pip install` will install a version of Ansible >= 2.8** 
 
  * **graphviz**: The tool used to generate the graph in SVG. 
- ```
+ ```shell script
  $ sudo apt-get install graphviz # or yum install or brew install
  ```
  
 ## Installation
-```
+```shell script
 $ pip install ansible-playbook-grapher
 ```
 
@@ -29,20 +29,18 @@ $ pip install ansible-playbook-grapher
 $ ansible-playbook-grapher tests/fixtures/example.yml
 ```
 
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/tests/fixtures/img/example.png)
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/example.png)
 
 
+```shell script
+$ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 ```
-$ ansible-playbook-grapher --include-role-tasks  examples/example_with_roles.yml
-```
 
-
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/tests/fixtures/img/example_with_roles.png)
-
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/with_roles.png)
 
 Some options are available:
 
-```
+```shell script
 $ ansible-playbook-grapher --help
 Usage: ansible-playbook-grapher [options] playbook.yml
 
@@ -83,14 +81,16 @@ Options:
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley: 
 
 ### Dev environment
-To setup a new development environment:
+To setup a new development environment :
  - Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
- - pip install -r requirements.txt
+ - (cd tests && pip install -r requirements_tests.txt)
 
 Run the tests with:
-```bash
-$ make test
+```shell script
+$ make test # run all tests
 ```
+
+The graphs are generated in the folder `tests/generated_svg`.
 
 ## TODO
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
