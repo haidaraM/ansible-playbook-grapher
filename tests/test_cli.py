@@ -23,7 +23,7 @@ def test_cli_help(help_option, capfd):
 
     out, err = capfd.readouterr()
 
-    assert "Make graph from your Playbook." in out
+    assert "Make graphs from your Ansible Playbooks." in out
 
 
 def test_cli_version(capfd):
