@@ -1,7 +1,7 @@
 import ntpath
 import os
-import sys
 
+import sys
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
@@ -43,7 +43,7 @@ class PlaybookGrapherCLI28(CLI):
         :return:
         """
         self.parser.add_option('-i', '--inventory', dest='inventory', action="append",
-                               help="specify inventory host path (default=[%s]) or comma separated host list. ")
+                               help="specify inventory host path or comma separated host list.")
 
         self.parser.add_option("--include-role-tasks", dest="include_role_tasks", action='store_true', default=False,
                                help="Include the tasks of the role in the graph.")
@@ -58,7 +58,7 @@ class PlaybookGrapherCLI28(CLI):
 
     def init_parser(self, usage="", desc=None, epilog=None):
         super(PlaybookGrapherCLI28, self).init_parser(usage="%s [options] playbook.yml" % __prog__,
-                                                      desc="Make graph from your Playbook.", epilog=epilog)
+                                                      desc="Make graphs from your Ansible Playbooks.", epilog=epilog)
         self._add_my_options()
 
         from ansible.cli.arguments import optparse_helpers as opt_help
@@ -124,7 +124,7 @@ class PlaybookGrapherCLI29(CLI):
         self.parser.prog = __prog__
 
         self.parser.add_argument('-i', '--inventory', dest='inventory', action="append",
-                                 help="specify inventory host path (default=[%s]) or comma separated host list. ")
+                                 help="specify inventory host path or comma separated host list.")
 
         self.parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true', default=False,
                                  help="Include the tasks of the role in the graph.")
@@ -142,7 +142,7 @@ class PlaybookGrapherCLI29(CLI):
 
     def init_parser(self, usage="", desc=None, epilog=None):
         super(PlaybookGrapherCLI29, self).init_parser(usage="%s [options] playbook.yml" % __prog__,
-                                                      desc="Make graph from your Playbook.", epilog=epilog)
+                                                      desc="Make graphs from your Ansible Playbooks.", epilog=epilog)
 
         self._add_my_options()
 

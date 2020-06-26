@@ -42,38 +42,43 @@ Some options are available:
 
 ```shell script
 $ ansible-playbook-grapher --help
-Usage: ansible-playbook-grapher [options] playbook.yml
+usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
+                                [--include-role-tasks] [-s]
+                                [-o OUTPUT_FILENAME] [--version] [-t TAGS]
+                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
+                                [--ask-vault-pass | --vault-password-file VAULT_PASSWORD_FILES]
+                                [-e EXTRA_VARS]
+                                playbook
 
-Make graph from your Playbook.
+Make graphs from your Ansible Playbooks.
 
-Options:
+positional arguments:
+  playbook              Playbook to graph
+
+optional arguments:
   --ask-vault-pass      ask for vault password
-  -e EXTRA_VARS, --extra-vars=EXTRA_VARS
+  --include-role-tasks  Include the tasks of the role in the graph.
+  --skip-tags SKIP_TAGS
+                        only run plays and tasks whose tags do not match these
+                        values
+  --vault-id VAULT_IDS  the vault identity to use
+  --vault-password-file VAULT_PASSWORD_FILES
+                        vault password file
+  --version             show program's version number and exit
+  -e EXTRA_VARS, --extra-vars EXTRA_VARS
                         set additional variables as key=value or YAML/JSON, if
                         filename prepend with @
   -h, --help            show this help message and exit
-  --include-role-tasks  Include the tasks of the role in the graph.
-  -i INVENTORY, --inventory=INVENTORY
-                        specify inventory host path (default=[%s]) or comma
-                        separated host list.
-  --new-vault-id=NEW_VAULT_ID
-                        the new vault identity to use for rekey
-  --new-vault-password-file=NEW_VAULT_PASSWORD_FILES
-                        new vault password file for rekey
-  -o OUTPUT_FILE_NAME, --ouput-file-name=OUTPUT_FILE_NAME
+  -i INVENTORY, --inventory INVENTORY
+                        specify inventory host path or comma separated host
+                        list.
+  -o OUTPUT_FILENAME, --ouput-file-name OUTPUT_FILENAME
                         Output filename without the '.svg' extension. Default:
                         <playbook>.svg
   -s, --save-dot-file   Save the dot file used to generate the graph.
-  --skip-tags=SKIP_TAGS
-                        only run plays and tasks whose tags do not match these
-                        values
-  -t TAGS, --tags=TAGS  only run plays and tasks tagged with these values
-  --vault-id=VAULT_IDS  the vault identity to use
-  --vault-password-file=VAULT_PASSWORD_FILES
-                        vault password file
+  -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
   -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
                         connection debugging)
-  --version             show program's version number and exit
 
 ```
 
