@@ -18,7 +18,6 @@ def run_grapher(playbook_file, output_filename=None, additional_args=None):
     :param playbook_file:
     :type playbook_file: str
     :return:
-    :rtype:
     """
     additional_args = additional_args or []
     playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
@@ -55,8 +54,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     :type tasks_number: int
     :param post_tasks_number Number of post tasks in the playbook
     :type post_tasks_number: int
-    :return:
-    :rtype: dict[str, PyQuery]
+    :return: dict[str, PyQuery]
     """
 
     pq = PyQuery(filename=svg_path)
@@ -99,10 +97,7 @@ def test_simple_playbook(request):
 def test_example(request):
     """
     Test example.yml
-    :return:
-    :rtype:
     """
-
     svg_path, playbook_path = run_grapher("example.yml", output_filename=request.node.name)
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=4,
@@ -112,8 +107,6 @@ def test_example(request):
 def test_include_tasks(request):
     """
     Test include_tasks.yml, an example with some included tasks
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("include_tasks.yml", output_filename=request.node.name)
 
@@ -123,8 +116,6 @@ def test_include_tasks(request):
 def test_import_tasks(request):
     """
     Test include_tasks.yml, an example sime some imported tasks
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("import_tasks.yml", output_filename=request.node.name)
 
@@ -137,8 +128,6 @@ def test_import_tasks(request):
 def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
     """
     Test with_roles.yml, an example with roles
-    :return:
-    :rtype:
     """
 
     svg_path, playbook_path = run_grapher("with_roles.yml", output_filename=request.node.name,
@@ -154,8 +143,6 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
 def test_include_role(request, include_role_tasks_option, expected_tasks_number):
     """
     Test include_role.yml, an example with include_role
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("include_role.yml", output_filename=request.node.name,
                                           additional_args=[include_role_tasks_option])
@@ -166,8 +153,6 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
 def test_with_block(request):
     """
     Test with_roles.yml, an example with roles
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name)
 
@@ -177,8 +162,6 @@ def test_with_block(request):
 def test_nested_include_tasks(request):
     """
     Test nested_include.yml, an example with an include tasks that include another tasks
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("nested_include_tasks.yml", output_filename=request.node.name)
 
@@ -193,8 +176,6 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
     Test import_role.yml, an example with import role.
     Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is
     parsed.
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("import_role.yml", output_filename=request.node.name,
                                           additional_args=[include_role_tasks_option])
@@ -206,10 +187,6 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
 def test_import_playbook(request):
     """
     Test import_playbook
-    :param request:
-    :type request:
-    :return:
-    :rtype:
     """
 
     svg_path, playbook_path = run_grapher("import_playbook.yml", output_filename=request.node.name)
@@ -223,8 +200,6 @@ def test_import_playbook(request):
 def test_nested_import_playbook(request, include_role_tasks_option, expected_tasks_number):
     """
     Test nested import playbook with an import_role and include_tasks
-    :return:
-    :rtype:
     """
     svg_path, playbook_path = run_grapher("nested_import_playbook.yml", output_filename=request.node.name,
                                           additional_args=[include_role_tasks_option])
@@ -234,8 +209,6 @@ def test_nested_import_playbook(request, include_role_tasks_option, expected_tas
 def test_relative_var_files(request):
     """
     Test a playbook with a relative var file
-    :param request:
-    :return:
     """
     svg_path, playbook_path = run_grapher("relative_var_files.yml", output_filename=request.node.name)
     res = _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
