@@ -32,7 +32,7 @@ $ ansible-playbook-grapher tests/fixtures/example.yml
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/example.png)
 
 
-```shell script
+```bash
 $ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 ```
 
@@ -100,5 +100,3 @@ The graphs are generated in the folder `tests/generated_svg`.
 ## TODO
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
  - Graphviz : find a way to avoid or reduce edges overlapping
- - Refactor the graph representation
-  
