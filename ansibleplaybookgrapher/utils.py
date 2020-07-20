@@ -130,17 +130,6 @@ class PostProcessor(object):
 
         self.root.insert(index, element)
 
-    def _remove_title(self):
-        """
-        There is title tag in the graph (<title>%3</title>) that I can't change for the moment. So I remove it
-        :return:
-        """
-        # element g with id=graph0 is the root group for the graph.
-        graph_group_element = self.root.xpath("ns:g[@id='graph0']", namespaces={'ns': SVG_NAMESPACE})[0]
-        title_element = graph_group_element.xpath("ns:title", namespaces={'ns': SVG_NAMESPACE})[0]
-
-        graph_group_element.remove(title_element)
-
     def post_process(self, graph_representation=None, *args, **kwargs):
         """
 
@@ -172,10 +161,8 @@ class PostProcessor(object):
         # insert my css
         self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css', 'id': 'my_css'}, cdata_text=css)
 
-        self._remove_title()
-
         if graph_representation:
-            # insert the graph representation for the links between the nodes
+            # Insert the graph representation for the links between the nodes
             self._insert_graph_representation(graph_representation)
 
     def write(self, output_filename=None):

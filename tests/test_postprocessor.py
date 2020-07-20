@@ -48,19 +48,6 @@ def test_post_processor_insert_tag(post_processor):
     assert post_processor.root[0].get('id') == 'toto'
 
 
-def test_post_processor_remove_title(post_processor):
-    """
-    Test method _remove_title of the PostProcessor
-    :param post_processor:
-    :return:
-    """
-    post_processor._remove_title()
-    root = post_processor.root
-    resultats = root.xpath("ns:g[@id='graph0']/ns:title", namespaces={'ns': SVG_NAMESPACE})
-
-    assert len(resultats) == 0
-
-
 def test_post_processor_write(post_processor, tmpdir):
     """
     Test method write of the PostProcessor

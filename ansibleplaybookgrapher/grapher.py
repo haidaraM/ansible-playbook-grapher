@@ -22,6 +22,7 @@ class CustomDigrah(Digraph):
     Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
     the node and edge names and overrided some methods.
     """
+    _head = "digraph \"%s\"{"
     _edge = "\t\"%s\" -> \"%s\"%s"
     _node = "\t\"%s\"%s"
     _subgraph = "subgraph \"%s\"{"
@@ -74,7 +75,7 @@ class Grapher(object):
 
         if graph is None:
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
-                                      format="svg")
+                                      format="svg", name=self.playbook_filename)
 
     def template(self, data, variables, fail_on_undefined=False):
         """
