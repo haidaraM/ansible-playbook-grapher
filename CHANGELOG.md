@@ -4,7 +4,7 @@
  - Fix: Do not add the skipped tags to the graph [\#24](https://github.com/haidaraM/ansible-playbook-grapher/issues/24)
  - Do not run some tests with Ansible 2.8: Ansible 2.8 sets some global variables causing the tests to fail. 
  To avoid that, these tests are marked to fail. This "mark" should be removed when we drop support for Ansible 2.8
- - FIX. README Usage (#41) 
+ - FIX. README Usage [\#41](https://github.com/haidaraM/ansible-playbook-grapher/pull/41) 
  - Bump pytest-cov from 2.8.1 to 2.9.0 via Dependant bot
  - Bump graphviz from 0.14 to 0.14.1 via Dependant bot
  - Bump pytest from 5.4.3 to 6.0.1
