@@ -21,7 +21,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Python prereqs
-        run: pip install ansible==${{ matrix.ansible-version }} setuptools wheel && pip install -r tests/requirements_tests.txt && pip freeze
+        run: pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel && pip install -r tests/requirements_tests.txt && pip freeze
 
       - name: Install Os prereqs
         run: sudo apt-get install -y graphviz
