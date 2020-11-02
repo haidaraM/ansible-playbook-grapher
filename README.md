@@ -10,8 +10,8 @@ this project is to quickly have an overview of your playbook.
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
 ## Prerequisites
- * **Ansible** >= 2.8: The script has not been tested with an earlier version of Ansible, some features may not work. 
- If you still use an older version of Ansible, create an virtual environment and install ansible-playbook-grapher. **`pip install` will install a version of Ansible >= 2.8** 
+ * **Ansible** >=2.8,<2.10: The script has not been tested with an earlier version of Ansible, some features may not work. 
+ If you still use an older version of Ansible, create an virtual environment and install ansible-playbook-grapher. **`pip install` will install a version of Ansible >=2.8.0,<2.10** 
 
  * **graphviz**: The tool used to generate the graph in SVG. 
  ```shell script
