@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        ansible-version: [2.8.6, 2.9.0, 2.9.5]
+        ansible-version: [2.8.6, 2.9.0, 2.9.14]
 
     steps:
       - name: Checkout code
@@ -27,7 +27,9 @@ jobs:
         run: sudo apt-get install -y graphviz
 
       - name: Pytest
+        env:
+          PY_COLORS: "1"
         run: make test
 
       - name: Test test_install
-        run: make test
+        run: make test_install
