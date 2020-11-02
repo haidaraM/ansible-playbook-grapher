@@ -4,7 +4,7 @@ on: push
 
 jobs:
   pytest:
-    name: Test Py${{ matrix.python-version }} and Ansible ${{ matrix.ansible-version }}
+    name: Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -21,6 +21,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Python prereqs
-        run: pip install -r tests/requirements_tests.txt && pip install ansible==${{ matrix.ansible-version }}
+        run: pip install ansible==${{ matrix.ansible-version }} && pip install -r tests/requirements_tests.txt && pip freeze
 
-      - run: pip freeze
+      - name: Install Os prereqs
+        run: sudo apt-get install -y graphviz
