@@ -4,7 +4,7 @@ on: push
 
 jobs:
   pytest:
-    name: Tests Python ${{ matrix.python-version }}
+    name: Test Python ${{ matrix.python-version }} and Ansible ${{ matrix.ansible-version }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -21,4 +21,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install prereqs
-        run: pip install -qUr tests/requirements_tests.txt ansible==${{ matrix.ansible-version }}
+        run: pip install -qUr tests/requirements_tests.txt && pip install ansible==${{ matrix.ansible-version }}
+
+      - run: pip freeze
