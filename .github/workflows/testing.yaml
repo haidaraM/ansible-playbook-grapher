@@ -25,3 +25,9 @@ jobs:
 
       - name: Install Os prereqs
         run: sudo apt-get install -y graphviz
+
+      - name: Pytest
+        run: make test
+
+      - name: Test test_install
+        run: make test
