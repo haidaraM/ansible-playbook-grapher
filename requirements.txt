@@ -1,4 +1,4 @@
-ansible>=2.8.0,<2.10
+ansible>=2.8.0
 graphviz==0.14.1
 colour==0.1.5
 lxml==4.5.2
