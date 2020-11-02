@@ -1,0 +1,24 @@
+name: Testing
+
+on: push
+
+jobs:
+  pytest:
+    name: Tests Python ${{ matrix.python-version }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        ansible-version: [2.8.6, 2.9.0, 2.9.5]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Setup Python ${{ matrix.python-version }}
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install prereqs
+        run: pip install -qUr tests/requirements_tests.txt ansible==${{ matrix.ansible-version }}
