@@ -21,14 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Python prereqs
+      - name: Install prereqs
         run: |
-          pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel
-          pip install -r tests/requirements_tests.txt coveralls
-          pip freeze
-
-      - name: Install Os prereqs
-        run: sudo apt-get install -y graphviz
+          pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install -r tests/requirements_tests.txt
+          sudo apt-get install -y graphviz
 
       - name: Pytest
         env:
@@ -40,9 +37,9 @@ jobs:
         with:
           name: generated-svgs-py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
           path: tests/generated_svg/
-          if-no-files-found: error
+          if-no-files-found: error # the tests should generate SVGs files
 
-      - name: Test test_install
+      - name: Test installation in virtualenv
         run: make test_install
 
       - name: Upload Coverage
@@ -56,9 +53,9 @@ jobs:
     runs-on: ubuntu-20.04
     name: Finish coverage
     needs: pytest
-    container: python:3-slim
+    container: python:3-slim # just need a simple python container to finish the coverage
     steps:
-      - name: Finished
+      - name: Coveralls finish
         run: pip install coveralls && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
