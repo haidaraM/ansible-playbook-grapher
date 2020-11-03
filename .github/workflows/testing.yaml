@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.7, 3.8 ]
+        python-version: [ 3.7, 3.8 ]
         ansible-version: [ 2.8.6, 2.9.0, 2.9.14 ]
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Install Python prereqs
         run: |
           pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel
-          pip install -r tests/requirements_tests.txt
+          pip install -r tests/requirements_tests.txt coveralls
           pip freeze
 
       - name: Install Os prereqs
@@ -44,3 +44,21 @@ jobs:
 
       - name: Test test_install
         run: make test_install
+
+      - name: Upload Coverage
+        run: coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          COVERALLS_PARALLEL: true
+
+  coveralls:
+    runs-on: ubuntu-20.04
+    needs: pytest
+    steps:
+      - name: Finished
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
