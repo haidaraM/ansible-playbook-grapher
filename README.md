@@ -1,6 +1,6 @@
 # Ansible Playbook Grapher
 
-[![Build Status](https://travis-ci.org/haidaraM/ansible-playbook-grapher.svg?branch=master)](https://travis-ci.org/haidaraM/ansible-playbook-grapher)
+![Testing](https://github.com/haidaraM/ansible-playbook-grapher/workflows/Testing/badge.svg)
 [![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
 [![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=master)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=master)
 
