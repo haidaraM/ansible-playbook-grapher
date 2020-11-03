@@ -5,7 +5,7 @@ on:
 
 jobs:
   pytest:
-    name: Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
+    name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -46,7 +46,7 @@ jobs:
         run: make test_install
 
       - name: Upload Coverage
-        run: coveralls
+        run: cd tests && coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
@@ -54,11 +54,10 @@ jobs:
 
   coveralls:
     runs-on: ubuntu-20.04
+    name: Finish coverage
     needs: pytest
     steps:
       - name: Finished
-        run: |
-          pip3 install --upgrade coveralls
-          coveralls --finish
+        run: pip install coveralls && cd tests && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
