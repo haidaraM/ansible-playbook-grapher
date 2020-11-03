@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        ansible-version: [2.8.6, 2.9.0, 2.9.14]
+        python-version: [ 3.6, 3.7, 3.8 ]
+        ansible-version: [ 2.8.6, 2.9.0, 2.9.14 ]
 
     steps:
       - name: Checkout code
@@ -30,6 +30,13 @@ jobs:
         env:
           PY_COLORS: "1"
         run: make test
+
+      - name: Upload generated SVGs as artefacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: generated SVGs
+          path: tests/generated_svg/
+          if-no-files-found: error
 
       - name: Test test_install
         run: make test_install
