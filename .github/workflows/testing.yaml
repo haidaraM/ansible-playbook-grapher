@@ -1,0 +1,61 @@
+name: Testing
+
+on:
+  - push
+
+jobs:
+  pytest:
+    name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [ 3.7, 3.8 ]
+        ansible-version: [ 2.8.6, 2.9.0, 2.9.14 ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Setup Python ${{ matrix.python-version }}
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install prereqs
+        run: |
+          pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install -r tests/requirements_tests.txt
+          sudo apt-get install -y graphviz
+
+      - name: Pytest
+        env:
+          PY_COLORS: "1"
+        run: make test
+
+      - name: Upload generated SVGs as artefacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: generated-svgs-py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          path: tests/generated_svg/
+          if-no-files-found: error # the tests should generate SVGs files
+
+      - name: Test installation in virtualenv
+        run: make test_install
+
+      - name: Upload Coverage
+        run: cd tests && coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          COVERALLS_PARALLEL: true
+
+  coveralls:
+    runs-on: ubuntu-20.04
+    name: Finish coverage
+    needs: pytest
+    container: python:3-slim # just need a simple python container to finish the coverage
+    steps:
+      - name: Coveralls finish
+        run: pip install coveralls && coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
