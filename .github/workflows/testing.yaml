@@ -56,8 +56,9 @@ jobs:
     runs-on: ubuntu-20.04
     name: Finish coverage
     needs: pytest
+    container: python:3-slim
     steps:
       - name: Finished
-        run: pip install coveralls && cd tests && coveralls --finish
+        run: pip install coveralls && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
