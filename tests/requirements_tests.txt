@@ -1,4 +1,4 @@
 -r ../requirements.txt
 pytest==6.1.0
-pytest-cov==2.10.0
+pytest-cov==2.10.1
 pyquery==1.4.1
