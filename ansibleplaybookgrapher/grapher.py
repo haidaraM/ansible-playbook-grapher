@@ -1,14 +1,19 @@
 import os
 import uuid
+from typing import Dict, Union
 
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
-from ansible.playbook import Playbook
+from ansible.inventory.manager import InventoryManager
+from ansible.parsing.dataloader import DataLoader
+from ansible.parsing.yaml.objects import AnsibleUnicode
+from ansible.playbook import Playbook, Play
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
+from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, PostProcessor, get_play_colors, \
@@ -28,28 +33,24 @@ class CustomDigrah(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-class Grapher(object):
+class Grapher:
     """
     Main class to make the graph
     """
     DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
-    def __init__(self, data_loader, inventory_manager, variable_manager, playbook_filename, options, graph=None):
+    def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
+                 playbook_filename: str, options, graph: CustomDigrah = None):
         """
         Main grapher responsible to parse the playbook and draw graph
         :param data_loader:
-        :type data_loader: ansible.parsing.dataloader.DataLoader
         :param inventory_manager:
-        :type inventory_manager: ansible.inventory.manager.InventoryManager
         :param variable_manager:
-        :type variable_manager: ansible.vars.manager.VariableManager
         :param options Command line options
         :type options: optparse.Values
         :param playbook_filename:
-        :type playbook_filename: str
         :param graph:
-        :type graph: Digraph
         """
         self.options = options
         self.variable_manager = variable_manager
@@ -75,15 +76,13 @@ class Grapher(object):
             self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
                                       format="svg", name=self.playbook_filename)
 
-    def template(self, data, variables, fail_on_undefined=False):
+    def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
+                 fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
         """
         Template the data using Jinja. Return data if an error occurs during the templating
-        :param fail_on_undefined:
-        :type fail_on_undefined: bool
         :param data:
-        :type data: Union[str, ansible.parsing.yaml.objects.AnsibleUnicode]
+        :param fail_on_undefined:
         :param variables:
-        :type variables: dict
         :return:
         """
         try:
@@ -109,7 +108,6 @@ class Grapher(object):
             draw tasks
             draw post_tasks
         :return:
-        :rtype:
         """
 
         # the root node
@@ -225,11 +223,10 @@ class Grapher(object):
             self.display.display("")  # just an empty line
             # moving to the next play
 
-    def render_graph(self):
+    def render_graph(self) -> str:
         """
         Render the graph
         :return: The rendered file path
-        :rtype: str
         """
 
         self.rendered_file_path = self.graph.render(cleanup=not self.options.save_dot_file,
@@ -242,12 +239,10 @@ class Grapher(object):
 
         return self.rendered_file_path
 
-    def post_process_svg(self):
+    def post_process_svg(self) -> str:
         """
         Post process the rendered svg
         :return The post processed file path
-        :rtype: str
-        :return:
         """
         post_processor = PostProcessor(svg_path=self.rendered_file_path)
 
@@ -259,31 +254,22 @@ class Grapher(object):
 
         return self.rendered_file_path
 
-    def _include_tasks_in_blocks(self, current_play, graph, parent_node_name, parent_node_id, block, color,
-                                 current_counter, play_vars=None, node_name_prefix=""):
+    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigrah, parent_node_name: str,
+                                 parent_node_id: str, block: Union[Block, TaskInclude], color: str,
+                                 current_counter: int, play_vars: Dict = None, node_name_prefix: str = "") -> int:
         """
         Recursively read all the tasks of the block and add it to the graph
         FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
         :param current_play:
-        :type current_play: ansible.playbook.play.Play
         :param graph:
-        :type graph:
         :param parent_node_name:
-        :type parent_node_name: str
         :param parent_node_id:
-        :type parent_node_id: str
         :param block:
-        :type block: Union[Block,TaskInclude]
         :param color:
-        :type color: str
         :param current_counter:
-        :type current_counter: int
         :param play_vars:
-        :type play_vars: dict
         :param node_name_prefix:
-        :type node_name_prefix: str
         :return:
-        :rtype:
         """
 
         loop_counter = current_counter
@@ -364,12 +350,12 @@ class Grapher(object):
 
         return loop_counter
 
-    def _include_task(self, task_or_block, loop_counter, play_vars, graph, node_name_prefix, color, parent_node_id,
-                      parent_node_name):
+    def _include_task(self, task_or_block: Union[Block, TaskInclude], loop_counter: int, play_vars: Dict,
+                      graph: CustomDigrah, node_name_prefix: str, color: str, parent_node_id: str,
+                      parent_node_name: str) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
-        :rtype: bool
         """
 
         self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
