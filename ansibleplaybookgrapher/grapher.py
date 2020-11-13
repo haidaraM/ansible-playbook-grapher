@@ -41,7 +41,7 @@ class Grapher:
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
     def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 playbook_filename: str, options, graph: CustomDigrah = None):
+                 playbook_filename: str, options, graphiz_graph: CustomDigrah = None):
         """
         Main grapher responsible to parse the playbook and draw graph
         :param data_loader:
@@ -50,7 +50,7 @@ class Grapher:
         :param options Command line options
         :type options: optparse.Values
         :param playbook_filename:
-        :param graph:
+        :param graphiz_graph:
         """
         self.options = options
         self.variable_manager = variable_manager
@@ -72,9 +72,9 @@ class Grapher:
         self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
                                       variable_manager=self.variable_manager)
 
-        if graph is None:
-            self.graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
-                                      format="svg", name=self.playbook_filename)
+        if graphiz_graph is None:
+            self.graphiz_graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
+                                              format="svg", name=self.playbook_filename)
 
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
                  fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
@@ -111,7 +111,7 @@ class Grapher:
         """
 
         # the root node
-        self.graph.node(self.playbook_filename, style="dotted", id="root_node")
+        self.graphiz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
@@ -134,7 +134,7 @@ class Grapher:
 
             self.graph_representation.add_node(play_id)
 
-            with self.graph.subgraph(name=play_name) as play_subgraph:
+            with self.graphiz_graph.subgraph(name=play_name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
                 play_subgraph.node(play_name, id=play_id, style="filled", shape="box", color=color,
@@ -174,7 +174,7 @@ class Grapher:
                     role_number += 1
                     role_name = "[role] " + clean_name(role.get_name())
 
-                    with self.graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
+                    with self.graphiz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
                         current_counter = role_number + nb_pre_tasks
                         role_id = "role_" + str(uuid.uuid4())
                         edge_id = "edge_" + str(uuid.uuid4())
@@ -229,8 +229,8 @@ class Grapher:
         :return: The rendered file path
         """
 
-        self.rendered_file_path = self.graph.render(cleanup=not self.options.save_dot_file,
-                                                    filename=self.options.output_filename)
+        self.rendered_file_path = self.graphiz_graph.render(cleanup=not self.options.save_dot_file,
+                                                            filename=self.options.output_filename)
         if self.options.save_dot_file:
             # add .gv extension. The render doesn't add an extension
             final_name = self.options.output_filename + ".dot"
