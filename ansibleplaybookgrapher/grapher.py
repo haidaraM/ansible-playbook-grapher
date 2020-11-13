@@ -1,8 +1,8 @@
 import os
 import uuid
-from typing import Dict, Union
+from typing import Dict, Union, List
 
-from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
+from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.parsing.yaml.objects import AnsibleUnicode
@@ -19,8 +19,11 @@ from graphviz import Digraph
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, PostProcessor, get_play_colors, \
     handle_include_path, has_role_parent
 
+DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
+DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
-class CustomDigrah(Digraph):
+
+class CustomDigraph(Digraph):
     """
     Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
     the node and edge names and override some methods.
@@ -33,48 +36,30 @@ class CustomDigrah(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-class Grapher:
+class BaseGrapher:
     """
-    Main class to make the graph
+    Base grapher
     """
-    DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
-    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
     def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 playbook_filename: str, options, graphiz_graph: CustomDigrah = None):
-        """
-        Main grapher responsible to parse the playbook and draw graph
-        :param data_loader:
-        :param inventory_manager:
-        :param variable_manager:
-        :param options Command line options
-        :type options: optparse.Values
-        :param playbook_filename:
-        :param graphiz_graph:
-        """
-        self.options = options
-        self.variable_manager = variable_manager
-        self.inventory_manager = inventory_manager
+                 graph_representation: GraphRepresentation, tags: List[str] = None, skip_tags: List[str] = None,
+                 graphiz_graph: CustomDigraph = None, display: Display = None):
+
         self.data_loader = data_loader
-        self.playbook_filename = playbook_filename
-        self.options.output_filename = self.options.output_filename
-        self.rendered_file_path = None
-        self.display = Display(verbosity=options.verbosity)
+        self.inventory_manager = inventory_manager
+        self.variable_manager = variable_manager
+        self.graph_representation = graph_representation
+        self.graphiz_graph = graphiz_graph or CustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
+                                                            format="svg")
+        self.tags = tags or ["all"]
+        self.skip_tags = skip_tags or []
+        self.display = display or Display()
 
-        if self.options.tags is None:
-            self.options.tags = ["all"]
-
-        if self.options.skip_tags is None:
-            self.options.skip_tags = []
-
-        self.graph_representation = GraphRepresentation()
-
-        self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
-                                      variable_manager=self.variable_manager)
-
-        if graphiz_graph is None:
-            self.graphiz_graph = CustomDigrah(edge_attr=self.DEFAULT_EDGE_ATTR, graph_attr=self.DEFAULT_GRAPH_ATTR,
-                                              format="svg", name=self.playbook_filename)
+    def make_graph(self, *args, **kwargs):
+        """
+        Make the graph
+        """
+        raise NotImplementedError("Subclasses should implement make_graph.")
 
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
                  fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
@@ -95,7 +80,70 @@ class Grapher:
             self.display.warning(ansible_error)
             return data
 
-    def make_graph(self):
+    def _include_task(self, task_or_block: Union[Block, TaskInclude], loop_counter: int, play_vars: Dict,
+                      graph: CustomDigraph, node_name_prefix: str, color: str, parent_node_id: str,
+                      parent_node_name: str) -> bool:
+        """
+        Include the task in the graph.
+        :return: True if the task has been included, false otherwise
+        """
+
+        self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
+
+        if not task_or_block.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
+                                           all_vars=play_vars):
+            self.display.vv("The task '{}' is skipped due to the tags.".format(task_or_block.get_name()))
+            return False
+
+        task_edge_label = str(loop_counter)
+        if len(task_or_block.when) > 0:
+            when = "".join(map(str, task_or_block.when))
+            task_edge_label += "  [when: " + when + "]"
+
+        task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
+        # get prefix id from node_name
+        id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
+        task_id = id_prefix + str(uuid.uuid4())
+        edge_id = "edge_" + str(uuid.uuid4())
+
+        graph.node(task_id, label=task_name, shape="octagon", id=task_id)
+        graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
+                   id=edge_id)
+        self.graph_representation.add_link(parent_node_id, edge_id)
+        self.graph_representation.add_link(edge_id, task_id)
+
+        return True
+
+
+class PlaybookGrapher(BaseGrapher):
+    """
+    The playbook grapher. This is the main entrypoint responsible to graph the playbook.
+    """
+
+    def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
+                 playbook_filename: str, display: Display, include_role_tasks=False, tags=None, skip_tags=None):
+        """
+        Main grapher responsible to parse the playbook and draw graph
+        :param data_loader:
+        :param inventory_manager:
+        :param variable_manager:
+        :param include_role_tasks: If true, the tasks of the role will be included.
+        :param playbook_filename:
+        :param graphiz_graph:
+        """
+
+        self.include_role_tasks = include_role_tasks
+        self.playbook_filename = playbook_filename
+        self.playbook = Playbook.load(playbook_filename, loader=data_loader, variable_manager=variable_manager)
+        graphiz_graph = CustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
+                                      format="svg", name=playbook_filename)
+
+        super().__init__(data_loader=data_loader, inventory_manager=inventory_manager,
+                         graphiz_graph=graphiz_graph, variable_manager=variable_manager,
+                         graph_representation=GraphRepresentation(), tags=tags, skip_tags=skip_tags,
+                         display=display)
+
+    def make_graph(self, *args, **kwargs):
         """
         Loop through the playbook and make the graph.
 
@@ -165,7 +213,7 @@ class Grapher:
 
                     # the role object doesn't inherit the tags from the play. So we add it manually.
                     role.tags = role.tags + play.tags
-                    if not role.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
+                    if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
                                               all_vars=play_vars):
                         self.display.vv("The role '{}' is skipped due to the tags.".format(role.get_name()))
                         # Go to the next role
@@ -187,7 +235,7 @@ class Grapher:
                         self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
-                        if self.options.include_role_tasks:
+                        if self.include_role_tasks:
                             role_tasks_counter = 0
                             for block in role.compile(play):
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
@@ -198,6 +246,7 @@ class Grapher:
                                                                                    current_counter=role_tasks_counter,
                                                                                    node_name_prefix="[task] ")
                                 role_tasks_counter += 1
+                # end of roles loop
                 self.display.v("{} roles added to the graph".format(role_number))
 
                 # loop through the tasks
@@ -222,38 +271,41 @@ class Grapher:
             self.display.display("")  # just an empty line
             # moving to the next play
 
-    def render_graph(self) -> str:
+    def render_graph(self, output_filename: str, save_dot_file=False) -> str:
         """
         Render the graph
-        :return: The rendered file path
+        :param output_filename: Output file name without '.svg' extension.
+        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
+        :return: The rendered file path (output_filename.svg)
         """
 
-        self.rendered_file_path = self.graphiz_graph.render(cleanup=not self.options.save_dot_file,
-                                                            filename=self.options.output_filename)
-        if self.options.save_dot_file:
-            # add .gv extension. The render doesn't add an extension
-            final_name = self.options.output_filename + ".dot"
-            os.rename(self.options.output_filename, final_name)
+        rendered_file_path = self.graphiz_graph.render(cleanup=not save_dot_file, format="svg",
+                                                       filename=output_filename)
+        if save_dot_file:
+            # add .dot extension. The render doesn't add an extension
+            final_name = output_filename + ".dot"
+            os.rename(output_filename, final_name)
             self.display.display("Graphviz dot file has been exported to {}".format(final_name))
 
-        return self.rendered_file_path
+        return rendered_file_path
 
-    def post_process_svg(self) -> str:
+    def post_process_svg(self, svg_path: str) -> str:
         """
         Post process the rendered svg
+        :param svg_path: The SVG path to post process
         :return The post processed file path
         """
-        post_processor = PostProcessor(svg_path=self.rendered_file_path)
+        post_processor = PostProcessor(svg_path=svg_path)
 
         post_processor.post_process(graph_representation=self.graph_representation)
 
         post_processor.write()
 
-        self.display.display("The graph has been exported to {}".format(self.rendered_file_path))
+        self.display.display("The graph has been exported to {}".format(svg_path))
 
-        return self.rendered_file_path
+        return svg_path
 
-    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigrah, parent_node_name: str,
+    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node_name: str,
                                  parent_node_id: str, block: Union[Block, TaskInclude], color: str,
                                  current_counter: int, play_vars: Dict = None, node_name_prefix: str = "") -> int:
         """
@@ -332,7 +384,7 @@ class Grapher:
                                                                  node_name_prefix=node_name_prefix)
             else:
                 # check if this task comes from a role, and we don't want to include tasks of the role
-                if has_role_parent(task_or_block) and not self.options.include_role_tasks:
+                if has_role_parent(task_or_block) and not self.include_role_tasks:
                     # skip role's task
                     self.display.vv("The task '{}' has a role as parent and include_role_tasks is false. "
                                     "It will be skipped.".format(task_or_block.get_name()))
@@ -348,37 +400,3 @@ class Grapher:
                     loop_counter += 1
 
         return loop_counter
-
-    def _include_task(self, task_or_block: Union[Block, TaskInclude], loop_counter: int, play_vars: Dict,
-                      graph: CustomDigrah, node_name_prefix: str, color: str, parent_node_id: str,
-                      parent_node_name: str) -> bool:
-        """
-        Include the task in the graph.
-        :return: True if the task has been included, false otherwise
-        """
-
-        self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
-
-        if not task_or_block.evaluate_tags(only_tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                           all_vars=play_vars):
-            self.display.vv("The task '{}' is skipped due to the tags.".format(task_or_block.get_name()))
-            return False
-
-        task_edge_label = str(loop_counter)
-        if len(task_or_block.when) > 0:
-            when = "".join(map(str, task_or_block.when))
-            task_edge_label += "  [when: " + when + "]"
-
-        task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
-        # get prefix id from node_name
-        id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
-        task_id = id_prefix + str(uuid.uuid4())
-        edge_id = "edge_" + str(uuid.uuid4())
-
-        graph.node(task_id, label=task_name, shape="octagon", id=task_id)
-        graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
-                   id=edge_id)
-        self.graph_representation.add_link(parent_node_id, edge_id)
-        self.graph_representation.add_link(edge_id, task_id)
-
-        return True

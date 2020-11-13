@@ -5,10 +5,11 @@ import sys
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
+from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.grapher import Grapher
+from ansibleplaybookgrapher.grapher import PlaybookGrapher
 
 # We need to know if we are using ansible 2.8 because the CLI has been refactored in
 # https://github.com/ansible/ansible/pull/50069
@@ -92,15 +93,17 @@ class PlaybookGrapherCLI28(CLI):
         playbook = self.options.args[0]
 
         loader, inventory, variable_manager = self._play_prereqs()
+        display = Display(verbosity=self.options.verbosity)
 
-        grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=playbook, options=self.options)
+        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
+                                  display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                  playbook_filename=playbook, include_role_tasks=self.options.include_role_tasks)
 
         grapher.make_graph()
 
-        grapher.render_graph()
+        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
 
-        return grapher.post_process_svg()
+        return grapher.post_process_svg(svg_path)
 
 
 class PlaybookGrapherCLI29(CLI):
@@ -168,15 +171,18 @@ class PlaybookGrapherCLI29(CLI):
         super(PlaybookGrapherCLI29, self).run()
 
         loader, inventory, variable_manager = self._play_prereqs()
+        display = Display(verbosity=self.options.verbosity)
 
-        grapher = Grapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                          playbook_filename=self.options.playbook_filename, options=self.options)
+        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
+                                  playbook_filename=self.options.playbook_filename, tags=self.options.tags,
+                                  display=display, skip_tags=self.options.skip_tags,
+                                  include_role_tasks=self.options.include_role_tasks)
 
         grapher.make_graph()
 
-        grapher.render_graph()
+        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
 
-        return grapher.post_process_svg()
+        return grapher.post_process_svg(svg_path)
 
 
 def main(args=None):
