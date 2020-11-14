@@ -174,17 +174,16 @@ class Grapher:
                     role_number += 1
                     role_name = "[role] " + clean_name(role.get_name())
 
+                    # edge from play to role
+                    edge_id = "edge_" + str(uuid.uuid4())
+                    play_subgraph.edge(play_name, role_name, label=str(role_number + nb_pre_tasks), color=color,
+                                       fontcolor=color, id=edge_id)
+                    self.graph_representation.add_link(play_id, edge_id)
+
                     with self.graphiz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
-                        current_counter = role_number + nb_pre_tasks
+
                         role_id = "role_" + str(uuid.uuid4())
-                        edge_id = "edge_" + str(uuid.uuid4())
-
                         role_subgraph.node(role_name, id=role_id)
-                        # edge from play to role
-                        role_subgraph.edge(play_name, role_name, label=str(current_counter), color=color,
-                                           fontcolor=color, id=edge_id)
-
-                        self.graph_representation.add_link(play_id, edge_id)
                         self.graph_representation.add_link(edge_id, role_id)
 
                         # loop through the tasks of the roles
