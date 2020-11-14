@@ -1,3 +1,13 @@
+# Next version (To be released)
+ - ci: Replace Travis by Github actions (#54)
+ - feat: Add type annotations to the source code
+ - fix: Attach play to role edge to play_subgraph instead of role one
+ - refactor: Rename field Grapher.graph to Grapher.graphiz_graph (more explicit)
+ - Bump pytest from 6.0.1 to 6.1.2 (#51)
+ - Bump pytest-cov from 2.10.0 to 2.10.1 (#49)
+ - Bump lxml from 4.5.2 to 4.6.1 (#53)
+ - Bump graphviz from 0.14.1 to 0.14.2 (#52)
+
 # 0.10.0
  - Fix [\#13](https://github.com/haidaraM/ansible-playbook-grapher/issues/13): Tasks with same names are not mapped
   anymore to the same nodes.
