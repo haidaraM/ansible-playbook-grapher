@@ -10,14 +10,14 @@ this project is to quickly have an overview of your playbook.
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
 ## Prerequisites
- * **Ansible** >= 2.8: The script has not been tested with an earlier version of Ansible, some features may not work. 
- If you still use an older version of Ansible, create an virtual environment and install ansible-playbook-grapher. **`pip install` will install a version of Ansible >= 2.8** 
+ - Python 3
+ - **Ansible** >= 2.8: If you still use an older version of Ansible, create a virtual environment and install ansible-playbook-grapher. 
+ **`pip install` will install a version of Ansible >= 2.8 if not already installed.** I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine) for the supported Ansible version. 
+ - **Graphviz**: The tool used to generate the graph in SVG. 
+   ```shell script
+   $ sudo apt-get install graphviz # or yum install or brew install
+   ```
 
- * **graphviz**: The tool used to generate the graph in SVG. 
- ```shell script
- $ sudo apt-get install graphviz # or yum install or brew install
- ```
- 
 ## Installation
 ```shell script
 $ pip install ansible-playbook-grapher
@@ -104,7 +104,7 @@ Run the tests with:
 $ make test # run all tests
 ```
 
-The graphs are generated in the folder `tests/generated_svg`.
+The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when submitting PRs. 
 
 ## TODO
  - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
