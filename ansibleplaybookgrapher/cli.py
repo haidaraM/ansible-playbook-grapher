@@ -93,7 +93,10 @@ class PlaybookGrapherCLI28(CLI):
         playbook = self.options.args[0]
 
         loader, inventory, variable_manager = self._play_prereqs()
-        display = Display(verbosity=self.options.verbosity)
+        # Looks like the display is a singleton. This instruction will NOT return a new instance.
+        # This is why we set the verbosity later because someone set it before us.
+        display = Display()
+        display.verbosity = self.options.verbosity
 
         grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
                                   display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
@@ -171,7 +174,10 @@ class PlaybookGrapherCLI29(CLI):
         super(PlaybookGrapherCLI29, self).run()
 
         loader, inventory, variable_manager = self._play_prereqs()
-        display = Display(verbosity=self.options.verbosity)
+        # Looks like the display is a singleton. This instruction will NOT return a new instance.
+        # This is why we set the verbosity later because someone set it before us.
+        display = Display()
+        display.verbosity = self.options.verbosity
 
         grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
                                   playbook_filename=self.options.playbook_filename, tags=self.options.tags,
