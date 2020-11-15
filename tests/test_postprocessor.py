@@ -1,7 +1,8 @@
 import pytest
 from lxml import etree
 
-from ansibleplaybookgrapher.utils import PostProcessor, SVG_NAMESPACE, GraphRepresentation
+from ansibleplaybookgrapher.postprocessor import PostProcessor, SVG_NAMESPACE
+from ansibleplaybookgrapher.utils import GraphRepresentation
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
