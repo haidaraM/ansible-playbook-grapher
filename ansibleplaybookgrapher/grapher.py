@@ -16,7 +16,7 @@ from ansible.utils.display import Display
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, PostProcessor, get_play_colors, \
+from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, get_play_colors, \
     handle_include_path, has_role_parent
 
 DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
@@ -301,22 +301,6 @@ class PlaybookGrapher(BaseGrapher):
             self.display.display("Graphviz dot file has been exported to {}".format(final_name))
 
         return rendered_file_path
-
-    def post_process_svg(self, svg_path: str) -> str:
-        """
-        Post process the rendered svg
-        :param svg_path: The SVG path to post process
-        :return The post processed file path
-        """
-        post_processor = PostProcessor(svg_path=svg_path)
-
-        post_processor.post_process(graph_representation=self.graph_representation)
-
-        post_processor.write()
-
-        self.display.display("The graph has been exported to {}".format(svg_path))
-
-        return svg_path
 
     def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node_name: str,
                                  parent_node_id: str, block: Union[Block, TaskInclude], color: str,
