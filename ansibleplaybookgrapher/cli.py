@@ -10,9 +10,10 @@ from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.grapher import PlaybookGrapher
-
 # We need to know if we are using ansible 2.8 because the CLI has been refactored in
 # https://github.com/ansible/ansible/pull/50069
+from ansibleplaybookgrapher.utils import PostProcessor
+
 IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 
@@ -105,8 +106,13 @@ class PlaybookGrapherCLI28(CLI):
         grapher.make_graph()
 
         svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
+        post_processor = PostProcessor(svg_path=svg_path)
+        post_processor.post_process(graph_representation=grapher.graph_representation)
+        post_processor.write()
 
-        return grapher.post_process_svg(svg_path)
+        display.display("The graph has been exported to {}".format(svg_path))
+
+        return svg_path
 
 
 class PlaybookGrapherCLI29(CLI):
@@ -187,8 +193,13 @@ class PlaybookGrapherCLI29(CLI):
         grapher.make_graph()
 
         svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
+        post_processor = PostProcessor(svg_path=svg_path)
+        post_processor.post_process(graph_representation=grapher.graph_representation)
+        post_processor.write()
 
-        return grapher.post_process_svg(svg_path)
+        display.display("The graph has been exported to {}".format(svg_path))
+
+        return svg_path
 
 
 def main(args=None):
