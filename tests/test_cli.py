@@ -171,3 +171,17 @@ def test_cli_multiple_playbooks():
 
     with pytest.raises((AnsibleOptionsError, SystemExit)) as exception_info:
         cli.parse()
+
+
+@pytest.mark.parametrize("verbosity, verbosity_number", [("--", 0), ("-v", 1), ("-vv", 2), ("-vvv", 3)],
+                         ids=["no_verbose", "simple_verbose", "double_verbose", "triple_verbose"])
+def test_cli_verbosity_options(verbosity, verbosity_number):
+    """
+    Test verbosity options
+    """
+    args = [__prog__, verbosity, 'playbook1.yml']
+
+    cli = get_cli_class()(args)
+    cli.parse()
+
+    assert cli.options.verbosity == verbosity_number
