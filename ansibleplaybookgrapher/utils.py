@@ -166,15 +166,16 @@ class PostProcessor:
         Insert graph in the SVG
         """
         for node, node_links in graph_representation.graph_dict.items():
+
             # Find the group g with the specified id
-            if self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE}):
-                element = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})[0]
-            root_subelement = etree.Element('links')
+            xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
+            if xpath_result:
+                element = xpath_result[0]
+                root_subelement = etree.Element('links')
+                for link in node_links:
+                    root_subelement.append(etree.Element('link', attrib={'target': link}))
 
-            for link in node_links:
-                root_subelement.append(etree.Element('link', attrib={'target': link}))
-
-            element.append(root_subelement)
+                element.append(root_subelement)
 
 
 def has_role_parent(task_block: Task) -> bool:
