@@ -88,7 +88,7 @@ class BaseGrapher:
         :return: True if the task has been included, false otherwise
         """
 
-        self.display.vv("Adding the task '{}' to the graph".format(task_or_block.get_name()))
+        self.display.vv(f"Adding {node_name_prefix.strip()}: '{task_or_block.get_name()}' to the graph")
 
         if not task_or_block.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
                                            all_vars=play_vars):
@@ -129,7 +129,6 @@ class PlaybookGrapher(BaseGrapher):
         :param variable_manager:
         :param include_role_tasks: If true, the tasks of the role will be included.
         :param playbook_filename:
-        :param graphiz_graph:
         """
 
         self.include_role_tasks = include_role_tasks
@@ -198,11 +197,17 @@ class PlaybookGrapher(BaseGrapher):
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
                     nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                 parent_node_name=play_name, parent_node_id=play_id,
+                                                                 parent_node_name=play_name,
+                                                                 parent_node_id=play_id,
                                                                  block=pre_task_block, color=color,
-                                                                 current_counter=nb_pre_tasks, play_vars=play_vars,
+                                                                 current_counter=nb_pre_tasks,
+                                                                 play_vars=play_vars,
                                                                  node_name_prefix="[pre_task] ")
 
+                # global_tasks_counter will hold the number of pre_tasks + tasks + and post_tasks
+                global_tasks_counter = nb_pre_tasks
+
+                self.display.v(f"{global_tasks_counter} pre_task(s) added to the graph.")
                 # loop through the roles
                 self.display.v("Graphing roles...")
                 role_number = 0
@@ -224,7 +229,7 @@ class PlaybookGrapher(BaseGrapher):
 
                     # edge from play to role
                     edge_id = "edge_" + str(uuid.uuid4())
-                    play_subgraph.edge(play_name, role_name, label=str(role_number + nb_pre_tasks), color=color,
+                    play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
                                        fontcolor=color, id=edge_id)
                     self.graph_representation.add_link(play_id, edge_id)
 
@@ -236,7 +241,7 @@ class PlaybookGrapher(BaseGrapher):
 
                         # loop through the tasks of the roles
                         if self.include_role_tasks:
-                            role_tasks_counter = 0
+                            role_tasks_counter = 0  # the role tasks start a 0
                             for block in role.compile(play):
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
                                                                                    graph=role_subgraph,
@@ -247,25 +252,33 @@ class PlaybookGrapher(BaseGrapher):
                                                                                    node_name_prefix="[task] ")
                                 role_tasks_counter += 1
                 # end of roles loop
-                self.display.v("{} roles added to the graph".format(role_number))
+                self.display.v(f"{role_number} role(s) added to the graph")
 
                 # loop through the tasks
                 self.display.v("Graphing tasks...")
-                nb_tasks = 0
                 for task_block in play.tasks:
-                    nb_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                             parent_node_name=play_name, parent_node_id=play_id,
-                                                             block=task_block, color=color,
-                                                             current_counter=role_number + nb_pre_tasks,
-                                                             play_vars=play_vars, node_name_prefix="[task] ")
+                    global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
+                                                                         parent_node_name=play_name,
+                                                                         parent_node_id=play_id,
+                                                                         block=task_block, color=color,
+                                                                         current_counter=role_number + global_tasks_counter,
+                                                                         play_vars=play_vars,
+                                                                         node_name_prefix="[task] ")
+                nb_tasks = global_tasks_counter - role_number - nb_pre_tasks
+                self.display.v(f"{nb_tasks} task(s) added to the graph.")
 
                 # loop through the post_tasks
                 self.display.v("Graphing post_tasks...")
                 for post_task_block in play.post_tasks:
-                    self._include_tasks_in_blocks(current_play=play, graph=play_subgraph, parent_node_name=play_name,
-                                                  parent_node_id=play_id, block=post_task_block, color=color,
-                                                  current_counter=nb_tasks, play_vars=play_vars,
-                                                  node_name_prefix="[post_task] ")
+                    global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
+                                                                         parent_node_name=play_name,
+                                                                         parent_node_id=play_id, block=post_task_block,
+                                                                         color=color,
+                                                                         current_counter=global_tasks_counter,
+                                                                         play_vars=play_vars,
+                                                                         node_name_prefix="[post_task] ")
+                nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
+                self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
 
             self.display.banner("Done graphing {}".format(play_name))
             self.display.display("")  # just an empty line
@@ -323,15 +336,14 @@ class PlaybookGrapher(BaseGrapher):
         :return:
         """
 
-        loop_counter = current_counter
         # loop through the tasks
         for counter, task_or_block in enumerate(block.block, 1):
             if isinstance(task_or_block, Block):
-                loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                             parent_node_name=parent_node_name,
-                                                             parent_node_id=parent_node_id, block=task_or_block,
-                                                             color=color, current_counter=loop_counter,
-                                                             play_vars=play_vars, node_name_prefix=node_name_prefix)
+                current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
+                                                                parent_node_name=parent_node_name,
+                                                                parent_node_id=parent_node_id, block=task_or_block,
+                                                                color=color, current_counter=current_counter,
+                                                                play_vars=play_vars, node_name_prefix=node_name_prefix)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process it explicitly because Ansible does it during th execution of the playbook
 
@@ -359,8 +371,8 @@ class PlaybookGrapher(BaseGrapher):
                             "Unable to translate the include task '{}' due to an undefined variable: {}. "
                             "Some variables are available only during the real execution."
                                 .format(task_or_block.get_name(), str(e)))
-                        loop_counter += 1
-                        self._include_task(task_or_block, loop_counter, task_vars, graph, node_name_prefix, color,
+                        current_counter += 1
+                        self._include_task(task_or_block, current_counter, task_vars, graph, node_name_prefix, color,
                                            parent_node_id, parent_node_name)
                         continue
 
@@ -377,11 +389,12 @@ class PlaybookGrapher(BaseGrapher):
                                                     parent_block=task_or_block)
 
                 for b in my_blocks:  # loop through the blocks inside the included tasks or role
-                    loop_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                 parent_node_name=parent_node_name,
-                                                                 parent_node_id=parent_node_id, block=b, color=color,
-                                                                 current_counter=loop_counter, play_vars=task_vars,
-                                                                 node_name_prefix=node_name_prefix)
+                    current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
+                                                                    parent_node_name=parent_node_name,
+                                                                    parent_node_id=parent_node_id, block=b, color=color,
+                                                                    current_counter=current_counter,
+                                                                    play_vars=task_vars,
+                                                                    node_name_prefix=node_name_prefix)
             else:
                 # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
@@ -391,12 +404,12 @@ class PlaybookGrapher(BaseGrapher):
                     # skipping
                     continue
 
-                task_included = self._include_task(task_or_block=task_or_block, loop_counter=loop_counter + 1,
+                task_included = self._include_task(task_or_block=task_or_block, loop_counter=current_counter + 1,
                                                    play_vars=play_vars,
                                                    graph=graph, node_name_prefix=node_name_prefix, color=color,
                                                    parent_node_id=parent_node_id, parent_node_name=parent_node_name)
                 if task_included:
                     # only increment the counter if task has been successfully included.
-                    loop_counter += 1
+                    current_counter += 1
 
-        return loop_counter
+        return current_counter
