@@ -61,6 +61,24 @@ class BaseGrapher:
         """
         raise NotImplementedError("Subclasses should implement make_graph.")
 
+    def render_graph(self, output_filename: str, save_dot_file=False) -> str:
+        """
+        Render the graph
+        :param output_filename: Output file name without '.svg' extension.
+        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
+        :return: The rendered file path (output_filename.svg)
+        """
+
+        rendered_file_path = self.graphiz_graph.render(cleanup=not save_dot_file, format="svg",
+                                                       filename=output_filename)
+        if save_dot_file:
+            # add .dot extension. The render doesn't add an extension
+            final_name = output_filename + ".dot"
+            os.rename(output_filename, final_name)
+            self.display.display("Graphviz dot file has been exported to {}".format(final_name))
+
+        return rendered_file_path
+
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
                  fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
         """
@@ -174,10 +192,9 @@ class PlaybookGrapher(BaseGrapher):
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
             play_name = self.template(play_name, play_vars)
+            play_id = "play_" + str(uuid.uuid4())
 
             self.display.banner("Graphing " + play_name)
-
-            play_id = "play_" + str(uuid.uuid4())
 
             self.graph_representation.add_node(play_id)
 
@@ -283,24 +300,6 @@ class PlaybookGrapher(BaseGrapher):
             self.display.banner("Done graphing {}".format(play_name))
             self.display.display("")  # just an empty line
             # moving to the next play
-
-    def render_graph(self, output_filename: str, save_dot_file=False) -> str:
-        """
-        Render the graph
-        :param output_filename: Output file name without '.svg' extension.
-        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
-        :return: The rendered file path (output_filename.svg)
-        """
-
-        rendered_file_path = self.graphiz_graph.render(cleanup=not save_dot_file, format="svg",
-                                                       filename=output_filename)
-        if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
-            self.display.display("Graphviz dot file has been exported to {}".format(final_name))
-
-        return rendered_file_path
 
     def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node_name: str,
                                  parent_node_id: str, block: Union[Block, TaskInclude], color: str,
