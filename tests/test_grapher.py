@@ -34,8 +34,6 @@ def run_grapher(playbook_file, output_filename=None, additional_args=None):
 
     cli = get_cli_class()(args)
 
-    cli.parse()
-
     return cli.run(), playbook_path
 
 

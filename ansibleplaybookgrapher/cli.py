@@ -1,6 +1,7 @@
 import ntpath
 import os
 import sys
+from abc import ABC
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleOptionsError
@@ -28,9 +29,40 @@ def get_cli_class():
         return PlaybookGrapherCLI28
 
 
-class PlaybookGrapherCLI28(CLI):
+class GrapherCLI(CLI, ABC):
     """
-    The dedicated playbook CLI for Ansible 2.8
+    An abstract class to provide to be implemented by the different Grapher CLIs.
+    """
+
+    def run(self):
+        super(GrapherCLI, self).run()
+
+        loader, inventory, variable_manager = CLI._play_prereqs()
+        # Looks like the display is a singleton. This instruction will NOT return a new instance.
+        # This is why we set the verbosity later because someone set it before us.
+        display = Display()
+        display.verbosity = self.options.verbosity
+
+        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
+                                  display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                  playbook_filename=self.options.playbook_filename,
+                                  include_role_tasks=self.options.include_role_tasks)
+
+        grapher.make_graph()
+
+        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
+        post_processor = PostProcessor(svg_path=svg_path)
+        post_processor.post_process(graph_representation=grapher.graph_representation)
+        post_processor.write()
+
+        display.display("The graph has been exported to {}".format(svg_path))
+
+        return svg_path
+
+
+class PlaybookGrapherCLI28(GrapherCLI):
+    """
+    The dedicated playbook CLI for Ansible 2.8.
     """
 
     def __init__(self, args, callback=None):
@@ -88,34 +120,8 @@ class PlaybookGrapherCLI28(CLI):
 
         return options, args
 
-    def run(self):
-        super(PlaybookGrapherCLI28, self).run()
 
-        playbook = self.options.args[0]
-
-        loader, inventory, variable_manager = self._play_prereqs()
-        # Looks like the display is a singleton. This instruction will NOT return a new instance.
-        # This is why we set the verbosity later because someone set it before us.
-        display = Display()
-        display.verbosity = self.options.verbosity
-
-        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                                  display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                  playbook_filename=playbook, include_role_tasks=self.options.include_role_tasks)
-
-        grapher.make_graph()
-
-        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
-        post_processor = PostProcessor(svg_path=svg_path)
-        post_processor.post_process(graph_representation=grapher.graph_representation)
-        post_processor.write()
-
-        display.display("The graph has been exported to {}".format(svg_path))
-
-        return svg_path
-
-
-class PlaybookGrapherCLI29(CLI):
+class PlaybookGrapherCLI29(GrapherCLI):
     """
     The dedicated playbook CLI for Ansible 2.9 and above.
     Note: Use this class as the main CLI when we drop support for ansible < 2.9
@@ -176,37 +182,10 @@ class PlaybookGrapherCLI29(CLI):
 
         return options
 
-    def run(self):
-        super(PlaybookGrapherCLI29, self).run()
-
-        loader, inventory, variable_manager = self._play_prereqs()
-        # Looks like the display is a singleton. This instruction will NOT return a new instance.
-        # This is why we set the verbosity later because someone set it before us.
-        display = Display()
-        display.verbosity = self.options.verbosity
-
-        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                                  playbook_filename=self.options.playbook_filename, tags=self.options.tags,
-                                  display=display, skip_tags=self.options.skip_tags,
-                                  include_role_tasks=self.options.include_role_tasks)
-
-        grapher.make_graph()
-
-        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
-        post_processor = PostProcessor(svg_path=svg_path)
-        post_processor.post_process(graph_representation=grapher.graph_representation)
-        post_processor.write()
-
-        display.display("The graph has been exported to {}".format(svg_path))
-
-        return svg_path
-
 
 def main(args=None):
     args = args or sys.argv
     cli = get_cli_class()(args)
-
-    cli.parse()
 
     cli.run()
 
