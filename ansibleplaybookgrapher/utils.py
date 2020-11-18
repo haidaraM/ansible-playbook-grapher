@@ -1,4 +1,5 @@
 import os
+import uuid
 from typing import Dict, List, Tuple
 
 from ansible.parsing.dataloader import DataLoader
@@ -8,6 +9,13 @@ from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from colour import Color
+
+
+def generate_id() -> str:
+    """
+    Generate an uuid to be used as id
+    """
+    return str(uuid.uuid4())
 
 
 def clean_name(name: str):
