@@ -1,5 +1,4 @@
 import os
-import uuid
 from typing import Dict, Union, List
 
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
@@ -17,7 +16,7 @@ from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, get_play_colors, \
-    handle_include_path, has_role_parent
+    handle_include_path, has_role_parent, generate_id
 
 DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
@@ -121,8 +120,8 @@ class BaseGrapher:
         task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
         # get prefix id from node_name
         id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
-        task_id = id_prefix + str(uuid.uuid4())
-        edge_id = "edge_" + str(uuid.uuid4())
+        task_id = id_prefix + generate_id()
+        edge_id = "edge_" + generate_id()
 
         graph.node(task_id, label=task_name, shape="octagon", id=task_id)
         graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
@@ -192,7 +191,7 @@ class PlaybookGrapher(BaseGrapher):
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
             play_name = self.template(play_name, play_vars)
-            play_id = "play_" + str(uuid.uuid4())
+            play_id = "play_" + generate_id()
 
             self.display.banner("Graphing " + play_name)
 
@@ -205,7 +204,7 @@ class PlaybookGrapher(BaseGrapher):
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = "edge_" + str(uuid.uuid4())
+                play_edge_id = "edge_" + generate_id()
                 play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
@@ -245,14 +244,14 @@ class PlaybookGrapher(BaseGrapher):
                     role_name = "[role] " + clean_name(role.get_name())
 
                     # edge from play to role
-                    edge_id = "edge_" + str(uuid.uuid4())
+                    edge_id = "edge_" + generate_id()
                     play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
                                        fontcolor=color, id=edge_id)
                     self.graph_representation.add_link(play_id, edge_id)
 
                     with self.graphiz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
 
-                        role_id = "role_" + str(uuid.uuid4())
+                        role_id = "role_" + generate_id()
                         role_subgraph.node(role_name, id=role_id)
                         self.graph_representation.add_link(edge_id, role_id)
 
