@@ -1,4 +1,5 @@
 import os
+from abc import ABC, abstractmethod
 from typing import Dict, Union, List
 
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
@@ -9,6 +10,7 @@ from ansible.playbook import Playbook, Play
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.role_include import IncludeRole
+from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
@@ -35,7 +37,7 @@ class CustomDigraph(Digraph):
     _quote_edge = staticmethod(clean_name)
 
 
-class BaseGrapher:
+class BaseGrapher(ABC):
     """
     Base grapher
     """
@@ -54,11 +56,12 @@ class BaseGrapher:
         self.skip_tags = skip_tags or []
         self.display = display or Display()
 
+    @abstractmethod
     def make_graph(self, *args, **kwargs):
         """
         Make the graph
         """
-        raise NotImplementedError("Subclasses should implement make_graph.")
+        pass
 
     def render_graph(self, output_filename: str, save_dot_file=False) -> str:
         """
@@ -97,27 +100,25 @@ class BaseGrapher:
             self.display.warning(ansible_error)
             return data
 
-    def _include_task(self, task_or_block: Union[Block, TaskInclude], loop_counter: int, play_vars: Dict,
-                      graph: CustomDigraph, node_name_prefix: str, color: str, parent_node_id: str,
-                      parent_node_name: str) -> bool:
+    def _graph_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: CustomDigraph, node_name_prefix: str,
+                    color: str, parent_node_id: str, parent_node_name: str) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
         """
 
-        self.display.vv(f"Adding {node_name_prefix.strip()}: '{task_or_block.get_name()}' to the graph")
+        self.display.vv(f"Adding {node_name_prefix.strip()}: '{task.get_name()}' to the graph")
 
-        if not task_or_block.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
-                                           all_vars=play_vars):
-            self.display.vv(f"The task '{task_or_block.get_name()}' is skipped due to the tags.")
+        if not task.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars):
+            self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
 
         task_edge_label = str(loop_counter)
-        if len(task_or_block.when) > 0:
-            when = "".join(map(str, task_or_block.when))
+        if len(task.when) > 0:
+            when = "".join(map(str, task.when))
             task_edge_label += "  [when: " + when + "]"
 
-        task_name = clean_name(node_name_prefix + self.template(task_or_block.get_name(), play_vars))
+        task_name = clean_name(node_name_prefix + self.template(task.get_name(), task_vars))
         # get prefix id from node_name
         id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
         task_id = id_prefix + generate_id()
@@ -352,8 +353,9 @@ class PlaybookGrapher(BaseGrapher):
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
                         current_counter += 1
-                        self._include_task(task_or_block, current_counter, task_vars, graph, node_name_prefix, color,
-                                           parent_node_id, parent_node_name)
+                        self._graph_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
+                                         graph=graph, node_name_prefix=node_name_prefix, color=color,
+                                         parent_node_id=parent_node_id, parent_node_name=parent_node_name)
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -385,10 +387,10 @@ class PlaybookGrapher(BaseGrapher):
                     # skipping
                     continue
 
-                task_included = self._include_task(task_or_block=task_or_block, loop_counter=current_counter + 1,
-                                                   play_vars=play_vars,
-                                                   graph=graph, node_name_prefix=node_name_prefix, color=color,
-                                                   parent_node_id=parent_node_id, parent_node_name=parent_node_name)
+                task_included = self._graph_task(task=task_or_block, loop_counter=current_counter + 1,
+                                                 task_vars=play_vars, graph=graph, node_name_prefix=node_name_prefix,
+                                                 color=color, parent_node_id=parent_node_id,
+                                                 parent_node_name=parent_node_name)
                 if task_included:
                     # only increment the counter if task has been successfully included.
                     current_counter += 1
