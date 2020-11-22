@@ -74,7 +74,7 @@ class BaseGrapher:
             # add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
             os.rename(output_filename, final_name)
-            self.display.display("Graphviz dot file has been exported to {}".format(final_name))
+            self.display.display(f"Graphviz dot file has been exported to {final_name}")
 
         return rendered_file_path
 
@@ -109,7 +109,7 @@ class BaseGrapher:
 
         if not task_or_block.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
                                            all_vars=play_vars):
-            self.display.vv("The task '{}' is skipped due to the tags.".format(task_or_block.get_name()))
+            self.display.vv(f"The task '{task_or_block.get_name()}' is skipped due to the tags.")
             return False
 
         task_edge_label = str(loop_counter)
@@ -185,7 +185,7 @@ class PlaybookGrapher(BaseGrapher):
                 self.data_loader.set_basedir(play._included_path)
             else:
                 self.data_loader.set_basedir(self.playbook._basedir)
-            self.display.vvv("Loader basedir set to {}".format(self.data_loader.get_basedir()))
+            self.display.vvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
 
             play_vars = self.variable_manager.get_vars(play)
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
@@ -236,7 +236,7 @@ class PlaybookGrapher(BaseGrapher):
                     role.tags = role.tags + play.tags
                     if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
                                               all_vars=play_vars):
-                        self.display.vv("The role '{}' is skipped due to the tags.".format(role.get_name()))
+                        self.display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
                         # Go to the next role
                         continue
 
@@ -296,7 +296,7 @@ class PlaybookGrapher(BaseGrapher):
                 nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
                 self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
 
-            self.display.banner("Done graphing {}".format(play_name))
+            self.display.banner(f"Done graphing {play_name}")
             self.display.display("")  # just an empty line
             # moving to the next play
 
@@ -327,22 +327,21 @@ class PlaybookGrapher(BaseGrapher):
                                                                 color=color, current_counter=current_counter,
                                                                 play_vars=play_vars, node_name_prefix=node_name_prefix)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
-                # So we need to process it explicitly because Ansible does it during th execution of the playbook
+                # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
                 task_vars = self.variable_manager.get_vars(play=current_play, task=task_or_block)
 
                 if isinstance(task_or_block, IncludeRole):
-
-                    self.display.v("An 'include_role' found. Including tasks from '{}'"
-                                   .format(task_or_block.args["name"]))
-                    # Here we have an include_role. The class IncludeRole is a subclass of TaskInclude.
-                    # We do this because the management of an include_role is different.
+                    # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
+                    # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
+
+                    self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.args['name']}'")
                     my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                 variable_manager=self.variable_manager)
                 else:
-                    self.display.v("An 'include_tasks' found. Including tasks from '{}'"
-                                   .format(task_or_block.get_name()))
+                    self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
+
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
                         include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
@@ -350,9 +349,8 @@ class PlaybookGrapher(BaseGrapher):
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
                         self.display.warning(
-                            "Unable to translate the include task '{}' due to an undefined variable: {}. "
-                            "Some variables are available only during the real execution."
-                                .format(task_or_block.get_name(), str(e)))
+                            f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
+                            "Some variables are available only during the execution of the playbook.")
                         current_counter += 1
                         self._include_task(task_or_block, current_counter, task_vars, graph, node_name_prefix, color,
                                            parent_node_id, parent_node_name)
@@ -360,10 +358,10 @@ class PlaybookGrapher(BaseGrapher):
 
                     data = self.data_loader.load_from_file(include_file)
                     if data is None:
-                        self.display.warning("file %s is empty and had no tasks to include" % include_file)
+                        self.display.warning(f"The file '{include_file}' is empty and has no tasks to include")
                         continue
                     elif not isinstance(data, list):
-                        raise AnsibleParserError("included task files must contain a list of tasks", obj=data)
+                        raise AnsibleParserError("Included task files must contain a list of tasks", obj=data)
 
                     # get the blocks from the include_tasks
                     my_blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
@@ -381,8 +379,9 @@ class PlaybookGrapher(BaseGrapher):
                 # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
                     # skip role's task
-                    self.display.vv("The task '{}' has a role as parent and include_role_tasks is false. "
-                                    "It will be skipped.".format(task_or_block.get_name()))
+                    self.display.vv(
+                        f"The task '{task_or_block.get_name()}' has a role as parent and include_role_tasks is false. "
+                        "It will be skipped.")
                     # skipping
                     continue
 

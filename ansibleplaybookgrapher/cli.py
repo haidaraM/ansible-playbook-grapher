@@ -55,7 +55,7 @@ class GrapherCLI(CLI, ABC):
         post_processor.post_process(graph_representation=grapher.graph_representation)
         post_processor.write()
 
-        display.display("The graph has been exported to {}".format(svg_path))
+        display.display(f"fThe graph has been exported to {svg_path}")
 
         return svg_path
 
