@@ -1,8 +1,16 @@
 # Next version (To be released)
  - ci: Replace Travis by Github actions (#54)
- - feat: Add type annotations to the source code
- - fix: Attach play to role edge to play_subgraph instead of role one
- - refactor: Rename field Grapher.graph to Grapher.graphiz_graph (more explicit)
+ - feat: 
+   - Add type annotations to the source code
+   - Add more debug info + improve counter
+ - fix: 
+   - Attach play to role edge to play_subgraph instead of role one
+   - Fix display verbosity
+   - Fix pytest warning (remove rootdir from pytest.ini)
+ - refactor:
+   - Rewriting the grapher, clean code.
+   - Generate node IDs from an util function
+ - style: Replace some format by f-string
  - Bump pytest from 6.0.1 to 6.1.2 (#51)
  - Bump pytest-cov from 2.10.0 to 2.10.1 (#49)
  - Bump lxml from 4.5.2 to 4.6.1 (#53)
