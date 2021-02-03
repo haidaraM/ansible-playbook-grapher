@@ -43,7 +43,7 @@ jobs:
         run: make test_install
 
       - name: Upload Coverage
-        run: cd tests && coveralls
+        run: cd tests && coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
@@ -59,3 +59,4 @@ jobs:
         run: pip install coveralls && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
