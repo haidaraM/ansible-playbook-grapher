@@ -124,7 +124,7 @@ class BaseGrapher(ABC):
         task_id = id_prefix + generate_id()
         edge_id = "edge_" + generate_id()
 
-        graph.node(task_id, label=task_name, shape="octagon", id=task_id)
+        graph.node(task_id, label=task_name, shape="octagon", id=task_id, tooltip=task_name)
         graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
                    id=edge_id)
         self.graph_representation.add_link(parent_node_id, edge_id)
