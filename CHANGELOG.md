@@ -1,4 +1,4 @@
-# 0.11 (To be released)
+# 0.11.0
  - Feat: 
    - Add type annotations to the source code
    - Add more debug info + improve counter
