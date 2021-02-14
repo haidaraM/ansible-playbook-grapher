@@ -1,20 +1,25 @@
-# Next version (To be released)
- - ci: Replace Travis by Github actions (#54)
- - feat: 
+# 0.11 (To be released)
+ - Feat: 
    - Add type annotations to the source code
    - Add more debug info + improve counter
- - fix: 
+ - Fix: 
    - Attach play to role edge to play_subgraph instead of role one
    - Fix display verbosity
    - Fix pytest warning (remove rootdir from pytest.ini)
- - refactor:
+   - ci: Fix coverage 
+ - Refactor:
    - Rewriting the grapher, clean code.
    - Generate node IDs from an util function
- - style: Replace some format by f-string
- - Bump pytest from 6.0.1 to 6.1.2 (#51)
- - Bump pytest-cov from 2.10.0 to 2.10.1 (#49)
- - Bump lxml from 4.5.2 to 4.6.1 (#53)
- - Bump graphviz from 0.14.1 to 0.14.2 (#52)
+ - Style: Replace some `format` by f-string
+ - CI: Replace Travis by Github actions (#54)
+ - Dependencies:
+   - Bump pytest from 6.0.1 to 6.2.2 (PRs #50, #51, #62, #67)
+   - Bump pytest-cov from 2.10.0 to 2.11.1 (PRs #49, #65)
+   - Bump pyquery from 1.4.1 to 1.4.3 (PRs #58)
+   - Bump lxml from 4.5.2 to 4.6.2 (PRs #53, #61)
+   - Bump graphviz from 0.14.1 to 0.16 (PRs #52, #64)
+   - Bump graphviz from 0.14.1 to 0.16 (PRs #52, #64)
+   - Bump packaging from 20.4 to 20.9 (PRs #66)
 
 # 0.10.0
  - Fix [\#13](https://github.com/haidaraM/ansible-playbook-grapher/issues/13): Tasks with same names are not mapped
