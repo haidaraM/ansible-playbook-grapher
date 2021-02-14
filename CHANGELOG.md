@@ -2,10 +2,11 @@
  - Feat: 
    - Add type annotations to the source code
    - Add more debug info + improve counter
- - Fix: 
+ - Fix:
    - Attach play to role edge to play_subgraph instead of role one
    - Fix display verbosity
-   - Fix pytest warning (remove rootdir from pytest.ini)
+   - Fix pytest warning (remove `rootdir` from pytest.ini)
+   - Fix: Show task name instead of its ID on hover. See issue #57
    - ci: Fix coverage 
  - Refactor:
    - Rewriting the grapher, clean code.
