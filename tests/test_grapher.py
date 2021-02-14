@@ -1,6 +1,6 @@
 import os
 from _elementtree import Element
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import pytest
 from pyquery import PyQuery
@@ -10,16 +10,13 @@ from ansibleplaybookgrapher.cli import get_cli_class, IS_ANSIBLE_2_9_X
 from tests import FIXTURES_DIR
 
 
-def run_grapher(playbook_file, output_filename=None, additional_args=None):
+def run_grapher(playbook_file: str, output_filename: str = None, additional_args: List = None) -> Tuple[str, str]:
     """
     Utility function to run the grapher
     :param output_filename:
-    :type output_filename: str
     :param additional_args:
-    :type additional_args: list
     :param playbook_file:
-    :type playbook_file: str
-    :return:
+    :return: SVG path and playbook absolute path
     """
     additional_args = additional_args or []
     playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
@@ -39,22 +36,18 @@ def run_grapher(playbook_file, output_filename=None, additional_args=None):
     return cli.run(), playbook_path
 
 
-def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_tasks_number=0, pre_tasks_number=0,
-                  roles_number=0):
+def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, tasks_number: int = 0,
+                  post_tasks_number: int = 0, roles_number: int = 0,
+                  pre_tasks_number: int = 0) -> Dict[str, List[Element]]:
     """
     Perform some common tests on the generated svg file:
      - Existence of svg file
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
-    :type svg_path: str
-    :type playbook_path: str
     :param plays_number: Number of plays in the playbook
-    :type plays_number: int
     :param tasks_number: Number of tasks in the playbook
-    :type tasks_number: int
     :param post_tasks_number: Number of post tasks in the playbook
-    :type post_tasks_number: int
-    :return: dict[str, PyQuery]
+    :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values
     """
 
     pq = PyQuery(filename=svg_path)
@@ -82,7 +75,7 @@ def _common_tests(svg_path, playbook_path, plays_number=0, tasks_number=0, post_
     assert roles_number == len(roles), "The playbook '{}' should contains {} role(s) but we found {} role(s)".format(
         playbook_path, roles_number, len(roles))
 
-    return {'tasks': tasks, 'plays': plays, 'pq': pq, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
+    return {'tasks': tasks, 'plays': plays, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
 
 
 def test_simple_playbook(request):

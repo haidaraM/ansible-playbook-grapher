@@ -1,3 +1,5 @@
+from _elementtree import Element
+
 import pytest
 from lxml import etree
 
@@ -22,7 +24,7 @@ def fixture_simple_postprocessor(request):
     return post_processor
 
 
-def _assert_common_svg(svg_root):
+def _assert_common_svg(svg_root: Element):
     """
     Assert some common structures of the generated svg
     :param svg_root:
@@ -37,7 +39,7 @@ def _assert_common_svg(svg_root):
     assert svg_root[2].get('id') == 'my_css'
 
 
-def test_post_processor_insert_tag(post_processor):
+def test_post_processor_insert_tag(post_processor: PostProcessor):
     """
     Test method insert_tag of the PostProcessor
     :param post_processor:
@@ -49,7 +51,7 @@ def test_post_processor_insert_tag(post_processor):
     assert post_processor.root[0].get('id') == 'toto'
 
 
-def test_post_processor_write(post_processor, tmpdir):
+def test_post_processor_write(post_processor: PostProcessor, tmpdir):
     """
     Test method write of the PostProcessor
     :param post_processor:
@@ -62,7 +64,7 @@ def test_post_processor_write(post_processor, tmpdir):
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
-def test_post_processor_without_graph_representation(post_processor, tmpdir):
+def test_post_processor_without_graph_representation(post_processor: PostProcessor, tmpdir):
     """
     Test the post processor without a graph representation
     :param post_processor:
@@ -85,7 +87,7 @@ def test_post_processor_without_graph_representation(post_processor, tmpdir):
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
-def test_post_processor_with_graph_representation(post_processor, tmpdir):
+def test_post_processor_with_graph_representation(post_processor: PostProcessor, tmpdir):
     """
     Test the post processor a graph representation
     :param post_processor:
