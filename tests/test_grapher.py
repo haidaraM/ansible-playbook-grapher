@@ -1,4 +1,6 @@
 import os
+from _elementtree import Element
+from typing import Dict, List
 
 import pytest
 from pyquery import PyQuery
@@ -113,7 +115,7 @@ def test_include_tasks(request):
 
 def test_import_tasks(request):
     """
-    Test include_tasks.yml, an example sime some imported tasks
+    Test include_tasks.yml, an example with some imported tasks
     """
     svg_path, playbook_path = run_grapher("import_tasks.yml", output_filename=request.node.name)
 
@@ -211,8 +213,8 @@ def test_relative_var_files(request):
     res = _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2)
 
     # check if the plays title contains the interpolated variables
-    assert 'Cristiano Ronaldo' in res['tasks'][0].find('text').text, 'The title should contain player name'
-    assert 'Lionel Messi' in res['tasks'][1].find('text').text, 'The title should contain player name'
+    assert 'Cristiano Ronaldo' in res['tasks'][0].find('g/a/text').text, 'The title should contain player name'
+    assert 'Lionel Messi' in res['tasks'][1].find('g/a/text').text, 'The title should contain player name'
 
 
 def test_tags(request):
