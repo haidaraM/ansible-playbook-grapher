@@ -1,3 +1,7 @@
+# 0.12.0 (To be released)
+ - Fix:
+   - Correct graph exported display message
+
 # 0.11.0
  - Feat: 
    - Add type annotations to the source code
