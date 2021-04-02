@@ -1,6 +1,7 @@
 # 0.12.0 (To be released)
+ - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
  - Fix:
-   - Correct graph exported display message
+   - Correct graph exported display message. See [\#69](https://github.com/haidaraM/ansible-playbook-grapher/issues/69)
 
 # 0.11.0
  - Feat: 
