@@ -6,7 +6,7 @@ import pytest
 from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__
-from ansibleplaybookgrapher.cli import get_cli_class, IS_ANSIBLE_2_9_X
+from ansibleplaybookgrapher.cli import get_cli_class
 from tests import FIXTURES_DIR
 
 
@@ -219,8 +219,6 @@ def test_tags(request):
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=1)
 
 
-@pytest.mark.xfail(not IS_ANSIBLE_2_9_X, reason="This will fail in ansible 2.8 due to some global variables.")
-# TODO: Remove xfail when we drop support for Ansible 2.8
 def test_skip_tags(request):
     """
     Test a playbook by only graphing a specific tasks based on the given tags
