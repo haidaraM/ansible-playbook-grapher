@@ -30,6 +30,7 @@ jobs:
         run: |
           pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
           pip install -r tests/requirements_tests.txt
+          pip freeze
           sudo apt-get install -y graphviz
 
       - name: Pytest
