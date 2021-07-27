@@ -11,8 +11,8 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 
 ## Prerequisites
  - Python 3
- - **Ansible** >= 2.8: If you still use an older version of Ansible, create a virtual environment and install ansible-playbook-grapher. 
- **pip will install a version of Ansible >= 2.8 if not already installed.** I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine) for the supported Ansible version. 
+ - **Ansible** >= 2.9: If you still use an older version of Ansible, create a virtual environment and install ansible-playbook-grapher. 
+ **pip will install a version of Ansible >= 2.9 if not already installed.** I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine) for the supported Ansible version. 
  - **Graphviz**: The tool used to generate the graph in SVG. 
    ```shell script
    $ sudo apt-get install graphviz # or yum install or brew install

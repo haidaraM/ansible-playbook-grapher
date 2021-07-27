@@ -102,8 +102,6 @@ def test_cli_include_role_tasks(include_role_tasks_option, expected):
                           (['-t', 'tag1', '-t', 'tag2'], ['tag1', 'tag2']),
                           (['-t', 'tag1,tag2'], ['tag1', 'tag2'])],
                          ids=['no_tags_provided', 'one-tag', 'multiple-tags', 'multiple-tags2'])
-@pytest.mark.xfail(not IS_ANSIBLE_2_9_X, reason="This will fail in ansible 2.8 due to some global variables.")
-# TODO: Remove xfail when we drop support for Ansible 2.8
 def test_cli_tags(tags_option, expected):
     """
 
@@ -127,8 +125,6 @@ def test_cli_tags(tags_option, expected):
                           (['--skip-tags', 'tag1', '--skip-tags', 'tag2'], ['tag1', 'tag2']),
                           (['--skip-tags', 'tag1,tag2'], ['tag1', 'tag2'])],
                          ids=['no_skip_tags_provided', 'one-skip-tag', 'multiple-skip-tags', 'multiple-skip-tags2'])
-@pytest.mark.xfail(not IS_ANSIBLE_2_9_X, reason="This will fail in ansible 2.8 due to some global variables.")
-# TODO: Remove xfail when we drop support for Ansible 2.8
 def test_skip_tags(skip_tags_option, expected):
     """
 
