@@ -1,7 +1,13 @@
-# 0.12.0 (To be released)
- - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
+# 0.11.1 (2021-07-28)
+ - Dependencies:
+   - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
+   - Bump pytest-cov from 2.11.1 to 2.12.1 [\#78](https://github.com/haidaraM/ansible-playbook-grapher/issues/78)
+   - Bump pytest from 6.2.2 to 6.2.4 [\#76](https://github.com/haidaraM/ansible-playbook-grapher/issues/76)
+   - Upgrade to GitHub-native Dependabot [\#72](https://github.com/haidaraM/ansible-playbook-grapher/issues/72)
+ - Drop support for ansible 2.8. **The grapher requires at least ansible 2.9** [\#74](https://github.com/haidaraM/ansible-playbook-grapher/issues/74)
  - Fix:
    - Correct graph exported display message. See [\#69](https://github.com/haidaraM/ansible-playbook-grapher/issues/69)
+ - CI: Run github actions on pull requests 
 
 # 0.11.0
  - Feat: 
