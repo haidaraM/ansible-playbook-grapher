@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ 3.7, 3.8 ]
-        ansible-version: [ 2.9.0, 2.9.14 ]
+        ansible-version: [ 2.9.14, 2.10.7 ]
 
     steps:
       - name: Checkout code
