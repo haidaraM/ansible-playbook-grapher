@@ -1,3 +1,10 @@
+# 0.12.0 (Unreleased)
+
+- test:
+    - Add Ansible 2.10.7 in the test matrix
+- docs:
+    - Reformat CHANGELOG
+
 # 0.11.1 (2021-07-28)
 
 - Dependencies:
