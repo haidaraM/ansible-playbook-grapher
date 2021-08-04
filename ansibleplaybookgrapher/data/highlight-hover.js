@@ -38,17 +38,21 @@ function highlightLinkedNodes(rootElement) {
  * the rootElement is the current selected element
  */
 function unHighlightLinkedNodes(rootElement, isHover) {
+    const currentSelectedElementId = $(currentSelectedElement).attr('id');
 
     // Do not unhighlight the current current selected element
-    if ($(rootElement).attr('id') !== $(currentSelectedElement).attr('id') || !isHover) {
+    if ($(rootElement).attr('id') !== currentSelectedElementId || !isHover) {
 
         $(rootElement).find('link').each(function (index, element) {
-            let target = $(element).attr('target');
-            let currentElement = $('#' + target);
-            currentElement.removeClass(HIGHLIGHT_CLASS);
+            let linkedElementId = $(element).attr('target');
+            let linkedElement = $('#' + linkedElementId);
 
-            // Recursively unhighlight
-            unHighlightLinkedNodes(currentElement, isHover);
+            if (linkedElement.attr("id") !== currentSelectedElementId) {
+                linkedElement.removeClass(HIGHLIGHT_CLASS);
+                // Recursively unhighlight
+                unHighlightLinkedNodes(linkedElement, isHover);
+            }
+            
         })
     }
 
