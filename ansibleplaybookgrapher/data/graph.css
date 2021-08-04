@@ -1,10 +1,16 @@
+/**
+ Hover on nodes, edges, path and polygon
+ */
 .node:hover, .edge:hover, path:hover, path + polygon:hover {
     cursor: pointer;
     stroke-width: 3;
     font-weight: bolder;
 }
 
-.my_hover {
+/**
+ Manually added class by the script highlight-hover.js when hovering on plays and roles
+ */
+.highlight {
     cursor: pointer;
     stroke-width: 3;
     font-weight: bolder;
