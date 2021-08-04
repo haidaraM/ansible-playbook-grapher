@@ -11,11 +11,12 @@ from ansible.template import Templar
 from colour import Color
 
 
-def generate_id() -> str:
+def generate_id(prefix: str = "") -> str:
     """
     Generate an uuid to be used as id
+    :param prefix Prefix to add to the generated ID
     """
-    return str(uuid.uuid4())
+    return prefix + str(uuid.uuid4())
 
 
 def clean_name(name: str):
