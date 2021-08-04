@@ -1,5 +1,8 @@
 # 0.12.0 (Unreleased)
 
+- fix:
+    - front: Refactor the JS part and fix issue when selecting/unselecting nodes
+    - front: Do not unhighlight the current selected node when hovering on parent node
 - test:
     - Add Ansible 2.10.7 in the test matrix
 - docs:
