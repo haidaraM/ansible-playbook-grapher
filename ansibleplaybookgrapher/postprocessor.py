@@ -3,7 +3,7 @@ from typing import Dict
 
 from lxml import etree
 
-from ansibleplaybookgrapher.utils import GraphRepresentation
+from ansibleplaybookgrapher.grapher import PlaybookGraph
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -29,7 +29,6 @@ class PostProcessor:
 
     def __init__(self, svg_path: str):
         """
-
         :param svg_path:
         """
         self.svg_path = svg_path
@@ -61,7 +60,7 @@ class PostProcessor:
 
         self.root.insert(index, element)
 
-    def post_process(self, graph_representation: GraphRepresentation = None, *args, **kwargs):
+    def post_process(self, graph_representation: PlaybookGraph = None, *args, **kwargs):
         """
 
         :param graph_representation:
@@ -98,18 +97,18 @@ class PostProcessor:
 
         self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
-    def _insert_graph_representation(self, graph_representation: GraphRepresentation):
+    def _insert_graph_representation(self, graph_representation: PlaybookGraph):
         """
         Insert graph in the SVG
         """
-        for node, node_links in graph_representation.graph_dict.items():
+        for node, node_links in graph_representation.items():
 
             # Find the group g with the specified id
-            xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node, namespaces={'ns': SVG_NAMESPACE})
+            xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node.id, namespaces={'ns': SVG_NAMESPACE})
             if xpath_result:
                 element = xpath_result[0]
                 root_subelement = etree.Element('links')
                 for link in node_links:
-                    root_subelement.append(etree.Element('link', attrib={'target': link}))
+                    root_subelement.append(etree.Element('link', attrib={'target': link.id}))
 
                 element.append(root_subelement)

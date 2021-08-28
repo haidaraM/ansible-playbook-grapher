@@ -3,15 +3,15 @@ from _elementtree import Element
 import pytest
 from lxml import etree
 
+from ansibleplaybookgrapher.grapher import PlaybookGraph, PlayNode, TaskNode
 from ansibleplaybookgrapher.postprocessor import PostProcessor, SVG_NAMESPACE
-from ansibleplaybookgrapher.utils import GraphRepresentation
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
 @pytest.fixture(name='post_processor')
 def fixture_simple_postprocessor(request):
     """
-    Return a post processor without a graph representation and with the simple_playbook_no_postproccess
+    Return a post processor without a graph structure and with the simple_playbook_no_postproccess
     :return:
     """
     try:
@@ -94,13 +94,13 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
     :param tmpdir:
     :return:
     """
-    graph_represention = GraphRepresentation()
+    graph_represention = PlaybookGraph()
     svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
 
-    play_id = "play_hostsall"
+    play = PlayNode("play 1", "play_hostsall")
     # link from play to task edges
-    graph_represention.add_link(play_id, "play_hostsallpost_taskPosttask1")
-    graph_represention.add_link(play_id, "play_hostsallpost_taskPosttask2")
+    graph_represention.add_connection(play, TaskNode(""))
+    graph_represention.add_connection(play, TaskNode(""))
 
     post_processor.post_process(graph_represention)
 
@@ -112,4 +112,4 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
 
     _assert_common_svg(root)
 
-    assert len(root.xpath("ns:g/*[@id='%s']//ns:link" % play_id, namespaces={'ns': SVG_NAMESPACE})) == 2
+    assert len(root.xpath("ns:g/*[@id='%s']//ns:link" % play.id, namespaces={'ns': SVG_NAMESPACE})) == 2

@@ -18,7 +18,7 @@ from ansible.utils.display import Display
 from ansible.vars.manager import VariableManager
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.utils import GraphRepresentation, clean_name, get_play_colors, \
+from ansibleplaybookgrapher.utils import clean_name, get_play_colors, \
     handle_include_path, has_role_parent, generate_id
 
 DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
@@ -60,7 +60,8 @@ class PlaybookNode(Node):
 
 class PlayNode(Node):
     def __init__(self, node_name: str, node_id: str = None):
-        super().__init__(node_name, node_id)
+        play_id = node_id or generate_id("play_")
+        super().__init__(node_name, play_id)
 
 
 class EdgeNode(Node):
@@ -80,13 +81,22 @@ class RoleNode(Node):
         super().__init__(node_name, role_id)
 
 
-class DirectedGraph:
+class PlaybookGraph:
+    """
+    This a directed graph representing the parsed playbook
+    """
+
     def __init__(self):
         self._graph = defaultdict(list)  # type: Dict[Node, List[Node]]
 
-    def add_connection(self, source: Node, destination: Node, edge: EdgeNode):
+    def add_connection(self, source: Node, destination: Node, edge: EdgeNode = None):
+        if edge is None:
+            edge = EdgeNode("")
         self._graph[source].append(edge)
         self._graph[edge].append(destination)
+
+    def items(self):
+        return self._graph.items()
 
 
 class BaseGrapher(ABC):
@@ -95,18 +105,18 @@ class BaseGrapher(ABC):
     """
 
     def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 graph_representation: GraphRepresentation, tags: List[str] = None, skip_tags: List[str] = None,
+                 tags: List[str] = None, skip_tags: List[str] = None,
                  graphiz_graph: CustomDigraph = None, display: Display = None):
 
         self.data_loader = data_loader
         self.inventory_manager = inventory_manager
         self.variable_manager = variable_manager
-        self.graph_representation = graph_representation
         self.graphiz_graph = graphiz_graph or CustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
                                                             format="svg")
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
+        self.graph = PlaybookGraph()
 
     @abstractmethod
     def make_graph(self, *args, **kwargs):
@@ -174,14 +184,13 @@ class BaseGrapher(ABC):
         # get prefix id from node_name
         id_prefix = node_name_prefix.replace("[", "").replace("]", "").replace(" ", "_")
         task_id = generate_id(id_prefix)
-        edge_id = generate_id("edge_")
+
+        edge_node = EdgeNode(task_edge_name)
+        self.graph.add_connection(parent_node, TaskNode(task_name, task_id), edge_node)
 
         graph.node(task_id, label=task_name, shape="octagon", id=task_id, tooltip=task_name)
         graph.edge(parent_node.name, task_id, label=task_edge_name, color=color, fontcolor=color, style="bold",
-                   id=edge_id)
-        self.graph_representation.add_link(parent_node.id, edge_id)
-        self.graph_representation.add_link(edge_id, task_id)
-        task_node = TaskNode(task_name, task_id)
+                   id=edge_node.id)
 
         return True
 
@@ -209,10 +218,8 @@ class PlaybookGrapher(BaseGrapher):
                                       format="svg", name=playbook_filename)
 
         super().__init__(data_loader=data_loader, inventory_manager=inventory_manager,
-                         graphiz_graph=graphiz_graph, variable_manager=variable_manager,
-                         graph_representation=GraphRepresentation(), tags=tags, skip_tags=skip_tags,
+                         graphiz_graph=graphiz_graph, variable_manager=variable_manager, tags=tags, skip_tags=skip_tags,
                          display=display)
-        self.graph = DirectedGraph()
 
     def make_graph(self, *args, **kwargs):
         """
@@ -247,24 +254,22 @@ class PlaybookGrapher(BaseGrapher):
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
             play_name = self.template(play_name, play_vars)
-            play_id = generate_id("play_")
 
             self.display.banner("Graphing " + play_name)
 
-            play_node = PlayNode(play_name, play_id)
+            play_node = PlayNode(play_name)
             # edge from root node to plays
-            self.graph.add_connection(root_node, play_node, EdgeNode(str(play_counter)))
-            self.graph_representation.add_node(play_id)
+            edge_node = EdgeNode(str(play_counter))
+            self.graph.add_connection(root_node, play_node, edge_node)
 
             with self.graphiz_graph.subgraph(name=play_name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
-                play_subgraph.node(play_name, id=play_id, style="filled", shape="box", color=color,
+                play_subgraph.node(play_name, id=play_node.id, style="filled", shape="box", color=color,
                                    fontcolor=play_font_color, tooltip="     ".join(play_hosts))
 
                 # edge from root node to plays
-                play_edge_id = generate_id("edge_")
-                play_subgraph.edge(self.playbook_filename, play_name, id=play_edge_id, style="bold",
+                play_subgraph.edge(self.playbook_filename, play_name, id=edge_node.id, style="bold",
                                    label=str(play_counter), color=color, fontcolor=color)
 
                 # loop through the pre_tasks
@@ -302,18 +307,16 @@ class PlaybookGrapher(BaseGrapher):
                     role_name = "[role] " + clean_name(role.get_name())
 
                     # edge from play to role
-                    edge_id = generate_id("edge_")
                     role_node = RoleNode(role_name)
-                    self.graph.add_connection(play_node, role_node, EdgeNode(str(role_number + global_tasks_counter)))
+                    role_edge_node = EdgeNode(str(role_number + global_tasks_counter))
+                    self.graph.add_connection(play_node, role_node, role_edge_node)
+
                     play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
-                                       fontcolor=color, id=edge_id)
-                    self.graph_representation.add_link(play_id, edge_id)
+                                       fontcolor=color, id=role_edge_node.id)
 
                     with self.graphiz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
 
-                        role_id = generate_id("role_")
-                        role_subgraph.node(role_name, id=role_id)
-                        self.graph_representation.add_link(edge_id, role_id)
+                        role_subgraph.node(role_name, id=role_node.id)
 
                         # loop through the tasks of the roles
                         if self.include_role_tasks:
