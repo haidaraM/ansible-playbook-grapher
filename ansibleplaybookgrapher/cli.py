@@ -10,7 +10,7 @@ from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.parser import PlaybookGrapher
+from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import PostProcessor
 
 # At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
@@ -41,16 +41,16 @@ class GrapherCLI(CLI, ABC):
         display = Display()
         display.verbosity = self.options.verbosity
 
-        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                                  display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                  playbook_filename=self.options.playbook_filename,
-                                  include_role_tasks=self.options.include_role_tasks)
+        grapher = PlaybookParser(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
+                                 display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                 playbook_filename=self.options.playbook_filename,
+                                 include_role_tasks=self.options.include_role_tasks)
 
-        grapher.make_graph()
+        playbook_node = grapher.generate_graph()
 
         svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
         post_processor = PostProcessor(svg_path=svg_path)
-        post_processor.post_process(playbook_node=grapher.graph)
+        post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
 
         display.display(f"The graph has been exported to {svg_path}")

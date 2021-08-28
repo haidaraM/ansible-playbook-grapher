@@ -18,7 +18,7 @@ from ansible.vars.manager import VariableManager
 
 from ansibleplaybookgrapher.graph import GraphvizCustomDigraph, EdgeNode, TaskNode, PlaybookNode, RoleNode, \
     PlayNode, \
-    PlaybookGraph, CompositeNode
+    CompositeNode
 from ansibleplaybookgrapher.utils import clean_name, get_play_colors, \
     handle_include_path, has_role_parent, generate_id
 
@@ -26,13 +26,13 @@ DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "
 DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
 
-class BaseGrapher(ABC):
+class BaseParser(ABC):
     """
     Base grapher
     """
 
     def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 graph: PlaybookGraph, tags: List[str] = None, skip_tags: List[str] = None,
+                 tags: List[str] = None, skip_tags: List[str] = None,
                  graphviz_graph: GraphvizCustomDigraph = None, display: Display = None):
 
         self.data_loader = data_loader
@@ -44,10 +44,9 @@ class BaseGrapher(ABC):
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
-        self.graph = graph
 
     @abstractmethod
-    def make_graph(self, *args, **kwargs):
+    def generate_graph(self, *args, **kwargs):
         """
         Make the graph
         """
@@ -90,8 +89,8 @@ class BaseGrapher(ABC):
             self.display.warning(ansible_error)
             return data
 
-    def _graph_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: GraphvizCustomDigraph,
-                    node_type: str, color: str, parent_node: CompositeNode) -> bool:
+    def _add_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: GraphvizCustomDigraph,
+                  node_type: str, color: str, parent_node: CompositeNode) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
@@ -123,7 +122,7 @@ class BaseGrapher(ABC):
         return True
 
 
-class PlaybookGrapher(BaseGrapher):
+class PlaybookParser(BaseParser):
     """
     The playbook grapher. This is the main entrypoint responsible to graph the playbook.
     """
@@ -144,12 +143,11 @@ class PlaybookGrapher(BaseGrapher):
         self.playbook = Playbook.load(playbook_filename, loader=data_loader, variable_manager=variable_manager)
         graphviz_graph = GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
                                                format="svg", name=playbook_filename)
-        graph = PlaybookGraph(PlaybookNode(playbook_filename))
         super().__init__(data_loader=data_loader, inventory_manager=inventory_manager,
                          graphviz_graph=graphviz_graph, variable_manager=variable_manager, tags=tags,
-                         skip_tags=skip_tags, display=display, graph=graph)
+                         skip_tags=skip_tags, display=display)
 
-    def make_graph(self, *args, **kwargs):
+    def generate_graph(self, *args, **kwargs) -> PlaybookNode:
         """
         Loop through the playbook and make the graph.
 
@@ -165,7 +163,8 @@ class PlaybookGrapher(BaseGrapher):
         """
 
         # the root node
-        playbook_root_node = self.graph.root_node
+
+        playbook_root_node = PlaybookNode(self.playbook_filename)
         self.graphviz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
@@ -289,6 +288,8 @@ class PlaybookGrapher(BaseGrapher):
             self.display.display("")  # just an empty line
             # moving to the next play
 
+        return playbook_root_node
+
     def _include_tasks_in_blocks(self, current_play: Play, graph: GraphvizCustomDigraph, parent_node: CompositeNode,
                                  block: Union[Block, TaskInclude], color: str, current_counter: int,
                                  play_vars: Dict = None, node_type: str = "") -> int:
@@ -338,9 +339,9 @@ class PlaybookGrapher(BaseGrapher):
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
                         current_counter += 1
-                        self._graph_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
-                                         graph=graph, node_type=node_type, color=color,
-                                         parent_node=parent_node)
+                        self._add_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
+                                       graph=graph, node_type=node_type, color=color,
+                                       parent_node=parent_node)
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -371,9 +372,9 @@ class PlaybookGrapher(BaseGrapher):
                     # skipping
                     continue
 
-                task_included = self._graph_task(task=task_or_block, loop_counter=current_counter + 1,
-                                                 task_vars=play_vars, graph=graph, node_type=node_type,
-                                                 color=color, parent_node=parent_node)
+                task_included = self._add_task(task=task_or_block, loop_counter=current_counter + 1,
+                                               task_vars=play_vars, graph=graph, node_type=node_type,
+                                               color=color, parent_node=parent_node)
                 if task_included:
                     # only increment the counter if task has been successfully included.
                     current_counter += 1

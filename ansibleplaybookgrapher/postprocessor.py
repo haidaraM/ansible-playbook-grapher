@@ -3,7 +3,7 @@ from typing import Dict
 
 from lxml import etree
 
-from ansibleplaybookgrapher.parser import PlaybookGraph
+from ansibleplaybookgrapher.graph import PlaybookNode
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ class PostProcessor:
 
         self.root.insert(index, element)
 
-    def post_process(self, playbook_node: PlaybookGraph = None, *args, **kwargs):
+    def post_process(self, playbook_node: PlaybookNode = None, *args, **kwargs):
         """
 
         :param playbook_node:
@@ -97,11 +97,11 @@ class PostProcessor:
 
         self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
-    def _insert_graph_representation(self, graph_representation: PlaybookGraph):
+    def _insert_graph_representation(self, graph_representation: PlaybookNode):
         """
         Insert graph in the SVG
         """
-        links_structure = graph_representation.root_node.links_structure()
+        links_structure = graph_representation.links_structure()
         for node, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node.id, namespaces={'ns': SVG_NAMESPACE})

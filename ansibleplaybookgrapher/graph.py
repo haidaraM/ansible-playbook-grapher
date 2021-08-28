@@ -163,12 +163,3 @@ class RoleNode(CompositeNode):
     @property
     def tasks(self):
         return self._compositions["tasks"]
-
-
-class PlaybookGraph:
-    """
-    This a directed graph representing the parsed playbook
-    """
-
-    def __init__(self, root_node: PlaybookNode):
-        self.root_node = root_node
