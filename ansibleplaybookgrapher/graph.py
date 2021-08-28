@@ -26,9 +26,9 @@ class Node(ABC):
         self.id = node_id
 
     def __str__(self):
-        return f"{type(self)}: {self.label}:{self.id}"
+        return f"{type(self).__name__}: {self.label} => {self.id}"
 
-    def __eq__(self, other: 'Node'):
+    def __eq__(self, other):
         return self.id == other.id
 
     def __hash__(self):
@@ -54,16 +54,17 @@ class CompositeNode(Node):
         """
         self._compositions[target_composition].append(node)
 
-    def links_structure(self) -> Dict[str, List[Node]]:
+    def links_structure(self) -> Dict[Node, List[Node]]:
         """
         Return a representation of the composite node where each key of a dictionary is the node ID and the values is a
         list of linked nodes
         :return:
         """
         links = defaultdict(list)
-        return self._get_all_links(links)
+        self._get_all_links(links)
+        return links
 
-    def _get_all_links(self, links: Dict[str, List[Node]]) -> Dict[str, List[Node]]:
+    def _get_all_links(self, links: Dict[Node, List[Node]]):
         """
         Recursively get the node links
         :return:
@@ -72,14 +73,8 @@ class CompositeNode(Node):
         for target, nodes in self._compositions.items():
             for node in nodes:
                 if isinstance(node, CompositeNode):
-                    new_links = node._get_all_links(links)
-                    # Merging dict
-                    for link in new_links:
-                        links[link].extend(new_links[link])
-                else:
-                    links[self.id].append(node)
-
-        return links
+                    node._get_all_links(links)
+                links[self].append(node)
 
 
 class PlaybookNode(CompositeNode):
@@ -120,8 +115,7 @@ class PlayNode(CompositeNode):
      - post_tasks
     """
 
-    def __init__(self, node_label: str, node_id: str = None, pre_tasks: List['EdgeNode'] = None,
-                 roles: List['EdgeNode'] = None, tasks: List['EdgeNode'] = None, post_tasks: List['EdgeNode'] = None, ):
+    def __init__(self, node_label: str, node_id: str = None):
         play_id = node_id or generate_id("play_")
         super().__init__(node_label, play_id)
 
