@@ -143,16 +143,6 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number)
 
 
-def test_include_role_with_loop(request):
-    """
-    Test include_role.yml, an example with include_role
-    """
-    svg_path, playbook_path = run_grapher("include_role_with_loop.yml", output_filename=request.node.name,
-                                          additional_args=["--include-role-tasks"])
-
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6)
-
-
 def test_with_block(request):
     """
     Test with_roles.yml, an example with roles
