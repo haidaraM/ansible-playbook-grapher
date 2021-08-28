@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Dict, Union, List
 
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
@@ -35,6 +36,57 @@ class CustomDigraph(Digraph):
     _subgraph = "subgraph \"%s\"{"
     _quote = staticmethod(clean_name)
     _quote_edge = staticmethod(clean_name)
+
+
+class Node(ABC):
+    def __init__(self, node_name: str, node_id: str = None):
+        self.name = node_name
+        self.id = node_id or generate_id()
+
+    def __str__(self):
+        return f"{type(self)}: {self.name}:{self.id}"
+
+    def __eq__(self, other: 'Node'):
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
+
+class PlaybookNode(Node):
+    def __init__(self, node_name: str):
+        super().__init__(node_name)
+
+
+class PlayNode(Node):
+    def __init__(self, node_name: str, node_id: str = None):
+        super().__init__(node_name, node_id)
+
+
+class EdgeNode(Node):
+    def __init__(self, node_name: str, node_id: str = None):
+        edge_id = node_id or generate_id("edge_")
+        super().__init__(node_name, edge_id)
+
+
+class TaskNode(Node):
+    def __init__(self, node_name: str, node_id: str = None):
+        super().__init__(node_name, node_id)
+
+
+class RoleNode(Node):
+    def __init__(self, node_name: str, node_id: str = None):
+        role_id = node_id or generate_id("role_")
+        super().__init__(node_name, role_id)
+
+
+class DirectedGraph:
+    def __init__(self):
+        self._graph = defaultdict(list)  # type: Dict[Node, List[Node]]
+
+    def add_connection(self, source: Node, destination: Node, edge: EdgeNode):
+        self._graph[source].append(edge)
+        self._graph[edge].append(destination)
 
 
 class BaseGrapher(ABC):
@@ -101,7 +153,7 @@ class BaseGrapher(ABC):
             return data
 
     def _graph_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: CustomDigraph, node_name_prefix: str,
-                    color: str, parent_node_id: str, parent_node_name: str) -> bool:
+                    color: str, parent_node: Node) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
@@ -113,10 +165,10 @@ class BaseGrapher(ABC):
             self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
 
-        task_edge_label = str(loop_counter)
+        task_edge_name = str(loop_counter)
         if len(task.when) > 0:
             when = "".join(map(str, task.when))
-            task_edge_label += "  [when: " + when + "]"
+            task_edge_name += "  [when: " + when + "]"
 
         task_name = clean_name(node_name_prefix + self.template(task.get_name(), task_vars))
         # get prefix id from node_name
@@ -125,10 +177,11 @@ class BaseGrapher(ABC):
         edge_id = generate_id("edge_")
 
         graph.node(task_id, label=task_name, shape="octagon", id=task_id, tooltip=task_name)
-        graph.edge(parent_node_name, task_id, label=task_edge_label, color=color, fontcolor=color, style="bold",
+        graph.edge(parent_node.name, task_id, label=task_edge_name, color=color, fontcolor=color, style="bold",
                    id=edge_id)
-        self.graph_representation.add_link(parent_node_id, edge_id)
+        self.graph_representation.add_link(parent_node.id, edge_id)
         self.graph_representation.add_link(edge_id, task_id)
+        task_node = TaskNode(task_name, task_id)
 
         return True
 
@@ -159,6 +212,7 @@ class PlaybookGrapher(BaseGrapher):
                          graphiz_graph=graphiz_graph, variable_manager=variable_manager,
                          graph_representation=GraphRepresentation(), tags=tags, skip_tags=skip_tags,
                          display=display)
+        self.graph = DirectedGraph()
 
     def make_graph(self, *args, **kwargs):
         """
@@ -176,6 +230,7 @@ class PlaybookGrapher(BaseGrapher):
         """
 
         # the root node
+        root_node = PlaybookNode(self.playbook_filename)
         self.graphiz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
@@ -196,6 +251,9 @@ class PlaybookGrapher(BaseGrapher):
 
             self.display.banner("Graphing " + play_name)
 
+            play_node = PlayNode(play_name, play_id)
+            # edge from root node to plays
+            self.graph.add_connection(root_node, play_node, EdgeNode(str(play_counter)))
             self.graph_representation.add_node(play_id)
 
             with self.graphiz_graph.subgraph(name=play_name) as play_subgraph:
@@ -214,8 +272,7 @@ class PlaybookGrapher(BaseGrapher):
                 nb_pre_tasks = 0
                 for pre_task_block in play.pre_tasks:
                     nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                 parent_node_name=play_name,
-                                                                 parent_node_id=play_id,
+                                                                 parent_node=play_node,
                                                                  block=pre_task_block, color=color,
                                                                  current_counter=nb_pre_tasks,
                                                                  play_vars=play_vars,
@@ -246,6 +303,8 @@ class PlaybookGrapher(BaseGrapher):
 
                     # edge from play to role
                     edge_id = generate_id("edge_")
+                    role_node = RoleNode(role_name)
+                    self.graph.add_connection(play_node, role_node, EdgeNode(str(role_number + global_tasks_counter)))
                     play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
                                        fontcolor=color, id=edge_id)
                     self.graph_representation.add_link(play_id, edge_id)
@@ -262,9 +321,9 @@ class PlaybookGrapher(BaseGrapher):
                             for block in role.compile(play):
                                 role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
                                                                                    graph=role_subgraph,
-                                                                                   parent_node_name=role_name,
-                                                                                   parent_node_id=role_id, block=block,
-                                                                                   color=color, play_vars=play_vars,
+                                                                                   parent_node=role_node,
+                                                                                   block=block, color=color,
+                                                                                   play_vars=play_vars,
                                                                                    current_counter=role_tasks_counter,
                                                                                    node_name_prefix="[task] ")
                                 role_tasks_counter += 1
@@ -275,8 +334,7 @@ class PlaybookGrapher(BaseGrapher):
                 self.display.v("Graphing tasks...")
                 for task_block in play.tasks:
                     global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                         parent_node_name=play_name,
-                                                                         parent_node_id=play_id,
+                                                                         parent_node=play_node,
                                                                          block=task_block, color=color,
                                                                          current_counter=role_number + global_tasks_counter,
                                                                          play_vars=play_vars,
@@ -288,11 +346,9 @@ class PlaybookGrapher(BaseGrapher):
                 self.display.v("Graphing post_tasks...")
                 for post_task_block in play.post_tasks:
                     global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                         parent_node_name=play_name,
-                                                                         parent_node_id=play_id, block=post_task_block,
-                                                                         color=color,
+                                                                         parent_node=play_node, block=post_task_block,
+                                                                         color=color, play_vars=play_vars,
                                                                          current_counter=global_tasks_counter,
-                                                                         play_vars=play_vars,
                                                                          node_name_prefix="[post_task] ")
                 nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
                 self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
@@ -301,16 +357,14 @@ class PlaybookGrapher(BaseGrapher):
             self.display.display("")  # just an empty line
             # moving to the next play
 
-    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node_name: str,
-                                 parent_node_id: str, block: Union[Block, TaskInclude], color: str,
+    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node: Node,
+                                 block: Union[Block, TaskInclude], color: str,
                                  current_counter: int, play_vars: Dict = None, node_name_prefix: str = "") -> int:
         """
         Recursively read all the tasks of the block and add it to the graph
         FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
         :param current_play:
         :param graph:
-        :param parent_node_name:
-        :param parent_node_id:
         :param block:
         :param color:
         :param current_counter:
@@ -323,8 +377,7 @@ class PlaybookGrapher(BaseGrapher):
         for counter, task_or_block in enumerate(block.block, 1):
             if isinstance(task_or_block, Block):
                 current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                parent_node_name=parent_node_name,
-                                                                parent_node_id=parent_node_id, block=task_or_block,
+                                                                parent_node=parent_node, block=task_or_block,
                                                                 color=color, current_counter=current_counter,
                                                                 play_vars=play_vars, node_name_prefix=node_name_prefix)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
@@ -355,7 +408,7 @@ class PlaybookGrapher(BaseGrapher):
                         current_counter += 1
                         self._graph_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
                                          graph=graph, node_name_prefix=node_name_prefix, color=color,
-                                         parent_node_id=parent_node_id, parent_node_name=parent_node_name)
+                                         parent_node=parent_node)
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -372,8 +425,7 @@ class PlaybookGrapher(BaseGrapher):
 
                 for b in my_blocks:  # loop through the blocks inside the included tasks or role
                     current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                    parent_node_name=parent_node_name,
-                                                                    parent_node_id=parent_node_id, block=b, color=color,
+                                                                    parent_node=parent_node, block=b, color=color,
                                                                     current_counter=current_counter,
                                                                     play_vars=task_vars,
                                                                     node_name_prefix=node_name_prefix)
@@ -389,8 +441,7 @@ class PlaybookGrapher(BaseGrapher):
 
                 task_included = self._graph_task(task=task_or_block, loop_counter=current_counter + 1,
                                                  task_vars=play_vars, graph=graph, node_name_prefix=node_name_prefix,
-                                                 color=color, parent_node_id=parent_node_id,
-                                                 parent_node_name=parent_node_name)
+                                                 color=color, parent_node=parent_node)
                 if task_included:
                     # only increment the counter if task has been successfully included.
                     current_counter += 1
