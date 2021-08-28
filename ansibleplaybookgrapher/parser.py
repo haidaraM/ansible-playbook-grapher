@@ -1,6 +1,5 @@
 import os
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from typing import Dict, Union, List
 
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
@@ -16,87 +15,14 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 from ansible.vars.manager import VariableManager
-from graphviz import Digraph
 
+from ansibleplaybookgrapher.graph import GraphvizCustomDigraph, Node, EdgeNode, TaskNode, PlaybookNode, RoleNode, PlayNode, \
+    PlaybookGraph
 from ansibleplaybookgrapher.utils import clean_name, get_play_colors, \
     handle_include_path, has_role_parent, generate_id
 
 DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
-
-
-class CustomDigraph(Digraph):
-    """
-    Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
-    the node and edge names and override some methods.
-    """
-    _head = "digraph \"%s\"{"
-    _edge = "\t\"%s\" -> \"%s\"%s"
-    _node = "\t\"%s\"%s"
-    _subgraph = "subgraph \"%s\"{"
-    _quote = staticmethod(clean_name)
-    _quote_edge = staticmethod(clean_name)
-
-
-class Node(ABC):
-    def __init__(self, node_name: str, node_id: str = None):
-        self.name = node_name
-        self.id = node_id or generate_id()
-
-    def __str__(self):
-        return f"{type(self)}: {self.name}:{self.id}"
-
-    def __eq__(self, other: 'Node'):
-        return self.id == other.id
-
-    def __hash__(self):
-        return hash(self.id)
-
-
-class PlaybookNode(Node):
-    def __init__(self, node_name: str):
-        super().__init__(node_name)
-
-
-class PlayNode(Node):
-    def __init__(self, node_name: str, node_id: str = None):
-        play_id = node_id or generate_id("play_")
-        super().__init__(node_name, play_id)
-
-
-class EdgeNode(Node):
-    def __init__(self, node_name: str, node_id: str = None):
-        edge_id = node_id or generate_id("edge_")
-        super().__init__(node_name, edge_id)
-
-
-class TaskNode(Node):
-    def __init__(self, node_name: str, node_id: str = None):
-        super().__init__(node_name, node_id)
-
-
-class RoleNode(Node):
-    def __init__(self, node_name: str, node_id: str = None):
-        role_id = node_id or generate_id("role_")
-        super().__init__(node_name, role_id)
-
-
-class PlaybookGraph:
-    """
-    This a directed graph representing the parsed playbook
-    """
-
-    def __init__(self):
-        self._graph = defaultdict(list)  # type: Dict[Node, List[Node]]
-
-    def add_connection(self, source: Node, destination: Node, edge: EdgeNode = None):
-        if edge is None:
-            edge = EdgeNode("")
-        self._graph[source].append(edge)
-        self._graph[edge].append(destination)
-
-    def items(self):
-        return self._graph.items()
 
 
 class BaseGrapher(ABC):
@@ -106,13 +32,14 @@ class BaseGrapher(ABC):
 
     def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
                  tags: List[str] = None, skip_tags: List[str] = None,
-                 graphiz_graph: CustomDigraph = None, display: Display = None):
+                 graphviz_graph: GraphvizCustomDigraph = None, display: Display = None):
 
         self.data_loader = data_loader
         self.inventory_manager = inventory_manager
         self.variable_manager = variable_manager
-        self.graphiz_graph = graphiz_graph or CustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
-                                                            format="svg")
+        self.graphviz_graph = graphviz_graph or GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR,
+                                                                      graph_attr=DEFAULT_GRAPH_ATTR,
+                                                                      format="svg")
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
@@ -133,8 +60,8 @@ class BaseGrapher(ABC):
         :return: The rendered file path (output_filename.svg)
         """
 
-        rendered_file_path = self.graphiz_graph.render(cleanup=not save_dot_file, format="svg",
-                                                       filename=output_filename)
+        rendered_file_path = self.graphviz_graph.render(cleanup=not save_dot_file, format="svg",
+                                                        filename=output_filename)
         if save_dot_file:
             # add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
@@ -162,7 +89,7 @@ class BaseGrapher(ABC):
             self.display.warning(ansible_error)
             return data
 
-    def _graph_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: CustomDigraph, node_name_prefix: str,
+    def _graph_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: GraphvizCustomDigraph, node_name_prefix: str,
                     color: str, parent_node: Node) -> bool:
         """
         Include the task in the graph.
@@ -214,11 +141,12 @@ class PlaybookGrapher(BaseGrapher):
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
         self.playbook = Playbook.load(playbook_filename, loader=data_loader, variable_manager=variable_manager)
-        graphiz_graph = CustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
-                                      format="svg", name=playbook_filename)
+        graphiz_graph = GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
+                                              format="svg", name=playbook_filename)
 
         super().__init__(data_loader=data_loader, inventory_manager=inventory_manager,
-                         graphiz_graph=graphiz_graph, variable_manager=variable_manager, tags=tags, skip_tags=skip_tags,
+                         graphviz_graph=graphiz_graph, variable_manager=variable_manager, tags=tags,
+                         skip_tags=skip_tags,
                          display=display)
 
     def make_graph(self, *args, **kwargs):
@@ -238,7 +166,7 @@ class PlaybookGrapher(BaseGrapher):
 
         # the root node
         root_node = PlaybookNode(self.playbook_filename)
-        self.graphiz_graph.node(self.playbook_filename, style="dotted", id="root_node")
+        self.graphviz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
@@ -262,7 +190,7 @@ class PlaybookGrapher(BaseGrapher):
             edge_node = EdgeNode(str(play_counter))
             self.graph.add_connection(root_node, play_node, edge_node)
 
-            with self.graphiz_graph.subgraph(name=play_name) as play_subgraph:
+            with self.graphviz_graph.subgraph(name=play_name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
                 play_subgraph.node(play_name, id=play_node.id, style="filled", shape="box", color=color,
@@ -314,7 +242,7 @@ class PlaybookGrapher(BaseGrapher):
                     play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
                                        fontcolor=color, id=role_edge_node.id)
 
-                    with self.graphiz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
+                    with self.graphviz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
 
                         role_subgraph.node(role_name, id=role_node.id)
 
@@ -360,7 +288,7 @@ class PlaybookGrapher(BaseGrapher):
             self.display.display("")  # just an empty line
             # moving to the next play
 
-    def _include_tasks_in_blocks(self, current_play: Play, graph: CustomDigraph, parent_node: Node,
+    def _include_tasks_in_blocks(self, current_play: Play, graph: GraphvizCustomDigraph, parent_node: Node,
                                  block: Union[Block, TaskInclude], color: str,
                                  current_counter: int, play_vars: Dict = None, node_name_prefix: str = "") -> int:
         """
