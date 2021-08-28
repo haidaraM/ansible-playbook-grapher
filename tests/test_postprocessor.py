@@ -95,22 +95,26 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
     :param tmpdir:
     :return:
     """
-    graph_represention = PlaybookGraph(PlaybookNode(''))
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
+    graph_representation = PlaybookGraph(PlaybookNode(''))
+    svg_post_processed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
 
     play = PlayNode("play 1", "play_hostsall")
-    # link from play to task edges
-    graph_represention.add_connection(play, TaskNode(""))
-    graph_represention.add_connection(play, TaskNode(""))
+    graph_representation.root_node.add_node('plays', play)
+    task_1 = TaskNode("task 1")
+    task_2 = TaskNode("task 1")
+    play.add_node('tasks', task_1)
+    play.add_node('tasks', task_2)
 
-    post_processor.post_process(graph_represention)
+    post_processor.post_process(graph_representation)
 
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
-    root = etree.parse(svg_post_proccessed_path.strpath).getroot()
+    root = etree.parse(svg_post_processed_path.strpath).getroot()
 
     _assert_common_svg(root)
-
-    assert len(root.xpath("ns:g/*[@id='%s']//ns:link" % play.id, namespaces={'ns': SVG_NAMESPACE})) == 2
+    elements_links = root.xpath("ns:g/*[@id='%s']//ns:link" % play.id, namespaces={'ns': SVG_NAMESPACE})
+    assert len(elements_links) == 2, "Play should have two links"
+    assert [task_1.id, task_2.id] == [e.get("target") for e in
+                                      elements_links], "The tasks ID should equal to the targets"

@@ -60,10 +60,10 @@ class PostProcessor:
 
         self.root.insert(index, element)
 
-    def post_process(self, graph_representation: PlaybookGraph = None, *args, **kwargs):
+    def post_process(self, playbook_node: PlaybookGraph = None, *args, **kwargs):
         """
 
-        :param graph_representation:
+        :param playbook_node:
         :param args:
         :param kwargs:
         :return:
@@ -87,9 +87,9 @@ class PostProcessor:
         # insert my css
         self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css', 'id': 'my_css'}, cdata_text=css)
 
-        if graph_representation:
+        if playbook_node:
             # Insert the graph representation for the links between the nodes
-            self._insert_graph_representation(graph_representation)
+            self._insert_graph_representation(playbook_node)
 
     def write(self, output_filename: str = None):
         if output_filename is None:
@@ -102,8 +102,7 @@ class PostProcessor:
         Insert graph in the SVG
         """
         links_structure = graph_representation.root_node.links_structure()
-        for node, node_links in graph_representation.items():
-
+        for node, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node.id, namespaces={'ns': SVG_NAMESPACE})
             if xpath_result:

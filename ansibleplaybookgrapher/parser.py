@@ -114,7 +114,6 @@ class BaseGrapher(ABC):
 
         task_node = TaskNode(task_name, task_id)
         edge_node = EdgeNode(task_edge_name, parent_node, task_node)
-        self.graph.add_connection(parent_node, task_node, edge_node)
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         graph.node(task_id, label=task_name, shape="octagon", id=task_id, tooltip=task_name)
@@ -191,7 +190,6 @@ class PlaybookGrapher(BaseGrapher):
 
             # edge from root node to plays
             edge_node = EdgeNode(str(play_counter), playbook_root_node, play_node)
-            self.graph.add_connection(playbook_root_node, play_node, edge_node)
 
             with self.graphviz_graph.subgraph(name=play_name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
@@ -241,7 +239,6 @@ class PlaybookGrapher(BaseGrapher):
                     role_node = RoleNode(role_name)
                     role_edge_node = EdgeNode(str(role_number + global_tasks_counter), play_node, role_node)
                     play_node.add_node("roles", role_node)
-                    self.graph.add_connection(play_node, role_node, role_edge_node)
 
                     play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
                                        fontcolor=color, id=role_edge_node.id)

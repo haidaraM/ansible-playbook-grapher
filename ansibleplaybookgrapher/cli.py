@@ -50,7 +50,7 @@ class GrapherCLI(CLI, ABC):
 
         svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
         post_processor = PostProcessor(svg_path=svg_path)
-        post_processor.post_process(graph_representation=grapher.graph)
+        post_processor.post_process(playbook_node=grapher.graph)
         post_processor.write()
 
         display.display(f"The graph has been exported to {svg_path}")

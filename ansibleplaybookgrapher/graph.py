@@ -152,13 +152,13 @@ class EdgeNode(CompositeNode):
 
 
 class TaskNode(Node):
-    def __init__(self, node_label: str, node_id: str = None, task_path: str = None):
-        super().__init__(node_label, generate_id("task_"))
+    def __init__(self, node_label: str, node_id: str = None):
+        super().__init__(node_label, node_id or generate_id("task_"))
 
 
 class RoleNode(CompositeNode):
-    def __init__(self, node_label: str, tasks: List['TaskNode'] = None):
-        super().__init__(node_label, generate_id("role_"))
+    def __init__(self, node_label: str, node_id: str = None):
+        super().__init__(node_label, node_id or generate_id("role_"))
 
     @property
     def tasks(self):
@@ -172,14 +172,3 @@ class PlaybookGraph:
 
     def __init__(self, root_node: PlaybookNode):
         self.root_node = root_node
-        self._graph = defaultdict(list)  # type: Dict[Node, List[Node]]
-
-    def add_connection(self, source: Node, destination: Node, edge: EdgeNode = None):
-        if edge is None:
-            # TODO: check if we should keep this or not
-            edge = EdgeNode("", source, destination)
-        self._graph[source].append(edge)
-        self._graph[edge].append(destination)
-
-    def items(self):
-        return self._graph.items()
