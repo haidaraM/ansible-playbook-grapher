@@ -101,6 +101,7 @@ class PostProcessor:
         """
         Insert graph in the SVG
         """
+        links_structure = graph_representation.root_node.links_structure()
         for node, node_links in graph_representation.items():
 
             # Find the group g with the specified id

@@ -3,6 +3,7 @@ from _elementtree import Element
 import pytest
 from lxml import etree
 
+from ansibleplaybookgrapher.graph import PlaybookNode
 from ansibleplaybookgrapher.parser import PlaybookGraph, PlayNode, TaskNode
 from ansibleplaybookgrapher.postprocessor import PostProcessor, SVG_NAMESPACE
 from tests import SIMPLE_PLAYBOOK_SVG
@@ -94,7 +95,7 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
     :param tmpdir:
     :return:
     """
-    graph_represention = PlaybookGraph()
+    graph_represention = PlaybookGraph(PlaybookNode(''))
     svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
 
     play = PlayNode("play 1", "play_hostsall")
