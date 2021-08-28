@@ -3,7 +3,7 @@ from typing import Dict
 
 from lxml import etree
 
-from ansibleplaybookgrapher.grapher import PlaybookGraph
+from ansibleplaybookgrapher.parser import PlaybookGraph
 
 JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"

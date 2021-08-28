@@ -10,7 +10,7 @@ from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.grapher import PlaybookGrapher
+from ansibleplaybookgrapher.parser import PlaybookGrapher
 from ansibleplaybookgrapher.postprocessor import PostProcessor
 
 # At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:

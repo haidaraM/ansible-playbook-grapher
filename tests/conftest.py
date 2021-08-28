@@ -1,6 +1,6 @@
 import pytest
 
-from ansibleplaybookgrapher.grapher import PlaybookGrapher
+from ansibleplaybookgrapher.parser import PlaybookGrapher
 from tests import INVENTORY_FILE
 
 
