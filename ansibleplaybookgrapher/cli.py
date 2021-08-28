@@ -35,20 +35,18 @@ class GrapherCLI(CLI, ABC):
     def run(self):
         super(GrapherCLI, self).run()
 
-        loader, inventory, variable_manager = CLI._play_prereqs()
         # Looks like the display is a singleton. This instruction will NOT return a new instance.
         # This is why we set the verbosity later because someone set it before us.
         display = Display()
         display.verbosity = self.options.verbosity
 
-        grapher = PlaybookParser(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                                 display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                 playbook_filename=self.options.playbook_filename,
-                                 include_role_tasks=self.options.include_role_tasks)
+        parser = PlaybookParser(display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                playbook_filename=self.options.playbook_filename,
+                                include_role_tasks=self.options.include_role_tasks)
 
-        playbook_node = grapher.generate_graph()
+        playbook_node = parser.generate_graph()
 
-        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
+        svg_path = parser.render_graph(self.options.output_filename, self.options.save_dot_file)
         post_processor = PostProcessor(svg_path=svg_path)
         post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()

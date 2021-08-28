@@ -1,10 +1,9 @@
 import os
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict, Union, List
 
+from ansible.cli import CLI
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
 from ansible.parsing.yaml.objects import AnsibleUnicode
 from ansible.playbook import Playbook, Play
 from ansible.playbook.block import Block
@@ -14,7 +13,6 @@ from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
-from ansible.vars.manager import VariableManager
 
 from ansibleplaybookgrapher.graph import GraphvizCustomDigraph, EdgeNode, TaskNode, PlaybookNode, RoleNode, \
     PlayNode, \
@@ -28,15 +26,15 @@ DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 
 class BaseParser(ABC):
     """
-    Base grapher
+    Base Parser
     """
 
-    def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 tags: List[str] = None, skip_tags: List[str] = None,
+    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None,
                  graphviz_graph: GraphvizCustomDigraph = None, display: Display = None):
 
-        self.data_loader = data_loader
-        self.inventory_manager = inventory_manager
+        loader, inventory, variable_manager = CLI._play_prereqs()
+        self.data_loader = loader
+        self.inventory_manager = inventory
         self.variable_manager = variable_manager
         self.graphviz_graph = graphviz_graph or GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR,
                                                                       graph_attr=DEFAULT_GRAPH_ATTR,
@@ -44,13 +42,6 @@ class BaseParser(ABC):
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
-
-    @abstractmethod
-    def generate_graph(self, *args, **kwargs):
-        """
-        Make the graph
-        """
-        pass
 
     def render_graph(self, output_filename: str, save_dot_file=False) -> str:
         """
@@ -124,32 +115,27 @@ class BaseParser(ABC):
 
 class PlaybookParser(BaseParser):
     """
-    The playbook grapher. This is the main entrypoint responsible to graph the playbook.
+    The playbook parser. This is the main entrypoint responsible to parser the playbook into a graph structure
     """
 
-    def __init__(self, data_loader: DataLoader, inventory_manager: InventoryManager, variable_manager: VariableManager,
-                 playbook_filename: str, display: Display, include_role_tasks=False, tags=None, skip_tags=None):
+    def __init__(self, playbook_filename: str, display: Display, include_role_tasks=False, tags=None, skip_tags=None):
         """
-        Main grapher responsible to parse the playbook and draw graph
-        :param data_loader:
-        :param inventory_manager:
-        :param variable_manager:
+
         :param include_role_tasks: If true, the tasks of the role will be included.
         :param playbook_filename:
         """
+        graphviz_graph = GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
+                                               format="svg", name=playbook_filename)
+        super().__init__(graphviz_graph=graphviz_graph, tags=tags, skip_tags=skip_tags, display=display)
 
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
-        self.playbook = Playbook.load(playbook_filename, loader=data_loader, variable_manager=variable_manager)
-        graphviz_graph = GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
-                                               format="svg", name=playbook_filename)
-        super().__init__(data_loader=data_loader, inventory_manager=inventory_manager,
-                         graphviz_graph=graphviz_graph, variable_manager=variable_manager, tags=tags,
-                         skip_tags=skip_tags, display=display)
+        self.playbook = Playbook.load(playbook_filename, loader=self.data_loader,
+                                      variable_manager=self.variable_manager)
 
     def generate_graph(self, *args, **kwargs) -> PlaybookNode:
         """
-        Loop through the playbook and make the graph.
+        Loop through the playbook and generate the graph.
 
         The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
@@ -163,7 +149,6 @@ class PlaybookParser(BaseParser):
         """
 
         # the root node
-
         playbook_root_node = PlaybookNode(self.playbook_filename)
         self.graphviz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
@@ -295,7 +280,7 @@ class PlaybookParser(BaseParser):
                                  play_vars: Dict = None, node_type: str = "") -> int:
         """
         Recursively read all the tasks of the block and add it to the graph
-        FIXME: This function needs some refactoring. Thinking of a BlockGrapher to handle this
+        FIXME: This function needs some refactoring
         :param current_play:
         :param graph:
         :param block:
