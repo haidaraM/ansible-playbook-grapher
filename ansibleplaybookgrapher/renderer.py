@@ -4,7 +4,7 @@ from typing import Dict
 from ansible.utils.display import Display
 from graphviz import Digraph
 
-from ansibleplaybookgrapher.graph import PlaybookNode, EdgeNode, TaskNode, Node, PlayNode, RoleNode
+from ansibleplaybookgrapher.graph import PlaybookNode, EdgeNode, Node, PlayNode, RoleNode
 from ansibleplaybookgrapher.utils import clean_name, get_play_colors
 
 
@@ -36,7 +36,7 @@ class GraphvizRenderer:
                                               graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
                                               edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
 
-    def _add_task(self, graph: GraphvizCustomDigraph, parent_node: Node, edge: EdgeNode, task: TaskNode, color: str,
+    def _add_task(self, graph: GraphvizCustomDigraph, parent_node: Node, edge: EdgeNode, color: str,
                   shape: str = "octagon"):
         """
         Add a task in the given graph
@@ -45,8 +45,10 @@ class GraphvizRenderer:
         :param task:
         :return:
         """
-        graph.node(task.id, label=task.label, shape=shape, id=task.id, tooltip=task.label)
-        graph.edge(parent_node.id, task.id, label=edge.label, color=color, fontcolor=color, style="bold", id=edge.id)
+        graph.node(edge.destination.id, label=edge.destination.label, shape=shape, id=edge.destination.id,
+                   tooltip=edge.destination.label)
+        graph.edge(parent_node.id, edge.destination.id, label=edge.label, color=color, fontcolor=color, style="bold",
+                   id=edge.id)
 
     def _convert_to_graphviz(self):
         """
@@ -71,7 +73,7 @@ class GraphvizRenderer:
 
                 # pre_tasks
                 for pre_task_edge in play.pre_tasks:
-                    self._add_task(play_subgraph, play, pre_task_edge, pre_task_edge.destination, color)
+                    self._add_task(play_subgraph, play, pre_task_edge, color)
 
                 # roles
                 for role_edge in play.roles:
@@ -86,15 +88,15 @@ class GraphvizRenderer:
 
                         # role tasks
                         for role_task_edge in role.tasks:
-                            self._add_task(role_subgraph, role, role_task_edge, role_task_edge.destination, color)
+                            self._add_task(role_subgraph, role, role_task_edge, color)
 
                 # tasks
                 for task_edge in play.tasks:
-                    self._add_task(play_subgraph, play, task_edge, task_edge.destination, color)
+                    self._add_task(play_subgraph, play, task_edge, color)
 
                 # post_tasks
                 for post_task_edge in play.post_tasks:
-                    self._add_task(play_subgraph, play, post_task_edge, post_task_edge.destination, color)
+                    self._add_task(play_subgraph, play, post_task_edge, color)
 
     def render(self, output_filename: str, save_dot_file=False) -> str:
         """
