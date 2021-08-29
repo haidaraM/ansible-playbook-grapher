@@ -247,8 +247,8 @@ class PlaybookParser(BaseParser):
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
 
                     self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.args['name']}'")
-                    my_blocks, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
-                                                                variable_manager=self.variable_manager)
+                    block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
+                                                                 variable_manager=self.variable_manager)
                 else:
                     self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
 
