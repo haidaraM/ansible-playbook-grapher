@@ -190,9 +190,8 @@ class PlaybookParser(BaseParser):
             self.display.v("Parsing tasks...")
             for task_block in play.tasks:
                 global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
-                                                                     block=task_block,
+                                                                     block=task_block, play_vars=play_vars,
                                                                      current_counter=role_number + global_tasks_counter,
-                                                                     play_vars=play_vars,
                                                                      node_type="task")
             nb_tasks = global_tasks_counter - role_number - nb_pre_tasks
             self.display.v(f"{nb_tasks} task(s) added to the graph.")
@@ -201,8 +200,7 @@ class PlaybookParser(BaseParser):
             self.display.v("Parsing post_tasks...")
             for post_task_block in play.post_tasks:
                 global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
-                                                                     block=post_task_block,
-                                                                     play_vars=play_vars,
+                                                                     block=post_task_block, play_vars=play_vars,
                                                                      current_counter=global_tasks_counter,
                                                                      node_type="post_task")
             nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks

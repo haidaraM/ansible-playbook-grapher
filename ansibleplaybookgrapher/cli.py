@@ -10,12 +10,12 @@ from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.graph import GraphvizRenderer
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import PostProcessor
-
 # At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
 # https://github.com/ansible/ansible/pull/50069
+from ansibleplaybookgrapher.renderer import GraphvizRenderer
+
 IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 
@@ -46,15 +46,15 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.generate_graph()
-        renderer = GraphvizRenderer(playbook_node)
-        renderer.convert_to_graphviz()
+        renderer = GraphvizRenderer(playbook_node, display)
+        display.display("Rendering the graph...")
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file)
 
         post_processor = PostProcessor(svg_path=svg_path)
         post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
 
-        display.display(f"The graph has been exported to {svg_path}")
+        display.display(f"The graph has been exported to {svg_path}", color="green")
 
         return svg_path
 
