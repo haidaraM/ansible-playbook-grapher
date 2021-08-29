@@ -10,8 +10,9 @@ from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.grapher import PlaybookGrapher
+from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import PostProcessor
+from ansibleplaybookgrapher.renderer import GraphvizRenderer
 
 # At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
 # https://github.com/ansible/ansible/pull/50069
@@ -20,7 +21,7 @@ IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 def get_cli_class():
     """
-    Utility function to return the class to use as CLI depending on Ansible version.
+    Utility function to return the class to use as CLI
     :return:
     """
 
@@ -35,25 +36,25 @@ class GrapherCLI(CLI, ABC):
     def run(self):
         super(GrapherCLI, self).run()
 
-        loader, inventory, variable_manager = CLI._play_prereqs()
         # Looks like the display is a singleton. This instruction will NOT return a new instance.
         # This is why we set the verbosity later because someone set it before us.
         display = Display()
         display.verbosity = self.options.verbosity
 
-        grapher = PlaybookGrapher(data_loader=loader, inventory_manager=inventory, variable_manager=variable_manager,
-                                  display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                  playbook_filename=self.options.playbook_filename,
-                                  include_role_tasks=self.options.include_role_tasks)
+        parser = PlaybookParser(display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+                                playbook_filename=self.options.playbook_filename,
+                                include_role_tasks=self.options.include_role_tasks)
 
-        grapher.make_graph()
+        playbook_node = parser.generate_graph()
+        renderer = GraphvizRenderer(playbook_node, display)
+        display.display("Rendering the graph...")
+        svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file)
 
-        svg_path = grapher.render_graph(self.options.output_filename, self.options.save_dot_file)
         post_processor = PostProcessor(svg_path=svg_path)
-        post_processor.post_process(graph_representation=grapher.graph_representation)
+        post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
 
-        display.display(f"The graph has been exported to {svg_path}")
+        display.display(f"The graph has been exported to {svg_path}", color="green")
 
         return svg_path
 
@@ -67,7 +68,8 @@ class PlaybookGrapherCLI(GrapherCLI):
         super(PlaybookGrapherCLI, self).__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
-        # But this may change in the future: https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
+        # But this may change in the future:
+        # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
         self.options = None
 
     def _add_my_options(self):
@@ -87,7 +89,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         self.parser.add_argument("-s", "--save-dot-file", dest="save_dot_file", action='store_true', default=False,
                                  help="Save the dot file used to generate the graph.")
 
-        self.parser.add_argument("-o", "--ouput-file-name", dest='output_filename',
+        self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
         self.parser.add_argument('--version', action='version',

@@ -4,21 +4,27 @@
 [![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
 [![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=master)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=master)
 
-[ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a graph representing your Ansible playbook tasks and roles. The aim of
-this project is to quickly have an overview of your playbook.
+[ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a
+graph representing your Ansible playbook plays, tasks and roles. The aim of this project is to have an overview of your
+playbook.
 
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
 ## Prerequisites
- - Python 3
- - **Ansible** >= 2.9: If you still use an older version of Ansible, create a virtual environment and install ansible-playbook-grapher. 
- **pip will install a version of Ansible >= 2.9 if not already installed.** I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine) for the supported Ansible version. 
- - **Graphviz**: The tool used to generate the graph in SVG. 
-   ```shell script
-   $ sudo apt-get install graphviz # or yum install or brew install
-   ```
+
+- Python 3
+- **Ansible** >= 2.9: If you still use an older version of Ansible, create a virtual environment and install
+  ansible-playbook-grapher.
+  **pip will install a version of Ansible >= 2.9 if not already installed.** I try to
+  respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine) for the
+  supported Ansible version.
+- **Graphviz**: The tool used to generate the graph in SVG.
+  ```shell script
+  $ sudo apt-get install graphviz # or yum install or brew install
+  ```
 
 ## Installation
+
 ```shell script
 $ pip install ansible-playbook-grapher
 ```
@@ -30,7 +36,6 @@ $ ansible-playbook-grapher tests/fixtures/example.yml
 ```
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/example.png)
-
 
 ```bash
 $ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
@@ -72,7 +77,7 @@ optional arguments:
   -i INVENTORY, --inventory INVENTORY
                         specify inventory host path or comma separated host
                         list.
-  -o OUTPUT_FILENAME, --ouput-file-name OUTPUT_FILENAME
+  -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
                         Output filename without the '.svg' extension. Default:
                         <playbook>.svg
   -s, --save-dot-file   Save the dot file used to generate the graph.
@@ -83,29 +88,37 @@ optional arguments:
 ```
 
 ## Configuration: ansible.cfg
-The content of `ansible.cfg` is loaded automatically when running the grapher according to Ansible's behavior. The 
-corresponding environment variables are also loaded. 
- 
-The values in the config file (and their corresponding environment variables) may affect the behavior of the grapher. 
+
+The content of `ansible.cfg` is loaded automatically when running the grapher according to Ansible's behavior. The
+corresponding environment variables are also loaded.
+
+The values in the config file (and their corresponding environment variables) may affect the behavior of the grapher.
 For example `TAGS_RUN` and `TAGS_SKIP` or vault configuration.
 
 More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
 ## Contribution
-Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley: 
+
+Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley:
 
 ### Dev environment
+
 To setup a new development environment :
- - Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
- - (cd tests && pip install -r requirements_tests.txt)
+
+- Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
+- (cd tests && pip install -r requirements_tests.txt)
 
 Run the tests with:
+
 ```shell script
 $ make test # run all tests
 ```
 
-The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when submitting PRs. 
+The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts
+in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
+submitting PRs.
 
 ## TODO
- - Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
- - Graphviz : find a way to avoid or reduce edges overlapping
+
+- Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
+- Graphviz : find a way to avoid or reduce edges overlapping

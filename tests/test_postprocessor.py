@@ -3,15 +3,15 @@ from _elementtree import Element
 import pytest
 from lxml import etree
 
+from ansibleplaybookgrapher.graph import PlaybookNode, PlayNode, TaskNode
 from ansibleplaybookgrapher.postprocessor import PostProcessor, SVG_NAMESPACE
-from ansibleplaybookgrapher.utils import GraphRepresentation
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
 @pytest.fixture(name='post_processor')
 def fixture_simple_postprocessor(request):
     """
-    Return a post processor without a graph representation and with the simple_playbook_no_postproccess
+    Return a post processor without a graph structure and with the simple_playbook_no_postproccess
     :return:
     """
     try:
@@ -57,10 +57,10 @@ def test_post_processor_write(post_processor: PostProcessor, tmpdir):
     :param post_processor:
     :return:
     """
-    svg_post_proccessed_path = tmpdir.join("test_post_processor_write.svg")
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    svg_post_processed_path = tmpdir.join("test_post_processor_write.svg")
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
@@ -71,15 +71,15 @@ def test_post_processor_without_graph_representation(post_processor: PostProcess
     :param tmpdir:
     :return:
     """
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_no_graph.svg")
+    svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_no_graph.svg")
 
     post_processor.post_process()
 
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
-    root = etree.parse(svg_post_proccessed_path.strpath).getroot()
+    root = etree.parse(svg_post_processed_path.strpath).getroot()
     _assert_common_svg(root)
 
     # no links should be in the svg when there is no graph_representation
@@ -94,22 +94,26 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
     :param tmpdir:
     :return:
     """
-    graph_represention = GraphRepresentation()
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
+    playbook_node = PlaybookNode('')
+    svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_graph.svg")
 
-    play_id = "play_hostsall"
-    # link from play to task edges
-    graph_represention.add_link(play_id, "play_hostsallpost_taskPosttask1")
-    graph_represention.add_link(play_id, "play_hostsallpost_taskPosttask2")
+    play = PlayNode("play 1", "play_hostsall")
+    playbook_node.add_node('plays', play)
+    task_1 = TaskNode("task 1")
+    task_2 = TaskNode("task 1")
+    play.add_node('tasks', task_1)
+    play.add_node('tasks', task_2)
 
-    post_processor.post_process(graph_represention)
+    post_processor.post_process(playbook_node)
 
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
-    root = etree.parse(svg_post_proccessed_path.strpath).getroot()
+    root = etree.parse(svg_post_processed_path.strpath).getroot()
 
     _assert_common_svg(root)
-
-    assert len(root.xpath("ns:g/*[@id='%s']//ns:link" % play_id, namespaces={'ns': SVG_NAMESPACE})) == 2
+    elements_links = root.xpath("ns:g/*[@id='%s']//ns:link" % play.id, namespaces={'ns': SVG_NAMESPACE})
+    assert len(elements_links) == 2, "Play should have two links"
+    assert [task_1.id, task_2.id] == [e.get("target") for e in
+                                      elements_links], "The tasks ID should equal to the targets"

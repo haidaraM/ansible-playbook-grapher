@@ -1,9 +1,8 @@
 import os
 import uuid
-from typing import Dict, List, Tuple
+from typing import Tuple
 
 from ansible.parsing.dataloader import DataLoader
-from ansible.playbook import Play
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -32,29 +31,7 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-class GraphRepresentation:
-    """
-    A simple structure to represent the link between the node of the graph. It's used during the postprocessing of the
-    svg to add these links in order to highlight the nodes and edge on hover.
-    """
-
-    def __init__(self, graph_dict: Dict[str, List] = None):
-        if graph_dict is None:
-            graph_dict = {}
-        self.graph_dict = graph_dict
-
-    def add_node(self, node_name: str):
-        if node_name not in self.graph_dict:
-            self.graph_dict[node_name] = []
-
-    def add_link(self, node1: str, node2: str):
-        self.add_node(node1)
-        edges = self.graph_dict[node1]
-        edges.append(node2)
-        self.graph_dict[node1] = edges
-
-
-def get_play_colors(play: Play) -> Tuple[str, str]:
+def get_play_colors(play) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play

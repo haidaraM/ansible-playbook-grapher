@@ -3,7 +3,7 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.cli import get_cli_class, IS_ANSIBLE_2_9_X
+from ansibleplaybookgrapher.cli import get_cli_class
 
 
 @pytest.mark.parametrize("help_option", ['-h', '--help'])
@@ -60,11 +60,11 @@ def test_cli_save_dot_file(save_dot_file_option, expected):
 
 @pytest.mark.parametrize("output_filename_option, expected",
                          [(['--'], "playbook"), (['-o', 'output'], 'output'),
-                          (['--ouput-file-name', 'output'], 'output')],
+                          (['--output-file-name', 'output'], 'output')],
                          ids=['default', 'output-filename-short-option', 'output-filename-long-option'])
 def test_cli_output_filename(output_filename_option, expected):
     """
-    Test for the output filename option: -o, --ouput-file-name
+    Test for the output filename option: -o, --output-file-name
     :param output_filename_option:
     :param expected:
     :return:
