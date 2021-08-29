@@ -88,7 +88,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         self.parser.add_argument("-s", "--save-dot-file", dest="save_dot_file", action='store_true', default=False,
                                  help="Save the dot file used to generate the graph.")
 
-        self.parser.add_argument("-o", "--ouput-file-name", dest='output_filename',
+        self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
         self.parser.add_argument('--version', action='version',

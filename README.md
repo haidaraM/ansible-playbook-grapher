@@ -72,7 +72,7 @@ optional arguments:
   -i INVENTORY, --inventory INVENTORY
                         specify inventory host path or comma separated host
                         list.
-  -o OUTPUT_FILENAME, --ouput-file-name OUTPUT_FILENAME
+  -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
                         Output filename without the '.svg' extension. Default:
                         <playbook>.svg
   -s, --save-dot-file   Save the dot file used to generate the graph.
