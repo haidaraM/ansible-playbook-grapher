@@ -10,6 +10,7 @@
     - cli(typo): rename `--ouput-file-name` to `--output-file-name`
 - test:
     - Add Ansible 2.10.7 in the test matrix
+    - Make test verbose by default with `-vv` in the args
 - docs:
     - Reformat CHANGELOG
     - Reformat README.md
