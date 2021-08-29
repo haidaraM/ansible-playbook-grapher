@@ -12,10 +12,10 @@ from packaging import version
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import PostProcessor
-# At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
-# https://github.com/ansible/ansible/pull/50069
 from ansibleplaybookgrapher.renderer import GraphvizRenderer
 
+# At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
+# https://github.com/ansible/ansible/pull/50069
 IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 
