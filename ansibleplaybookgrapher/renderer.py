@@ -81,7 +81,8 @@ class GraphvizRenderer:
                     with self.graphviz.subgraph(name=role.label, node_attr={}) as role_subgraph:
                         # from play to role
                         role_subgraph.node(role.id, id=role.id, label=role.label, tooltip=role.label)
-                        play_subgraph.edge(play.id, role.id, label=role_edge.label, color=color, fontcolor=color)
+                        play_subgraph.edge(play.id, role.id, label=role_edge.label, color=color, fontcolor=color,
+                                           id=role_edge.id)
 
                         # role tasks
                         for role_task_edge in role.tasks:
