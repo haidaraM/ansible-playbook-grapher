@@ -23,7 +23,11 @@ def run_grapher(playbook_file: str, output_filename: str = None, additional_args
     additional_args.insert(0, "-vv")
 
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
-        additional_args.insert(1, "--view")
+        additional_args.insert(0, "--view")
+
+    # Easier to test with vscode
+    additional_args.insert(0, "--open-protocol")
+    additional_args.insert(1, "vscode")
 
     playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
     args = [__prog__]
@@ -163,7 +167,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
 
 def test_with_block(request):
     """
-    Test with_roles.yml, an example with roles
+    Test with_block.yml, an example with roles
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name,
                                           additional_args=["--include-role-tasks"])

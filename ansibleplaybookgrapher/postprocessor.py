@@ -19,7 +19,7 @@ from lxml import etree
 
 from ansibleplaybookgrapher.graph import PlaybookNode
 
-JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
+JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 

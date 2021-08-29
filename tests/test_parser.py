@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import pytest
@@ -6,6 +7,10 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode, get_all_tasks_nodes, CompositeNode
+from tests import FIXTURES_DIR
+
+# This file directory path
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
@@ -44,6 +49,8 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display,
     # first include_role
     include_role_1 = tasks[0].destination
     assert isinstance(include_role_1, RoleNode)
+    assert include_role_1.path == os.path.join(DIR_PATH, FIXTURES_DIR, "include_role.yml")
+    assert include_role_1.line == 6
     assert len(include_role_1.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
     # first task
@@ -97,7 +104,10 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
 
     # Check pre tasks
     assert isinstance(pre_tasks[0].destination, RoleNode), "The first edge should have a RoleNode as destination"
-    assert isinstance(pre_tasks[1].destination, BlockNode), "The second edge should have a BlockNode as destination"
+    pre_task_block = pre_tasks[1].destination
+    assert isinstance(pre_task_block, BlockNode), "The second edge should have a BlockNode as destination"
+    assert pre_task_block.path == os.path.join(DIR_PATH, FIXTURES_DIR, "with_block.yml")
+    assert pre_task_block.line == 7
 
     # Check tasks
     task_1 = tasks[0].destination

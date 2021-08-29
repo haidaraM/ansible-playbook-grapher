@@ -57,7 +57,7 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node)
+        renderer = GraphvizRenderer(playbook_node, self.options.open_protocol)
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
@@ -105,6 +105,15 @@ class PlaybookGrapherCLI(GrapherCLI):
 
         self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
+
+        self.parser.add_argument("--open-protocol", dest="open_protocol", choices=["browser", "vscode"],
+                                 default="browser",
+                                 help="""The protocol to use to open the roles and tasks when double clicking on them in 
+                                 the browser. Supported values: 'browser': your browser will open the folder (roles)
+                                 and download the task file since it doesn't know how to render it.
+                                 'vscode': vscode will be used to open the folders and files. For files, the cursor will 
+                                 be at the line where the tasks is located. 
+                                 """)
 
         self.parser.add_argument('--version', action='version',
                                  version="%s %s (with ansible %s)" % (__prog__, __version__, ansible_version))

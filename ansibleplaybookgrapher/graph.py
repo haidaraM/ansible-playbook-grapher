@@ -28,12 +28,23 @@ class Node:
 
         :param node_name: The name of the node
         :param node_id: An identifier for this node
-        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on 
+        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
         """
         self.name = node_name
         self.id = node_id
         self.raw_object = raw_object
+        # Trying to get the object position in the parsed files. Format: (path,line,column)
+        self.path = self.line = self.column = None
+        self.retrieve_position()
+
+    def retrieve_position(self):
+        """
+        Set the path of this based on the raw object. Not all objects have path
+        :return:
+        """
+        if self.raw_object and self.raw_object.get_ds():
+            self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
     def __repr__(self):
         return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
@@ -141,6 +152,13 @@ class PlaybookNode(CompositeNode):
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
         super().__init__(node_name, node_id or generate_id("playbook_"), raw_object=raw_object,
                          supported_compositions=["plays"])
+
+    def retrieve_position(self):
+        """
+        Playbooks only have path as position
+        :return:
+        """
+        pass
 
     @property
     def plays(self) -> List['EdgeNode']:
@@ -252,6 +270,12 @@ class TaskNode(Node):
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        """
+
+        :param node_name:
+        :param node_id:
+        :param raw_object:
+        """
         super().__init__(node_name, node_id or generate_id("task_"), raw_object)
 
 
@@ -260,8 +284,18 @@ class RoleNode(CompositeTasksNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None, include_role: bool = False):
+        """
+
+        :param node_name:
+        :param node_id:
+        :param raw_object:
+        """
         super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
+        # Role is a special regarding path management
+        self.include_role = include_role
+        if raw_object and raw_object._role_path:
+            self.path = raw_object._role_path
 
 
 def _get_all_tasks_nodes(composite: CompositeNode, task_acc: List[TaskNode]):

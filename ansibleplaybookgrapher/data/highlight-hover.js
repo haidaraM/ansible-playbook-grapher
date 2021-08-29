@@ -52,7 +52,7 @@ function unHighlightLinkedNodes(rootElement, isHover) {
                 // Recursively unhighlight
                 unHighlightLinkedNodes(linkedElement, isHover);
             }
-            
+
         })
     }
 
@@ -60,7 +60,7 @@ function unHighlightLinkedNodes(rootElement, isHover) {
 
 /**
  * Hover handler for mouseenter event
- * @param event
+ * @param {Event} event
  */
 function hoverMouseEnter(event) {
     highlightLinkedNodes(event.currentTarget);
@@ -68,7 +68,7 @@ function hoverMouseEnter(event) {
 
 /**
  * Hover handler for mouseleave event
- * @param event
+ * @param {Event} event
  */
 function hoverMouseLeave(event) {
     unHighlightLinkedNodes(event.currentTarget, true);
@@ -76,10 +76,12 @@ function hoverMouseLeave(event) {
 
 /**
  * Handler when clicking on some elements
- * @param event
+ * @param {Event} event
  */
 function clickOnElement(event) {
-    let newClickedElement = $(event.currentTarget);
+    const newClickedElement = $(event.currentTarget);
+
+    event.preventDefault(); // Disable the default click behavior since we override it here
 
     if (newClickedElement.attr('id') === $(currentSelectedElement).attr('id')) { // clicking again on the same element
         newClickedElement.removeClass(HIGHLIGHT_CLASS);
@@ -87,7 +89,7 @@ function clickOnElement(event) {
         currentSelectedElement = null;
     } else { // clicking on a different node
 
-        // Remove highlight from all the nodes linked the current selected node
+        // Remove highlight from all the nodes linked to the current selected node
         unHighlightLinkedNodes(currentSelectedElement, false);
         if (currentSelectedElement) {
             currentSelectedElement.removeClass(HIGHLIGHT_CLASS);
@@ -99,11 +101,28 @@ function clickOnElement(event) {
     }
 }
 
+/**
+ * Handler when double clicking on some elements
+ * @param {Event} event
+ */
+function dblClickElement(event) {
+    const newElementDlbClicked = event.currentTarget;
+    const links = $(newElementDlbClicked).find("a[xlink\\:href]");
+
+    if (links.length > 0) {
+        const targetLink = $(links[0]).attr("xlink:href");
+        document.location = targetLink;
+    } else {
+        console.log("No links found on this element");
+    }
+}
+
 
 $("#svg").ready(function () {
     let plays = $("g[id^=play_]");
     let roles = $("g[id^=role_]");
     let blocks = $("g[id^=block_]");
+    let tasks = $("g[id^=pre_task_], g[id^=task_], g[id^=post_task_]");
 
     // Set hover and click events on the plays
     plays.hover(hoverMouseEnter, hoverMouseLeave);
@@ -112,9 +131,16 @@ $("#svg").ready(function () {
     // Set hover and click events on the roles
     roles.hover(hoverMouseEnter, hoverMouseLeave);
     roles.click(clickOnElement);
+    roles.dblclick(dblClickElement);
 
     // Set hover and click events on the blocks
     blocks.hover(hoverMouseEnter, hoverMouseLeave);
     blocks.click(clickOnElement);
+    blocks.dblclick(dblClickElement);
+
+    // Set hover and click events on the tasks
+    tasks.hover(hoverMouseEnter, hoverMouseLeave);
+    tasks.click(clickOnElement);
+    tasks.dblclick(dblClickElement);
 
 });
