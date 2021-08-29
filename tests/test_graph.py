@@ -1,9 +1,9 @@
 from ansibleplaybookgrapher.graph import RoleNode, TaskNode, EdgeNode, PlayNode
 
 
-def test_get_all_links():
+def test_links_structure():
     """
-    Test get all links
+    Test links structure of a graph
     :return:
     """
     play = PlayNode("composite_node")

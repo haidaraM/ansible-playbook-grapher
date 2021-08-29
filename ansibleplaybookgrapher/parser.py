@@ -19,11 +19,16 @@ from ansibleplaybookgrapher.utils import clean_name, handle_include_path, has_ro
 
 class BaseParser(ABC):
     """
-    Base Parser
+    Base Parser of a playbook
     """
 
     def __init__(self, tags: List[str] = None, skip_tags: List[str] = None, display: Display = None):
+        """
 
+        :param tags: Only add plays and tasks tagged with these values
+        :param skip_tags: Only add plays and tasks whose tags do not match these values
+        :param display: Ansible display used to print some messages in the console
+        """
         loader, inventory, variable_manager = CLI._play_prereqs()
         self.data_loader = loader
         self.inventory_manager = inventory
@@ -87,12 +92,14 @@ class PlaybookParser(BaseParser):
     The playbook parser. This is the main entrypoint responsible to parser the playbook into a graph structure
     """
 
-    def __init__(self, playbook_filename: str, display: Display = None, include_role_tasks=False, tags=None,
-                 skip_tags=None):
+    def __init__(self, playbook_filename: str, include_role_tasks=False, tags: List[str] = None,
+                 skip_tags: List[str] = None, display: Display = None):
         """
-
-        :param include_role_tasks: If true, the tasks of the role will be included.
-        :param playbook_filename:
+        :param playbook_filename: The filename of the playbook to parse
+        :param display: Ansible display used to print some messages in the console
+        :param include_role_tasks: If true, the tasks of the role will be included in the graph
+        :param tags: Only add plays and tasks tagged with these values
+        :param skip_tags: Only add plays and tasks whose tags do not match these values
         """
 
         super().__init__(tags=tags, skip_tags=skip_tags, display=display)
@@ -162,8 +169,7 @@ class PlaybookParser(BaseParser):
 
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
-                if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
-                                          all_vars=play_vars):
+                if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars):
                     self.display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
                     # Go to the next role
                     continue

@@ -7,7 +7,7 @@ from ansibleplaybookgrapher.utils import generate_id
 
 class Node(ABC):
     """
-    A node in the graph
+    A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
     """
 
     def __init__(self, node_label: str, node_id: str):
@@ -30,8 +30,13 @@ class CompositeNode(Node):
     """
 
     def __init__(self, node_label: str, node_id: str):
+        """
+
+        :param node_label:
+        :param node_id:
+        """
         super().__init__(node_label, node_id)
-        # The dict will contain the different types of composition
+        # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
 
     def add_node(self, target_composition: str, node: Node):
@@ -89,8 +94,8 @@ class PlaybookNode(CompositeNode):
         :param edge_label:
         :return:
         """
-        edge = EdgeNode(edge_label, self, play, **kwargs)
-        self._compositions['plays'].append(edge)
+        edge = EdgeNode(edge_label, self, play)
+        self.add_node("plays", edge)
         return edge
 
 
@@ -142,7 +147,7 @@ class EdgeNode(CompositeNode):
 
     def add_node(self, target_composition: str, node: Node):
         """
-        Override the add_node. An edge node should only one linked node
+        Override the add_node. An edge node should only have one linked node
         :param target_composition: 
         :param node: 
         :return: 
@@ -162,11 +167,19 @@ class EdgeNode(CompositeNode):
 
 
 class TaskNode(Node):
+    """
+    A task node. Can be pre_task, task or post_task
+    """
+
     def __init__(self, node_label: str, node_id: str = None):
         super().__init__(node_label, node_id or generate_id("task_"))
 
 
 class RoleNode(CompositeNode):
+    """
+    A role node. A role is a composition of tasks
+    """
+
     def __init__(self, node_label: str, node_id: str = None):
         super().__init__(node_label, node_id or generate_id("role_"))
 

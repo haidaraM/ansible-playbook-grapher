@@ -64,7 +64,7 @@ class GraphvizRenderer:
                 # play node
                 # TODO: add hosts as tooltip
                 self.graphviz.node(play.id, id=play.id, label=play.label, style="filled", shape="box", color=color,
-                                   fontcolor=play_font_color)
+                                   fontcolor=play_font_color, toolip=",".join(play.hosts))
                 # edge from root node to play
                 self.graphviz.edge(self.playbook_node.label, play.id, id=play_edge.id, style="bold",
                                    label=play_edge.label, color=color, fontcolor=color)
