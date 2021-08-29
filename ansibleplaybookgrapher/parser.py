@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 from typing import Dict, Union, List
 
@@ -14,14 +13,8 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import GraphvizCustomDigraph, EdgeNode, TaskNode, PlaybookNode, RoleNode, \
-    PlayNode, \
-    CompositeNode
-from ansibleplaybookgrapher.utils import clean_name, get_play_colors, \
-    handle_include_path, has_role_parent, generate_id
-
-DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
-DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
+from ansibleplaybookgrapher.graph import EdgeNode, TaskNode, PlaybookNode, RoleNode, PlayNode, CompositeNode
+from ansibleplaybookgrapher.utils import clean_name, handle_include_path, has_role_parent, generate_id
 
 
 class BaseParser(ABC):
@@ -29,37 +22,16 @@ class BaseParser(ABC):
     Base Parser
     """
 
-    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None,
-                 graphviz_graph: GraphvizCustomDigraph = None, display: Display = None):
+    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None, display: Display = None):
 
         loader, inventory, variable_manager = CLI._play_prereqs()
         self.data_loader = loader
         self.inventory_manager = inventory
         self.variable_manager = variable_manager
-        self.graphviz_graph = graphviz_graph or GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR,
-                                                                      graph_attr=DEFAULT_GRAPH_ATTR,
-                                                                      format="svg")
+
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
-
-    def render_graph(self, output_filename: str, save_dot_file=False) -> str:
-        """
-        Render the graph
-        :param output_filename: Output file name without '.svg' extension.
-        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
-        :return: The rendered file path (output_filename.svg)
-        """
-
-        rendered_file_path = self.graphviz_graph.render(cleanup=not save_dot_file, format="svg",
-                                                        filename=output_filename)
-        if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
-            self.display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        return rendered_file_path
 
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
                  fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
@@ -80,8 +52,8 @@ class BaseParser(ABC):
             self.display.warning(ansible_error)
             return data
 
-    def _add_task(self, task: Task, loop_counter: int, task_vars: Dict, graph: GraphvizCustomDigraph,
-                  node_type: str, color: str, parent_node: CompositeNode) -> bool:
+    def _add_task(self, task: Task, loop_counter: int, task_vars: Dict, node_type: str,
+                  parent_node: CompositeNode) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
@@ -99,16 +71,9 @@ class BaseParser(ABC):
             task_edge_name += "  [when: " + when + "]"
 
         task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
-        # Generate a prefix id
-        task_id = generate_id(f"{node_type}_")
 
-        task_node = TaskNode(task_name, task_id)
-        edge_node = EdgeNode(task_edge_name, parent_node, task_node)
+        edge_node = EdgeNode(task_edge_name, parent_node, TaskNode(task_name, generate_id(f"{node_type}_")))
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
-
-        graph.node(task_id, label=task_name, shape="octagon", id=task_id, tooltip=task_name)
-        graph.edge(parent_node.label, task_id, label=edge_node.label, color=color, fontcolor=color, style="bold",
-                   id=edge_node.id)
 
         return True
 
@@ -124,9 +89,8 @@ class PlaybookParser(BaseParser):
         :param include_role_tasks: If true, the tasks of the role will be included.
         :param playbook_filename:
         """
-        graphviz_graph = GraphvizCustomDigraph(edge_attr=DEFAULT_EDGE_ATTR, graph_attr=DEFAULT_GRAPH_ATTR,
-                                               format="svg", name=playbook_filename)
-        super().__init__(graphviz_graph=graphviz_graph, tags=tags, skip_tags=skip_tags, display=display)
+
+        super().__init__(tags=tags, skip_tags=skip_tags, display=display)
 
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
@@ -150,7 +114,6 @@ class PlaybookParser(BaseParser):
 
         # the root node
         playbook_root_node = PlaybookNode(self.playbook_filename)
-        self.graphviz_graph.node(self.playbook_filename, style="dotted", id="root_node")
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
@@ -167,124 +130,92 @@ class PlaybookParser(BaseParser):
             play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
             play_name = self.template(play_name, play_vars)
 
-            self.display.banner("Graphing " + play_name)
+            self.display.banner("Parsing " + play_name)
 
-            play_node = PlayNode(play_name)
+            play_node = PlayNode(play_name, hosts=play_hosts)
             playbook_root_node.add_play(play_node, str(play_counter))
 
-            # edge from root node to plays
-            edge_node = EdgeNode(str(play_counter), playbook_root_node, play_node)
+            # loop through the pre_tasks
+            self.display.v("Parsing pre_tasks...")
+            nb_pre_tasks = 0
+            for pre_task_block in play.pre_tasks:
+                nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
+                                                             block=pre_task_block, current_counter=nb_pre_tasks,
+                                                             play_vars=play_vars, node_type="pre_task")
 
-            with self.graphviz_graph.subgraph(name=play_name) as play_subgraph:
-                color, play_font_color = get_play_colors(play)
-                # play node
-                play_subgraph.node(play_name, id=play_node.id, style="filled", shape="box", color=color,
-                                   fontcolor=play_font_color, tooltip="     ".join(play_hosts))
+            # global_tasks_counter will hold the number of pre_tasks + tasks + and post_tasks
+            global_tasks_counter = nb_pre_tasks
 
-                # edge from root node to plays
-                play_subgraph.edge(self.playbook_filename, play_name, id=edge_node.id, style="bold",
-                                   label=str(play_counter), color=color, fontcolor=color)
+            self.display.v(f"{global_tasks_counter} pre_task(s) added to the graph.")
+            # loop through the roles
+            self.display.v("Parsing roles...")
+            role_number = 0
+            for role in play.get_roles():
+                # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
+                if role.from_include:
+                    continue
 
-                # loop through the pre_tasks
-                self.display.v("Graphing pre_tasks...")
-                nb_pre_tasks = 0
-                for pre_task_block in play.pre_tasks:
-                    nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                 parent_node=play_node,
-                                                                 block=pre_task_block, color=color,
-                                                                 current_counter=nb_pre_tasks,
-                                                                 play_vars=play_vars,
-                                                                 node_type="pre_task")
+                # the role object doesn't inherit the tags from the play. So we add it manually.
+                role.tags = role.tags + play.tags
+                if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
+                                          all_vars=play_vars):
+                    self.display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
+                    # Go to the next role
+                    continue
 
-                # global_tasks_counter will hold the number of pre_tasks + tasks + and post_tasks
-                global_tasks_counter = nb_pre_tasks
+                role_number += 1
 
-                self.display.v(f"{global_tasks_counter} pre_task(s) added to the graph.")
-                # loop through the roles
-                self.display.v("Graphing roles...")
-                role_number = 0
-                for role in play.get_roles():
-                    # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
-                    if role.from_include:
-                        continue
+                role_node = RoleNode("[role] " + clean_name(role.get_name()))
+                # edge from play to role
+                play_node.add_node("roles", EdgeNode(str(role_number + global_tasks_counter), play_node, role_node))
 
-                    # the role object doesn't inherit the tags from the play. So we add it manually.
-                    role.tags = role.tags + play.tags
-                    if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags,
-                                              all_vars=play_vars):
-                        self.display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
-                        # Go to the next role
-                        continue
-
-                    role_number += 1
-                    role_name = "[role] " + clean_name(role.get_name())
-
-                    # edge from play to role
-                    role_node = RoleNode(role_name)
-                    role_edge_node = EdgeNode(str(role_number + global_tasks_counter), play_node, role_node)
-                    play_node.add_node("roles", role_node)
-
-                    play_subgraph.edge(play_name, role_name, label=str(role_number + global_tasks_counter), color=color,
-                                       fontcolor=color, id=role_edge_node.id)
-
-                    with self.graphviz_graph.subgraph(name=role_name, node_attr={}) as role_subgraph:
-
-                        role_subgraph.node(role_name, id=role_node.id)
-
-                        # loop through the tasks of the roles
-                        if self.include_role_tasks:
-                            role_tasks_counter = 0  # the role tasks start a 0
-                            for block in role.compile(play):
-                                role_tasks_counter = self._include_tasks_in_blocks(current_play=play,
-                                                                                   graph=role_subgraph,
-                                                                                   parent_node=role_node,
-                                                                                   block=block, color=color,
-                                                                                   play_vars=play_vars,
-                                                                                   current_counter=role_tasks_counter,
-                                                                                   node_type="task")
-                                role_tasks_counter += 1
+                # loop through the tasks of the roles
+                if self.include_role_tasks:
+                    role_tasks_counter = 0  # the role tasks start a 0
+                    for block in role.compile(play):
+                        role_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=role_node,
+                                                                           block=block, play_vars=play_vars,
+                                                                           current_counter=role_tasks_counter,
+                                                                           node_type="task")
+                        role_tasks_counter += 1
                 # end of roles loop
-                self.display.v(f"{role_number} role(s) added to the graph")
+            self.display.v(f"{role_number} role(s) added to the graph")
 
-                # loop through the tasks
-                self.display.v("Graphing tasks...")
-                for task_block in play.tasks:
-                    global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                         parent_node=play_node,
-                                                                         block=task_block, color=color,
-                                                                         current_counter=role_number + global_tasks_counter,
-                                                                         play_vars=play_vars,
-                                                                         node_type="task")
-                nb_tasks = global_tasks_counter - role_number - nb_pre_tasks
-                self.display.v(f"{nb_tasks} task(s) added to the graph.")
+            # loop through the tasks
+            self.display.v("Parsing tasks...")
+            for task_block in play.tasks:
+                global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
+                                                                     block=task_block,
+                                                                     current_counter=role_number + global_tasks_counter,
+                                                                     play_vars=play_vars,
+                                                                     node_type="task")
+            nb_tasks = global_tasks_counter - role_number - nb_pre_tasks
+            self.display.v(f"{nb_tasks} task(s) added to the graph.")
 
-                # loop through the post_tasks
-                self.display.v("Graphing post_tasks...")
-                for post_task_block in play.post_tasks:
-                    global_tasks_counter = self._include_tasks_in_blocks(current_play=play, graph=play_subgraph,
-                                                                         parent_node=play_node, block=post_task_block,
-                                                                         color=color, play_vars=play_vars,
-                                                                         current_counter=global_tasks_counter,
-                                                                         node_type="post_task")
-                nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
-                self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
+            # loop through the post_tasks
+            self.display.v("Parsing post_tasks...")
+            for post_task_block in play.post_tasks:
+                global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
+                                                                     block=post_task_block,
+                                                                     play_vars=play_vars,
+                                                                     current_counter=global_tasks_counter,
+                                                                     node_type="post_task")
+            nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
+            self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
 
-            self.display.banner(f"Done graphing {play_name}")
+            self.display.banner(f"Done parsing {play_name}")
             self.display.display("")  # just an empty line
             # moving to the next play
 
         return playbook_root_node
 
-    def _include_tasks_in_blocks(self, current_play: Play, graph: GraphvizCustomDigraph, parent_node: CompositeNode,
-                                 block: Union[Block, TaskInclude], color: str, current_counter: int,
-                                 play_vars: Dict = None, node_type: str = "") -> int:
+    def _include_tasks_in_blocks(self, current_play: Play, parent_node: CompositeNode, block: Union[Block, TaskInclude],
+                                 current_counter: int, play_vars: Dict = None, node_type: str = "") -> int:
         """
         Recursively read all the tasks of the block and add it to the graph
         FIXME: This function needs some refactoring
         :param current_play:
-        :param graph:
         :param block:
-        :param color:
         :param current_counter:
         :param play_vars:
         :param node_type:
@@ -294,10 +225,9 @@ class PlaybookParser(BaseParser):
         # loop through the tasks
         for counter, task_or_block in enumerate(block.block, 1):
             if isinstance(task_or_block, Block):
-                current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                parent_node=parent_node, block=task_or_block,
-                                                                color=color, current_counter=current_counter,
-                                                                play_vars=play_vars, node_type=node_type)
+                current_counter = self._include_tasks_in_blocks(current_play=current_play, parent_node=parent_node,
+                                                                block=task_or_block, node_type=node_type,
+                                                                current_counter=current_counter, play_vars=play_vars)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
@@ -325,8 +255,7 @@ class PlaybookParser(BaseParser):
                             "Some variables are available only during the execution of the playbook.")
                         current_counter += 1
                         self._add_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
-                                       graph=graph, node_type=node_type, color=color,
-                                       parent_node=parent_node)
+                                       node_type=node_type, parent_node=parent_node)
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -342,11 +271,9 @@ class PlaybookParser(BaseParser):
                                                     parent_block=task_or_block)
 
                 for b in my_blocks:  # loop through the blocks inside the included tasks or role
-                    current_counter = self._include_tasks_in_blocks(current_play=current_play, graph=graph,
-                                                                    parent_node=parent_node, block=b, color=color,
-                                                                    current_counter=current_counter,
-                                                                    play_vars=task_vars,
-                                                                    node_type=node_type)
+                    current_counter = self._include_tasks_in_blocks(current_play=current_play, parent_node=parent_node,
+                                                                    block=b, play_vars=task_vars, node_type=node_type,
+                                                                    current_counter=current_counter)
             else:
                 # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
@@ -358,8 +285,7 @@ class PlaybookParser(BaseParser):
                     continue
 
                 task_included = self._add_task(task=task_or_block, loop_counter=current_counter + 1,
-                                               task_vars=play_vars, graph=graph, node_type=node_type,
-                                               color=color, parent_node=parent_node)
+                                               task_vars=play_vars, node_type=node_type, parent_node=parent_node)
                 if task_included:
                     # only increment the counter if task has been successfully included.
                     current_counter += 1

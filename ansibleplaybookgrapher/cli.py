@@ -10,6 +10,7 @@ from ansible.utils.display import Display
 from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
+from ansibleplaybookgrapher.graph import GraphvizRenderer
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import PostProcessor
 
@@ -45,8 +46,10 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.generate_graph()
+        renderer = GraphvizRenderer(playbook_node)
+        renderer.convert_to_graphviz()
+        svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file)
 
-        svg_path = parser.render_graph(self.options.output_filename, self.options.save_dot_file)
         post_processor = PostProcessor(svg_path=svg_path)
         post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
