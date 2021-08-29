@@ -71,7 +71,7 @@ def test_post_processor_without_graph_representation(post_processor: PostProcess
     :param tmpdir:
     :return:
     """
-    svg_post_processed_path = tmpdir.join("simple_playbook_postproccess_no_graph.svg")
+    svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_no_graph.svg")
 
     post_processor.post_process()
 
@@ -95,7 +95,7 @@ def test_post_processor_with_graph_representation(post_processor: PostProcessor,
     :return:
     """
     playbook_node = PlaybookNode('')
-    svg_post_processed_path = tmpdir.join("simple_playbook_postproccess_graph.svg")
+    svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_graph.svg")
 
     play = PlayNode("play 1", "play_hostsall")
     playbook_node.add_node('plays', play)
