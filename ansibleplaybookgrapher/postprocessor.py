@@ -92,6 +92,11 @@ class PostProcessor:
             self._insert_graph_representation(playbook_node)
 
     def write(self, output_filename: str = None):
+        """
+        Write the svg in the given filename
+        :param output_filename:
+        :return:
+        """
         if output_filename is None:
             output_filename = self.svg_path
 

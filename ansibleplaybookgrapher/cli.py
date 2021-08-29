@@ -21,7 +21,7 @@ IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 def get_cli_class():
     """
-    Utility function to return the class to use as CLI depending on Ansible version.
+    Utility function to return the class to use as CLI
     :return:
     """
 
@@ -68,7 +68,8 @@ class PlaybookGrapherCLI(GrapherCLI):
         super(PlaybookGrapherCLI, self).__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
-        # But this may change in the future: https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
+        # But this may change in the future:
+        # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
         self.options = None
 
     def _add_my_options(self):

@@ -3,7 +3,7 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.cli import get_cli_class, IS_ANSIBLE_2_9_X
+from ansibleplaybookgrapher.cli import get_cli_class
 
 
 @pytest.mark.parametrize("help_option", ['-h', '--help'])
