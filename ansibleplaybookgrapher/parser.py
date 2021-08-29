@@ -245,10 +245,19 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-
                     self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.args['name']}'")
+
+                    role_node = RoleNode(task_or_block.args['name'])
+                    parent_node.add_node("roles", EdgeNode(str(current_counter + 1), parent_node, role_node))
+
+                    if self.include_role_tasks:
+                        # If we have an include_role and we want to include role tasks, the parent node now becomes
+                        #   the role
+                        parent_node = role_node
+
                     block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                  variable_manager=self.variable_manager)
+
                 else:
                     self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
 

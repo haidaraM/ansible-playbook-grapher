@@ -3,6 +3,13 @@
   tags:
     - play2
   tasks:
+    - name: Debug 1
+      debug:
+        msg: "Debug 1"
+      when: ansible_os == "ubuntu"
     - name: Include role
       include_role:
         name: fake_role_2
+    - name: Debug 2
+      debug:
+        msg: "Debug 2"
