@@ -108,6 +108,8 @@ class PlaybookParser(BaseParser):
         self.playbook_filename = playbook_filename
         self.playbook = Playbook.load(playbook_filename, loader=self.data_loader,
                                       variable_manager=self.variable_manager)
+        # the root node
+        self.playbook_root_node = PlaybookNode(self.playbook_filename)
 
     def generate_graph(self, *args, **kwargs) -> PlaybookNode:
         """
@@ -123,9 +125,6 @@ class PlaybookParser(BaseParser):
             draw post_tasks
         :return:
         """
-
-        # the root node
-        playbook_root_node = PlaybookNode(self.playbook_filename)
 
         # loop through the plays
         for play_counter, play in enumerate(self.playbook.get_plays(), 1):
@@ -145,7 +144,7 @@ class PlaybookParser(BaseParser):
             self.display.banner("Parsing " + play_name)
 
             play_node = PlayNode(play_name, hosts=play_hosts)
-            playbook_root_node.add_play(play_node, str(play_counter))
+            self.playbook_root_node.add_play(play_node, str(play_counter))
 
             # loop through the pre_tasks
             self.display.v("Parsing pre_tasks...")
@@ -216,7 +215,7 @@ class PlaybookParser(BaseParser):
             self.display.display("")  # just an empty line
             # moving to the next play
 
-        return playbook_root_node
+        return self.playbook_root_node
 
     def _include_tasks_in_blocks(self, current_play: Play, parent_node: CompositeNode, block: Union[Block, TaskInclude],
                                  current_counter: int, play_vars: Dict = None, node_type: str = "") -> int:
@@ -275,11 +274,11 @@ class PlaybookParser(BaseParser):
                         raise AnsibleParserError("Included task files must contain a list of tasks", obj=data)
 
                     # get the blocks from the include_tasks
-                    my_blocks = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
-                                                    role=task_or_block._role, loader=self.data_loader,
-                                                    parent_block=task_or_block)
+                    block_list = load_list_of_blocks(data, play=current_play, variable_manager=self.variable_manager,
+                                                     role=task_or_block._role, loader=self.data_loader,
+                                                     parent_block=task_or_block)
 
-                for b in my_blocks:  # loop through the blocks inside the included tasks or role
+                for b in block_list:  # loop through the blocks inside the included tasks or role
                     current_counter = self._include_tasks_in_blocks(current_play=current_play, parent_node=parent_node,
                                                                     block=b, play_vars=task_vars, node_type=node_type,
                                                                     current_counter=current_counter)
@@ -293,9 +292,9 @@ class PlaybookParser(BaseParser):
                     # skipping
                     continue
 
-                task_included = self._add_task(task=task_or_block, loop_counter=current_counter + 1,
-                                               task_vars=play_vars, node_type=node_type, parent_node=parent_node)
-                if task_included:
+                is_task_included = self._add_task(task=task_or_block, loop_counter=current_counter + 1,
+                                                  task_vars=play_vars, node_type=node_type, parent_node=parent_node)
+                if is_task_included:
                     # only increment the counter if task has been successfully included.
                     current_counter += 1
 
