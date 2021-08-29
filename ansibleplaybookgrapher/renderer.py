@@ -62,9 +62,9 @@ class GraphvizRenderer:
             with self.graphviz.subgraph(name=play.label) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
-                # TODO: add hosts as tooltip
+                play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.label
                 self.graphviz.node(play.id, id=play.id, label=play.label, style="filled", shape="box", color=color,
-                                   fontcolor=play_font_color, toolip=",".join(play.hosts))
+                                   fontcolor=play_font_color, tooltip=play_tooltip)
                 # edge from root node to play
                 self.graphviz.edge(self.playbook_node.label, play.id, id=play_edge.id, style="bold",
                                    label=play_edge.label, color=color, fontcolor=color)
