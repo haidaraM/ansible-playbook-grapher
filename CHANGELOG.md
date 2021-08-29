@@ -1,12 +1,18 @@
 # 0.12.0 (Unreleased)
 
+- refactor: See [\#81](https://github.com/haidaraM/ansible-playbook-grapher/pull/81)
+    - Completely rewrite the grapher: the parser, the graph and the renderer to graphviz have been split.
+    - Hide some ansible internals in the parser.
+    - Clean code.
 - fix:
     - front: Refactor the JS part and fix issue when selecting/unselecting nodes
     - front: Do not unhighlight the current selected node when hovering on parent node
+    - cli(typo): rename `--ouput-file-name` to `--output-file-name`
 - test:
     - Add Ansible 2.10.7 in the test matrix
 - docs:
     - Reformat CHANGELOG
+    - Reformat README.md
 
 # 0.11.1 (2021-07-28)
 
