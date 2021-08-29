@@ -57,10 +57,10 @@ def test_post_processor_write(post_processor: PostProcessor, tmpdir):
     :param post_processor:
     :return:
     """
-    svg_post_proccessed_path = tmpdir.join("test_post_processor_write.svg")
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    svg_post_processed_path = tmpdir.join("test_post_processor_write.svg")
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
@@ -71,15 +71,15 @@ def test_post_processor_without_graph_representation(post_processor: PostProcess
     :param tmpdir:
     :return:
     """
-    svg_post_proccessed_path = tmpdir.join("simple_playbook_postproccess_no_graph.svg")
+    svg_post_processed_path = tmpdir.join("simple_playbook_postproccess_no_graph.svg")
 
     post_processor.post_process()
 
-    post_processor.write(output_filename=svg_post_proccessed_path.strpath)
+    post_processor.write(output_filename=svg_post_processed_path.strpath)
 
-    assert svg_post_proccessed_path.check(file=1)
+    assert svg_post_processed_path.check(file=1)
 
-    root = etree.parse(svg_post_proccessed_path.strpath).getroot()
+    root = etree.parse(svg_post_processed_path.strpath).getroot()
     _assert_common_svg(root)
 
     # no links should be in the svg when there is no graph_representation

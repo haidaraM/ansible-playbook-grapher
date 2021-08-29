@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Dict, Union, List
 
 from ansible.cli import CLI
@@ -32,6 +32,10 @@ class BaseParser(ABC):
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
         self.display = display or Display()
+
+    @abstractmethod
+    def generate_graph(self, *args, **kwargs) -> PlaybookNode:
+        pass
 
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
                  fail_on_undefined=False) -> Union[str, AnsibleUnicode]:
@@ -83,7 +87,8 @@ class PlaybookParser(BaseParser):
     The playbook parser. This is the main entrypoint responsible to parser the playbook into a graph structure
     """
 
-    def __init__(self, playbook_filename: str, display: Display, include_role_tasks=False, tags=None, skip_tags=None):
+    def __init__(self, playbook_filename: str, display: Display = None, include_role_tasks=False, tags=None,
+                 skip_tags=None):
         """
 
         :param include_role_tasks: If true, the tasks of the role will be included.
