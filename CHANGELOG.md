@@ -1,4 +1,4 @@
-# 0.12.0 (Unreleased)
+# 1.0.0 (Unreleased)
 
 - refactor: See [\#81](https://github.com/haidaraM/ansible-playbook-grapher/pull/81)
     - Completely rewrite the grapher: the parser, the graph and the renderer to graphviz have been split.
@@ -14,6 +14,8 @@
 - docs:
     - Reformat CHANGELOG
     - Reformat README.md
+- Dependencies:
+    - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
 
 # 0.11.1 (2021-07-28)
 
