@@ -50,8 +50,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of a dictionary is the node ID and the values is a
-        list of linked nodes
+        Return a representation of the composite node where each key of the dictionary is the node ID and the values is
+        a list of the linked nodes
         :return:
         """
         links = defaultdict(list)
@@ -85,6 +85,7 @@ class PlaybookNode(CompositeNode):
         Return the list of plays
         :return:
         """
+        # noinspection PyTypeChecker
         return self._compositions['plays']
 
     def add_play(self, play: 'PlayNode', edge_label: str, **kwargs) -> 'EdgeNode':
