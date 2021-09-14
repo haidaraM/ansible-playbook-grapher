@@ -183,15 +183,13 @@ class PlaybookParser(BaseParser):
             self.display.v("Parsing tasks...")
             for task_block in play.tasks:
                 self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=task_block,
-                                              play_vars=play_vars, current_counter=play_node.total_length,
-                                              node_type="task")
+                                              play_vars=play_vars, node_type="task")
 
             # loop through the post_tasks
             self.display.v("Parsing post_tasks...")
             for post_task_block in play.post_tasks:
                 self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=post_task_block,
-                                              play_vars=play_vars, current_counter=play_node.total_length,
-                                              node_type="post_task")
+                                              play_vars=play_vars, node_type="post_task")
             # Summary
             self.display.display("")  # just an empty line
             self.display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
@@ -206,16 +204,13 @@ class PlaybookParser(BaseParser):
         return self.playbook_root_node
 
     def _include_tasks_in_blocks(self, current_play: Play, parent_nodes: List[CompositeNode],
-                                 block: Union[Block, TaskInclude], current_counter: int = 0, play_vars: Dict = None,
-                                 node_type: str = ""):
+                                 block: Union[Block, TaskInclude], node_type: str, play_vars: Dict = None):
         """
         Recursively read all the tasks of the block and add it to the graph
-        FIXME: This function needs some refactoring
         :param parent_nodes: This a list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
         :param current_play:
         :param block:
-        :param current_counter:
         :param play_vars:
         :param node_type:
         :return:
@@ -225,9 +220,7 @@ class PlaybookParser(BaseParser):
         for task_or_block in block.block:
             if isinstance(task_or_block, Block):
                 self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes,
-                                              block=task_or_block, node_type=node_type,
-                                              current_counter=parent_nodes[-1].total_length,
-                                              play_vars=play_vars)
+                                              block=task_or_block, node_type=node_type, play_vars=play_vars)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
@@ -264,7 +257,6 @@ class PlaybookParser(BaseParser):
                         self.display.warning(
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
-                        current_counter += 1
                         self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1,
                                        task_vars=task_vars, node_type=node_type, parent_node=parent_nodes[-1])
                         continue
@@ -283,8 +275,7 @@ class PlaybookParser(BaseParser):
 
                 for b in block_list:  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes,
-                                                  block=b, play_vars=task_vars, node_type=node_type,
-                                                  current_counter=parent_nodes[-1].total_length)
+                                                  block=b, play_vars=task_vars, node_type=node_type)
             else:
                 if len(parent_nodes) > 1 and not has_role_parent(task_or_block):
                     # We add a new parent node only if we found an include_role. If an include_role is not found, and we
