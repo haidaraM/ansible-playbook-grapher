@@ -272,7 +272,7 @@ class PlaybookParser(BaseParser):
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
                         current_counter += 1
-                        self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length,
+                        self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1,
                                        task_vars=task_vars, node_type=node_type, parent_node=parent_nodes[-1])
                         continue
 
