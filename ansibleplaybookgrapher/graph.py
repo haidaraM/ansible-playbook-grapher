@@ -93,7 +93,6 @@ class PlaybookNode(CompositeNode):
         Return the list of plays
         :return:
         """
-        # noinspection PyTypeChecker
         return self._compositions['plays']
 
     def add_play(self, play: 'PlayNode', edge_label: str, **kwargs) -> 'EdgeNode':
