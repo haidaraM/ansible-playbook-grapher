@@ -81,6 +81,9 @@ class GraphVizPostProcessor:
         self.insert_cdata(2, 'style', attrib={'type': 'text/css', 'id': 'my_css'},
                           cdata_text=_read_data("graph.css"))
 
+        # Curve the text on the edges
+        self._curve_text_on_edges()
+
         if playbook_node:
             # Insert the graph representation for the links between the nodes
             self._insert_graph_representation(playbook_node)
@@ -111,3 +114,32 @@ class GraphVizPostProcessor:
                     root_subelement.append(etree.Element('link', attrib={'target': link.id}))
 
                 element.append(root_subelement)
+
+    def _curve_text_on_edges(self):
+        """
+        Update the text on each edge to curve it based on the edge
+        :return:
+        """
+        # Fetch all edges
+        edge_elements = self.root.xpath("ns:g/*[starts-with(@id,'edge_')]", namespaces={'ns': SVG_NAMESPACE})
+
+        for edge in edge_elements:
+            path_element = edge.find("path", namespaces=self.root.nsmap)
+            text_element = edge.find("text", namespaces=self.root.nsmap)
+            path_id = f"path_{edge.get('id')}"
+            path_element.set("id", path_id)
+
+            # Create a curved textPath
+            text_path = etree.Element('textPath')
+            text_path.set("{http://www.w3.org/1999/xlink}href", f"#{path_id}")
+            text_path.set("text-anchor", "middle")
+            text_path.set("startOffset", "50%")
+            text_path.text = text_element.text
+            text_element.append(text_path)
+
+            # Move a little bit the text
+            text_element.set("dy", "-1%")
+            # Remove unnecessary attributes
+            text_element.attrib.pop("x")
+            text_element.attrib.pop("y")
+            text_element.text = None
