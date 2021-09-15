@@ -22,7 +22,7 @@ def _read_data(filename: str) -> str:
         return javascript.read()
 
 
-class PostProcessor:
+class GraphVizPostProcessor:
     """
     Post process the svg by adding some javascript and css
     """

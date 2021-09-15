@@ -11,7 +11,7 @@ from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
-from ansibleplaybookgrapher.postprocessor import PostProcessor
+from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 from ansibleplaybookgrapher.renderer import GraphvizRenderer
 
 # At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
@@ -50,7 +50,7 @@ class GrapherCLI(CLI, ABC):
         display.display("Rendering the graph...")
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file)
 
-        post_processor = PostProcessor(svg_path=svg_path)
+        post_processor = GraphVizPostProcessor(svg_path=svg_path)
         post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
 
