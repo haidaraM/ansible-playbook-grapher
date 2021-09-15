@@ -39,6 +39,14 @@ class CompositeNode(Node):
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
 
+    @property
+    def total_length(self) -> int:
+        """
+        Return the total length of elements in this Composite node
+        :return:
+        """
+        return sum([len(val) for val in self._compositions.values()])
+
     def add_node(self, target_composition: str, node: Node):
         """
         Add a node in the target composition
@@ -50,8 +58,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of a dictionary is the node ID and the values is a
-        list of linked nodes
+        Return a representation of the composite node where each key of the dictionary is the node ID and the values is
+        a list of the linked nodes
         :return:
         """
         links = defaultdict(list)

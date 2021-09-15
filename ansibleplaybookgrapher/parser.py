@@ -68,7 +68,7 @@ class BaseParser(ABC):
         :return: True if the task has been included, false otherwise
         """
 
-        self.display.vv(f"Adding {node_type}: '{task.get_name()}' to the graph")
+        self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph with counter {loop_counter}")
 
         if not task.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars):
             self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
@@ -117,12 +117,12 @@ class PlaybookParser(BaseParser):
 
         The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
-            draw pre_tasks
-            draw roles
+            add pre_tasks
+            add roles
                 if  include_role_tasks
-                    draw role_tasks
-            draw tasks
-            draw post_tasks
+                    add role_tasks
+            add tasks
+            add post_tasks
         :return:
         """
 
@@ -148,20 +148,14 @@ class PlaybookParser(BaseParser):
 
             # loop through the pre_tasks
             self.display.v("Parsing pre_tasks...")
-            nb_pre_tasks = 0
             for pre_task_block in play.pre_tasks:
-                nb_pre_tasks = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
-                                                             block=pre_task_block, current_counter=nb_pre_tasks,
-                                                             play_vars=play_vars, node_type="pre_task")
+                self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=pre_task_block,
+                                              play_vars=play_vars, node_type="pre_task")
 
-            # global_tasks_counter will hold the number of pre_tasks + tasks + and post_tasks
-            global_tasks_counter = nb_pre_tasks
-
-            self.display.v(f"{global_tasks_counter} pre_task(s) added to the graph.")
             # loop through the roles
             self.display.v("Parsing roles...")
-            role_number = 0
-            for role in play.get_roles():
+
+            for role_counter, role in enumerate(play.get_roles(), 1):
                 # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
                 if role.from_include:
                     continue
@@ -173,43 +167,35 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_number += 1
-
                 role_node = RoleNode("[role] " + clean_name(role.get_name()))
                 # edge from play to role
-                play_node.add_node("roles", EdgeNode(str(role_number + global_tasks_counter), play_node, role_node))
+                play_node.add_node("roles",
+                                   EdgeNode(str(role_counter + len(play_node.pre_tasks)), play_node, role_node))
 
-                # loop through the tasks of the roles
                 if self.include_role_tasks:
-                    role_tasks_counter = 0  # the role tasks start a 0
+                    # loop through the tasks of the roles
                     for block in role.compile(play):
-                        role_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=role_node,
-                                                                           block=block, play_vars=play_vars,
-                                                                           current_counter=role_tasks_counter,
-                                                                           node_type="task")
-                        role_tasks_counter += 1
+                        self._include_tasks_in_blocks(current_play=play, parent_nodes=[role_node], block=block,
+                                                      play_vars=play_vars, node_type="task")
                 # end of roles loop
-            self.display.v(f"{role_number} role(s) added to the graph")
 
             # loop through the tasks
             self.display.v("Parsing tasks...")
             for task_block in play.tasks:
-                global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
-                                                                     block=task_block, play_vars=play_vars,
-                                                                     current_counter=role_number + global_tasks_counter,
-                                                                     node_type="task")
-            nb_tasks = global_tasks_counter - role_number - nb_pre_tasks
-            self.display.v(f"{nb_tasks} task(s) added to the graph.")
+                self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=task_block,
+                                              play_vars=play_vars, node_type="task")
 
             # loop through the post_tasks
             self.display.v("Parsing post_tasks...")
             for post_task_block in play.post_tasks:
-                global_tasks_counter = self._include_tasks_in_blocks(current_play=play, parent_node=play_node,
-                                                                     block=post_task_block, play_vars=play_vars,
-                                                                     current_counter=global_tasks_counter,
-                                                                     node_type="post_task")
-            nb_post_tasks = global_tasks_counter - nb_tasks - role_number - nb_pre_tasks
-            self.display.v(f"{nb_post_tasks} post_task(s) added to the graph.")
+                self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=post_task_block,
+                                              play_vars=play_vars, node_type="post_task")
+            # Summary
+            self.display.display("")  # just an empty line
+            self.display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
+            self.display.v(f"{len(play_node.roles)} role(s) added to the play")
+            self.display.v(f"{len(play_node.tasks)} task(s) added to the play")
+            self.display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
 
             self.display.banner(f"Done parsing {play_name}")
             self.display.display("")  # just an empty line
@@ -217,25 +203,24 @@ class PlaybookParser(BaseParser):
 
         return self.playbook_root_node
 
-    def _include_tasks_in_blocks(self, current_play: Play, parent_node: CompositeNode, block: Union[Block, TaskInclude],
-                                 current_counter: int, play_vars: Dict = None, node_type: str = "") -> int:
+    def _include_tasks_in_blocks(self, current_play: Play, parent_nodes: List[CompositeNode],
+                                 block: Union[Block, TaskInclude], node_type: str, play_vars: Dict = None):
         """
         Recursively read all the tasks of the block and add it to the graph
-        FIXME: This function needs some refactoring
+        :param parent_nodes: This a list of parent nodes. Each time, we see an include_role, the corresponding node is
+        added to this list
         :param current_play:
         :param block:
-        :param current_counter:
         :param play_vars:
         :param node_type:
         :return:
         """
 
         # loop through the tasks
-        for counter, task_or_block in enumerate(block.block, 1):
+        for task_or_block in block.block:
             if isinstance(task_or_block, Block):
-                current_counter = self._include_tasks_in_blocks(current_play=current_play, parent_node=parent_node,
-                                                                block=task_or_block, node_type=node_type,
-                                                                current_counter=current_counter, play_vars=play_vars)
+                self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=task_or_block,
+                                              node_type=node_type, play_vars=play_vars)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
@@ -245,8 +230,19 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
+                    self.display.v(
+                        f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
 
-                    self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.args['name']}'")
+                    role_node = RoleNode(task_or_block.args['name'])
+                    parent_nodes[-1].add_node("roles",
+                                              EdgeNode(str(parent_nodes[-1].total_length + 1), parent_nodes[-1],
+                                                       role_node))
+
+                    if self.include_role_tasks:
+                        # If we have an include_role and we want to include role tasks, the parent node now becomes
+                        # the role.
+                        parent_nodes.append(role_node)
+
                     block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                  variable_manager=self.variable_manager)
                 else:
@@ -261,9 +257,8 @@ class PlaybookParser(BaseParser):
                         self.display.warning(
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
-                        current_counter += 1
-                        self._add_task(task=task_or_block, loop_counter=current_counter, task_vars=task_vars,
-                                       node_type=node_type, parent_node=parent_node)
+                        self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1,
+                                       task_vars=task_vars, node_type=node_type, parent_node=parent_nodes[-1])
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -279,10 +274,14 @@ class PlaybookParser(BaseParser):
                                                      parent_block=task_or_block)
 
                 for b in block_list:  # loop through the blocks inside the included tasks or role
-                    current_counter = self._include_tasks_in_blocks(current_play=current_play, parent_node=parent_node,
-                                                                    block=b, play_vars=task_vars, node_type=node_type,
-                                                                    current_counter=current_counter)
+                    self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
+                                                  play_vars=task_vars, node_type=node_type)
             else:
+                if len(parent_nodes) > 1 and not has_role_parent(task_or_block):
+                    # We add a new parent node only if we found an include_role. If an include_role is not found, and we
+                    # have a task that is not from an include_role, we remove the last RoleNode we have added.
+                    parent_nodes.pop()
+
                 # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
                     # skip role's task
@@ -292,10 +291,5 @@ class PlaybookParser(BaseParser):
                     # skipping
                     continue
 
-                is_task_included = self._add_task(task=task_or_block, loop_counter=current_counter + 1,
-                                                  task_vars=play_vars, node_type=node_type, parent_node=parent_node)
-                if is_task_included:
-                    # only increment the counter if task has been successfully included.
-                    current_counter += 1
-
-        return current_counter
+                self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1, task_vars=play_vars,
+                               node_type=node_type, parent_node=parent_nodes[-1])

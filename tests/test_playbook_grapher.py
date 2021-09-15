@@ -135,7 +135,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
-                         [("--", 0), ("--include-role-tasks", 3)],
+                         [("--", 2), ("--include-role-tasks", 8)],
                          ids=["no_include_role_tasks_option", "include_role_tasks_option"])
 def test_include_role(request, include_role_tasks_option, expected_tasks_number):
     """
@@ -144,7 +144,8 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
     svg_path, playbook_path = run_grapher("include_role.yml", output_filename=request.node.name,
                                           additional_args=[include_role_tasks_option])
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
+                  roles_number=2)
 
 
 def test_with_block(request):
