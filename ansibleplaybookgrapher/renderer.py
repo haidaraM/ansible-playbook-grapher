@@ -30,6 +30,14 @@ class GraphvizRenderer:
 
     def __init__(self, playbook_node: 'PlaybookNode', display: Display, graph_format: str = "svg",
                  graph_attr: Dict = None, edge_attr: Dict = None):
+        """
+
+        :param playbook_node: Playbook parsed node
+        :param display: Display
+        :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
+        :param graph_attr: Default graph attributes
+        :param edge_attr: Default edge attributes
+        """
         self.display = display
         self.playbook_node = playbook_node
         self.graphviz = GraphvizCustomDigraph(format=graph_format,
@@ -41,8 +49,10 @@ class GraphvizRenderer:
         """
         Add a task in the given graph
         :param graph:
+        :param parent_node
         :param edge:
-        :param task:
+        :param color
+        :param shape
         :return:
         """
         graph.node(edge.destination.id, label=edge.destination.label, shape=shape, id=edge.destination.id,

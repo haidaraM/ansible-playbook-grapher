@@ -70,22 +70,16 @@ class GraphVizPostProcessor:
         """
         self.root.set('id', 'svg')
 
-        jquery_tag_index = 0
-        javascript_tag_index = 1
-        css_tag_index = 2
-
         # insert jquery
-        self.insert_script_tag(jquery_tag_index, attrib={'type': 'text/javascript', 'href': JQUERY, 'id': 'jquery'})
+        self.insert_script_tag(0, attrib={'type': 'text/javascript', 'href': JQUERY, 'id': 'jquery'})
 
         # insert my javascript
-        highlight_script = _read_data("highlight-hover.js")
-        self.insert_cdata(javascript_tag_index, 'script', attrib={'type': 'text/javascript', 'id': 'my_javascript'},
-                          cdata_text=highlight_script)
-
-        css = _read_data("graph.css")
+        self.insert_cdata(1, 'script', attrib={'type': 'text/javascript', 'id': 'my_javascript'},
+                          cdata_text=_read_data("highlight-hover.js"))
 
         # insert my css
-        self.insert_cdata(css_tag_index, 'style', attrib={'type': 'text/css', 'id': 'my_css'}, cdata_text=css)
+        self.insert_cdata(2, 'style', attrib={'type': 'text/css', 'id': 'my_css'},
+                          cdata_text=_read_data("graph.css"))
 
         if playbook_node:
             # Insert the graph representation for the links between the nodes
