@@ -4,6 +4,9 @@
     - Completely rewrite the grapher: the parser, the graph and the renderer to graphviz have been split.
     - Hide some ansible internals in the parser.
     - Clean code.
+- feat:
+    - Consider inclue_role as normal role instead of
+      task  [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
 - fix:
     - front: Refactor the JS part and fix issue when selecting/unselecting nodes
     - front: Do not unhighlight the current selected node when hovering on parent node
