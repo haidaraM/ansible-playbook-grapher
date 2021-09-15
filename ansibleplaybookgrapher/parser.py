@@ -117,12 +117,12 @@ class PlaybookParser(BaseParser):
 
         The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
-            draw pre_tasks
-            draw roles
+            add pre_tasks
+            add roles
                 if  include_role_tasks
-                    draw role_tasks
-            draw tasks
-            draw post_tasks
+                    add role_tasks
+            add tasks
+            add post_tasks
         :return:
         """
 
@@ -219,8 +219,8 @@ class PlaybookParser(BaseParser):
         # loop through the tasks
         for task_or_block in block.block:
             if isinstance(task_or_block, Block):
-                self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes,
-                                              block=task_or_block, node_type=node_type, play_vars=play_vars)
+                self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=task_or_block,
+                                              node_type=node_type, play_vars=play_vars)
             elif isinstance(task_or_block, TaskInclude):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
@@ -274,8 +274,8 @@ class PlaybookParser(BaseParser):
                                                      parent_block=task_or_block)
 
                 for b in block_list:  # loop through the blocks inside the included tasks or role
-                    self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes,
-                                                  block=b, play_vars=task_vars, node_type=node_type)
+                    self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
+                                                  play_vars=task_vars, node_type=node_type)
             else:
                 if len(parent_nodes) > 1 and not has_role_parent(task_or_block):
                     # We add a new parent node only if we found an include_role. If an include_role is not found, and we
