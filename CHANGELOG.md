@@ -12,6 +12,7 @@
     - front: Refactor the JS part and fix issue when selecting/unselecting nodes
     - front: Do not unhighlight the current selected node when hovering on parent node
     - cli(typo): rename `--ouput-file-name` to `--output-file-name`
+    - fix: Use the correct tooltip for edges
 - test:
     - Add Ansible 2.10.7 in the test matrix
     - Make test verbose by default with `-vv` in the args

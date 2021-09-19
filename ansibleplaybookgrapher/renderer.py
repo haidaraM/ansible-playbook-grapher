@@ -55,10 +55,11 @@ class GraphvizRenderer:
         :param shape
         :return:
         """
-        graph.node(edge.destination.id, label=edge.destination.label, shape=shape, id=edge.destination.id,
-                   tooltip=edge.destination.label)
-        graph.edge(parent_node.id, edge.destination.id, label=edge.label, color=color, fontcolor=color, style="bold",
-                   id=edge.id)
+        destination_node = edge.destination
+        graph.node(destination_node.id, label=destination_node.label, shape=shape, id=destination_node.id,
+                   tooltip=destination_node.label)
+        graph.edge(parent_node.id, destination_node.id, label=edge.label, color=color, fontcolor=color, style="bold",
+                   id=edge.id, tooltip=edge.label, labeltooltip=edge.label)
 
     def _convert_to_graphviz(self):
         """
@@ -79,7 +80,8 @@ class GraphvizRenderer:
                                    fontcolor=play_font_color, tooltip=play_tooltip)
                 # edge from root node to play
                 self.graphviz.edge(self.playbook_node.label, play.id, id=play_edge.id, style="bold",
-                                   label=play_edge.label, color=color, fontcolor=color)
+                                   label=play_edge.label, color=color, fontcolor=color, tooltip=play_edge.label,
+                                   labeltooltip=play_edge.label)
 
                 # pre_tasks
                 for pre_task_edge in play.pre_tasks:
@@ -94,7 +96,8 @@ class GraphvizRenderer:
                         # from play to role
                         role_subgraph.node(role.id, id=role.id, label=role.label, tooltip=role.label)
                         play_subgraph.edge(play.id, role.id, label=role_edge.label, color=color, fontcolor=color,
-                                           style="bold", id=role_edge.id)
+                                           style="bold", id=role_edge.id, tooltip=role_edge.label,
+                                           labeltooltip=role_edge.label)
 
                         # role tasks
                         for role_task_edge in role.tasks:

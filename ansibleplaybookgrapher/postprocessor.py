@@ -124,8 +124,8 @@ class GraphVizPostProcessor:
         edge_elements = self.root.xpath("ns:g/*[starts-with(@id,'edge_')]", namespaces={'ns': SVG_NAMESPACE})
 
         for edge in edge_elements:
-            path_element = edge.find("path", namespaces=self.root.nsmap)
-            text_element = edge.find("text", namespaces=self.root.nsmap)
+            path_element = edge.find(".//path", namespaces=self.root.nsmap)
+            text_element = edge.find(".//text", namespaces=self.root.nsmap)
             path_id = f"path_{edge.get('id')}"
             path_element.set("id", path_id)
 
