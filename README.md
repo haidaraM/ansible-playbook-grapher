@@ -117,8 +117,3 @@ $ make test # run all tests
 The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts
 in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
 submitting PRs.
-
-## TODO
-
-- Graphviz : properly rank the edge of the graph to represent the order of the execution of the tasks and roles
-- Graphviz : find a way to avoid or reduce edges overlapping
