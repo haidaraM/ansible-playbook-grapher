@@ -36,8 +36,8 @@ class GrapherCLI(CLI, ABC):
     def run(self):
         super(GrapherCLI, self).run()
 
-        # Looks like the display is a singleton. This instruction will NOT return a new instance.
-        # This is why we set the verbosity later because someone set it before us.
+        # The display is a singleton. This instruction will NOT return a new instance.
+        # We explicitly set the verbosity after the init.
         display = Display()
         display.verbosity = self.options.verbosity
 
