@@ -2,7 +2,7 @@
 
 ![Testing](https://github.com/haidaraM/ansible-playbook-grapher/workflows/Testing/badge.svg)
 [![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
-[![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=master)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=main)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=main)
 
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a
 graph representing your Ansible playbook plays, tasks and roles. The aim of this project is to have an overview of your
@@ -35,13 +35,13 @@ $ pip install ansible-playbook-grapher
 $ ansible-playbook-grapher tests/fixtures/example.yml
 ```
 
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/example.png)
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/example.png)
 
 ```bash
 $ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 ```
 
-![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/master/img/with_roles.png)
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/with_roles.png)
 
 Some options are available:
 
