@@ -42,7 +42,7 @@ class CompositeNode(Node):
     @property
     def total_length(self) -> int:
         """
-        Return the total length of elements in this Composite node
+        Return the total length of elements in this composite node
         :return:
         """
         return sum([len(val) for val in self._compositions.values()])
@@ -83,8 +83,8 @@ class PlaybookNode(CompositeNode):
     A playbook is a list of play
     """
 
-    def __init__(self, node_label: str, plays: List['PlayNode'] = None):
-        super().__init__(node_label, generate_id())
+    def __init__(self, node_label: str, plays: List['PlayNode'] = None, node_id: str = None):
+        super().__init__(node_label, node_id or generate_id("playbook_"))
         self._compositions['plays'] = plays or []
 
     @property
@@ -116,30 +116,29 @@ class PlayNode(CompositeNode):
      - post_tasks
     """
 
-    def __init__(self, node_label: str, node_id: str = None, hosts: List[str] = None):
+    def __init__(self, node_label: str, hosts: List[str] = None, node_id: str = None):
         """
         :param node_label:
         :param node_id:
         :param hosts: List of hosts attached to the play
         """
-        play_id = node_id or generate_id("play_")
-        super().__init__(node_label, play_id)
+        super().__init__(node_label, node_id or generate_id("play_"))
         self.hosts = hosts or []
 
     @property
-    def roles(self):
+    def roles(self) -> List['EdgeNode']:
         return self._compositions["roles"]
 
     @property
-    def pre_tasks(self):
+    def pre_tasks(self) -> List['EdgeNode']:
         return self._compositions["pre_tasks"]
 
     @property
-    def post_tasks(self):
+    def post_tasks(self) -> List['EdgeNode']:
         return self._compositions["post_tasks"]
 
     @property
-    def tasks(self):
+    def tasks(self) -> List['EdgeNode']:
         return self._compositions["tasks"]
 
 
@@ -148,8 +147,15 @@ class EdgeNode(CompositeNode):
     An edge between two nodes. It's a special case of composite node with only one composition with one element
     """
 
-    def __init__(self, node_label: str, source: Node, destination: Node):
-        super().__init__(node_label, generate_id("edge_"))
+    def __init__(self, node_label: str, source: Node, destination: Node, node_id: str = None):
+        """
+
+        :param node_label: The edge label
+        :param source: The edge source node
+        :param destination: The edge destination node
+        :param node_id: The edge id
+        """
+        super().__init__(node_label, node_id or generate_id("edge_"))
         self.source = source
         self.add_node("nodes", destination)
 

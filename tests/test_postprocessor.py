@@ -89,7 +89,7 @@ def test_post_processor_without_graph_representation(post_processor: GraphVizPos
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_with_graph_representation(post_processor: GraphVizPostProcessor, tmpdir):
     """
-    Test the post processor a graph representation
+    Test the post processor for a graph representation
     :param post_processor:
     :param tmpdir:
     :return:
@@ -97,7 +97,7 @@ def test_post_processor_with_graph_representation(post_processor: GraphVizPostPr
     playbook_node = PlaybookNode('')
     svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_graph.svg")
 
-    play = PlayNode("play 1", "play_hostsall")
+    play = PlayNode("play 1", node_id="play_hostsall")
     playbook_node.add_node('plays', play)
     task_1 = TaskNode("task 1")
     task_2 = TaskNode("task 1")
