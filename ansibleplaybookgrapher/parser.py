@@ -167,7 +167,7 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_node = RoleNode("[role] " + clean_name(role.get_name()))
+                role_node = RoleNode(clean_name(role.get_name()))
                 # edge from play to role
                 play_node.add_node("roles",
                                    EdgeNode(str(role_counter + len(play_node.pre_tasks)), play_node, role_node))
