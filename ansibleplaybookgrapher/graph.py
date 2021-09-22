@@ -185,8 +185,14 @@ class TaskNode(Node):
     A task node. Can be pre_task, task or post_task
     """
 
-    def __init__(self, node_label: str, node_id: str = None):
-        super().__init__(node_label, node_id or generate_id("task_"))
+    def __init__(self, node_label: str, node_id: str = None, label_prefix: str = "[task] "):
+        """
+
+        :param node_label:
+        :param node_id:
+        :param label_prefix: Prefix for the label
+        """
+        super().__init__(label_prefix + node_label, node_id or generate_id("task_"))
 
 
 class RoleNode(CompositeNode):
@@ -194,8 +200,14 @@ class RoleNode(CompositeNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_label: str, node_id: str = None):
-        super().__init__(node_label, node_id or generate_id("role_"))
+    def __init__(self, node_label: str, node_id: str = None, label_prefix: str = "[role] "):
+        """
+
+        :param node_label:
+        :param node_id:
+        :param label_prefix: Prefix for the label
+        """
+        super().__init__(label_prefix + node_label, node_id or generate_id("role_"))
 
     @property
     def tasks(self):

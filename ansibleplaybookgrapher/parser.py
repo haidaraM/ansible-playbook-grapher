@@ -79,9 +79,10 @@ class BaseParser(ABC):
             when = "".join(map(str, task.when))
             task_edge_name += "  [when: " + when + "]"
 
-        task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
+        task_name = clean_name(self.template(task.get_name(), task_vars))
 
-        edge_node = EdgeNode(task_edge_name, parent_node, TaskNode(task_name, generate_id(f"{node_type}_")))
+        edge_node = EdgeNode(task_edge_name, parent_node,
+                             TaskNode(task_name, generate_id(f"{node_type}_"), label_prefix=f"[{node_type}] "))
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         return True
@@ -167,7 +168,7 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_node = RoleNode("[role] " + clean_name(role.get_name()))
+                role_node = RoleNode(clean_name(role.get_name()))
                 # edge from play to role
                 play_node.add_node("roles",
                                    EdgeNode(str(role_counter + len(play_node.pre_tasks)), play_node, role_node))
