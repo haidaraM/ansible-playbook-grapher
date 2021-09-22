@@ -15,7 +15,7 @@ class Node(ABC):
         self.id = node_id
 
     def __str__(self):
-        return f"{type(self).__name__}: {self.label} => {self.id}"
+        return f"{type(self).__name__}: label='{self.label}',id='{self.id}'"
 
     def __eq__(self, other):
         return self.id == other.id
@@ -102,7 +102,7 @@ class PlaybookNode(CompositeNode):
         :param edge_label:
         :return:
         """
-        edge = EdgeNode(edge_label, self, play)
+        edge = EdgeNode(self, play, edge_label)
         self.add_node("plays", edge)
         return edge
 
@@ -147,7 +147,7 @@ class EdgeNode(CompositeNode):
     An edge between two nodes. It's a special case of composite node with only one composition with one element
     """
 
-    def __init__(self, node_label: str, source: Node, destination: Node, node_id: str = None):
+    def __init__(self, source: Node, destination: Node, node_label: str = "", node_id: str = None):
         """
 
         :param node_label: The edge label

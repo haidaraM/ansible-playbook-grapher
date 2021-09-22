@@ -61,27 +61,26 @@ class BaseParser(ABC):
             self.display.warning(ansible_error)
             return data
 
-    def _add_task(self, task: Task, loop_counter: int, task_vars: Dict, node_type: str,
-                  parent_node: CompositeNode) -> bool:
+    def _add_task(self, task: Task, task_vars: Dict, node_type: str, parent_node: CompositeNode) -> bool:
         """
         Include the task in the graph.
         :return: True if the task has been included, false otherwise
         """
 
-        self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph with counter {loop_counter}")
-
         if not task.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars):
             self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
 
-        task_edge_name = str(loop_counter)
+        self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
+
+        edge_label = ""
         if len(task.when) > 0:
             when = "".join(map(str, task.when))
-            task_edge_name += "  [when: " + when + "]"
+            edge_label += "  [when: " + when + "]"
 
         task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
 
-        edge_node = EdgeNode(task_edge_name, parent_node, TaskNode(task_name, generate_id(f"{node_type}_")))
+        edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_")), edge_label)
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         return True
@@ -127,7 +126,7 @@ class PlaybookParser(BaseParser):
         """
 
         # loop through the plays
-        for play_counter, play in enumerate(self.playbook.get_plays(), 1):
+        for play in self.playbook.get_plays():
 
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
@@ -138,13 +137,13 @@ class PlaybookParser(BaseParser):
 
             play_vars = self.variable_manager.get_vars(play)
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
-            play_name = "Play #{}: {} ({})".format(play_counter, clean_name(play.get_name()), len(play_hosts))
+            play_name = "Play: {} ({})".format(clean_name(play.get_name()), len(play_hosts))
             play_name = self.template(play_name, play_vars)
 
             self.display.banner("Parsing " + play_name)
 
             play_node = PlayNode(play_name, hosts=play_hosts)
-            self.playbook_root_node.add_play(play_node, str(play_counter))
+            self.playbook_root_node.add_play(play_node, "")
 
             # loop through the pre_tasks
             self.display.v("Parsing pre_tasks...")
@@ -155,7 +154,7 @@ class PlaybookParser(BaseParser):
             # loop through the roles
             self.display.v("Parsing roles...")
 
-            for role_counter, role in enumerate(play.get_roles(), 1):
+            for role in play.get_roles():
                 # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
                 if role.from_include:
                     continue
@@ -169,8 +168,7 @@ class PlaybookParser(BaseParser):
 
                 role_node = RoleNode(clean_name(role.get_name()))
                 # edge from play to role
-                play_node.add_node("roles",
-                                   EdgeNode(str(role_counter + len(play_node.pre_tasks)), play_node, role_node))
+                play_node.add_node("roles", EdgeNode(play_node, role_node))
 
                 if self.include_role_tasks:
                     # loop through the tasks of the roles
@@ -234,9 +232,8 @@ class PlaybookParser(BaseParser):
                         f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
 
                     role_node = RoleNode(task_or_block.args['name'])
-                    parent_nodes[-1].add_node("roles",
-                                              EdgeNode(str(parent_nodes[-1].total_length + 1), parent_nodes[-1],
-                                                       role_node))
+                    # TODO: add support for conditional (when) for include_role in the edge label
+                    parent_nodes[-1].add_node("roles", EdgeNode(parent_nodes[-1], role_node))
 
                     if self.include_role_tasks:
                         # If we have an include_role and we want to include role tasks, the parent node now becomes
@@ -257,8 +254,8 @@ class PlaybookParser(BaseParser):
                         self.display.warning(
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
-                        self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1,
-                                       task_vars=task_vars, node_type=node_type, parent_node=parent_nodes[-1])
+                        self._add_task(task=task_or_block, task_vars=task_vars, node_type=node_type,
+                                       parent_node=parent_nodes[-1])
                         continue
 
                     data = self.data_loader.load_from_file(include_file)
@@ -291,5 +288,5 @@ class PlaybookParser(BaseParser):
                     # skipping
                     continue
 
-                self._add_task(task=task_or_block, loop_counter=parent_nodes[-1].total_length + 1, task_vars=play_vars,
-                               node_type=node_type, parent_node=parent_nodes[-1])
+                self._add_task(task=task_or_block, task_vars=play_vars, node_type=node_type,
+                               parent_node=parent_nodes[-1])

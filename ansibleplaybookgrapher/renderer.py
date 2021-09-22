@@ -44,7 +44,7 @@ class GraphvizRenderer:
                                               graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
                                               edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
 
-    def _add_task(self, graph: GraphvizCustomDigraph, parent_node: Node, edge: EdgeNode, color: str,
+    def _add_task(self, graph: GraphvizCustomDigraph, parent_node: Node, edge: EdgeNode, color: str, task_counter: int,
                   shape: str = "octagon"):
         """
         Add a task in the given graph
@@ -58,8 +58,9 @@ class GraphvizRenderer:
         destination_node = edge.destination
         graph.node(destination_node.id, label=destination_node.label, shape=shape, id=destination_node.id,
                    tooltip=destination_node.label)
-        graph.edge(parent_node.id, destination_node.id, label=edge.label, color=color, fontcolor=color, style="bold",
-                   id=edge.id, tooltip=edge.label, labeltooltip=edge.label)
+        edge_label = f"{task_counter} {edge.label}"
+        graph.edge(parent_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, style="bold",
+                   id=edge.id, tooltip=edge_label, labeltooltip=edge_label)
 
     def _convert_to_graphviz(self):
         """
@@ -69,7 +70,7 @@ class GraphvizRenderer:
         # root node
         self.graphviz.node(self.playbook_node.label, style="dotted", id="root_node")
 
-        for play_edge in self.playbook_node.plays:
+        for play_counter, play_edge in enumerate(self.playbook_node.plays, 1):
             # noinspection PyTypeChecker
             play = play_edge.destination  # type: PlayNode
             with self.graphviz.subgraph(name=play.label) as play_subgraph:
@@ -79,37 +80,44 @@ class GraphvizRenderer:
                 self.graphviz.node(play.id, id=play.id, label=play.label, style="filled", shape="box", color=color,
                                    fontcolor=play_font_color, tooltip=play_tooltip)
                 # edge from root node to play
+                playbook_to_play_label = f"{play_counter} {play_edge.label}"
                 self.graphviz.edge(self.playbook_node.label, play.id, id=play_edge.id, style="bold",
-                                   label=play_edge.label, color=color, fontcolor=color, tooltip=play_edge.label,
-                                   labeltooltip=play_edge.label)
+                                   label=playbook_to_play_label, color=color, fontcolor=color,
+                                   tooltip=playbook_to_play_label, labeltooltip=playbook_to_play_label)
 
                 # pre_tasks
-                for pre_task_edge in play.pre_tasks:
-                    self._add_task(play_subgraph, play, pre_task_edge, color)
+                for pre_task_counter, pre_task_edge in enumerate(play.pre_tasks, 1):
+                    self._add_task(graph=play_subgraph, parent_node=play, edge=pre_task_edge, color=color,
+                                   task_counter=pre_task_counter)
 
                 # roles
-                for role_edge in play.roles:
+                for role_counter, role_edge in enumerate(play.roles, 1):
                     # noinspection PyTypeChecker
                     role = role_edge.destination  # type: RoleNode
+                    role_edge_label = f"{role_counter + len(play.pre_tasks)} {role_edge.label}"
 
                     with self.graphviz.subgraph(name=role.label, node_attr={}) as role_subgraph:
                         # from play to role
                         role_subgraph.node(role.id, id=role.id, label=f"[role] {role.label}", tooltip=role.label)
-                        play_subgraph.edge(play.id, role.id, label=role_edge.label, color=color, fontcolor=color,
-                                           style="bold", id=role_edge.id, tooltip=role_edge.label,
-                                           labeltooltip=role_edge.label)
+
+                        play_subgraph.edge(play.id, role.id, label=role_edge_label, color=color, fontcolor=color,
+                                           style="bold", id=role_edge.id, tooltip=role_edge_label,
+                                           labeltooltip=role_edge_label)
 
                         # role tasks
-                        for role_task_edge in role.tasks:
-                            self._add_task(role_subgraph, role, role_task_edge, color)
+                        for role_task_counter, role_task_edge in enumerate(role.tasks, 1):
+                            self._add_task(role_subgraph, role, role_task_edge, color, task_counter=role_task_counter)
 
                 # tasks
-                for task_edge in play.tasks:
-                    self._add_task(play_subgraph, play, task_edge, color)
+                for task_counter, task_edge in enumerate(play.tasks, 1):
+                    self._add_task(play_subgraph, play, task_edge, color,
+                                   task_counter=len(play.pre_tasks) + len(play.roles) + task_counter)
 
                 # post_tasks
-                for post_task_edge in play.post_tasks:
-                    self._add_task(play_subgraph, play, post_task_edge, color)
+                for post_task_counter, post_task_edge in enumerate(play.post_tasks, 1):
+                    self._add_task(play_subgraph, play, post_task_edge, color,
+                                   task_counter=len(play.pre_tasks) + len(play.roles) + len(
+                                       play.tasks) + post_task_counter)
 
     def render(self, output_filename: str, save_dot_file=False) -> str:
         """
