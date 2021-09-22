@@ -45,7 +45,7 @@ def run_grapher(playbook_file: str, output_filename: str = None, additional_args
 
 def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, tasks_number: int = 0,
                   post_tasks_number: int = 0, roles_number: int = 0,
-                  pre_tasks_number: int = 0) -> Dict[str, List[Element]]:
+                  pre_tasks_number: int = 0, blocks_number: int = 0) -> Dict[str, List[Element]]:
     """
     Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -70,19 +70,22 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
     tasks = pq("g[id^='task_']")
     post_tasks = pq("g[id^='post_task_']")
     pre_tasks = pq("g[id^='pre_task_']")
+    blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
 
-    assert plays_number == len(plays), "The playbook '{}' should contains {} play(s) but we found {} play(s)".format(
+    assert plays_number == len(plays), "The graph '{}' should contains {} play(s) but we found {} play(s)".format(
         playbook_path, plays_number, len(plays))
-    assert tasks_number == len(tasks), "The playbook '{}' should contains {} tasks(s) we found {} tasks".format(
-        playbook_path, tasks_number, len(tasks))
-    assert post_tasks_number == len(post_tasks), "The '{}' playbook should contains {} post tasks(s) we found {} " \
-                                                 "post tasks".format(playbook_path, post_tasks_number, len(post_tasks))
-    assert pre_tasks_number == len(pre_tasks), "The playbook '{}' should contains {} pre tasks(s) but we found {} " \
+    assert pre_tasks_number == len(pre_tasks), "The graph '{}' should contains {} pre tasks(s) but we found {} " \
                                                "pre tasks".format(playbook_path, pre_tasks_number, len(pre_tasks))
-
     assert roles_number == len(roles), "The playbook '{}' should contains {} role(s) but we found {} role(s)".format(
         playbook_path, roles_number, len(roles))
+    assert tasks_number == len(tasks), "The graph '{}' should contains {} tasks(s) but we found {} tasks".format(
+        playbook_path, tasks_number, len(tasks))
+    assert post_tasks_number == len(post_tasks), "The graph '{}' should contains {} post tasks(s) but we found {} " \
+                                                 "post tasks".format(playbook_path, post_tasks_number, len(post_tasks))
+
+    assert blocks_number == len(blocks), "The graph '{}' should contains {} blocks(s) but we found {} " \
+                                         "pre tasks".format(playbook_path, blocks_number, len(blocks))
 
     return {'tasks': tasks, 'plays': plays, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
 
@@ -160,7 +163,8 @@ def test_with_block(request):
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=3)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6, post_tasks_number=1,
+                  blocks_number=2)
 
 
 def test_nested_include_tasks(request):

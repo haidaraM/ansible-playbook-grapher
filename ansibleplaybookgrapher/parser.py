@@ -13,8 +13,9 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import EdgeNode, TaskNode, PlaybookNode, RoleNode, PlayNode, CompositeNode
-from ansibleplaybookgrapher.utils import clean_name, handle_include_path, has_role_parent, generate_id
+from ansibleplaybookgrapher.graph import EdgeNode, TaskNode, PlaybookNode, RoleNode, PlayNode, CompositeNode, BlockNode
+from ansibleplaybookgrapher.utils import clean_name, handle_include_path, has_role_parent, generate_id, \
+    convert_when_to_str
 
 
 class BaseParser(ABC):
@@ -73,12 +74,8 @@ class BaseParser(ABC):
 
         self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
 
-        edge_label = ""
-        if len(task.when) > 0:
-            when = "".join(map(str, task.when))
-            edge_label += "  [when: " + when + "]"
-
         task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
+        edge_label = convert_when_to_str(task.when)
 
         edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_")), edge_label)
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
@@ -214,6 +211,13 @@ class PlaybookParser(BaseParser):
         :return:
         """
 
+        if not block._implicit and block._role is None:
+            # Here we have an explicit block. Ansible internally converts all normal tasks to Block
+            block_node = BlockNode(str(block.name))
+            parent_nodes[-1].add_node(f"{node_type}s",
+                                      EdgeNode(parent_nodes[-1], block_node, convert_when_to_str(block.when)))
+            parent_nodes.append(block_node)
+
         # loop through the tasks
         for task_or_block in block.block:
             if isinstance(task_or_block, Block):
@@ -233,7 +237,7 @@ class PlaybookParser(BaseParser):
 
                     role_node = RoleNode(task_or_block.args['name'])
                     # TODO: add support for conditional (when) for include_role in the edge label
-                    parent_nodes[-1].add_node("roles", EdgeNode(parent_nodes[-1], role_node))
+                    parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node))
 
                     if self.include_role_tasks:
                         # If we have an include_role and we want to include role tasks, the parent node now becomes
@@ -274,9 +278,12 @@ class PlaybookParser(BaseParser):
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
                                                   play_vars=task_vars, node_type=node_type)
             else:
-                if len(parent_nodes) > 1 and not has_role_parent(task_or_block):
-                    # We add a new parent node only if we found an include_role. If an include_role is not found, and we
-                    # have a task that is not from an include_role, we remove the last RoleNode we have added.
+                if len(parent_nodes) > 1 and not has_role_parent(task_or_block) and task_or_block._parent._implicit:
+                    # We add a new parent node if:
+                    # - We found an include_role
+                    # - We found an explicit Block
+                    # If an include_role is not found and we have a task that is not from an include_role and not from
+                    # an explicit block => we remove the last CompositeNode we have added.
                     parent_nodes.pop()
 
                 # check if this task comes from a role, and we don't want to include tasks of the role
