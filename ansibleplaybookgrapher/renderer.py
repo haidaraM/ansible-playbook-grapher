@@ -56,9 +56,9 @@ class GraphvizRenderer:
         :return:
         """
         destination_node = edge.destination
-        graph.node(destination_node.id, label=destination_node.label, shape=shape, id=destination_node.id,
-                   tooltip=destination_node.label)
-        edge_label = f"{task_counter} {edge.label}"
+        graph.node(destination_node.id, label=destination_node.name, shape=shape, id=destination_node.id,
+                   tooltip=destination_node.name)
+        edge_label = f"{task_counter} {edge.name}"
         graph.edge(parent_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, style="bold",
                    id=edge.id, tooltip=edge_label, labeltooltip=edge_label)
 
@@ -68,20 +68,20 @@ class GraphvizRenderer:
         :return:
         """
         # root node
-        self.graphviz.node(self.playbook_node.label, style="dotted", id="root_node")
+        self.graphviz.node(self.playbook_node.name, style="dotted", id="root_node")
 
         for play_counter, play_edge in enumerate(self.playbook_node.plays, 1):
             # noinspection PyTypeChecker
             play = play_edge.destination  # type: PlayNode
-            with self.graphviz.subgraph(name=play.label) as play_subgraph:
+            with self.graphviz.subgraph(name=play.name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
                 # play node
-                play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.label
-                self.graphviz.node(play.id, id=play.id, label=play.label, style="filled", shape="box", color=color,
+                play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.name
+                self.graphviz.node(play.id, id=play.id, label=play.name, style="filled", shape="box", color=color,
                                    fontcolor=play_font_color, tooltip=play_tooltip)
                 # edge from root node to play
-                playbook_to_play_label = f"{play_counter} {play_edge.label}"
-                self.graphviz.edge(self.playbook_node.label, play.id, id=play_edge.id, style="bold",
+                playbook_to_play_label = f"{play_counter} {play_edge.name}"
+                self.graphviz.edge(self.playbook_node.name, play.id, id=play_edge.id, style="bold",
                                    label=playbook_to_play_label, color=color, fontcolor=color,
                                    tooltip=playbook_to_play_label, labeltooltip=playbook_to_play_label)
 
@@ -94,11 +94,11 @@ class GraphvizRenderer:
                 for role_counter, role_edge in enumerate(play.roles, 1):
                     # noinspection PyTypeChecker
                     role = role_edge.destination  # type: RoleNode
-                    role_edge_label = f"{role_counter + len(play.pre_tasks)} {role_edge.label}"
+                    role_edge_label = f"{role_counter + len(play.pre_tasks)} {role_edge.name}"
 
-                    with self.graphviz.subgraph(name=role.label, node_attr={}) as role_subgraph:
+                    with self.graphviz.subgraph(name=role.name, node_attr={}) as role_subgraph:
                         # from play to role
-                        role_subgraph.node(role.id, id=role.id, label=f"[role] {role.label}", tooltip=role.label)
+                        role_subgraph.node(role.id, id=role.id, label=f"[role] {role.name}", tooltip=role.name)
 
                         play_subgraph.edge(play.id, role.id, label=role_edge_label, color=color, fontcolor=color,
                                            style="bold", id=role_edge.id, tooltip=role_edge_label,

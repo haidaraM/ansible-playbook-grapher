@@ -10,12 +10,12 @@ class Node(ABC):
     A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
     """
 
-    def __init__(self, node_label: str, node_id: str):
-        self.label = node_label
+    def __init__(self, node_name: str, node_id: str):
+        self.name = node_name
         self.id = node_id
 
     def __str__(self):
-        return f"{type(self).__name__}: label='{self.label}',id='{self.id}'"
+        return f"{type(self).__name__}: name='{self.name}',id='{self.id}'"
 
     def __eq__(self, other):
         return self.id == other.id
@@ -29,13 +29,13 @@ class CompositeNode(Node):
     A node that composed of multiple of nodes.
     """
 
-    def __init__(self, node_label: str, node_id: str):
+    def __init__(self, node_name: str, node_id: str):
         """
 
-        :param node_label:
+        :param node_name:
         :param node_id:
         """
-        super().__init__(node_label, node_id)
+        super().__init__(node_name, node_id)
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
 
@@ -83,8 +83,8 @@ class PlaybookNode(CompositeNode):
     A playbook is a list of play
     """
 
-    def __init__(self, node_label: str, plays: List['PlayNode'] = None, node_id: str = None):
-        super().__init__(node_label, node_id or generate_id("playbook_"))
+    def __init__(self, node_name: str, plays: List['PlayNode'] = None, node_id: str = None):
+        super().__init__(node_name, node_id or generate_id("playbook_"))
         self._compositions['plays'] = plays or []
 
     @property
@@ -95,14 +95,14 @@ class PlaybookNode(CompositeNode):
         """
         return self._compositions['plays']
 
-    def add_play(self, play: 'PlayNode', edge_label: str, **kwargs) -> 'EdgeNode':
+    def add_play(self, play: 'PlayNode', edge_name: str, **kwargs) -> 'EdgeNode':
         """
         Add a play to the playbook
         :param play:
-        :param edge_label:
+        :param edge_name:
         :return:
         """
-        edge = EdgeNode(self, play, edge_label)
+        edge = EdgeNode(self, play, edge_name)
         self.add_node("plays", edge)
         return edge
 
@@ -116,13 +116,13 @@ class PlayNode(CompositeNode):
      - post_tasks
     """
 
-    def __init__(self, node_label: str, hosts: List[str] = None, node_id: str = None):
+    def __init__(self, node_name: str, hosts: List[str] = None, node_id: str = None):
         """
-        :param node_label:
+        :param node_name:
         :param node_id:
         :param hosts: List of hosts attached to the play
         """
-        super().__init__(node_label, node_id or generate_id("play_"))
+        super().__init__(node_name, node_id or generate_id("play_"))
         self.hosts = hosts or []
 
     @property
@@ -147,15 +147,15 @@ class EdgeNode(CompositeNode):
     An edge between two nodes. It's a special case of composite node with only one composition with one element
     """
 
-    def __init__(self, source: Node, destination: Node, node_label: str = "", node_id: str = None):
+    def __init__(self, source: Node, destination: Node, node_name: str = "", node_id: str = None):
         """
 
-        :param node_label: The edge label
+        :param node_name: The edge name
         :param source: The edge source node
         :param destination: The edge destination node
         :param node_id: The edge id
         """
-        super().__init__(node_label, node_id or generate_id("edge_"))
+        super().__init__(node_name, node_id or generate_id("edge_"))
         self.source = source
         self.add_node("nodes", destination)
 
@@ -185,8 +185,8 @@ class TaskNode(Node):
     A task node. Can be pre_task, task or post_task
     """
 
-    def __init__(self, node_label: str, node_id: str = None):
-        super().__init__(node_label, node_id or generate_id("task_"))
+    def __init__(self, node_name: str, node_id: str = None):
+        super().__init__(node_name, node_id or generate_id("task_"))
 
 
 class RoleNode(CompositeNode):
@@ -194,8 +194,8 @@ class RoleNode(CompositeNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_label: str, node_id: str = None):
-        super().__init__(node_label, node_id or generate_id("role_"))
+    def __init__(self, node_name: str, node_id: str = None):
+        super().__init__(node_name, node_id or generate_id("role_"))
 
     @property
     def tasks(self):
