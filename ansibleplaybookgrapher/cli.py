@@ -48,7 +48,7 @@ class GrapherCLI(CLI, ABC):
         playbook_node = parser.generate_graph()
         renderer = GraphvizRenderer(playbook_node, display)
         display.display("Rendering the graph...")
-        svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file)
+        svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
         post_processor.post_process(playbook_node=playbook_node)
@@ -88,6 +88,9 @@ class PlaybookGrapherCLI(GrapherCLI):
 
         self.parser.add_argument("-s", "--save-dot-file", dest="save_dot_file", action='store_true', default=False,
                                  help="Save the dot file used to generate the graph.")
+
+        self.parser.add_argument("--view", action='store_true', default=False,
+                                 help="Automatically open the resulting SVG file with your system’s default viewer application for the file type")
 
         self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
