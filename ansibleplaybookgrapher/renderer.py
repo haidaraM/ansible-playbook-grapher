@@ -119,15 +119,18 @@ class GraphvizRenderer:
                                    task_counter=len(play.pre_tasks) + len(play.roles) + len(
                                        play.tasks) + post_task_counter)
 
-    def render(self, output_filename: str, save_dot_file=False) -> str:
+    def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
         """
         Render the graph
         :param output_filename: Output file name without '.svg' extension.
         :param save_dot_file: If true, the dot file will be saved when rendering the graph.
+        :param view: If true, will automatically open the resulting (PDF, PNG, SVG, etc.) file with your system’s
+            default viewer application for the file type
         :return: The rendered file path (output_filename.svg)
         """
         self._convert_to_graphviz()
-        rendered_file_path = self.graphviz.render(cleanup=not save_dot_file, format="svg", filename=output_filename)
+        rendered_file_path = self.graphviz.render(cleanup=not save_dot_file, format="svg", filename=output_filename,
+                                                  view=view)
 
         if save_dot_file:
             # add .dot extension. The render doesn't add an extension

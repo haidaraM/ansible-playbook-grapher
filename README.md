@@ -48,7 +48,7 @@ Some options are available:
 ```
 $ ansible-playbook-grapher --help
 usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
-                                [--include-role-tasks] [-s]
+                                [--include-role-tasks] [-s] [--view]
                                 [-o OUTPUT_FILENAME] [--version] [-t TAGS]
                                 [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
                                 [--ask-vault-pass | --vault-password-file VAULT_PASSWORD_FILES]
@@ -70,6 +70,8 @@ optional arguments:
   --vault-password-file VAULT_PASSWORD_FILES
                         vault password file
   --version             show program's version number and exit
+  --view                Automatically open the resulting SVG file with your
+                        system’s default viewer application for the file type
   -e EXTRA_VARS, --extra-vars EXTRA_VARS
                         set additional variables as key=value or YAML/JSON, if
                         filename prepend with @
@@ -84,7 +86,6 @@ optional arguments:
   -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
   -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
                         connection debugging)
-
 ```
 
 ## Configuration: ansible.cfg
@@ -108,9 +109,10 @@ To setup a new development environment :
 - Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
 - (cd tests && pip install -r requirements_tests.txt)
 
-Run the tests with:
+Run the tests and open the generated files in your system’s default viewer application:
 
 ```shell script
+export TEST_VIEW_GENERATED_FILE=1
 $ make test # run all tests
 ```
 

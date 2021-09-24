@@ -8,6 +8,8 @@
     - Consider inclue_role as normal role instead of
       task [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
     - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
+    - feat: Add option to automatically view the generated
+      file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
 - fix:
     - front: Refactor the JS part and fix issue when selecting/unselecting nodes
     - front: Do not unhighlight the current selected node when hovering on parent node
