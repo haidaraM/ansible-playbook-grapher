@@ -10,7 +10,7 @@ from ansibleplaybookgrapher.cli import get_cli_class
 from tests import FIXTURES_DIR
 
 
-def run_grapher(playbook_file: str, output_filename: str = None, additional_args: List = None) -> Tuple[str, str]:
+def run_grapher(playbook_file: str, output_filename: str = None, additional_args: List[str] = None) -> Tuple[str, str]:
     """
     Utility function to run the grapher
     :param output_filename:
@@ -48,6 +48,8 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
     :param plays_number: Number of plays in the playbook
+    :param pre_tasks_number: Number of pre tasks in the playbook
+    :param roles_number: Number of roles in the playbook
     :param tasks_number: Number of tasks in the playbook
     :param post_tasks_number: Number of post tasks in the playbook
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values
