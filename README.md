@@ -43,6 +43,9 @@ $ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/with_roles.png)
 
+Example with block:
+![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/block.png)
+
 Some options are available:
 
 ```
