@@ -55,8 +55,8 @@ setup(name=__prog__,
           'License :: OSI Approved :: MIT License',
           'Environment :: Console',
           'Topic :: Utilities',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
       ],
       entry_points={
           'console_scripts': [
