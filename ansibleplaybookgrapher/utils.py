@@ -4,6 +4,7 @@ from typing import Tuple, List
 
 from ansible.parsing.dataloader import DataLoader
 from ansible.parsing.yaml.objects import AnsibleUnicode
+from ansible.playbook import Play
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -42,15 +43,14 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play) -> Tuple[str, str]:
+def get_play_colors(play: Play) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play
     :return:
     """
-    # TODO: Check the if the picked color is (almost) white. We can't see a white edge on the graph
-    picked_color = Color(pick_for=play)
-    play_font_color = "#000000" if picked_color.get_luminance() > 0.6 else "#ffffff"
+    picked_color = Color(pick_for=play, luminance=0.4)
+    play_font_color = "#ffffff"
 
     return picked_color.get_hex_l(), play_font_color
 

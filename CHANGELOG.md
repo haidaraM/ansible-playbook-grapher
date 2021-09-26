@@ -18,6 +18,7 @@
   - Use the correct tooltip for edges
   - style: Do not use bold style by default and apply color on nodes border
   - Merge when condition with `and`
+  - fix: Explicitly set color luminance to avoid bright colors
 - test:
     - Add Ansible 2.10.7 in the test matrix
     - Make test verbose by default with `-vv` in the args
