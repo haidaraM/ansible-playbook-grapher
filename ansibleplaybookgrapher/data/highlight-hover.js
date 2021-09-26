@@ -100,6 +100,7 @@ function clickOnElement(event) {
 $("#svg").ready(function () {
     let plays = $("g[id^=play_]");
     let roles = $("g[id^=role_]");
+    let blocks = $("g[id^=block_]");
 
     // Set hover and click events on the plays
     plays.hover(hoverMouseEnter, hoverMouseLeave);
@@ -108,5 +109,9 @@ $("#svg").ready(function () {
     // Set hover and click events on the roles
     roles.hover(hoverMouseEnter, hoverMouseLeave);
     roles.click(clickOnElement);
+
+    // Set hover and click events on the blocks
+    blocks.hover(hoverMouseEnter, hoverMouseLeave);
+    blocks.click(clickOnElement);
 
 });

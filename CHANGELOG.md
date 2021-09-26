@@ -10,11 +10,14 @@
     - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
     - feat: Add option to automatically view the generated
       file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
+    - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86)
 - fix:
-    - front: Refactor the JS part and fix issue when selecting/unselecting nodes
-    - front: Do not unhighlight the current selected node when hovering on parent node
-    - cli(typo): rename `--ouput-file-name` to `--output-file-name`
-    - fix: Use the correct tooltip for edges
+  - front: Refactor the JS part and fix issue when selecting/unselecting nodes
+  - front: Do not unhighlight the current selected node when hovering on parent node
+  - cli(typo): rename `--ouput-file-name` to `--output-file-name`
+  - Use the correct tooltip for edges
+  - style: Do not use bold style by default and apply color on nodes border
+  - Merge when condition with `and`
 - test:
     - Add Ansible 2.10.7 in the test matrix
     - Make test verbose by default with `-vv` in the args

@@ -1,7 +1,11 @@
 ---
 - hosts: all
   tasks:
+    - name: Install tree
+      yum:
+        name: tree
     - name: Install Apache
+      when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "6")
       block:
         - name: Install some packages
           yum:
@@ -13,7 +17,15 @@
         - template:
             src: templates/src.j2
             dest: /etc/foo.conf
+        - block:
+            - get_url: url={{ remote_database_dump }} dest={{ local_database_dump }}
+              when: "True"
+            - command: pg_restore -d {{ dbname }} {{ local_database_dump }}
         - service:
             name: bar
             state: started
             enabled: True
+  post_tasks:
+    - name: Debug
+      debug:
+        msg: "Debug 1"
