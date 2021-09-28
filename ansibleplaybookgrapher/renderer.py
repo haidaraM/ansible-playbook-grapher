@@ -92,8 +92,10 @@ class GraphvizRenderer:
             graph.edge(edge.source.id, destination_node.id, label=edge_label, color=color, fontcolor=color,
                        tooltip=edge_label, id=edge.id, labeltooltip=edge_label)
 
-            for b_counter, task_edge_node in enumerate(destination_node.tasks, 1):
-                self.render_node(block_subgraph, task_edge_node, color, b_counter)
+            # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
+            #  Don't really know why for the moment neither if there is an attribute to change that.
+            for b_counter, task_edge_node in enumerate(reversed(destination_node.tasks)):
+                self.render_node(block_subgraph, task_edge_node, color, len(destination_node.tasks) - b_counter)
 
     def render_role(self, graph: Digraph, edge_counter: int, edge: EdgeNode, color: str, **kwargs):
         """
