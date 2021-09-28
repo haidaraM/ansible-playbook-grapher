@@ -83,14 +83,9 @@ class GraphvizRenderer:
         # noinspection PyTypeChecker
         destination_node = edge.destination  # type: BlockNode
         edge_label = f"{edge_counter}"
-        if graph.name.startswith("cluster"):
-            # We are rendering a block inside another block.
-            # In that case, we add the edge name as label also to materialize the when condition
-            edge_label = f"{edge_counter} {edge.name}"
 
         # BlockNode is a special node: a cluster is created instead of a normal node
         with graph.subgraph(name=f"cluster_{destination_node.id}") as block_subgraph:
-
             block_subgraph.node(destination_node.id, label=f"[block] {destination_node.name}", shape="box",
                                 id=destination_node.id, tooltip=destination_node.name, color=color,
                                 labeltooltip=destination_node.name)

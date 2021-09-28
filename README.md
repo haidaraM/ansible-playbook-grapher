@@ -32,21 +32,31 @@ $ pip install ansible-playbook-grapher
 ## Usage
 
 ```shell
-$ ansible-playbook-grapher tests/fixtures/example.yml
+ansible-playbook-grapher tests/fixtures/example.yml
 ```
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/example.png)
 
 ```bash
-$ ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
+ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 ```
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/with_roles.png)
 
-Example with block:
+```bash
+ansible-playbook-grapher tests/fixtures/with_block.yml
+```
+
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/block.png)
 
-Some options are available:
+Note on block: Since `block`s are logical group of tasks, the conditional `when` is not displayed on the edges pointing
+to them but on the tasks inside the block. This
+mimics [Ansible behavior](https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html#grouping-tasks-with-blocks)
+regarding the blocks.
+
+### CLI options
+
+The available options:
 
 ```
 $ ansible-playbook-grapher --help
