@@ -14,5 +14,6 @@
       debug:
         msg: "Debug 2"
     - name: (4) Include role 2
+      when: x is not defined
       include_role:
         name: fake_role_2

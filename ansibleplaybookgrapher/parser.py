@@ -236,8 +236,8 @@ class PlaybookParser(BaseParser):
                         f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
 
                     role_node = RoleNode(task_or_block.args['name'])
-                    # TODO: add support for conditional (when) for include_role in the edge label
-                    parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node))
+                    parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
+                                                                        convert_when_to_str(task_or_block.when)))
 
                     if self.include_role_tasks:
                         # If we have an include_role and we want to include role tasks, the parent node now becomes

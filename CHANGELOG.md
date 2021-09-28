@@ -11,6 +11,7 @@
     - feat: Add option to automatically view the generated
       file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
     - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86)
+    - Add support for when on include_role
 - fix:
   - front: Refactor the JS part and fix issue when selecting/unselecting nodes
   - front: Do not unhighlight the current selected node when hovering on parent node
