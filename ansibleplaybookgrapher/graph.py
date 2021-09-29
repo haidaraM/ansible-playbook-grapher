@@ -13,8 +13,8 @@ class Node:
         self.name = node_name
         self.id = node_id
 
-    def __str__(self):
-        return f"{type(self).__name__}: name='{self.name}',id='{self.id}'"
+    def __repr__(self):
+        return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
 
     def __eq__(self, other):
         return self.id == other.id
