@@ -40,7 +40,7 @@ class BaseParser(ABC):
         self.display = display or Display()
 
     @abstractmethod
-    def generate_graph(self, *args, **kwargs) -> PlaybookNode:
+    def parse(self, *args, **kwargs) -> PlaybookNode:
         pass
 
     def template(self, data: Union[str, AnsibleUnicode], variables: Dict,
@@ -102,12 +102,11 @@ class PlaybookParser(BaseParser):
 
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
-        self.playbook = Playbook.load(playbook_filename, loader=self.data_loader,
-                                      variable_manager=self.variable_manager)
+        self.playbook = None
         # the root node
         self.playbook_root_node = PlaybookNode(self.playbook_filename)
 
-    def generate_graph(self, *args, **kwargs) -> PlaybookNode:
+    def parse(self, *args, **kwargs) -> PlaybookNode:
         """
         Loop through the playbook and generate the graph.
 
@@ -121,6 +120,8 @@ class PlaybookParser(BaseParser):
             add post_tasks
         :return:
         """
+        self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
+                                      variable_manager=self.variable_manager)
 
         # loop through the plays
         for play in self.playbook.get_plays():
