@@ -77,7 +77,8 @@ class BaseParser(ABC):
         task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
         edge_label = convert_when_to_str(task.when)
 
-        edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_")), edge_label)
+        edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_"), raw_object=task),
+                             edge_label)
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         return True
@@ -104,7 +105,7 @@ class PlaybookParser(BaseParser):
         self.playbook_filename = playbook_filename
         self.playbook = None
         # the root node
-        self.playbook_root_node = PlaybookNode(self.playbook_filename)
+        self.playbook_root_node = None
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """
@@ -122,7 +123,7 @@ class PlaybookParser(BaseParser):
         """
         self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
                                       variable_manager=self.variable_manager)
-
+        self.playbook_root_node = PlaybookNode(self.playbook_filename)
         # loop through the plays
         for play in self.playbook.get_plays():
 
@@ -140,7 +141,7 @@ class PlaybookParser(BaseParser):
 
             self.display.banner("Parsing " + play_name)
 
-            play_node = PlayNode(play_name, hosts=play_hosts)
+            play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
             self.playbook_root_node.add_play(play_node, "")
 
             # loop through the pre_tasks
@@ -214,7 +215,7 @@ class PlaybookParser(BaseParser):
 
         if not block._implicit and block._role is None:
             # Here we have an explicit block. Ansible internally converts all normal tasks to Block
-            block_node = BlockNode(str(block.name))
+            block_node = BlockNode(str(block.name), raw_object=block)
             parent_nodes[-1].add_node(f"{node_type}s",
                                       EdgeNode(parent_nodes[-1], block_node, convert_when_to_str(block.when)))
             parent_nodes.append(block_node)
@@ -236,7 +237,7 @@ class PlaybookParser(BaseParser):
                     self.display.v(
                         f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
 
-                    role_node = RoleNode(task_or_block.args['name'])
+                    role_node = RoleNode(task_or_block.args['name'], raw_object=task_or_block)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
                                                                         convert_when_to_str(task_or_block.when)))
 
@@ -279,12 +280,16 @@ class PlaybookParser(BaseParser):
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
                                                   play_vars=task_vars, node_type=node_type)
             else:
-                if len(parent_nodes) > 1 and not has_role_parent(task_or_block) and task_or_block._parent._implicit:
-                    # We add a new parent node if:
-                    # - We found an include_role
-                    # - We found an explicit Block
-                    # If an include_role is not found and we have a task that is not from an include_role and not from
-                    # an explicit block => we remove the last CompositeNode we have added.
+                if (len(parent_nodes) > 1 and  # 1
+                        not has_role_parent(task_or_block) and  # 2
+                        parent_nodes[-1].raw_object != task_or_block._parent):  # 3
+                    # We remove a parent node :
+                    # 1. When have at least two parents. Every node (except the playbook) should be have a parent node..
+                    #   AND
+                    # 2. The current node doesn't have a role as parent.
+                    #   AND
+                    # 3. The last parent node is different from the the current node parent. This means that we are
+                    #   done with the child nodes of this parent node
                     parent_nodes.pop()
 
                 # check if this task comes from a role, and we don't want to include tasks of the role

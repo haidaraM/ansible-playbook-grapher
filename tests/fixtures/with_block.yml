@@ -25,6 +25,10 @@
             name: bar
             state: started
             enabled: True
+    - name: Create a username for tomcat
+      user:
+        name: tomcatadm
+        group: users
   post_tasks:
     - name: Debug
       debug:

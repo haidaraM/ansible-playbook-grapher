@@ -54,7 +54,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
     play_node = playbook_node.plays[0].destination
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
-    assert len(tasks) == 2
+    assert len(tasks) == 3
     assert len(post_tasks) == 1
 
     # Check tasks
@@ -70,8 +70,8 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
     # Check the second block (nested block)
     nested_block = first_block.tasks[2].destination
     assert len(nested_block.tasks) == 2
-    assert nested_block.tasks[0].destination.name == "get_url"
-    assert nested_block.tasks[1].destination.name == "command"
+    assert nested_block.tasks[0].destination.name == "[task] get_url"
+    assert nested_block.tasks[1].destination.name == "[task] command"
 
     # Check the post task
     assert post_tasks[0].destination.name == "[post_task] Debug"
