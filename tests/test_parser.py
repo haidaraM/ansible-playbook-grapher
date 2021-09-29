@@ -2,13 +2,49 @@ import pytest
 
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from ansibleplaybookgrapher.graph import TaskNode, BlockNode
+from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode
+
+
+@pytest.mark.parametrize('grapher_cli', [["include_role.yml"]], indirect=True)
+def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display):
+    """
+    Test parsing of include_role
+    :param grapher_cli:
+    :param display:
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays) == 1
+    play_node = playbook_node.plays[0].destination
+    tasks = play_node.tasks
+    assert len(tasks) == 4
+
+    # first task
+    assert tasks[0].destination.name == "[task] (1) Debug"
+    assert tasks[0].name == '[when: ansible_os == "ubuntu"]'
+
+    # first include_role
+    include_role_1 = tasks[1].destination
+    assert isinstance(include_role_1, RoleNode)
+    assert len(include_role_1.tasks) == 3
+
+    # second task
+    assert tasks[2].destination.name == "[task] (3) Debug 2"
+
+    # second include_role
+    include_role_2 = tasks[3].destination
+    assert tasks[3].name == "[when: x is not defined]"
+    assert isinstance(include_role_2, RoleNode)
+    assert len(include_role_2.tasks) == 3
 
 
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)
 def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
     """
     The parsing of a playbook with blocks
+    :param grapher_cli:
+    :param display:
     :return:
     """
     parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display)
