@@ -13,4 +13,4 @@
         msg: Hello world
     - name: Import role
       import_role:
-        name: fake_role_2
+        name: display_some_facts

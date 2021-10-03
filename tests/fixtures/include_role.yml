@@ -16,4 +16,4 @@
     - name: (4) Include role 2
       when: x is not defined
       include_role:
-        name: fake_role_2
+        name: display_some_facts

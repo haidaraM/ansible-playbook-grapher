@@ -1,3 +1,4 @@
 ---
 - name: Specific included task for Debian
-  debug: msg="Specific task for Debian"
+  debug:
+    var: ansible_service_mgr
