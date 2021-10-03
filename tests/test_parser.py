@@ -1,4 +1,5 @@
 import pytest
+from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -6,7 +7,7 @@ from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode
 
 
 @pytest.mark.parametrize('grapher_cli', [["include_role.yml"]], indirect=True)
-def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display):
+def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     """
     Test parsing of include_role
     :param grapher_cli:
@@ -40,7 +41,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display):
 
 
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)
-def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
+def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     """
     The parsing of a playbook with blocks
     :param grapher_cli:

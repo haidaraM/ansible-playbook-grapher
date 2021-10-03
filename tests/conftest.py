@@ -37,18 +37,20 @@ def fixture_variable_manager(data_loader, inventory_manager):
     return VariableManager(loader=data_loader, inventory=inventory_manager)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def display():
     """
-
+    Return a display
     :return:
     """
     from ansible.utils.display import Display
-    return Display()
+    display = Display()
+    display.verbosity = 3
+    return display
 
 
-@pytest.fixture(name="grapher_cli")
-def fixture_grapher_cli(request) -> PlaybookGrapherCLI:
+@pytest.fixture
+def grapher_cli(request) -> PlaybookGrapherCLI:
     """
     Because Ansible is not designed to be used as a library, we need the CLI everywhere. The CLI is the main entrypoint
     of Ansible and it sets some global variables that are needed by some classes and methods.
