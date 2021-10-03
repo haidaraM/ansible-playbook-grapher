@@ -45,7 +45,7 @@ class GrapherCLI(CLI, ABC):
                                 playbook_filename=self.options.playbook_filename,
                                 include_role_tasks=self.options.include_role_tasks)
 
-        playbook_node = parser.generate_graph()
+        playbook_node = parser.parse()
         renderer = GraphvizRenderer(playbook_node, display)
         display.display("Rendering the graph...")
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)

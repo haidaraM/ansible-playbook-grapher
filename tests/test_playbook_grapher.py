@@ -163,7 +163,7 @@ def test_with_block(request):
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=6, post_tasks_number=1,
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=7, post_tasks_number=1,
                   blocks_number=2)
 
 

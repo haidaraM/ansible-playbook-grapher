@@ -45,7 +45,7 @@ class GraphvizRenderer:
                                              edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
 
     def render_node(self, graph: GraphvizCustomDigraph, edge: EdgeNode, color: str, node_counter: int,
-                    shape: str = "octagon"):
+                    shape: str = "octagon", **kwargs):
         """
         Render a generic node in the graph
         :param graph: The graph to render the node to
@@ -57,6 +57,7 @@ class GraphvizRenderer:
         """
         destination_node = edge.destination
         source_node = edge.source
+        node_label_prefix = kwargs.get("node_label_prefix", "")
 
         if isinstance(destination_node, BlockNode):
             self.render_block(graph, node_counter, edge, color)
@@ -64,12 +65,12 @@ class GraphvizRenderer:
             self.render_role(graph, node_counter, edge, color)
         else:
             edge_label = f"{node_counter} {edge.name}"
-            graph.node(destination_node.id, label=destination_node.name, shape=shape, id=destination_node.id,
-                       tooltip=destination_node.name, color=color)
+            graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
+                       id=destination_node.id, tooltip=destination_node.name, color=color)
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
-    def render_block(self, graph: Digraph, edge_counter: int, edge: EdgeNode, color: str, **kwargs):
+    def render_block(self, graph: Digraph, edge_counter: int, edge: EdgeNode, color: str, label_prefix="", **kwargs):
         """
         Render a block in the graph.
         A BlockNode is a special node: a cluster is created instead of a normal node.
@@ -78,6 +79,7 @@ class GraphvizRenderer:
         :param edge: The edge from a node to the BlockNode
         :param color: The color to apply
         :param kwargs:
+        :param label_prefix: A prefix to add to the node label
         :return:
         """
         # noinspection PyTypeChecker
@@ -146,7 +148,8 @@ class GraphvizRenderer:
 
                 # pre_tasks
                 for pre_task_counter, pre_task_edge in enumerate(play.pre_tasks, 1):
-                    self.render_node(play_subgraph, pre_task_edge, color, node_counter=pre_task_counter)
+                    self.render_node(play_subgraph, pre_task_edge, color, node_counter=pre_task_counter,
+                                     node_label_prefix="[pre_task] ")
 
                 # roles
                 for role_counter, role_edge in enumerate(play.roles, 1):
@@ -155,13 +158,14 @@ class GraphvizRenderer:
                 # tasks
                 for task_counter, task_edge in enumerate(play.tasks, 1):
                     self.render_node(play_subgraph, task_edge, color,
-                                     node_counter=len(play.pre_tasks) + len(play.roles) + task_counter)
+                                     node_counter=len(play.pre_tasks) + len(play.roles) + task_counter,
+                                     node_label_prefix="[task] ")
 
                 # post_tasks
                 for post_task_counter, post_task_edge in enumerate(play.post_tasks, 1):
                     self.render_node(play_subgraph, post_task_edge, color,
                                      node_counter=len(play.pre_tasks) + len(play.roles) + len(
-                                         play.tasks) + post_task_counter)
+                                         play.tasks) + post_task_counter, node_label_prefix="[post_task] ")
 
     def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
         """

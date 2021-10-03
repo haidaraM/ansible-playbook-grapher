@@ -9,9 +9,17 @@ class Node:
     A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
     """
 
-    def __init__(self, node_name: str, node_id: str):
+    def __init__(self, node_name: str, node_id: str, raw_object=None):
+        """
+
+        :param node_name: The name of the node
+        :param node_id: An identifier for this node
+        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on 
+        Ansible side
+        """
         self.name = node_name
         self.id = node_id
+        self.raw_object = raw_object
 
     def __repr__(self):
         return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
@@ -28,24 +36,16 @@ class CompositeNode(Node):
     A node that composed of multiple of nodes.
     """
 
-    def __init__(self, node_name: str, node_id: str, supported_compositions: List[str] = None):
+    def __init__(self, node_name: str, node_id: str, raw_object=None, supported_compositions: List[str] = None):
         """
 
         :param node_name:
         :param node_id:
         """
-        super().__init__(node_name, node_id)
+        super().__init__(node_name, node_id, raw_object)
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
-
-    @property
-    def total_length(self) -> int:
-        """
-        Return the total length of elements in this composite node
-        :return:
-        """
-        return sum([len(val) for val in self._compositions.values()])
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -86,9 +86,9 @@ class PlaybookNode(CompositeNode):
     A playbook is a list of play
     """
 
-    def __init__(self, node_name: str, plays: List['PlayNode'] = None, node_id: str = None):
-        super().__init__(node_name, node_id or generate_id("playbook_"), ["plays"])
-        self._compositions['plays'] = plays or []
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        super().__init__(node_name, node_id or generate_id("playbook_"), raw_object=raw_object,
+                         supported_compositions=["plays"])
 
     @property
     def plays(self) -> List['EdgeNode']:
@@ -119,13 +119,14 @@ class PlayNode(CompositeNode):
      - post_tasks
     """
 
-    def __init__(self, node_name: str, hosts: List[str] = None, node_id: str = None):
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None, hosts: List[str] = None):
         """
         :param node_name:
         :param node_id:
         :param hosts: List of hosts attached to the play
         """
-        super().__init__(node_name, node_id or generate_id("play_"), ["pre_tasks", "roles", "tasks", "post_tasks"])
+        super().__init__(node_name, node_id or generate_id("play_"), raw_object=raw_object,
+                         supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"])
         self.hosts = hosts or []
 
     @property
@@ -150,8 +151,9 @@ class BlockNode(CompositeNode):
     A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html
     """
 
-    def __init__(self, node_name: str, node_id: str = None):
-        super().__init__(node_name, node_id or generate_id("block_"), ["tasks"])
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        super().__init__(node_name, node_id or generate_id("block_"), raw_object=raw_object,
+                         supported_compositions=["tasks"])
 
     @property
     def tasks(self) -> List['EdgeNode']:
@@ -175,7 +177,8 @@ class EdgeNode(CompositeNode):
         :param destination: The edge destination node
         :param node_id: The edge id
         """
-        super().__init__(node_name, node_id or generate_id("edge_"), ["destination"])
+        super().__init__(node_name, node_id or generate_id("edge_"), raw_object=None,
+                         supported_compositions=["destination"])
         self.source = source
         self.add_node("destination", destination)
 
@@ -205,8 +208,8 @@ class TaskNode(Node):
     A task node. Can be pre_task, task or post_task
     """
 
-    def __init__(self, node_name: str, node_id: str = None):
-        super().__init__(node_name, node_id or generate_id("task_"))
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        super().__init__(node_name, node_id or generate_id("task_"), raw_object)
 
 
 class RoleNode(CompositeNode):
@@ -214,8 +217,8 @@ class RoleNode(CompositeNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_name: str, node_id: str = None):
-        super().__init__(node_name, node_id or generate_id("role_"), ["tasks"])
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        super().__init__(node_name, node_id or generate_id("role_"), raw_object, supported_compositions=["tasks"])
 
     @property
     def tasks(self):
