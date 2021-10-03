@@ -74,7 +74,7 @@ class BaseParser(ABC):
 
         self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
 
-        task_name = clean_name(f"[{node_type}] " + self.template(task.get_name(), task_vars))
+        task_name = clean_name(self.template(task.get_name(), task_vars))
         edge_label = convert_when_to_str(task.when)
 
         edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_"), raw_object=task),

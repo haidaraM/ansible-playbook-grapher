@@ -21,7 +21,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display):
     assert len(tasks) == 4
 
     # first task
-    assert tasks[0].destination.name == "[task] (1) Debug"
+    assert tasks[0].destination.name == "(1) Debug"
     assert tasks[0].name == '[when: ansible_os == "ubuntu"]'
 
     # first include_role
@@ -30,7 +30,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display):
     assert len(include_role_1.tasks) == 3
 
     # second task
-    assert tasks[2].destination.name == "[task] (3) Debug 2"
+    assert tasks[2].destination.name == "(3) Debug 2"
 
     # second include_role
     include_role_2 = tasks[3].destination
@@ -60,7 +60,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
     # Check tasks
     task_1 = tasks[0].destination
     assert isinstance(task_1, TaskNode)
-    assert task_1.name == "[task] Install tree"
+    assert task_1.name == "Install tree"
 
     # Check the second task: the first block
     first_block = tasks[1].destination
@@ -70,8 +70,8 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display):
     # Check the second block (nested block)
     nested_block = first_block.tasks[2].destination
     assert len(nested_block.tasks) == 2
-    assert nested_block.tasks[0].destination.name == "[task] get_url"
-    assert nested_block.tasks[1].destination.name == "[task] command"
+    assert nested_block.tasks[0].destination.name == "get_url"
+    assert nested_block.tasks[1].destination.name == "command"
 
     # Check the post task
-    assert post_tasks[0].destination.name == "[post_task] Debug"
+    assert post_tasks[0].destination.name == "Debug"
