@@ -5,20 +5,7 @@ from ansible.utils.display import Display
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.graph import PlaybookNode, EdgeNode, PlayNode, RoleNode, BlockNode
-from ansibleplaybookgrapher.utils import clean_name, get_play_colors
-
-
-class GraphvizCustomDigraph(Digraph):
-    """
-    Custom digraph to avoid quoting issue with node names. Nothing special here except I put some double quotes around
-    the node and edge names and override some methods.
-    """
-    _head = "digraph \"%s\"{"
-    _edge = "\t\"%s\" -> \"%s\"%s"
-    _node = "\t\"%s\"%s"
-    _subgraph = "subgraph \"%s\"{"
-    _quote = staticmethod(clean_name)
-    _quote_edge = staticmethod(clean_name)
+from ansibleplaybookgrapher.utils import get_play_colors
 
 
 class GraphvizRenderer:
@@ -40,11 +27,11 @@ class GraphvizRenderer:
         """
         self.display = display
         self.playbook_node = playbook_node
-        self.digraph = GraphvizCustomDigraph(format=graph_format,
-                                             graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
-                                             edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
+        self.digraph = Digraph(format=graph_format,
+                               graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
+                               edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
 
-    def render_node(self, graph: GraphvizCustomDigraph, edge: EdgeNode, color: str, node_counter: int,
+    def render_node(self, graph: Digraph, edge: EdgeNode, color: str, node_counter: int,
                     shape: str = "octagon", **kwargs):
         """
         Render a generic node in the graph
