@@ -5,13 +5,13 @@
     - Hide some ansible internals in the parser.
     - Clean code.
 - feat:
-    - Consider inclue_role as normal role instead of
-      task [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
-    - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
-    - feat: Add option to automatically view the generated
-      file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
-    - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86)
-    - Add support for when on include_role
+  - Consider inclue_role as normal role instead of
+    task [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
+  - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
+  - feat: Add option to automatically view the generated
+    file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
+  - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86)
+  - Add support for when on include_role
 - fix:
   - front: Refactor the JS part and fix issue when selecting/unselecting nodes
   - front: Do not unhighlight the current selected node when hovering on parent node
@@ -22,13 +22,14 @@
   - Explicitly set color luminance to avoid bright colors
   - Reduce Node ID lengths. No need to use the full UUID
 - test:
-    - Add Ansible 2.10.7 in the test matrix
-    - Make test verbose by default with `-vv` in the args
+  - Add Ansible 2.10.7 in the test matrix
+  - Make test verbose by default with `-vv` in the args
 - docs:
     - Reformat CHANGELOG
     - Reformat README.md
 - Dependencies:
-    - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
+  - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
+  - bump pytest-cov from 2.12.1 to 3.0.0 [\#90](https://github.com/haidaraM/ansible-playbook-grapher/pull/90)
 
 # 0.11.1 (2021-07-28)
 
