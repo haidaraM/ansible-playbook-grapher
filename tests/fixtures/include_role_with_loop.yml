@@ -1,0 +1,12 @@
+---
+- hosts: all
+  tags:
+    - play2
+  tasks:
+    - name: Include with loop
+      include_role:
+        name: '{{ item }}'
+      loop:
+        - fake_role
+        - display_some_facts
+

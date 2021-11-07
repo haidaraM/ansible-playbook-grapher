@@ -56,6 +56,20 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert len(include_role_2.tasks) == 3
 
 
+@pytest.mark.parametrize('grapher_cli', [["include_role_with_loop.yml"]], indirect=True)
+def test_include_role_with_loop_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
+    """
+    Test parsing of include_role with loop
+    :param grapher_cli:
+    :param display:
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays) == 1
+    play_node = playbook_node.plays[0].destination
+
+
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)
 def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     """
