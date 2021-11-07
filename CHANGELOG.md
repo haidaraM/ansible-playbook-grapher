@@ -21,6 +21,7 @@
   - Merge when condition with `and`
   - Explicitly set color luminance to avoid bright colors
   - Reduce Node ID lengths. No need to use the full UUID
+  - Make grapher works with graphviz >= 0.18. See [\#91](https://github.com/haidaraM/ansible-playbook-grapher/issues/91)
 - test:
   - Add Ansible 2.10.7 in the test matrix
   - Make test verbose by default with `-vv` in the args
