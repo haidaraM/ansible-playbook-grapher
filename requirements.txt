@@ -1,5 +1,5 @@
 ansible>=2.9.0
-graphviz<1
+graphviz>=0.18,<1
 colour<1
 lxml<5
 packaging
