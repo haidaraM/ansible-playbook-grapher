@@ -25,19 +25,23 @@
   - Add Ansible 2.10.7 in the test matrix
   - Make test verbose by default with `-vv` in the args
 - docs:
-    - Reformat CHANGELOG
-    - Reformat README.md
+  - Reformat CHANGELOG
+  - Reformat README.md
 - Dependencies:
   - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
   - bump pytest-cov from 2.12.1 to 3.0.0 [\#90](https://github.com/haidaraM/ansible-playbook-grapher/pull/90)
 
+# 0.11.2 (2021-11-07)
+
+- fix: Restrict graphviz to <=0.17. Fix [\#91](https://github.com/haidaraM/ansible-playbook-grapher/issues/91)
+
 # 0.11.1 (2021-07-28)
 
 - Dependencies:
-    - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
-    - Bump pytest-cov from 2.11.1 to 2.12.1 [\#78](https://github.com/haidaraM/ansible-playbook-grapher/issues/78)
-    - Bump pytest from 6.2.2 to 6.2.4 [\#76](https://github.com/haidaraM/ansible-playbook-grapher/issues/76)
-    - Upgrade to GitHub-native Dependabot [\#72](https://github.com/haidaraM/ansible-playbook-grapher/issues/72)
+  - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
+  - Bump pytest-cov from 2.11.1 to 2.12.1 [\#78](https://github.com/haidaraM/ansible-playbook-grapher/issues/78)
+  - Bump pytest from 6.2.2 to 6.2.4 [\#76](https://github.com/haidaraM/ansible-playbook-grapher/issues/76)
+  - Upgrade to GitHub-native Dependabot [\#72](https://github.com/haidaraM/ansible-playbook-grapher/issues/72)
 - Drop support for ansible 2.8. **The grapher requires at least ansible
   2.9** [\#74](https://github.com/haidaraM/ansible-playbook-grapher/issues/74)
 - Fix:
