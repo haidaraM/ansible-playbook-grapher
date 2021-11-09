@@ -7,16 +7,11 @@ from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display
-from packaging import version
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 from ansibleplaybookgrapher.renderer import GraphvizRenderer
-
-# At some time, we needed to know if we are using ansible 2.8 because the CLI has been refactored in this PR:
-# https://github.com/ansible/ansible/pull/50069
-IS_ANSIBLE_2_9_X = version.parse(ansible_version) >= version.parse("2.9")
 
 
 def get_cli_class():
@@ -61,7 +56,7 @@ class GrapherCLI(CLI, ABC):
 
 class PlaybookGrapherCLI(GrapherCLI):
     """
-    The dedicated playbook CLI for Ansible 2.9 and above (for the moment)
+    The dedicated playbook grapher CLI
     """
 
     def __init__(self, args, callback=None):

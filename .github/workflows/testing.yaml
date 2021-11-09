@@ -15,7 +15,9 @@ jobs:
     strategy:
       matrix:
         python-version: [ 3.7, 3.8 ]
-        ansible-version: [ 2.9.14, 2.10.7 ]
+        # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
+        # TODO: replace ansible-base by ansible-core when dropping support for ansible <= 2.10 (the package have been renamed)
+        ansible-version: [ ansible-base==2.10.7, ansible-core==2.11.6 ]
 
     steps:
       - name: Checkout code
@@ -28,7 +30,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install ${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
           pip install -r tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -y graphviz
@@ -41,7 +43,7 @@ jobs:
       - name: Upload generated SVGs as artefacts
         uses: actions/upload-artifact@v2
         with:
-          name: generated-svgs-py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          name: generated-svgs-py${{ matrix.python-version }}-${{ matrix.ansible-version }}
           path: tests/generated_svg/
           if-no-files-found: error # the tests should generate SVGs files
 
@@ -52,7 +54,7 @@ jobs:
         run: cd tests && coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-${{ matrix.ansible-version }}
           COVERALLS_PARALLEL: true
 
   coveralls:
