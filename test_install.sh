@@ -19,13 +19,11 @@ virtualenv --clear ${VIRTUALENV_DIR}
 
 source ${VIRTUALENV_DIR}/bin/activate
 
-pip -V
-
 package=dist/$(ls dist)
 
 echo -e "${GREEN}Installing the packages ${package} and ansible ${ANSIBLE_VERSION} ${NC}"
 
-pip install -q ${package} ansible==${ANSIBLE_VERSION}
+pip install -q ${package} ansible-core==${ANSIBLE_VERSION}
 
 ${VIRTUALENV_DIR}/bin/ansible-playbook-grapher --version
 ${VIRTUALENV_DIR}/bin/ansible-playbook-grapher tests/fixtures/example.yml

@@ -47,7 +47,7 @@ jobs:
           if-no-files-found: error # the tests should generate SVGs files
 
       - name: Test installation in virtualenv
-        run: make test_install
+        run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}
 
       - name: Upload Coverage
         run: cd tests && coveralls --service=github
