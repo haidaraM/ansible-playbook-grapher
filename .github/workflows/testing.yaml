@@ -13,6 +13,7 @@ jobs:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ 3.7, 3.8 ]
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
