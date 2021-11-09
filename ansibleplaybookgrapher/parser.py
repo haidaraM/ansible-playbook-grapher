@@ -68,6 +68,10 @@ class BaseParser(ABC):
         :return: True if the task has been included, false otherwise
         """
 
+        # Ansible-core 2.11 added an implicit meta tasks at the end of the role. So wee skip it here.
+        if task.action == "meta" and task.implicit:
+            return False
+
         if not task.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars):
             self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
