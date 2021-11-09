@@ -13,9 +13,11 @@ jobs:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [ 3.7, 3.8 ]
-        ansible-version: [ 2.9.14, 2.10.7 ]
+        python-version: [ 3.8, 3.9 ]
+        # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
+        ansible-version: [ 2.11.6, 2.12.0 ]
 
     steps:
       - name: Checkout code
@@ -28,7 +30,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install ansible==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
           pip install -r tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -y graphviz
@@ -46,7 +48,7 @@ jobs:
           if-no-files-found: error # the tests should generate SVGs files
 
       - name: Test installation in virtualenv
-        run: make test_install
+        run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}
 
       - name: Upload Coverage
         run: cd tests && coveralls --service=github
