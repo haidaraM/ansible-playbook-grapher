@@ -3,7 +3,6 @@ import uuid
 from typing import Tuple, List
 
 from ansible.parsing.dataloader import DataLoader
-from ansible.parsing.yaml.objects import AnsibleUnicode
 from ansible.playbook import Play
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
@@ -12,14 +11,18 @@ from ansible.template import Templar
 from colour import Color
 
 
-def convert_when_to_str(when: List[AnsibleUnicode]) -> str:
+def convert_when_to_str(when: List) -> str:
     """
     Convert ansible conditional when to str
     :param when:
     :return:
     """
+    if len(when) == 0:
+        return ""
 
-    return f"[when: {' and '.join(when)}]" if len(when) > 0 else ""
+    # Convert each element in the list to str
+    when_to_str = list(map(str, when))
+    return f"[when: {' and '.join(when_to_str)}]"
 
 
 def generate_id(prefix: str = "") -> str:
