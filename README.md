@@ -12,7 +12,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 
 ## Prerequisites
 
-- Python 3
+- Python 3.8 at least
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
   some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
   some older versions of Ansible.

@@ -3,34 +3,36 @@
 - refactor: See [\#81](https://github.com/haidaraM/ansible-playbook-grapher/pull/81)
     - Completely rewrite the grapher: the parser, the graph and the renderer to graphviz have been split.
     - Hide some ansible internals in the parser.
-    - Clean code.
 - feat:
-  - Consider inclue_role as normal role instead of
-    task [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
-  - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
-  - feat: Add option to automatically view the generated
-    file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
-  - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86)
-  - Add support for when on include_role
+    - Consider include_role as normal role instead of
+      task [\#82](https://github.com/haidaraM/ansible-playbook-grapher/pull/82)
+    - feat: Curved edge label based on the path [\#84](https://github.com/haidaraM/ansible-playbook-grapher/pull/84)
+    - feat: Add option to automatically view the generated
+      file [\#88](https://github.com/haidaraM/ansible-playbook-grapher/pull/88)
+    - feat: Add support for block [\#86](https://github.com/haidaraM/ansible-playbook-grapher/pull/86). They are now
+      visible in the graph.
+    - Add support for when on include_role.
+    - Only Ansible >= 2.11 is supported. **Python >=3.8** is now
+      required [\#94](https://github.com/haidaraM/ansible-playbook-grapher/pull/94).
 - fix:
-  - front: Refactor the JS part and fix issue when selecting/unselecting nodes
-  - front: Do not unhighlight the current selected node when hovering on parent node
-  - cli(typo): rename `--ouput-file-name` to `--output-file-name`
-  - Use the correct tooltip for edges
-  - style: Do not use bold style by default and apply color on nodes border
-  - Merge when condition with `and`
-  - Explicitly set color luminance to avoid bright colors
-  - Reduce Node ID lengths. No need to use the full UUID
-  - Make grapher works with graphviz >= 0.18. See [\#91](https://github.com/haidaraM/ansible-playbook-grapher/issues/91)
+    - front: Refactor the JS part and fix issue when selecting/unselecting nodes
+    - front: Do not unhighlight the current selected node when hovering on parent node
+    - cli(typo): rename `--ouput-file-name` to `--output-file-name`
+    - Use the correct tooltip for edges
+    - style: Do not use bold style by default and apply color on nodes border
+    - Merge when condition with `and`
+    - Explicitly set color luminance to avoid bright colors
+    - Reduce Node ID lengths. No need to use the full UUID
+    - Make grapher works with graphviz >= 0.18.
+      See [\#91](https://github.com/haidaraM/ansible-playbook-grapher/issues/91)
 - test:
-  - Add Ansible 2.10.7 in the test matrix
-  - Make test verbose by default with `-vv` in the args
+    - Make test verbose by default with `-vv` in the args
+    - Fix test_install in GitHub Actions which was not using the correct Ansible version.
 - docs:
-  - Reformat CHANGELOG
-  - Reformat README.md
+    - Reformat CHANGELOG.md and README.md
 - Dependencies:
-  - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
-  - bump pytest-cov from 2.12.1 to 3.0.0 [\#90](https://github.com/haidaraM/ansible-playbook-grapher/pull/90)
+    - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
+    - bump pytest-cov from 2.12.1 to 3.0.0 [\#90](https://github.com/haidaraM/ansible-playbook-grapher/pull/90)
 
 # 0.11.2 (2021-11-07)
 
@@ -39,10 +41,10 @@
 # 0.11.1 (2021-07-28)
 
 - Dependencies:
-  - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
-  - Bump pytest-cov from 2.11.1 to 2.12.1 [\#78](https://github.com/haidaraM/ansible-playbook-grapher/issues/78)
-  - Bump pytest from 6.2.2 to 6.2.4 [\#76](https://github.com/haidaraM/ansible-playbook-grapher/issues/76)
-  - Upgrade to GitHub-native Dependabot [\#72](https://github.com/haidaraM/ansible-playbook-grapher/issues/72)
+    - Unpin requirements. See [\#71](https://github.com/haidaraM/ansible-playbook-grapher/issues/71)
+    - Bump pytest-cov from 2.11.1 to 2.12.1 [\#78](https://github.com/haidaraM/ansible-playbook-grapher/issues/78)
+    - Bump pytest from 6.2.2 to 6.2.4 [\#76](https://github.com/haidaraM/ansible-playbook-grapher/issues/76)
+    - Upgrade to GitHub-native Dependabot [\#72](https://github.com/haidaraM/ansible-playbook-grapher/issues/72)
 - Drop support for ansible 2.8. **The grapher requires at least ansible
   2.9** [\#74](https://github.com/haidaraM/ansible-playbook-grapher/issues/74)
 - Fix:
@@ -64,7 +66,7 @@
     - Rewriting the grapher, clean code.
     - Generate node IDs from an util function
 - Style: Replace some `format` by f-string
-- CI: Replace Travis by Github actions (#54)
+- CI: Replace Travis by GitHub actions (#54)
 - Dependencies:
     - Bump pytest from 6.0.1 to 6.2.2 (PRs #50, #51, #62, #67)
     - Bump pytest-cov from 2.10.0 to 2.11.1 (PRs #49, #65)
