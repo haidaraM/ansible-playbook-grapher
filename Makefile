@@ -20,7 +20,7 @@ deploy_test: clean build
 	@twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 test_install: build
-	@./test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_VERSION)
+	@./tests/test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_VERSION)
 
 test:
 	cd tests && pytest
