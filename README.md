@@ -15,7 +15,8 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Python 3.8 at least
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
   some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
-  some older versions of Ansible.
+  some older versions of Ansible (
+  since `ansible` [package has been split](https://www.ansible.com/blog/ansible-3.0.0-qa)).
 - **Graphviz**: The tool used to generate the graph in SVG.
   ```shell script
   $ sudo apt-get install graphviz # or yum install or brew install
@@ -65,7 +66,7 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--include-role-tasks] [-s] [--view]
                                 [-o OUTPUT_FILENAME] [--version] [-t TAGS]
                                 [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
-                                [--ask-vault-pass | --vault-password-file VAULT_PASSWORD_FILES]
+                                [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
                                 [-e EXTRA_VARS]
                                 playbook
 
@@ -75,13 +76,14 @@ positional arguments:
   playbook              Playbook to graph
 
 optional arguments:
-  --ask-vault-pass      ask for vault password
+  --ask-vault-password, --ask-vault-pass
+                        ask for vault password
   --include-role-tasks  Include the tasks of the role in the graph.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these
                         values
   --vault-id VAULT_IDS  the vault identity to use
-  --vault-password-file VAULT_PASSWORD_FILES
+  --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
   --version             show program's version number and exit
   --view                Automatically open the resulting SVG file with your
@@ -120,7 +122,7 @@ Contributions are welcome. Feel free to contribute by creating an issue or submi
 
 To setup a new development environment :
 
-- Install graphviz `sudo apt-get install graphviz # or yum install or brew install graphviz`
+- Install graphviz (see above)
 - (cd tests && pip install -r requirements_tests.txt)
 
 Run the tests and open the generated files in your system’s default viewer application:
