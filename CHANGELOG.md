@@ -33,6 +33,7 @@
 - Dependencies:
     - bump pytest from 6.2.4 to 6.2.5 [\#83](https://github.com/haidaraM/ansible-playbook-grapher/pull/83)
     - bump pytest-cov from 2.12.1 to 3.0.0 [\#90](https://github.com/haidaraM/ansible-playbook-grapher/pull/90)
+    - chore(deps): Remove packaging dependency
 
 # 0.11.2 (2021-11-07)
 
