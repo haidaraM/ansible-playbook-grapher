@@ -1,4 +1,4 @@
-# 1.0.0 (Unreleased)
+# 1.0.0
 
 - refactor: See [\#81](https://github.com/haidaraM/ansible-playbook-grapher/pull/81)
     - Completely rewrite the grapher: the parser, the graph and the renderer to graphviz have been split.
