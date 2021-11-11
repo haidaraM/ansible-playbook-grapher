@@ -2,4 +2,3 @@ ansible-core>=2.11,<3
 graphviz>=0.18,<1
 colour<1
 lxml<5
-packaging
