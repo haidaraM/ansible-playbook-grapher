@@ -1,3 +1,10 @@
+# 1.0.1 (unreleased)
+
+* fix: Block can only contain tasks regardless of the context by @haidaraM
+  in [\#96][https://github.com/haidaraM/ansible-playbook-grapher/pull/96]
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.0.0...v1.0.1
+
 # 1.0.0
 
 - refactor: See [\#81](https://github.com/haidaraM/ansible-playbook-grapher/pull/81)
