@@ -84,8 +84,8 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
     assert post_tasks_number == len(post_tasks), "The graph '{}' should contains {} post tasks(s) but we found {} " \
                                                  "post tasks".format(playbook_path, post_tasks_number, len(post_tasks))
 
-    assert blocks_number == len(blocks), "The graph '{}' should contains {} blocks(s) but we found {} " \
-                                         "pre tasks".format(playbook_path, blocks_number, len(blocks))
+    assert blocks_number == len(blocks), "The graph '{}' should contains {} blocks(s) but we found {} blocks ".format(
+        playbook_path, blocks_number, len(blocks))
 
     return {'tasks': tasks, 'plays': plays, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
 
@@ -163,8 +163,8 @@ def test_with_block(request):
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name)
 
-    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=7, post_tasks_number=1,
-                  blocks_number=2)
+    _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=7, post_tasks_number=2,
+                  pre_tasks_number=1, blocks_number=4)
 
 
 def test_nested_include_tasks(request):

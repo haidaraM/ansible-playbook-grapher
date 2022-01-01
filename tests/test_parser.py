@@ -56,7 +56,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
     assert len(tasks) == 3
-    assert len(post_tasks) == 1
+    assert len(post_tasks) == 2
 
     # Check tasks
     task_1 = tasks[0].destination
@@ -68,6 +68,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert isinstance(first_block, BlockNode)
     assert first_block.name == "Install Apache"
     assert len(first_block.tasks) == 4
+
     # Check the second block (nested block)
     nested_block = first_block.tasks[2].destination
     assert len(nested_block.tasks) == 2
