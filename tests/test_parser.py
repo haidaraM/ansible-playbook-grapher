@@ -68,6 +68,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert isinstance(first_block, BlockNode)
     assert first_block.name == "Install Apache"
     assert len(first_block.tasks) == 4
+
     # Check the second block (nested block)
     nested_block = first_block.tasks[2].destination
     assert len(nested_block.tasks) == 2

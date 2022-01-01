@@ -1,5 +1,11 @@
 ---
 - hosts: all
+  pre_tasks:
+    - name: Block in pre task
+      block:
+        - name: debug
+          debug:
+            msg: "pre task debug"
   tasks:
     - name: Install tree
       yum:
@@ -33,3 +39,9 @@
     - name: Debug
       debug:
         msg: "Debug 1"
+    - name: My post task block
+      block:
+        - template:
+            src: templates/src.j2
+            dest: /etc/foo.conf
+

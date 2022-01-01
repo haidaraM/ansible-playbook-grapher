@@ -56,7 +56,7 @@ class BaseParser(ABC):
             templar = Templar(loader=self.data_loader, variables=variables)
             return templar.template(data, fail_on_undefined=fail_on_undefined)
         except AnsibleError as ansible_error:
-            # Sometime we need to export
+            # Sometimes we need to export
             if fail_on_undefined:
                 raise
             self.display.warning(ansible_error)

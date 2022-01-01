@@ -163,6 +163,15 @@ class BlockNode(CompositeNode):
         """
         return self._compositions['tasks']
 
+    def add_node(self, target_composition: str, node: Node):
+        """
+        Override the add_node because block only contains "tasks" regardless of the context (pre_tasks or post_tasks)
+        :param target_composition: This is ignored. It's always "tasks" for block
+        :param node:
+        :return:
+        """
+        super().add_node("tasks", node)
+
 
 class EdgeNode(CompositeNode):
     """
