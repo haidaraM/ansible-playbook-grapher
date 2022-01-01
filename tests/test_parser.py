@@ -56,7 +56,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
     assert len(tasks) == 3
-    assert len(post_tasks) == 1
+    assert len(post_tasks) == 2
 
     # Check tasks
     task_1 = tasks[0].destination
