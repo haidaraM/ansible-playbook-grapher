@@ -140,7 +140,7 @@ class PlaybookParser(BaseParser):
 
             play_vars = self.variable_manager.get_vars(play)
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
-            play_name = "Play: {} ({})".format(clean_name(play.get_name()), len(play_hosts))
+            play_name = f"Play: {clean_name(play.get_name())} ({len(play_hosts)})"
             play_name = self.template(play_name, play_vars)
 
             self.display.banner("Parsing " + play_name)
@@ -288,11 +288,11 @@ class PlaybookParser(BaseParser):
                         not has_role_parent(task_or_block) and  # 2
                         parent_nodes[-1].raw_object != task_or_block._parent):  # 3
                     # We remove a parent node :
-                    # 1. When have at least two parents. Every node (except the playbook) should be have a parent node..
+                    # 1. When have at least two parents. Every node (except the playbook) should have a parent node
                     #   AND
-                    # 2. The current node doesn't have a role as parent.
+                    # 2. The current node doesn't have a role as parent
                     #   AND
-                    # 3. The last parent node is different from the the current node parent. This means that we are
+                    # 3. The last parent node is different from the current node parent. This means that we are
                     #   done with the child nodes of this parent node
                     parent_nodes.pop()
 

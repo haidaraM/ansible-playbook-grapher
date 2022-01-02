@@ -73,19 +73,23 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
     blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
 
-    assert plays_number == len(plays), "The graph '{}' should contains {} play(s) but we found {} play(s)".format(
-        playbook_path, plays_number, len(plays))
-    assert pre_tasks_number == len(pre_tasks), "The graph '{}' should contains {} pre tasks(s) but we found {} " \
-                                               "pre tasks".format(playbook_path, pre_tasks_number, len(pre_tasks))
-    assert roles_number == len(roles), "The playbook '{}' should contains {} role(s) but we found {} role(s)".format(
-        playbook_path, roles_number, len(roles))
-    assert tasks_number == len(tasks), "The graph '{}' should contains {} tasks(s) but we found {} tasks".format(
-        playbook_path, tasks_number, len(tasks))
-    assert post_tasks_number == len(post_tasks), "The graph '{}' should contains {} post tasks(s) but we found {} " \
-                                                 "post tasks".format(playbook_path, post_tasks_number, len(post_tasks))
+    assert plays_number == len(plays), \
+        f"The graph '{playbook_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
-    assert blocks_number == len(blocks), "The graph '{}' should contains {} blocks(s) but we found {} blocks ".format(
-        playbook_path, blocks_number, len(blocks))
+    assert pre_tasks_number == len(pre_tasks), \
+        f"The graph '{playbook_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
+
+    assert roles_number == len(roles), \
+        f"The playbook '{playbook_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+
+    assert tasks_number == len(tasks), \
+        f"The graph '{playbook_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
+
+    assert post_tasks_number == len(post_tasks), \
+        f"The graph '{playbook_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
+
+    assert blocks_number == len(blocks), \
+        f"The graph '{playbook_path}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
 
     return {'tasks': tasks, 'plays': plays, 'post_tasks': post_tasks, 'pre_tasks': pre_tasks, "roles": roles}
 
