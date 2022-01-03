@@ -48,15 +48,19 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display)
+    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
 
     play_node = playbook_node.plays[0].destination
+    pre_tasks = play_node.pre_tasks
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
-    assert len(tasks) == 3
-    assert len(post_tasks) == 2
+    # TODO: len on the list is not enough here. We need to get the total number of TaskNode inside the list
+    #  since we use include_role_tasks
+    assert len(pre_tasks) == 4, f"The should contain 2 pre tasks but we found {len(pre_tasks)} pre task(s)"
+    assert len(tasks) == 3, f"The should contain 3 tasks but we found {len(tasks)} task(s)"
+    assert len(post_tasks) == 2, f"The should contain 2 post tasks but we found {len(post_tasks)} post task(s)"
 
     # Check tasks
     task_1 = tasks[0].destination

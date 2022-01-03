@@ -1,6 +1,9 @@
 ---
 - hosts: all
   pre_tasks:
+    - name: Include role
+      include_role:
+        name: fake_role
     - name: Block in pre task
       block:
         - name: debug
