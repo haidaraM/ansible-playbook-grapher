@@ -174,7 +174,7 @@ def test_with_block(request):
 
 def test_nested_include_tasks(request):
     """
-    Test nested_include.yml, an example with an include tasks that include another tasks
+    Test nested_include.yml, an example with an include_tasks that include another tasks
     """
     svg_path, playbook_path = run_grapher("nested_include_tasks.yml", output_filename=request.node.name)
 

@@ -1,9 +1,25 @@
+from typing import List
+
 import pytest
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode
+from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode, get_all_tasks_nodes, CompositeNode
+
+
+def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
+    """
+
+    :param composites:
+    :return:
+    """
+    tasks = []
+
+    for c in composites:
+        tasks.extend(get_all_tasks_nodes(c))
+
+    return tasks
 
 
 @pytest.mark.parametrize('grapher_cli', [["include_role.yml"]], indirect=True)
@@ -56,11 +72,17 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     pre_tasks = play_node.pre_tasks
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
-    # TODO: len on the list is not enough here. We need to get the total number of TaskNode inside the list
-    #  since we use include_role_tasks
-    assert len(pre_tasks) == 4, f"The should contain 2 pre tasks but we found {len(pre_tasks)} pre task(s)"
-    assert len(tasks) == 3, f"The should contain 3 tasks but we found {len(tasks)} task(s)"
-    assert len(post_tasks) == 2, f"The should contain 2 post tasks but we found {len(post_tasks)} post task(s)"
+    total_pre_tasks = get_all_tasks(pre_tasks)
+    total_tasks = get_all_tasks(tasks)
+    total_post_tasks = get_all_tasks(post_tasks)
+    assert len(total_pre_tasks) == 4, f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
+    assert len(total_tasks) == 7, f"The play should contain 3 tasks but we found {len(total_tasks)} task(s)"
+    assert len(
+        total_post_tasks) == 2, f"The play should contain 2 post tasks but we found {len(total_post_tasks)} post task(s)"
+
+    # Check pre tasks
+    assert isinstance(pre_tasks[0].destination, RoleNode), "The first edge should have a RoleNode as destination"
+    assert isinstance(pre_tasks[1].destination, BlockNode), "The second edge should have a BlockNode as destination"
 
     # Check tasks
     task_1 = tasks[0].destination

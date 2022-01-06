@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, ItemsView
 
 from ansibleplaybookgrapher.utils import generate_id
 
@@ -41,11 +41,22 @@ class CompositeNode(Node):
 
         :param node_name:
         :param node_id:
+        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
+        Ansible side
+        :param supported_compositions:
         """
         super().__init__(node_name, node_id, raw_object)
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
+
+    def items(self) -> ItemsView[str, List[Node]]:
+        """
+        Return a view object (list of tuples) of all the nodes inside this composite node. The first element of the
+        tuple is the composition name and the second one a list of nodes
+        :return:
+        """
+        return self._compositions.items()
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -61,8 +72,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of the dictionary is the node ID and the values is
-        a list of the linked nodes
+        Return a representation of the composite node where each key of the dictionary is the node and the value is the
+        list of the linked nodes
         :return:
         """
         links = defaultdict(list)
@@ -241,3 +252,29 @@ class RoleNode(CompositeTasksNode):
     @property
     def tasks(self):
         return self._compositions["tasks"]
+
+
+def _get_all_tasks_nodes(composite: CompositeNode, task_acc: List[TaskNode]):
+    """
+    :param composite:
+    :param task_acc:
+    :return:
+    """
+    items = composite.items()
+    for _, nodes in items:
+        for node in nodes:
+            if isinstance(node, TaskNode):
+                task_acc.append(node)
+            elif isinstance(node, CompositeNode):
+                _get_all_tasks_nodes(node, task_acc)
+
+
+def get_all_tasks_nodes(composite: CompositeNode) -> List[TaskNode]:
+    """
+    Return all the TaskNode inside a composite node
+    :param composite:
+    :return:
+    """
+    tasks = []
+    _get_all_tasks_nodes(composite, tasks)
+    return tasks
