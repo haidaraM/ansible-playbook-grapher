@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, ItemsView
 
 from ansibleplaybookgrapher.utils import generate_id
 
@@ -41,11 +41,22 @@ class CompositeNode(Node):
 
         :param node_name:
         :param node_id:
+        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
+        Ansible side
+        :param supported_compositions:
         """
         super().__init__(node_name, node_id, raw_object)
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
+
+    def items(self) -> ItemsView[str, List[Node]]:
+        """
+        Return a view object (list of tuples) of all the nodes inside this composite node. The first element of the
+        tuple is the composition name and the second one a list of nodes
+        :return:
+        """
+        return self._compositions.items()
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -61,8 +72,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of the dictionary is the node ID and the values is
-        a list of the linked nodes
+        Return a representation of the composite node where each key of the dictionary is the node and the value is the
+        list of the linked nodes
         :return:
         """
         links = defaultdict(list)
@@ -79,6 +90,25 @@ class CompositeNode(Node):
                 if isinstance(node, CompositeNode):
                     node._get_all_links(links)
                 links[self].append(node)
+
+
+class CompositeTasksNode(CompositeNode):
+    """
+    A special composite node which only support adding "tasks"
+    """
+
+    def __init__(self, node_name: str, node_id: str, raw_object=None):
+        super().__init__(node_name, node_id, raw_object=raw_object)
+        self._supported_compositions = ["tasks"]
+
+    def add_node(self, target_composition: str, node: Node):
+        """
+        Override the add_node because block only contains "tasks" regardless of the context (pre_tasks or post_tasks)
+        :param target_composition: This is ignored. It's always "tasks" for block
+        :param node:
+        :return:
+        """
+        super().add_node("tasks", node)
 
 
 class PlaybookNode(CompositeNode):
@@ -146,14 +176,13 @@ class PlayNode(CompositeNode):
         return self._compositions["tasks"]
 
 
-class BlockNode(CompositeNode):
+class BlockNode(CompositeTasksNode):
     """
     A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
-        super().__init__(node_name, node_id or generate_id("block_"), raw_object=raw_object,
-                         supported_compositions=["tasks"])
+        super().__init__(node_name, node_id or generate_id("block_"), raw_object=raw_object)
 
     @property
     def tasks(self) -> List['EdgeNode']:
@@ -162,15 +191,6 @@ class BlockNode(CompositeNode):
         :return:
         """
         return self._compositions['tasks']
-
-    def add_node(self, target_composition: str, node: Node):
-        """
-        Override the add_node because block only contains "tasks" regardless of the context (pre_tasks or post_tasks)
-        :param target_composition: This is ignored. It's always "tasks" for block
-        :param node:
-        :return:
-        """
-        super().add_node("tasks", node)
 
 
 class EdgeNode(CompositeNode):
@@ -221,14 +241,40 @@ class TaskNode(Node):
         super().__init__(node_name, node_id or generate_id("task_"), raw_object)
 
 
-class RoleNode(CompositeNode):
+class RoleNode(CompositeTasksNode):
     """
     A role node. A role is a composition of tasks
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
-        super().__init__(node_name, node_id or generate_id("role_"), raw_object, supported_compositions=["tasks"])
+        super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
 
     @property
     def tasks(self):
         return self._compositions["tasks"]
+
+
+def _get_all_tasks_nodes(composite: CompositeNode, task_acc: List[TaskNode]):
+    """
+    :param composite:
+    :param task_acc:
+    :return:
+    """
+    items = composite.items()
+    for _, nodes in items:
+        for node in nodes:
+            if isinstance(node, TaskNode):
+                task_acc.append(node)
+            elif isinstance(node, CompositeNode):
+                _get_all_tasks_nodes(node, task_acc)
+
+
+def get_all_tasks_nodes(composite: CompositeNode) -> List[TaskNode]:
+    """
+    Return all the TaskNode inside a composite node
+    :param composite:
+    :return:
+    """
+    tasks = []
+    _get_all_tasks_nodes(composite, tasks)
+    return tasks

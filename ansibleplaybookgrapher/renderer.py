@@ -53,7 +53,7 @@ class GraphvizRenderer:
         else:
             edge_label = f"{node_counter} {edge.name}"
             graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
-                       id=destination_node.id, tooltip=destination_node.name, color=color)
+                       id=destination_node.id, tooltip=destination_node.name, color=color, hello=destination_node.name)
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
