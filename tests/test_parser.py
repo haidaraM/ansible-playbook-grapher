@@ -35,7 +35,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0].destination
     tasks = play_node.tasks
-    assert len(tasks) == 4
+    assert len(tasks) == 5
 
     # first task
     assert tasks[0].destination.name == "(1) Debug"
@@ -54,20 +54,6 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert tasks[3].name == "[when: x is not defined]"
     assert isinstance(include_role_2, RoleNode)
     assert len(include_role_2.tasks) == 3
-
-
-@pytest.mark.parametrize('grapher_cli', [["include_role_with_loop.yml"]], indirect=True)
-def test_include_role_with_loop_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
-    """
-    Test parsing of include_role with loop
-    :param grapher_cli:
-    :param display:
-    :return:
-    """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
-    playbook_node = parser.parse()
-    assert len(playbook_node.plays) == 1
-    play_node = playbook_node.plays[0].destination
 
 
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)

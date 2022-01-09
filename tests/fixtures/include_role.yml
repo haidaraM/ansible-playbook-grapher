@@ -7,13 +7,23 @@
       debug:
         msg: "Debug 1"
       when: ansible_os == "ubuntu"
+
     - name: (2) Include role
       include_role:
         name: fake_role
+
     - name: (3) Debug 2
       debug:
         msg: "Debug 2"
+
     - name: (4) Include role 2
       when: x is not defined
       include_role:
         name: display_some_facts
+
+    - name: Include role with loop
+      include_role:
+        name: '{{ item }}'
+      loop:
+        - fake_role
+        - display_some_facts

@@ -238,27 +238,32 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-                    self.display.v(
-                        f"An 'include_role' found. Including tasks from the role '{task_or_block.get_name()}'")
+                    self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'")
 
-                    role_node = RoleNode(task_or_block.args['name'], raw_object=task_or_block)
+                    role_node = RoleNode(task_or_block.get_name(), raw_object=task_or_block)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
                                                                         convert_when_to_str(task_or_block.when)))
 
-                    if self.include_role_tasks:
-                        # If we have an include_role and we want to include role tasks, the parent node now becomes
-                        # the role.
-                        parent_nodes.append(role_node)
+                    if task_or_block.loop:  # Looping on include_role is not supported
+                        self.display.warning(
+                            "Including role with loop is not supported for the moment. The include will not be "
+                            "evaluated.")
+                        block_list = []
+                    else:
+                        if self.include_role_tasks:
+                            # If we have an include_role, and we want to include role tasks, the parent node now becomes
+                            # the role.
+                            parent_nodes.append(role_node)
 
-                    block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
-                                                                 variable_manager=self.variable_manager)
+                        block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
+                                                                     variable_manager=self.variable_manager)
                 else:
                     self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
 
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
                         included_file_path = handle_include_path(original_task=task_or_block, loader=self.data_loader,
-                                                           templar=templar)
+                                                                 templar=templar)
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
                         self.display.warning(
