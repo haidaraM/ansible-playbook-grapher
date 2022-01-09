@@ -35,7 +35,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0].destination
     tasks = play_node.tasks
-    assert len(tasks) == 4
+    assert len(tasks) == 5
 
     # first task
     assert tasks[0].destination.name == "(1) Debug"
@@ -54,6 +54,11 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert tasks[3].name == "[when: x is not defined]"
     assert isinstance(include_role_2, RoleNode)
     assert len(include_role_2.tasks) == 3
+
+    # third include_role
+    include_role_3 = tasks[4].destination
+    assert isinstance(include_role_3, RoleNode)
+    assert len(include_role_3.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
 
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)
@@ -75,7 +80,8 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     total_pre_tasks = get_all_tasks(pre_tasks)
     total_tasks = get_all_tasks(tasks)
     total_post_tasks = get_all_tasks(post_tasks)
-    assert len(total_pre_tasks) == 4, f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
+    assert len(
+        total_pre_tasks) == 4, f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
     assert len(total_tasks) == 7, f"The play should contain 3 tasks but we found {len(total_tasks)} task(s)"
     assert len(
         total_post_tasks) == 2, f"The play should contain 2 post tasks but we found {len(total_post_tasks)} post task(s)"

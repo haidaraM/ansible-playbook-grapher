@@ -238,27 +238,32 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-                    self.display.v(
-                        f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
+                    self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'")
 
-                    role_node = RoleNode(task_or_block.args['name'], raw_object=task_or_block)
+                    role_node = RoleNode(task_or_block.get_name(), raw_object=task_or_block)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
                                                                         convert_when_to_str(task_or_block.when)))
 
-                    if self.include_role_tasks:
-                        # If we have an include_role and we want to include role tasks, the parent node now becomes
-                        # the role.
-                        parent_nodes.append(role_node)
+                    if task_or_block.loop:  # Looping on include_role is not supported
+                        self.display.warning(
+                            "Including role with loop is not supported for the moment. The include will not be "
+                            "evaluated.")
+                        block_list = []
+                    else:
+                        if self.include_role_tasks:
+                            # If we have an include_role, and we want to include its tasks, the parent node now becomes
+                            # the role.
+                            parent_nodes.append(role_node)
 
-                    block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
-                                                                 variable_manager=self.variable_manager)
+                        block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
+                                                                     variable_manager=self.variable_manager)
                 else:
                     self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
 
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
-                        include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
-                                                           templar=templar)
+                        included_file_path = handle_include_path(original_task=task_or_block, loader=self.data_loader,
+                                                                 templar=templar)
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
                         self.display.warning(
@@ -268,9 +273,9 @@ class PlaybookParser(BaseParser):
                                        parent_node=parent_nodes[-1])
                         continue
 
-                    data = self.data_loader.load_from_file(include_file)
+                    data = self.data_loader.load_from_file(included_file_path)
                     if data is None:
-                        self.display.warning(f"The file '{include_file}' is empty and has no tasks to include")
+                        self.display.warning(f"The file '{included_file_path}' is empty and has no tasks to include")
                         continue
                     elif not isinstance(data, list):
                         raise AnsibleParserError("Included task files must contain a list of tasks", obj=data)
@@ -283,6 +288,9 @@ class PlaybookParser(BaseParser):
                 for b in block_list:  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
                                                   play_vars=task_vars, node_type=node_type)
+                if self.include_role_tasks and isinstance(task_or_block, IncludeRole):
+                    # We remove the parent node we have added if we included some tasks from a role
+                    parent_nodes.pop()
             else:
                 if (len(parent_nodes) > 1 and  # 1
                         not has_role_parent(task_or_block) and  # 2
