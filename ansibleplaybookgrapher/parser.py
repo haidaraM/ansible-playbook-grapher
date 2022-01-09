@@ -251,7 +251,7 @@ class PlaybookParser(BaseParser):
                         block_list = []
                     else:
                         if self.include_role_tasks:
-                            # If we have an include_role, and we want to include role tasks, the parent node now becomes
+                            # If we have an include_role, and we want to include its tasks, the parent node now becomes
                             # the role.
                             parent_nodes.append(role_node)
 
@@ -288,6 +288,9 @@ class PlaybookParser(BaseParser):
                 for b in block_list:  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
                                                   play_vars=task_vars, node_type=node_type)
+                if self.include_role_tasks and isinstance(task_or_block, IncludeRole):
+                    # We remove the parent node we have added if we included some tasks from a role
+                    parent_nodes.pop()
             else:
                 if (len(parent_nodes) > 1 and  # 1
                         not has_role_parent(task_or_block) and  # 2

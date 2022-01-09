@@ -158,7 +158,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
                                           additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
-                  roles_number=2)
+                  roles_number=3)
 
 
 def test_with_block(request):
