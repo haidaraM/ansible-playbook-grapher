@@ -2,13 +2,18 @@ import os
 import uuid
 from typing import Tuple, List
 
+from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_text
 from ansible.parsing.dataloader import DataLoader
 from ansible.playbook import Play
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
+from ansible.utils.display import Display
 from colour import Color
+
+display = Display()
 
 
 def convert_when_to_str(when: List) -> str:
@@ -75,7 +80,7 @@ def has_role_parent(task_block: Task) -> bool:
 
 def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar: Templar) -> str:
     """
-    Handle include path. We may have some nested includes with relative paths to handle.
+    handle relative includes by walking up the list of parent include tasks
 
     This function is widely inspired by the static method ansible uses when executing the playbook.
     See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results`
@@ -98,7 +103,15 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
         if isinstance(parent_include, IncludeRole):
             parent_include_dir = parent_include._role_path
         else:
-            parent_include_dir = os.path.dirname(templar.template(parent_include.args.get('_raw_params')))
+            try:
+                parent_include_dir = os.path.dirname(templar.template(parent_include.args.get('_raw_params')))
+            except AnsibleError as e:
+                parent_include_dir = ''
+                display.warning(
+                    'Templating the path of the parent %s failed. The path to the '
+                    'included file may not be found. '
+                    'The error was: %s.' % (original_task.action, to_text(e))
+                )
 
         if cumulative_path is not None and not os.path.isabs(cumulative_path):
             cumulative_path = os.path.join(parent_include_dir, cumulative_path)

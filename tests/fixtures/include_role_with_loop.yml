@@ -1,9 +1,10 @@
 ---
-- hosts: all
+- hosts: localhost
+  connection: local
   tags:
     - play2
   tasks:
-    - name: Include with loop
+    - name: Include role with loop
       include_role:
         name: '{{ item }}'
       loop:

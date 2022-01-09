@@ -239,7 +239,7 @@ class PlaybookParser(BaseParser):
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     self.display.v(
-                        f"An 'include_role' found. Including tasks from the role '{task_or_block.args['name']}'")
+                        f"An 'include_role' found. Including tasks from the role '{task_or_block.get_name()}'")
 
                     role_node = RoleNode(task_or_block.args['name'], raw_object=task_or_block)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
@@ -257,7 +257,7 @@ class PlaybookParser(BaseParser):
 
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
-                        include_file = handle_include_path(original_task=task_or_block, loader=self.data_loader,
+                        included_file_path = handle_include_path(original_task=task_or_block, loader=self.data_loader,
                                                            templar=templar)
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
@@ -268,9 +268,9 @@ class PlaybookParser(BaseParser):
                                        parent_node=parent_nodes[-1])
                         continue
 
-                    data = self.data_loader.load_from_file(include_file)
+                    data = self.data_loader.load_from_file(included_file_path)
                     if data is None:
-                        self.display.warning(f"The file '{include_file}' is empty and has no tasks to include")
+                        self.display.warning(f"The file '{included_file_path}' is empty and has no tasks to include")
                         continue
                     elif not isinstance(data, list):
                         raise AnsibleParserError("Included task files must contain a list of tasks", obj=data)
