@@ -110,6 +110,14 @@ class CompositeTasksNode(CompositeNode):
         """
         super().add_node("tasks", node)
 
+    @property
+    def tasks(self) -> List['EdgeNode']:
+        """
+        The tasks attached to this block
+        :return:
+        """
+        return self._compositions['tasks']
+
 
 class PlaybookNode(CompositeNode):
     """
@@ -184,14 +192,6 @@ class BlockNode(CompositeTasksNode):
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
         super().__init__(node_name, node_id or generate_id("block_"), raw_object=raw_object)
 
-    @property
-    def tasks(self) -> List['EdgeNode']:
-        """
-        The tasks attached to this block
-        :return:
-        """
-        return self._compositions['tasks']
-
 
 class EdgeNode(CompositeNode):
     """
@@ -248,10 +248,6 @@ class RoleNode(CompositeTasksNode):
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
         super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
-
-    @property
-    def tasks(self):
-        return self._compositions["tasks"]
 
 
 def _get_all_tasks_nodes(composite: CompositeNode, task_acc: List[TaskNode]):
