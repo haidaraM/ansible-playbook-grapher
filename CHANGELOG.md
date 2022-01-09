@@ -1,3 +1,7 @@
+# 1.0.2 (unreleased)
+
+- fix: Fix include_role with loop [\#92](https://github.com/haidaraM/ansible-playbook-grapher/pull/92)
+
 # 1.0.1
 
 * fix: Block can only contain tasks regardless of the context by @haidaraM
