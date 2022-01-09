@@ -114,6 +114,15 @@ For example `TAGS_RUN` and `TAGS_SKIP` or vault configuration.
 
 More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
+## Limitations
+
+Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
+statically: no task is run against your inventory.
+
+The parser tries to interpolate the variables, but some of them are only available when running your playbook (
+ansible_os_family, ansible_system, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
+arguments may not appear in the graph.
+
 ## Contribution
 
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley:
