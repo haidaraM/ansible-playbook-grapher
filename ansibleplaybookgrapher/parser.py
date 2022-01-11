@@ -248,7 +248,7 @@ class PlaybookParser(BaseParser):
                         self.display.warning(
                             "Including role with loop is not supported for the moment. The include will not be "
                             "evaluated.")
-                        block_list = []
+                        continue  # Go the next task
                     else:
                         if self.include_role_tasks:
                             # If we have an include_role, and we want to include its tasks, the parent node now becomes
