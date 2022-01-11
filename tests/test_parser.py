@@ -35,30 +35,35 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0].destination
     tasks = play_node.tasks
-    assert len(tasks) == 5
-
-    # first task
-    assert tasks[0].destination.name == "(1) Debug"
-    assert tasks[0].name == '[when: ansible_os == "ubuntu"]'
+    assert len(tasks) == 6
 
     # first include_role
-    include_role_1 = tasks[1].destination
+    include_role_1 = tasks[0].destination
     assert isinstance(include_role_1, RoleNode)
-    assert len(include_role_1.tasks) == 3
+    assert len(include_role_1.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
-    # second task
-    assert tasks[2].destination.name == "(3) Debug 2"
+    # first task
+    assert tasks[1].destination.name == "(1) Debug"
+    assert tasks[1].name == '[when: ansible_os == "ubuntu"]'
 
     # second include_role
-    include_role_2 = tasks[3].destination
-    assert tasks[3].name == "[when: x is not defined]"
+    include_role_2 = tasks[2].destination
     assert isinstance(include_role_2, RoleNode)
     assert len(include_role_2.tasks) == 3
 
+    # second task
+    assert tasks[3].destination.name == "(3) Debug 2"
+
     # third include_role
     include_role_3 = tasks[4].destination
+    assert tasks[4].name == "[when: x is not defined]"
     assert isinstance(include_role_3, RoleNode)
-    assert len(include_role_3.tasks) == 0, "We don't support adding tasks from include_role with loop"
+    assert len(include_role_3.tasks) == 3
+
+    # fourth include_role
+    include_role_4 = tasks[5].destination
+    assert isinstance(include_role_4, RoleNode)
+    assert len(include_role_4.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
 
 @pytest.mark.parametrize('grapher_cli', [["with_block.yml"]], indirect=True)
