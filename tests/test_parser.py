@@ -23,7 +23,7 @@ def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
 
 
 @pytest.mark.parametrize('grapher_cli', [["include_role.yml"]], indirect=True)
-def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
+def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display, capsys):
     """
     Test parsing of include_role
     :param grapher_cli:
@@ -36,6 +36,10 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display)
     play_node = playbook_node.plays[0].destination
     tasks = play_node.tasks
     assert len(tasks) == 6
+
+    # Since we use some loops inside the playbook, a warning should be displayed
+    assert "Looping on tasks or roles are not supported for the moment" in capsys.readouterr().err, \
+        "A warning should be displayed regarding loop being not supported"
 
     # first include_role
     include_role_1 = tasks[0].destination
