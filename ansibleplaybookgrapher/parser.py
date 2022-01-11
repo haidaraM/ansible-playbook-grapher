@@ -226,6 +226,11 @@ class PlaybookParser(BaseParser):
 
         # loop through the tasks
         for task_or_block in block.block:
+
+            if hasattr(task_or_block, "loop") and task_or_block.loop:
+                self.display.warning("Looping on tasks or roles are not supported for the moment. "
+                                     f"Only the task having the loop argument will be added to the graph.")
+
             if isinstance(task_or_block, Block):
                 self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=task_or_block,
                                               node_type=node_type, play_vars=play_vars)
@@ -245,10 +250,7 @@ class PlaybookParser(BaseParser):
                                                                         convert_when_to_str(task_or_block.when)))
 
                     if task_or_block.loop:  # Looping on include_role is not supported
-                        self.display.warning(
-                            "Including role with loop is not supported for the moment. The include will not be "
-                            "evaluated.")
-                        block_list = []
+                        continue  # Go the next task
                     else:
                         if self.include_role_tasks:
                             # If we have an include_role, and we want to include its tasks, the parent node now becomes
@@ -288,10 +290,10 @@ class PlaybookParser(BaseParser):
                 for b in block_list:  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=b,
                                                   play_vars=task_vars, node_type=node_type)
-                if self.include_role_tasks and isinstance(task_or_block, IncludeRole):
+                if self.include_role_tasks and isinstance(task_or_block, IncludeRole) and len(parent_nodes) > 1:
                     # We remove the parent node we have added if we included some tasks from a role
                     parent_nodes.pop()
-            else:
+            else:  # It's here that we add the task in the graph
                 if (len(parent_nodes) > 1 and  # 1
                         not has_role_parent(task_or_block) and  # 2
                         parent_nodes[-1].raw_object != task_or_block._parent):  # 3
