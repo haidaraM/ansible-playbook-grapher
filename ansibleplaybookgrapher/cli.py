@@ -42,10 +42,10 @@ class GrapherCLI(CLI, ABC):
 
         playbook_node = parser.parse()
         renderer = GraphvizRenderer(playbook_node, display)
-        display.display("Rendering the graph...")
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
+        display.v("Post processing the SVG...")
         post_processor.post_process(playbook_node=playbook_node)
         post_processor.write()
 

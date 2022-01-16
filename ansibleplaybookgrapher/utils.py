@@ -5,13 +5,14 @@ from typing import Tuple, List
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.parsing.dataloader import DataLoader
-from ansible.playbook import Play
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 from colour import Color
+
+from ansibleplaybookgrapher.graph import PlayNode
 
 display = Display()
 
@@ -33,7 +34,7 @@ def convert_when_to_str(when: List) -> str:
 def generate_id(prefix: str = "") -> str:
     """
     Generate an uuid to be used as id
-    :param prefix Prefix to add to the generated ID
+    :param prefix: Prefix to add to the generated ID
     """
     return prefix + str(uuid.uuid4())[:8]
 
@@ -51,7 +52,7 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: Play) -> Tuple[str, str]:
+def get_play_colors(play: PlayNode) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play

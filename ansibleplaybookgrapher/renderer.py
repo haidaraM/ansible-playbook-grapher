@@ -112,9 +112,10 @@ class GraphvizRenderer:
 
     def _convert_to_graphviz(self):
         """
-        Convert playbook to graph viz graph
+        Convert the PlaybookNode to the graphviz dot format
         :return:
         """
+        self.display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(self.playbook_node.name, style="dotted", id="root_node")
 
@@ -164,6 +165,8 @@ class GraphvizRenderer:
         :return: The rendered file path (output_filename.svg)
         """
         self._convert_to_graphviz()
+
+        self.display.display("Rendering the graph...")
         rendered_file_path = self.digraph.render(cleanup=not save_dot_file, format="svg", filename=output_filename,
                                                  view=view)
 
