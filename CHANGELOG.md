@@ -1,4 +1,4 @@
-# 1.0.2
+# 1.0.2 (2022-01-16)
 
 - fix: Fix include_role with loop in [\#92](https://github.com/haidaraM/ansible-playbook-grapher/pull/92)
   and [\#99](https://github.com/haidaraM/ansible-playbook-grapher/pull/99).
