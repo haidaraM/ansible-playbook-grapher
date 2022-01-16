@@ -12,8 +12,6 @@ from ansible.template import Templar
 from ansible.utils.display import Display
 from colour import Color
 
-from ansibleplaybookgrapher.graph import PlayNode
-
 display = Display()
 
 
@@ -52,7 +50,7 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: PlayNode) -> Tuple[str, str]:
+def get_play_colors(play: 'PlayNode') -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play
