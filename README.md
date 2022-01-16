@@ -144,3 +144,10 @@ $ make test # run all tests
 The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts
 in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
 submitting PRs.
+
+## License
+
+GNU General Public License v3.0 or later (Same as Ansible)
+
+See [LICENSE](./LICENSE) for the full text
+
