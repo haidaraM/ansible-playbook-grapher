@@ -89,6 +89,9 @@ function clickOnElement(event) {
 
         // Remove highlight from all the nodes linked the current selected node
         unHighlightLinkedNodes(currentSelectedElement, false);
+        if (currentSelectedElement) {
+            currentSelectedElement.removeClass(HIGHLIGHT_CLASS);
+        }
 
         newClickedElement.addClass(HIGHLIGHT_CLASS);
         highlightLinkedNodes(newClickedElement);
