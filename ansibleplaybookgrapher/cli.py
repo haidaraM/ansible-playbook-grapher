@@ -48,6 +48,7 @@ class GrapherCLI(CLI, ABC):
         # The display is a singleton. This instruction will NOT return a new instance.
         # We explicitly set the verbosity after the init.
         display = Display()
+        # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
         initialize_locale()
         display.verbosity = self.options.verbosity
 
