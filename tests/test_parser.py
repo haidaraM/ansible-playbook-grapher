@@ -30,7 +30,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display,
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
+    parser = PlaybookParser(grapher_cli.options.playbook_filename, include_role_tasks=True)
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0].destination
@@ -78,7 +78,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename, display=display, include_role_tasks=True)
+    parser = PlaybookParser(grapher_cli.options.playbook_filename, include_role_tasks=True)
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
 

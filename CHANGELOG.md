@@ -1,3 +1,7 @@
+# 1.1.0 (unreleased)
+
+- fix: Do not pass display as param since it's a singleton + init locale to fix warning
+
 # 1.0.2 (2022-01-16)
 
 * fix: Fix include_role with loop by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/92

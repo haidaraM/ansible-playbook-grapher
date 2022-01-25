@@ -20,7 +20,7 @@ from abc import ABC
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.release import __version__ as ansible_version
-from ansible.utils.display import Display
+from ansible.utils.display import Display, initialize_locale
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
@@ -48,14 +48,16 @@ class GrapherCLI(CLI, ABC):
         # The display is a singleton. This instruction will NOT return a new instance.
         # We explicitly set the verbosity after the init.
         display = Display()
+        # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
+        initialize_locale()
         display.verbosity = self.options.verbosity
 
-        parser = PlaybookParser(display=display, tags=self.options.tags, skip_tags=self.options.skip_tags,
+        parser = PlaybookParser(tags=self.options.tags, skip_tags=self.options.skip_tags,
                                 playbook_filename=self.options.playbook_filename,
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node, display)
+        renderer = GraphvizRenderer(playbook_node)
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)

@@ -31,18 +31,19 @@ from ansibleplaybookgrapher.graph import EdgeNode, TaskNode, PlaybookNode, RoleN
 from ansibleplaybookgrapher.utils import clean_name, handle_include_path, has_role_parent, generate_id, \
     convert_when_to_str
 
+display = Display()
+
 
 class BaseParser(ABC):
     """
     Base Parser of a playbook
     """
 
-    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None, display: Display = None):
+    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None):
         """
 
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
-        :param display: Ansible display used to print some messages in the console
         """
         loader, inventory, variable_manager = CLI._play_prereqs()
         self.data_loader = loader
@@ -51,7 +52,6 @@ class BaseParser(ABC):
 
         self.tags = tags or ["all"]
         self.skip_tags = skip_tags or []
-        self.display = display or Display()
 
     @abstractmethod
     def parse(self, *args, **kwargs) -> PlaybookNode:
@@ -73,7 +73,7 @@ class BaseParser(ABC):
             # Sometimes we need to export
             if fail_on_undefined:
                 raise
-            self.display.warning(ansible_error)
+            display.warning(ansible_error)
             return data
 
     def _add_task(self, task: Task, task_vars: Dict, node_type: str, parent_node: CompositeNode) -> bool:
@@ -87,10 +87,10 @@ class BaseParser(ABC):
             return False
 
         if not task.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars):
-            self.display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
+            display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
 
-        self.display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
+        display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
 
         task_name = clean_name(self.template(task.get_name(), task_vars))
         edge_label = convert_when_to_str(task.when)
@@ -108,16 +108,15 @@ class PlaybookParser(BaseParser):
     """
 
     def __init__(self, playbook_filename: str, include_role_tasks=False, tags: List[str] = None,
-                 skip_tags: List[str] = None, display: Display = None):
+                 skip_tags: List[str] = None):
         """
         :param playbook_filename: The filename of the playbook to parse
-        :param display: Ansible display used to print some messages in the console
         :param include_role_tasks: If true, the tasks of the role will be included in the graph
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         """
 
-        super().__init__(tags=tags, skip_tags=skip_tags, display=display)
+        super().__init__(tags=tags, skip_tags=skip_tags)
 
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
@@ -150,26 +149,26 @@ class PlaybookParser(BaseParser):
                 self.data_loader.set_basedir(play._included_path)
             else:
                 self.data_loader.set_basedir(self.playbook._basedir)
-            self.display.vvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
+            display.vvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
 
             play_vars = self.variable_manager.get_vars(play)
             play_hosts = [h.get_name() for h in self.inventory_manager.get_hosts(self.template(play.hosts, play_vars))]
             play_name = f"Play: {clean_name(play.get_name())} ({len(play_hosts)})"
             play_name = self.template(play_name, play_vars)
 
-            self.display.banner("Parsing " + play_name)
+            display.banner("Parsing " + play_name)
 
             play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
             self.playbook_root_node.add_play(play_node, "")
 
             # loop through the pre_tasks
-            self.display.v("Parsing pre_tasks...")
+            display.v("Parsing pre_tasks...")
             for pre_task_block in play.pre_tasks:
                 self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=pre_task_block,
                                               play_vars=play_vars, node_type="pre_task")
 
             # loop through the roles
-            self.display.v("Parsing roles...")
+            display.v("Parsing roles...")
 
             for role in play.get_roles():
                 # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
@@ -179,7 +178,7 @@ class PlaybookParser(BaseParser):
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
                 if not role.evaluate_tags(only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars):
-                    self.display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
+                    display.vv(f"The role '{role.get_name()}' is skipped due to the tags.")
                     # Go to the next role
                     continue
 
@@ -195,25 +194,25 @@ class PlaybookParser(BaseParser):
                 # end of roles loop
 
             # loop through the tasks
-            self.display.v("Parsing tasks...")
+            display.v("Parsing tasks...")
             for task_block in play.tasks:
                 self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=task_block,
                                               play_vars=play_vars, node_type="task")
 
             # loop through the post_tasks
-            self.display.v("Parsing post_tasks...")
+            display.v("Parsing post_tasks...")
             for post_task_block in play.post_tasks:
                 self._include_tasks_in_blocks(current_play=play, parent_nodes=[play_node], block=post_task_block,
                                               play_vars=play_vars, node_type="post_task")
             # Summary
-            self.display.display("")  # just an empty line
-            self.display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
-            self.display.v(f"{len(play_node.roles)} role(s) added to the play")
-            self.display.v(f"{len(play_node.tasks)} task(s) added to the play")
-            self.display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
+            display.display("")  # just an empty line
+            display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
+            display.v(f"{len(play_node.roles)} role(s) added to the play")
+            display.v(f"{len(play_node.tasks)} task(s) added to the play")
+            display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
 
-            self.display.banner(f"Done parsing {play_name}")
-            self.display.display("")  # just an empty line
+            display.banner(f"Done parsing {play_name}")
+            display.display("")  # just an empty line
             # moving to the next play
 
         return self.playbook_root_node
@@ -242,8 +241,8 @@ class PlaybookParser(BaseParser):
         for task_or_block in block.block:
 
             if hasattr(task_or_block, "loop") and task_or_block.loop:
-                self.display.warning("Looping on tasks or roles are not supported for the moment. "
-                                     f"Only the task having the loop argument will be added to the graph.")
+                display.warning("Looping on tasks or roles are not supported for the moment. "
+                                f"Only the task having the loop argument will be added to the graph.")
 
             if isinstance(task_or_block, Block):
                 self._include_tasks_in_blocks(current_play=current_play, parent_nodes=parent_nodes, block=task_or_block,
@@ -257,7 +256,7 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-                    self.display.v(f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'")
+                    display.v(f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'")
 
                     role_node = RoleNode(task_or_block.get_name(), raw_object=task_or_block)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
@@ -274,7 +273,7 @@ class PlaybookParser(BaseParser):
                         block_list, _ = task_or_block.get_block_list(play=current_play, loader=self.data_loader,
                                                                      variable_manager=self.variable_manager)
                 else:
-                    self.display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
+                    display.v(f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'")
 
                     templar = Templar(loader=self.data_loader, variables=task_vars)
                     try:
@@ -282,7 +281,7 @@ class PlaybookParser(BaseParser):
                                                                  templar=templar)
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
-                        self.display.warning(
+                        display.warning(
                             f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
                             "Some variables are available only during the execution of the playbook.")
                         self._add_task(task=task_or_block, task_vars=task_vars, node_type=node_type,
@@ -291,7 +290,7 @@ class PlaybookParser(BaseParser):
 
                     data = self.data_loader.load_from_file(included_file_path)
                     if data is None:
-                        self.display.warning(f"The file '{included_file_path}' is empty and has no tasks to include")
+                        display.warning(f"The file '{included_file_path}' is empty and has no tasks to include")
                         continue
                     elif not isinstance(data, list):
                         raise AnsibleParserError("Included task files must contain a list of tasks", obj=data)
@@ -323,7 +322,7 @@ class PlaybookParser(BaseParser):
                 # check if this task comes from a role, and we don't want to include tasks of the role
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
                     # skip role's task
-                    self.display.vv(
+                    display.vv(
                         f"The task '{task_or_block.get_name()}' has a role as parent and include_role_tasks is false. "
                         "It will be skipped.")
                     # skipping

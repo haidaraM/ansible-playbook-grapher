@@ -21,6 +21,8 @@ from graphviz import Digraph
 from ansibleplaybookgrapher.graph import PlaybookNode, EdgeNode, PlayNode, RoleNode, BlockNode
 from ansibleplaybookgrapher.utils import get_play_colors
 
+display = Display()
+
 
 class GraphvizRenderer:
     """
@@ -29,17 +31,15 @@ class GraphvizRenderer:
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
     DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 
-    def __init__(self, playbook_node: 'PlaybookNode', display: Display, graph_format: str = "svg",
+    def __init__(self, playbook_node: 'PlaybookNode', graph_format: str = "svg",
                  graph_attr: Dict = None, edge_attr: Dict = None):
         """
 
         :param playbook_node: Playbook parsed node
-        :param display: Display
         :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
         :param graph_attr: Default graph attributes
         :param edge_attr: Default edge attributes
         """
-        self.display = display
         self.playbook_node = playbook_node
         self.digraph = Digraph(format=graph_format,
                                graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
@@ -129,7 +129,7 @@ class GraphvizRenderer:
         Convert the PlaybookNode to the graphviz dot format
         :return:
         """
-        self.display.vvv(f"Converting the graph to the dot format for graphviz")
+        display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(self.playbook_node.name, style="dotted", id="root_node")
 
@@ -180,7 +180,7 @@ class GraphvizRenderer:
         """
         self._convert_to_graphviz()
 
-        self.display.display("Rendering the graph...")
+        display.display("Rendering the graph...")
         rendered_file_path = self.digraph.render(cleanup=not save_dot_file, format="svg", filename=output_filename,
                                                  view=view)
 
@@ -188,6 +188,6 @@ class GraphvizRenderer:
             # add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
             os.rename(output_filename, final_name)
-            self.display.display(f"Graphviz dot file has been exported to {final_name}")
+            display.display(f"Graphviz dot file has been exported to {final_name}")
 
         return rendered_file_path
