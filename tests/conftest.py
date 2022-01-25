@@ -37,7 +37,7 @@ def fixture_variable_manager(data_loader, inventory_manager):
     return VariableManager(loader=data_loader, inventory=inventory_manager)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def display():
     """
     Return a display
