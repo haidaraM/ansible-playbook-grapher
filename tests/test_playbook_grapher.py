@@ -137,7 +137,7 @@ def test_import_tasks(request):
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
-                         [("--", 2), ("--include-role-tasks", 5)],
+                         [("--", 2), ("--include-role-tasks", 8)],
                          ids=["no_include_role_tasks_option", "include_role_tasks_option"])
 def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
     """
@@ -148,7 +148,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
                                           additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
-                  post_tasks_number=2, pre_tasks_number=2, roles_number=1)
+                  post_tasks_number=2, pre_tasks_number=2, roles_number=2)
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],

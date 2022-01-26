@@ -9,13 +9,15 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph import TaskNode, BlockNode, RoleNode, get_all_tasks_nodes, CompositeNode
 from tests import FIXTURES_DIR
 
-# This file directory path
+# This file directory abspath
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+# Fixtures abspath
+FIXTURES_PATH = os.path.join(DIR_PATH, FIXTURES_DIR)
 
 
 def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
     """
-
+    Get all tasks from a list of composite nodes
     :param composites:
     :return:
     """
@@ -25,6 +27,28 @@ def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
         tasks.extend(get_all_tasks_nodes(c))
 
     return tasks
+
+
+@pytest.mark.parametrize('grapher_cli', [["with_roles.yml"]], indirect=True)
+def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
+    """
+
+    :param grapher_cli:
+    :param display:
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbook_filename)
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays) == 1
+    play_node = playbook_node.plays[0].destination
+    assert len(play_node.roles) == 2
+
+    fake_role = play_node.roles[0].destination
+    assert isinstance(fake_role, RoleNode)
+    assert not fake_role.include_role
+    assert fake_role.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
+    assert fake_role.line is None
+    assert fake_role.column is None
 
 
 @pytest.mark.parametrize('grapher_cli', [["include_role.yml"]], indirect=True)
@@ -49,7 +73,8 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display,
     # first include_role
     include_role_1 = tasks[0].destination
     assert isinstance(include_role_1, RoleNode)
-    assert include_role_1.path == os.path.join(DIR_PATH, FIXTURES_DIR, "include_role.yml")
+    assert include_role_1.include_role
+    assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
     assert include_role_1.line == 6
     assert len(include_role_1.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
@@ -60,6 +85,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display,
     # second include_role
     include_role_2 = tasks[2].destination
     assert isinstance(include_role_2, RoleNode)
+    assert include_role_2.include_role
     assert len(include_role_2.tasks) == 3
 
     # second task
@@ -69,11 +95,13 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, display: Display,
     include_role_3 = tasks[4].destination
     assert tasks[4].name == "[when: x is not defined]"
     assert isinstance(include_role_3, RoleNode)
+    assert include_role_3.include_role
     assert len(include_role_3.tasks) == 3
 
     # fourth include_role
     include_role_4 = tasks[5].destination
     assert isinstance(include_role_4, RoleNode)
+    assert include_role_4.include_role
     assert len(include_role_4.tasks) == 0, "We don't support adding tasks from include_role with loop"
 
 
@@ -106,7 +134,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert isinstance(pre_tasks[0].destination, RoleNode), "The first edge should have a RoleNode as destination"
     pre_task_block = pre_tasks[1].destination
     assert isinstance(pre_task_block, BlockNode), "The second edge should have a BlockNode as destination"
-    assert pre_task_block.path == os.path.join(DIR_PATH, FIXTURES_DIR, "with_block.yml")
+    assert pre_task_block.path == os.path.join(FIXTURES_PATH, "with_block.yml")
     assert pre_task_block.line == 7
 
     # Check tasks
@@ -122,6 +150,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
 
     # Check the second block (nested block)
     nested_block = first_block.tasks[2].destination
+    assert isinstance(nested_block, BlockNode)
     assert len(nested_block.tasks) == 2
     assert nested_block.tasks[0].destination.name == "get_url"
     assert nested_block.tasks[1].destination.name == "command"

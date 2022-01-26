@@ -23,7 +23,7 @@
       when: ansible_distribution == "Debian"
       tags:
         - role_tag
-
+    - role: display_some_facts
   tasks:
     - name: Add backport {{backport}}
       become: yes
@@ -32,7 +32,6 @@
         filename: "{{backport}}"
         state: present
         update_cache: yes
-
     - name: Install packages
       become: yes
       apt:

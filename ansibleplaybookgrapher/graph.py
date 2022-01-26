@@ -292,9 +292,10 @@ class RoleNode(CompositeTasksNode):
         :param raw_object:
         """
         super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
-        # Role is a special regarding path management
         self.include_role = include_role
-        if raw_object and raw_object._role_path:
+        if raw_object and not include_role:
+            # If it's not an include_role, we take the role path which the path to the folder where the role is located
+            # on the disk
             self.path = raw_object._role_path
 
 
