@@ -161,7 +161,10 @@ class PlaybookNode(CompositeNode):
         Playbooks only have path as position
         :return:
         """
-        pass
+        # TODO: set playbook path based on the filename and basedir
+        # Since the playbook is the whole file, the set the position as the beginning of the file
+        self.line = 1
+        self.column = 1
 
     @property
     def plays(self) -> List['EdgeNode']:
