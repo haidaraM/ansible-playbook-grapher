@@ -25,9 +25,8 @@ def run_grapher(playbook_file: str, output_filename: str = None, additional_args
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    # Easier to test with vscode
-    additional_args.insert(0, "--open-protocol")
-    additional_args.insert(1, "vscode")
+    additional_args.insert(0, "--open-protocol-handler")
+    additional_args.insert(1, os.environ.get("TEST_OPEN_PROTOCOL", "browser"))
 
     playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
     args = [__prog__]

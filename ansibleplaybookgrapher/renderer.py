@@ -23,8 +23,8 @@ from ansibleplaybookgrapher.utils import get_play_colors
 
 display = Display()
 
-# The supported protocols to open roles and tasks from the browser
-OPEN_PROTOCOL_FORMATS = {
+# The supported protocol handlers to open roles and tasks from the browser
+OPEN_PROTOCOL_HANDLERS = {
     "browser": {
         "role": "{path}",
         "task": "{path}"
@@ -46,7 +46,9 @@ def get_node_url(protocol: str, node_type: str, node: Node) -> Optional[str]:
     :return:
     """
     if node.path:
-        return OPEN_PROTOCOL_FORMATS[protocol][node_type].format(path=node.path, line=node.line, column=node.column)
+        url = OPEN_PROTOCOL_HANDLERS[protocol][node_type].format(path=node.path, line=node.line, column=node.column)
+        display.vvv(f"Open protocol URI for node {node}: {url}")
+        return url
 
     return None
 
@@ -58,7 +60,7 @@ class GraphvizRenderer:
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
     DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 
-    def __init__(self, playbook_node: 'PlaybookNode', open_protocol: str, graph_format: str = "svg",
+    def __init__(self, playbook_node: 'PlaybookNode', open_protocol_handler: str, graph_format: str = "svg",
                  graph_attr: Dict = None, edge_attr: Dict = None):
         """
 
@@ -68,7 +70,7 @@ class GraphvizRenderer:
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
-        self.open_protocol = open_protocol
+        self.open_protocol_handler = open_protocol_handler
         self.digraph = Digraph(format=graph_format,
                                graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
                                edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
@@ -96,7 +98,7 @@ class GraphvizRenderer:
             edge_label = f"{node_counter} {edge.name}"
             graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
                        id=destination_node.id, tooltip=destination_node.name, color=color,
-                       URL=get_node_url(self.open_protocol, "task", destination_node))
+                       URL=get_node_url(self.open_protocol_handler, "task", destination_node))
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
@@ -121,7 +123,7 @@ class GraphvizRenderer:
             block_subgraph.node(destination_node.id, label=f"[block] {destination_node.name}", shape="box",
                                 id=destination_node.id, tooltip=destination_node.name, color=color,
                                 labeltooltip=destination_node.name,
-                                URL=get_node_url(self.open_protocol, "task", destination_node))
+                                URL=get_node_url(self.open_protocol_handler, "task", destination_node))
             graph.edge(edge.source.id, destination_node.id, label=edge_label, color=color, fontcolor=color,
                        tooltip=edge_label, id=edge.id, labeltooltip=edge_label)
 
@@ -145,9 +147,9 @@ class GraphvizRenderer:
         role_edge_label = f"{edge_counter} {edge.name}"
 
         if role.include_role:  # Include role is considered as a normal task
-            url = get_node_url(self.open_protocol, "task", role)
+            url = get_node_url(self.open_protocol_handler, "task", role)
         else:
-            url = get_node_url(self.open_protocol, "role", role)
+            url = get_node_url(self.open_protocol_handler, "role", role)
 
         with self.digraph.subgraph(name=role.name, node_attr={}) as role_subgraph:
             role_subgraph.node(role.id, id=role.id, label=f"[role] {role.name}", tooltip=role.name, color=color,

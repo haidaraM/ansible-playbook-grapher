@@ -25,7 +25,7 @@ from ansible.utils.display import Display, initialize_locale
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
-from ansibleplaybookgrapher.renderer import GraphvizRenderer
+from ansibleplaybookgrapher.renderer import GraphvizRenderer, OPEN_PROTOCOL_HANDLERS
 
 
 def get_cli_class():
@@ -57,7 +57,7 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node, self.options.open_protocol)
+        renderer = GraphvizRenderer(playbook_node, self.options.open_protocol_handler)
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
@@ -106,13 +106,13 @@ class PlaybookGrapherCLI(GrapherCLI):
         self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
-        self.parser.add_argument("--open-protocol", dest="open_protocol", choices=["browser", "vscode"],
-                                 default="browser",
-                                 help="""The protocol to use to open the roles and tasks when double clicking on them in 
-                                 the browser. Supported values: 'browser': your browser will open the folder (roles)
-                                 and download the task file since it doesn't know how to render it.
-                                 'vscode': vscode will be used to open the folders and files. For files, the cursor will 
-                                 be at the line where the tasks is located. 
+        self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
+                                 choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="browser",
+                                 help="""The protocol to use to open the nodes when double clicking on them from the
+                                 browser. Supported values are 'browser' (default) and 'vscode'. For the 'browser', a 
+                                 double click opens folders (roles) and download files (since it may not be able to 
+                                 render them).
+                                 For 'vscode', the folders and files will be opened inside the editor. 
                                  """)
 
         self.parser.add_argument('--version', action='version',

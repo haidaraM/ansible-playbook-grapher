@@ -46,6 +46,9 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
+    def __str__(self):
+        return f"{type(self).__name__}(name='{self.name}')"
+
     def __repr__(self):
         return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
 
