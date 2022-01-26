@@ -26,28 +26,30 @@ display = Display()
 # The supported protocol handlers to open roles and tasks from the browser
 OPEN_PROTOCOL_HANDLERS = {
     "browser": {
-        "role": "{path}",
-        "task": "{path}"
+        "folder": "{path}",
+        "file": "{path}"
     },
     # https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls
     "vscode": {
-        "role": "vscode://file/{path}",
-        "task": "vscode://file/{path}:{line}:{column}"
+        "folder": "vscode://file/{path}",
+        "file": "vscode://file/{path}:{line}:{column}"
     }
+    # TODO: implement custom protocol format
 }
 
 
-def get_node_url(protocol: str, node_type: str, node: Node) -> Optional[str]:
+def get_node_url(protocol_handler: str, node_type: str, node: Node) -> Optional[str]:
     """
     Get the node url based on the chosen protocol
     :param node_type: task or role
-    :param protocol:
+    :param protocol_handler:
     :param node:
     :return:
     """
     if node.path:
-        url = OPEN_PROTOCOL_HANDLERS[protocol][node_type].format(path=node.path, line=node.line, column=node.column)
-        display.vvv(f"Open protocol URI for node {node}: {url}")
+        url = OPEN_PROTOCOL_HANDLERS[protocol_handler][node_type].format(path=node.path, line=node.line,
+                                                                         column=node.column)
+        display.vvvv(f"Open protocol URI for node {node}: {url}")
         return url
 
     return None
@@ -98,7 +100,7 @@ class GraphvizRenderer:
             edge_label = f"{node_counter} {edge.name}"
             graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
                        id=destination_node.id, tooltip=destination_node.name, color=color,
-                       URL=get_node_url(self.open_protocol_handler, "task", destination_node))
+                       URL=get_node_url(self.open_protocol_handler, "file", destination_node))
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
@@ -123,7 +125,7 @@ class GraphvizRenderer:
             block_subgraph.node(destination_node.id, label=f"[block] {destination_node.name}", shape="box",
                                 id=destination_node.id, tooltip=destination_node.name, color=color,
                                 labeltooltip=destination_node.name,
-                                URL=get_node_url(self.open_protocol_handler, "task", destination_node))
+                                URL=get_node_url(self.open_protocol_handler, "file", destination_node))
             graph.edge(edge.source.id, destination_node.id, label=edge_label, color=color, fontcolor=color,
                        tooltip=edge_label, id=edge.id, labeltooltip=edge_label)
 
@@ -146,10 +148,10 @@ class GraphvizRenderer:
         role = edge.destination  # type: RoleNode
         role_edge_label = f"{edge_counter} {edge.name}"
 
-        if role.include_role:  # Include role is considered as a normal task
-            url = get_node_url(self.open_protocol_handler, "task", role)
-        else:
-            url = get_node_url(self.open_protocol_handler, "role", role)
+        if role.include_role:  # For include_role, we point to a file
+            url = get_node_url(self.open_protocol_handler, "file", role)
+        else:  # For normal role invocation, we point to the folder
+            url = get_node_url(self.open_protocol_handler, "folder", role)
 
         with self.digraph.subgraph(name=role.name, node_attr={}) as role_subgraph:
             role_subgraph.node(role.id, id=role.id, label=f"[role] {role.name}", tooltip=role.name, color=color,
@@ -179,7 +181,8 @@ class GraphvizRenderer:
                 # play node
                 play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 self.digraph.node(play.id, id=play.id, label=play.name, style="filled", shape="box", color=color,
-                                  fontcolor=play_font_color, tooltip=play_tooltip)
+                                  fontcolor=play_font_color, tooltip=play_tooltip,
+                                  URL=get_node_url(self.open_protocol_handler, "file", play))
                 # edge from root node to play
                 playbook_to_play_label = f"{play_counter} {play_edge.name}"
                 self.digraph.edge(self.playbook_node.name, play.id, id=play_edge.id, label=playbook_to_play_label,

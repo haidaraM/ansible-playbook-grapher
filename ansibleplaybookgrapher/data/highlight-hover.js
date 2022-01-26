@@ -127,6 +127,7 @@ $("#svg").ready(function () {
     // Set hover and click events on the plays
     plays.hover(hoverMouseEnter, hoverMouseLeave);
     plays.click(clickOnElement);
+    plays.dblclick(dblClickElement);
 
     // Set hover and click events on the roles
     roles.hover(hoverMouseEnter, hoverMouseLeave);

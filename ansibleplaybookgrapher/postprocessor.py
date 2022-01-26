@@ -151,8 +151,8 @@ class GraphVizPostProcessor:
             text_path.text = text_element.text
             text_element.append(text_path)
 
-            # Move a little bit the text
-            text_element.set("dy", "-1%")
+            # Move a little the text
+            text_element.set("dy", "-0.5%")
             # Remove unnecessary attributes
             text_element.attrib.pop("x")
             text_element.attrib.pop("y")

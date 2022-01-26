@@ -109,11 +109,13 @@ class PlaybookGrapherCLI(GrapherCLI):
         self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
                                  choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="browser",
                                  help="""The protocol to use to open the nodes when double clicking on them from the
-                                 browser. Supported values are 'browser' (default) and 'vscode'. For the 'browser', a 
+                                 browser. Supported values are 'browser' (default), 'vscode' and 'custom'. For the 'browser', a 
                                  double click opens folders (roles) and download files (since it may not be able to 
                                  render them).
                                  For 'vscode', the folders and files will be opened inside the editor. 
                                  """)
+
+        self.parser
 
         self.parser.add_argument('--version', action='version',
                                  version="%s %s (with ansible %s)" % (__prog__, __version__, ansible_version))
