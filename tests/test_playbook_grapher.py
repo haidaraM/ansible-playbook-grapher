@@ -67,7 +67,7 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
 
     # test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(svg_path), "The svg file should exist"
-    assert pq('#root_node text').text() == playbook_path
+    assert pq('g[id^=playbook_] text').text() == playbook_path
 
     plays = pq("g[id^='play_']")
     tasks = pq("g[id^='task_']")

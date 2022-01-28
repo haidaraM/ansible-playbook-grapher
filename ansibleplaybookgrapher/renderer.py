@@ -172,7 +172,7 @@ class GraphvizRenderer:
         """
         display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
-        self.digraph.node(self.playbook_node.name, style="dotted", id="root_node",
+        self.digraph.node(self.playbook_node.name, style="dotted", id=self.playbook_node.id,
                           URL=get_node_url(self.open_protocol_handler, "file", self.playbook_node))
 
         for play_counter, play_edge in enumerate(self.playbook_node.plays, 1):
