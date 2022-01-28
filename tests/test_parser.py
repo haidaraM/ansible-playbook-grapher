@@ -40,6 +40,10 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     parser = PlaybookParser(grapher_cli.options.playbook_filename)
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
+    assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
+    assert playbook_node.line == 1
+    assert playbook_node.column == 1
+
     play_node = playbook_node.plays[0].destination
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert play_node.line == 2

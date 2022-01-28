@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
 from collections import defaultdict
 from typing import Dict, List, ItemsView
 
@@ -161,8 +162,8 @@ class PlaybookNode(CompositeNode):
         Playbooks only have path as position
         :return:
         """
-        # TODO: set playbook path based on the filename and basedir
         # Since the playbook is the whole file, the set the position as the beginning of the file
+        self.path = os.path.join(os.getcwd(), self.name)
         self.line = 1
         self.column = 1
 
