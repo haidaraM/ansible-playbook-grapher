@@ -33,8 +33,9 @@ OPEN_PROTOCOL_HANDLERS = {
     "vscode": {
         "folder": "vscode://file/{path}",
         "file": "vscode://file/{path}:{line}:{column}"
-    }
-    # TODO: implement custom protocol format
+    },
+    # For custom, the formats need to be provided
+    "custom": {}
 }
 
 
