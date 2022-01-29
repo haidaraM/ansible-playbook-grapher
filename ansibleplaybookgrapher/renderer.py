@@ -23,9 +23,9 @@ from ansibleplaybookgrapher.utils import get_play_colors
 
 display = Display()
 
-# The supported protocol handlers to open roles and tasks from the browser
+# The supported protocol handlers to open roles and tasks from the viewer
 OPEN_PROTOCOL_HANDLERS = {
-    "browser": {
+    "default": {
         "folder": "{path}",
         "file": "{path}"
     },

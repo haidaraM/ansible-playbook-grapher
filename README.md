@@ -63,7 +63,7 @@ The available options:
 ```
 ansible-playbook-grapher --help
 usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY] [--include-role-tasks] [-s] [--view] [-o OUTPUT_FILENAME]
-                                [--open-protocol-handler {browser,vscode,custom}] [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--version]
+                                [--open-protocol-handler {default,vscode,custom}] [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--version]
                                 [-t TAGS] [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
                                 [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
                                 playbook
@@ -81,11 +81,11 @@ optional arguments:
                         The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should
                         provide a JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser
                         and files (tasks) in vscode, set this to '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
-  --open-protocol-handler {browser,vscode,custom}
-                        The protocol to use to open the nodes when double clicking on them in the browser. Supported values are 'browser' (default),
-                        'vscode' and 'custom'. For the 'browser', a double click opens folders (roles) and download files (since it may not be able to
-                        render them). For 'vscode', the folders and files will be opened inside the editor. For 'custom', you need to set a custom format
-                        with --open-protocol-custom-formats
+  --open-protocol-handler {default,vscode,custom}
+                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer. Your SVG viewer must support double-click
+                        and Javascript. The supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the file or
+                        folders. When using a browser, it will open or download them. For 'vscode', the folders and files will be open with VSCode. For
+                        'custom', you need to set a custom format with --open-protocol-custom-formats.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these values
   --vault-id VAULT_IDS  the vault identity to use

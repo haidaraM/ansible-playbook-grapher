@@ -1,7 +1,8 @@
 # 1.1.0 (unreleased)
 
 - fix: Do not pass display as param since it's a singleton + init locale to fix warning
-- feat: Open node file when double-clicking on it [\#79](https://github.com/haidaraM/ansible-playbook-grapher/pull/79)
+- feat: Open node file when double-clicking on it from a
+  browser [\#79](https://github.com/haidaraM/ansible-playbook-grapher/pull/79)
 
 - **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.0.2...v1.1.0
 

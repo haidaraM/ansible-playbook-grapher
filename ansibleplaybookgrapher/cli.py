@@ -90,7 +90,6 @@ class PlaybookGrapherCLI(GrapherCLI):
     def _add_my_options(self):
         """
         Add some of my options to the parser
-        :param parser:
         :return:
         """
         self.parser.prog = __prog__
@@ -111,13 +110,14 @@ class PlaybookGrapherCLI(GrapherCLI):
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
 
         self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
-                                 choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="browser",
-                                 help="""The protocol to use to open the nodes when double clicking on them in the
-                                 browser. Supported values are 'browser' (default), 'vscode' and 'custom'. 
-                                 For the 'browser', a double click opens folders (roles) and download files (since it 
-                                 may not be able to render them).
-                                 For 'vscode', the folders and files will be opened inside the editor.
-                                 For 'custom', you need to set a custom format with --open-protocol-custom-formats 
+                                 choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="default",
+                                 help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
+                                 viewer. Your SVG viewer must support double-click and Javascript. 
+                                 The supported values are 'default', 'vscode' and 'custom'. 
+                                 For 'default', the URL will be the path to the file or folders. When using a browser, 
+                                 it will open or download them. 
+                                 For 'vscode', the folders and files will be open with VSCode.
+                                 For 'custom', you need to set a custom format with --open-protocol-custom-formats.
                                  """)
 
         self.parser.add_argument("--open-protocol-custom-formats", dest="open_protocol_custom_formats", default=None,
