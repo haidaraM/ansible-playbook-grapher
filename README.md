@@ -10,6 +10,26 @@ playbook.
 
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
+## Features
+
+The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
+JavaScript:
+
+- Highlighting of all the related nodes of a given node when clicking or hovering. Example: Click on a role to select
+  all its tasks when `--include-role-tasks` is set.
+- A double click on a node opens its corresponding file or folders depending on if it's the playbook, a play, a task or
+  a role. By default, the browser will open folders and download files since it may not be able to render the YAML
+  file.  
+  Optionally, you can
+  set [the open protocol to use VSCode](https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls)
+  with `--open-protocol-handler vscode`: it will open the folders when double-clicking on roles (not `include_role`) and
+  the files for the others nodes. The cursor will be at the task exact position in the file.  
+  Lastly, you can provide your own protocol formats
+  with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
+  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/main/ansibleplaybookgrapher/renderer.py#L27)
+- Filer tasks based on tags
+- Export the dot file using to generate the graph with Graphviz.
+
 ## Prerequisites
 
 - Python 3.8 at least
@@ -28,7 +48,7 @@ for the supported Ansible version.
 ## Installation
 
 ```shell script
-$ pip install ansible-playbook-grapher
+pip install ansible-playbook-grapher
 ```
 
 ## Usage
