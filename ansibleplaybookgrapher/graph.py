@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
 from collections import defaultdict
 from typing import Dict, List, ItemsView
 
@@ -28,12 +29,26 @@ class Node:
 
         :param node_name: The name of the node
         :param node_id: An identifier for this node
-        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on 
+        :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
         """
         self.name = node_name
         self.id = node_id
         self.raw_object = raw_object
+        # Trying to get the object position in the parsed files. Format: (path,line,column)
+        self.path = self.line = self.column = None
+        self.retrieve_position()
+
+    def retrieve_position(self):
+        """
+        Set the path of this based on the raw object. Not all objects have path
+        :return:
+        """
+        if self.raw_object and self.raw_object.get_ds():
+            self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
+
+    def __str__(self):
+        return f"{type(self).__name__}(name='{self.name}')"
 
     def __repr__(self):
         return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
@@ -141,6 +156,16 @@ class PlaybookNode(CompositeNode):
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
         super().__init__(node_name, node_id or generate_id("playbook_"), raw_object=raw_object,
                          supported_compositions=["plays"])
+
+    def retrieve_position(self):
+        """
+        Playbooks only have path as position
+        :return:
+        """
+        # Since the playbook is the whole file, the set the position as the beginning of the file
+        self.path = os.path.join(os.getcwd(), self.name)
+        self.line = 1
+        self.column = 1
 
     @property
     def plays(self) -> List['EdgeNode']:
@@ -252,6 +277,12 @@ class TaskNode(Node):
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+        """
+
+        :param node_name:
+        :param node_id:
+        :param raw_object:
+        """
         super().__init__(node_name, node_id or generate_id("task_"), raw_object)
 
 
@@ -260,8 +291,19 @@ class RoleNode(CompositeTasksNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_name: str, node_id: str = None, raw_object=None):
+    def __init__(self, node_name: str, node_id: str = None, raw_object=None, include_role: bool = False):
+        """
+
+        :param node_name:
+        :param node_id:
+        :param raw_object:
+        """
         super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
+        self.include_role = include_role
+        if raw_object and not include_role:
+            # If it's not an include_role, we take the role path which the path to the folder where the role is located
+            # on the disk
+            self.path = raw_object._role_path
 
 
 def _get_all_tasks_nodes(composite: CompositeNode, task_acc: List[TaskNode]):

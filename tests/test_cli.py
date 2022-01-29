@@ -128,7 +128,7 @@ def test_cli_tags(tags_option, expected):
 def test_skip_tags(skip_tags_option, expected):
     """
 
-    :param tags_option:
+    :param skip_tags_option:
     :param expected:
     :return:
     """
@@ -181,3 +181,50 @@ def test_cli_verbosity_options(verbosity, verbosity_number):
     cli.parse()
 
     assert cli.options.verbosity == verbosity_number
+
+
+def test_cli_open_protocol_custom_formats():
+    """
+    The provided format should be converted to a dict
+    :return:
+    """
+    formats_str = '{"file": "{path}", "folder": "{path}"}'
+    args = [__prog__, '--open-protocol-handler', 'custom', '--open-protocol-custom-formats', formats_str,
+            'playbook1.yml']
+
+    cli = get_cli_class()(args)
+    cli.parse()
+    assert cli.options.open_protocol_custom_formats == {"file": "{path}",
+                                                        "folder": "{path}"}, "The formats should be converted to json"
+
+
+def test_cli_open_protocol_custom_formats_not_provided():
+    """
+    The custom formats must be provided when the protocol handler is set to custom
+    :return:
+    """
+    args = [__prog__, '--open-protocol-handler', 'custom', 'playbook1.yml']
+
+    cli = get_cli_class()(args)
+    with pytest.raises(AnsibleOptionsError) as exception_info:
+        cli.parse()
+
+    assert "you must provide the formats to use with --open-protocol-custom-formats" in exception_info.value.message
+
+
+@pytest.mark.parametrize("formats, expected_message",
+                         [['invalid_json', "JSONDecodeError"],
+                          ['{}', "The field 'file' or 'folder' is missing"]])
+def test_cli_open_protocol_custom_formats_invalid_inputs(formats, expected_message, capsys):
+    """
+    The custom formats must be a valid json data
+    :return:
+    """
+    args = [__prog__, '--open-protocol-handler', 'custom', '--open-protocol-custom-formats', formats, 'playbook1.yml']
+
+    cli = get_cli_class()(args)
+    with pytest.raises(SystemExit) as exception_info:
+        cli.parse()
+
+    error_msg = capsys.readouterr().err
+    assert expected_message in error_msg

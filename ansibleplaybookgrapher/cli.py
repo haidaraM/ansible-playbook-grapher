@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import json
 import ntpath
 import os
 import sys
@@ -19,13 +20,18 @@ from abc import ABC
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
+from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display, initialize_locale
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
-from ansibleplaybookgrapher.renderer import GraphvizRenderer
+from ansibleplaybookgrapher.renderer import GraphvizRenderer, OPEN_PROTOCOL_HANDLERS
+
+# The display is a singleton. This instruction will NOT return a new instance.
+# We explicitly set the verbosity after the init.
+display = Display()
 
 
 def get_cli_class():
@@ -45,9 +51,6 @@ class GrapherCLI(CLI, ABC):
     def run(self):
         super(GrapherCLI, self).run()
 
-        # The display is a singleton. This instruction will NOT return a new instance.
-        # We explicitly set the verbosity after the init.
-        display = Display()
         # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
         initialize_locale()
         display.verbosity = self.options.verbosity
@@ -57,7 +60,8 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node)
+        renderer = GraphvizRenderer(playbook_node, open_protocol_handler=self.options.open_protocol_handler,
+                                    open_protocol_custom_formats=self.options.open_protocol_custom_formats)
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
@@ -86,7 +90,6 @@ class PlaybookGrapherCLI(GrapherCLI):
     def _add_my_options(self):
         """
         Add some of my options to the parser
-        :param parser:
         :return:
         """
         self.parser.prog = __prog__
@@ -105,6 +108,26 @@ class PlaybookGrapherCLI(GrapherCLI):
 
         self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
                                  help="Output filename without the '.svg' extension. Default: <playbook>.svg")
+
+        self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
+                                 choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="default",
+                                 help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
+                                 viewer. Your SVG viewer must support double-click and Javascript. 
+                                 The supported values are 'default', 'vscode' and 'custom'. 
+                                 For 'default', the URL will be the path to the file or folders. When using a browser, 
+                                 it will open or download them. 
+                                 For 'vscode', the folders and files will be open with VSCode.
+                                 For 'custom', you need to set a custom format with --open-protocol-custom-formats.
+                                 """)
+
+        self.parser.add_argument("--open-protocol-custom-formats", dest="open_protocol_custom_formats", default=None,
+                                 help="""The custom formats to use as URLs for the nodes in the graph. Required if 
+                                 --open-protocol-handler is set to custom.
+                                 You should provide a JSON formatted string like: {"file": "", "folder": ""}.
+                                 Example: If you want to open folders (roles) inside the browser and files (tasks) in 
+                                 vscode, set this to 
+                                 '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
+                                 """)
 
         self.parser.add_argument('--version', action='version',
                                  version="%s %s (with ansible %s)" % (__prog__, __version__, ansible_version))
@@ -132,7 +155,35 @@ class PlaybookGrapherCLI(GrapherCLI):
             # use the playbook name (without the extension) as output filename
             self.options.output_filename = os.path.splitext(ntpath.basename(self.options.playbook_filename))[0]
 
+        if self.options.open_protocol_handler == "custom":
+            self.validate_open_protocol_custom_formats()
+
         return options
+
+    def validate_open_protocol_custom_formats(self):
+        """
+        Validate the provided open protocol format
+        :return:
+        """
+        error_msg = 'Make sure to provide valid formats. Example: {"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
+        format_str = self.options.open_protocol_custom_formats
+        if not format_str:
+            raise AnsibleOptionsError("When the protocol handler is to set to custom, you must provide the formats to "
+                                      "use with --open-protocol-custom-formats.")
+        try:
+            format_dict = json.loads(format_str)
+        except Exception as e:
+            display.error(f"{type(e).__name__} when reading the provided formats '{format_str}': {e}")
+            display.error(error_msg)
+            sys.exit(1)
+
+        if "file" not in format_dict or "folder" not in format_dict:
+            display.error(f"The field 'file' or 'folder' is missing from the provided format '{format_str}'")
+            display.error(error_msg)
+            sys.exit(1)
+
+        # Replace the string with a dict
+        self.options.open_protocol_custom_formats = format_dict
 
 
 def main(args=None):

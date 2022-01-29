@@ -19,7 +19,7 @@ from lxml import etree
 
 from ansibleplaybookgrapher.graph import PlaybookNode
 
-JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'
+JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
@@ -151,8 +151,8 @@ class GraphVizPostProcessor:
             text_path.text = text_element.text
             text_element.append(text_path)
 
-            # Move a little bit the text
-            text_element.set("dy", "-1%")
+            # Move a little the text
+            text_element.set("dy", "-0.5%")
             # Remove unnecessary attributes
             text_element.attrib.pop("x")
             text_element.attrib.pop("y")

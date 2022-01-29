@@ -95,8 +95,8 @@ class BaseParser(ABC):
         task_name = clean_name(self.template(task.get_name(), task_vars))
         edge_label = convert_when_to_str(task.when)
 
-        edge_node = EdgeNode(parent_node, TaskNode(task_name, generate_id(f"{node_type}_"), raw_object=task),
-                             edge_label)
+        edge_node = EdgeNode(source=parent_node, node_name=edge_label,
+                             destination=TaskNode(task_name, generate_id(f"{node_type}_"), raw_object=task))
         parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         return True
@@ -120,9 +120,6 @@ class PlaybookParser(BaseParser):
 
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
-        self.playbook = None
-        # the root node
-        self.playbook_root_node = None
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """
@@ -138,17 +135,19 @@ class PlaybookParser(BaseParser):
             add post_tasks
         :return:
         """
-        self.playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
-                                      variable_manager=self.variable_manager)
-        self.playbook_root_node = PlaybookNode(self.playbook_filename)
+
+        playbook = Playbook.load(self.playbook_filename, loader=self.data_loader,
+                                 variable_manager=self.variable_manager)
+        # the root node
+        playbook_root_node = PlaybookNode(self.playbook_filename, raw_object=playbook)
         # loop through the plays
-        for play in self.playbook.get_plays():
+        for play in playbook.get_plays():
 
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
                 self.data_loader.set_basedir(play._included_path)
             else:
-                self.data_loader.set_basedir(self.playbook._basedir)
+                self.data_loader.set_basedir(playbook._basedir)
             display.vvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
 
             play_vars = self.variable_manager.get_vars(play)
@@ -159,7 +158,7 @@ class PlaybookParser(BaseParser):
             display.banner("Parsing " + play_name)
 
             play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
-            self.playbook_root_node.add_play(play_node, "")
+            playbook_root_node.add_play(play_node, "")
 
             # loop through the pre_tasks
             display.v("Parsing pre_tasks...")
@@ -182,7 +181,7 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_node = RoleNode(clean_name(role.get_name()))
+                role_node = RoleNode(clean_name(role.get_name()), raw_object=role)
                 # edge from play to role
                 play_node.add_node("roles", EdgeNode(play_node, role_node))
 
@@ -215,7 +214,7 @@ class PlaybookParser(BaseParser):
             display.display("")  # just an empty line
             # moving to the next play
 
-        return self.playbook_root_node
+        return playbook_root_node
 
     def _include_tasks_in_blocks(self, current_play: Play, parent_nodes: List[CompositeNode],
                                  block: Union[Block, TaskInclude], node_type: str, play_vars: Dict = None):
@@ -258,7 +257,7 @@ class PlaybookParser(BaseParser):
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     display.v(f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'")
 
-                    role_node = RoleNode(task_or_block.get_name(), raw_object=task_or_block)
+                    role_node = RoleNode(task_or_block.get_name(), raw_object=task_or_block, include_role=True)
                     parent_nodes[-1].add_node(f"{node_type}s", EdgeNode(parent_nodes[-1], role_node,
                                                                         convert_when_to_str(task_or_block.when)))
 

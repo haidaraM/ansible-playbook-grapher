@@ -9,6 +9,9 @@ from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import get_cli_class
 from tests import FIXTURES_DIR
 
+# This file directory abspath
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+
 
 def run_grapher(playbook_file: str, output_filename: str = None, additional_args: List[str] = None) -> Tuple[str, str]:
     """
@@ -23,7 +26,11 @@ def run_grapher(playbook_file: str, output_filename: str = None, additional_args
     additional_args.insert(0, "-vv")
 
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
-        additional_args.insert(1, "--view")
+        additional_args.insert(0, "--view")
+
+    if "--open-protocol-handler" not in additional_args:
+        additional_args.insert(0, "--open-protocol-handler")
+        additional_args.insert(1, "vscode")
 
     playbook_path = os.path.join(FIXTURES_DIR, playbook_file)
     args = [__prog__]
@@ -31,8 +38,7 @@ def run_grapher(playbook_file: str, output_filename: str = None, additional_args
     if output_filename:  # the default filename is the playbook file name minus .yml
         # put the generated svg in a dedicated folder
         output_filename = output_filename.replace("[", "-").replace("]", "")
-        dir_path = os.path.dirname(os.path.realpath(__file__))  # current file directory
-        args.extend(['-o', os.path.join(dir_path, "generated_svg", output_filename)])
+        args.extend(['-o', os.path.join(DIR_PATH, "generated_svg", output_filename)])
 
     args.extend(additional_args)
 
@@ -64,7 +70,7 @@ def _common_tests(svg_path: str, playbook_path: str, plays_number: int = 0, task
 
     # test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(svg_path), "The svg file should exist"
-    assert pq('#root_node text').text() == playbook_path
+    assert pq('g[id^=playbook_] text').text() == playbook_path
 
     plays = pq("g[id^='play_']")
     tasks = pq("g[id^='task_']")
@@ -133,7 +139,7 @@ def test_import_tasks(request):
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
-                         [("--", 2), ("--include-role-tasks", 5)],
+                         [("--", 2), ("--include-role-tasks", 8)],
                          ids=["no_include_role_tasks_option", "include_role_tasks_option"])
 def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
     """
@@ -144,7 +150,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
                                           additional_args=[include_role_tasks_option])
 
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=expected_tasks_number,
-                  post_tasks_number=2, pre_tasks_number=2, roles_number=1)
+                  post_tasks_number=2, pre_tasks_number=2, roles_number=2)
 
 
 @pytest.mark.parametrize(["include_role_tasks_option", "expected_tasks_number"],
@@ -163,7 +169,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
 
 def test_with_block(request):
     """
-    Test with_roles.yml, an example with roles
+    Test with_block.yml, an example with roles
     """
     svg_path, playbook_path = run_grapher("with_block.yml", output_filename=request.node.name,
                                           additional_args=["--include-role-tasks"])
@@ -247,3 +253,24 @@ def test_skip_tags(request):
                                           additional_args=["--skip-tags", "pre_task_tag_1", "--include-role-tasks"])
     _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, pre_tasks_number=1, roles_number=1,
                   tasks_number=3)
+
+
+def test_with_roles_with_custom_protocol_handlers(request):
+    """
+    Test with_roles.yml with a custom protocol handlers
+    """
+    formats_str = '{"file": "vscode://file/{path}:{line}", "folder": "{path}"}'
+    svg_path, playbook_path = run_grapher("with_roles.yml", output_filename=request.node.name,
+                                          additional_args=["--open-protocol-handler", "custom",
+                                                           "--open-protocol-custom-formats", formats_str])
+
+    res = _common_tests(svg_path=svg_path, playbook_path=playbook_path, plays_number=1, tasks_number=2,
+                        post_tasks_number=2, pre_tasks_number=2, roles_number=2)
+
+    xlink_ref_selector = "{http://www.w3.org/1999/xlink}href"
+    for t in res["tasks"]:
+        assert t.find("g/a").get(xlink_ref_selector).startswith(
+            f"vscode://file/{DIR_PATH}"), "Tasks should be open with vscode"
+
+    for r in res["roles"]:
+        assert r.find("g/a").get(xlink_ref_selector).startswith(DIR_PATH)
