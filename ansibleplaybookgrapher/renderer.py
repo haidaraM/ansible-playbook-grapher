@@ -39,18 +39,22 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
-def get_node_url(protocol_handler: str, node_type: str, node: Node) -> Optional[str]:
+def get_node_url(protocol_handler: str, node_type: str, node: Node,
+                 open_protocol_custom_formats: Dict = None) -> Optional[str]:
     """
     Get the node url based on the chosen protocol
     :param node_type: task or role
-    :param protocol_handler:
-    :param node:
+    :param protocol_handler: the protocol handler to use
+    :param node: the node to get the url for
+    :param open_protocol_custom_formats: the custom formats to use when protocol handler is custom
     :return:
     """
+    # Merge the provided custom formats with the default formats
+    all_formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
     if node.path:
-        url = OPEN_PROTOCOL_HANDLERS[protocol_handler][node_type].format(path=node.path, line=node.line,
-                                                                         column=node.column)
-        display.vvvv(f"Open protocol URI for node {node}: {url}")
+        url = all_formats[protocol_handler][node_type].format(path=node.path, line=node.line,
+                                                              column=node.column)
+        display.vvvv(f"Open protocol URL for node {node}: {url}")
         return url
 
     return None
@@ -63,17 +67,20 @@ class GraphvizRenderer:
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
     DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 
-    def __init__(self, playbook_node: 'PlaybookNode', open_protocol_handler: str, graph_format: str = "svg",
-                 graph_attr: Dict = None, edge_attr: Dict = None):
+    def __init__(self, playbook_node: 'PlaybookNode', open_protocol_handler: str,
+                 open_protocol_custom_formats: Dict = None, graph_format: str = "svg", graph_attr: Dict = None,
+                 edge_attr: Dict = None):
         """
 
         :param playbook_node: Playbook parsed node
+        :param open_protocol_handler: The protocol handler name to use. See  OPEN_PROTOCOL_HANDLERS
         :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
         :param graph_attr: Default graph attributes
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
         self.open_protocol_handler = open_protocol_handler
+        self.open_protocol_custom_formats = open_protocol_custom_formats
         self.digraph = Digraph(format=graph_format,
                                graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
                                edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
@@ -101,7 +108,8 @@ class GraphvizRenderer:
             edge_label = f"{node_counter} {edge.name}"
             graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
                        id=destination_node.id, tooltip=destination_node.name, color=color,
-                       URL=get_node_url(self.open_protocol_handler, "file", destination_node))
+                       URL=get_node_url(self.open_protocol_handler, "file", destination_node,
+                                        self.open_protocol_custom_formats))
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
@@ -126,7 +134,8 @@ class GraphvizRenderer:
             block_subgraph.node(destination_node.id, label=f"[block] {destination_node.name}", shape="box",
                                 id=destination_node.id, tooltip=destination_node.name, color=color,
                                 labeltooltip=destination_node.name,
-                                URL=get_node_url(self.open_protocol_handler, "file", destination_node))
+                                URL=get_node_url(self.open_protocol_handler, "file", destination_node,
+                                                 self.open_protocol_custom_formats))
             graph.edge(edge.source.id, destination_node.id, label=edge_label, color=color, fontcolor=color,
                        tooltip=edge_label, id=edge.id, labeltooltip=edge_label)
 
@@ -150,9 +159,9 @@ class GraphvizRenderer:
         role_edge_label = f"{edge_counter} {edge.name}"
 
         if role.include_role:  # For include_role, we point to a file
-            url = get_node_url(self.open_protocol_handler, "file", role)
+            url = get_node_url(self.open_protocol_handler, "file", role, self.open_protocol_custom_formats)
         else:  # For normal role invocation, we point to the folder
-            url = get_node_url(self.open_protocol_handler, "folder", role)
+            url = get_node_url(self.open_protocol_handler, "folder", role, self.open_protocol_custom_formats)
 
         with self.digraph.subgraph(name=role.name, node_attr={}) as role_subgraph:
             role_subgraph.node(role.id, id=role.id, label=f"[role] {role.name}", tooltip=role.name, color=color,
@@ -173,7 +182,8 @@ class GraphvizRenderer:
         display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(self.playbook_node.name, style="dotted", id=self.playbook_node.id,
-                          URL=get_node_url(self.open_protocol_handler, "file", self.playbook_node))
+                          URL=get_node_url(self.open_protocol_handler, "file", self.playbook_node,
+                                           self.open_protocol_custom_formats))
 
         for play_counter, play_edge in enumerate(self.playbook_node.plays, 1):
             # noinspection PyTypeChecker
@@ -184,7 +194,8 @@ class GraphvizRenderer:
                 play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 self.digraph.node(play.id, id=play.id, label=play.name, style="filled", shape="box", color=color,
                                   fontcolor=play_font_color, tooltip=play_tooltip,
-                                  URL=get_node_url(self.open_protocol_handler, "file", play))
+                                  URL=get_node_url(self.open_protocol_handler, "file", play,
+                                                   self.open_protocol_custom_formats))
                 # edge from root node to play
                 playbook_to_play_label = f"{play_counter} {play_edge.name}"
                 self.digraph.edge(self.playbook_node.name, play.id, id=play_edge.id, label=playbook_to_play_label,

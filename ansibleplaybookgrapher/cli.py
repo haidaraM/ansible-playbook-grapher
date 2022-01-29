@@ -60,7 +60,8 @@ class GrapherCLI(CLI, ABC):
                                 include_role_tasks=self.options.include_role_tasks)
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node, self.options.open_protocol_handler)
+        renderer = GraphvizRenderer(playbook_node, open_protocol_handler=self.options.open_protocol_handler,
+                                    open_protocol_custom_formats=self.options.open_protocol_custom_formats)
         svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
