@@ -111,11 +111,12 @@ class PlaybookGrapherCLI(GrapherCLI):
 
         self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
                                  choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="browser",
-                                 help="""The protocol to use to open the nodes when double clicking on them from the
+                                 help="""The protocol to use to open the nodes when double clicking on them in the
                                  browser. Supported values are 'browser' (default), 'vscode' and 'custom'. 
                                  For the 'browser', a double click opens folders (roles) and download files (since it 
                                  may not be able to render them).
-                                 For 'vscode', the folders and files will be opened inside the editor. 
+                                 For 'vscode', the folders and files will be opened inside the editor.
+                                 For 'custom', you need to set a custom format with --open-protocol-custom-formats 
                                  """)
 
         self.parser.add_argument("--open-protocol-custom-formats", dest="open_protocol_custom_formats", default=None,
