@@ -9,8 +9,10 @@ on:
       - main
 
 jobs:
-  lint:
+  black-check-format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
+        with:
+          options: "--check --diff --color"
