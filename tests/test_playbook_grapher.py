@@ -14,7 +14,7 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def run_grapher(
-        playbook_file: str, output_filename: str = None, additional_args: List[str] = None
+    playbook_file: str, output_filename: str = None, additional_args: List[str] = None
 ) -> Tuple[str, str]:
     """
     Utility function to run the grapher
@@ -52,14 +52,14 @@ def run_grapher(
 
 
 def _common_tests(
-        svg_path: str,
-        playbook_path: str,
-        plays_number: int = 0,
-        tasks_number: int = 0,
-        post_tasks_number: int = 0,
-        roles_number: int = 0,
-        pre_tasks_number: int = 0,
-        blocks_number: int = 0,
+    svg_path: str,
+    playbook_path: str,
+    plays_number: int = 0,
+    tasks_number: int = 0,
+    post_tasks_number: int = 0,
+    roles_number: int = 0,
+    pre_tasks_number: int = 0,
+    blocks_number: int = 0,
 ) -> Dict[str, List[Element]]:
     """
     Perform some common tests on the generated svg file:
@@ -318,7 +318,7 @@ def test_import_playbook(request):
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
-        request, include_role_tasks_option, expected_tasks_number
+    request, include_role_tasks_option, expected_tasks_number
 ):
     """
     Test nested import playbook with an import_role and include_tasks
@@ -349,10 +349,10 @@ def test_relative_var_files(request):
 
     # check if the plays title contains the interpolated variables
     assert (
-            "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
+        "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
     ), "The title should contain player name"
     assert (
-            "Lionel Messi" in res["tasks"][1].find("g/a/text").text
+        "Lionel Messi" in res["tasks"][1].find("g/a/text").text
     ), "The title should contain player name"
 
 
@@ -422,8 +422,8 @@ def test_with_roles_with_custom_protocol_handlers(request):
     for t in res["tasks"]:
         assert (
             t.find("g/a")
-                .get(xlink_ref_selector)
-                .startswith(f"vscode://file/{DIR_PATH}")
+            .get(xlink_ref_selector)
+            .startswith(f"vscode://file/{DIR_PATH}")
         ), "Tasks should be open with vscode"
 
     for r in res["roles"]:
