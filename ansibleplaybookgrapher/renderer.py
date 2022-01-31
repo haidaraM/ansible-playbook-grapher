@@ -39,27 +39,6 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
-def get_node_url(protocol_handler: str, node_type: str, node: Node,
-                 open_protocol_custom_formats: Dict = None) -> Optional[str]:
-    """
-    Get the node url based on the chosen protocol
-    :param node_type: task or role
-    :param protocol_handler: the protocol handler to use
-    :param node: the node to get the url for
-    :param open_protocol_custom_formats: the custom formats to use when protocol handler is custom
-    :return:
-    """
-    # Merge the provided custom formats with the default formats
-    all_formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
-    if node.path:
-        url = all_formats[protocol_handler][node_type].format(path=node.path, line=node.line,
-                                                              column=node.column)
-        display.vvvv(f"Open protocol URL for node {node}: {url}")
-        return url
-
-    return None
-
-
 class GraphvizRenderer:
     """
     Render the graph with graphviz
@@ -68,22 +47,48 @@ class GraphvizRenderer:
     DEFAULT_GRAPH_ATTR = {"ratio": "fill", "rankdir": "LR", "concentrate": "true", "ordering": "in"}
 
     def __init__(self, playbook_node: 'PlaybookNode', open_protocol_handler: str,
-                 open_protocol_custom_formats: Dict = None, graph_format: str = "svg", graph_attr: Dict = None,
-                 edge_attr: Dict = None):
+                 open_protocol_custom_formats: Dict[str, str] = None, graph_format: str = "svg",
+                 graph_attr: Dict = None, edge_attr: Dict = None):
         """
 
         :param playbook_node: Playbook parsed node
-        :param open_protocol_handler: The protocol handler name to use. See  OPEN_PROTOCOL_HANDLERS
+        :param open_protocol_handler: The protocol handler name to use
+        :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
         :param graph_attr: Default graph attributes
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
         self.open_protocol_handler = open_protocol_handler
-        self.open_protocol_custom_formats = open_protocol_custom_formats
+        # Merge the two dicts
+        formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
+        self.open_protocol_formats = formats[self.open_protocol_handler]
         self.digraph = Digraph(format=graph_format,
                                graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
                                edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR)
+
+    def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
+        """
+        Render the graph
+        :param output_filename: Output file name without '.svg' extension.
+        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
+        :param view: If true, will automatically open the resulting (PDF, PNG, SVG, etc.) file with your system’s
+            default viewer application for the file type
+        :return: The rendered file path (output_filename.svg)
+        """
+        self._convert_to_graphviz()
+
+        display.display("Rendering the graph...")
+        rendered_file_path = self.digraph.render(cleanup=not save_dot_file, format="svg", filename=output_filename,
+                                                 view=view)
+
+        if save_dot_file:
+            # add .dot extension. The render doesn't add an extension
+            final_name = output_filename + ".dot"
+            os.rename(output_filename, final_name)
+            display.display(f"Graphviz dot file has been exported to {final_name}")
+
+        return rendered_file_path
 
     def render_node(self, graph: Digraph, edge: EdgeNode, color: str, node_counter: int,
                     shape: str = "octagon", **kwargs):
@@ -108,8 +113,7 @@ class GraphvizRenderer:
             edge_label = f"{node_counter} {edge.name}"
             graph.node(destination_node.id, label=node_label_prefix + destination_node.name, shape=shape,
                        id=destination_node.id, tooltip=destination_node.name, color=color,
-                       URL=get_node_url(self.open_protocol_handler, "file", destination_node,
-                                        self.open_protocol_custom_formats))
+                       URL=self.get_node_url(destination_node, "file"))
             graph.edge(source_node.id, destination_node.id, label=edge_label, color=color, fontcolor=color, id=edge.id,
                        tooltip=edge_label, labeltooltip=edge_label)
 
@@ -134,8 +138,7 @@ class GraphvizRenderer:
             block_subgraph.node(destination_node.id, label=f"[block] {destination_node.name}", shape="box",
                                 id=destination_node.id, tooltip=destination_node.name, color=color,
                                 labeltooltip=destination_node.name,
-                                URL=get_node_url(self.open_protocol_handler, "file", destination_node,
-                                                 self.open_protocol_custom_formats))
+                                URL=self.get_node_url(destination_node, "file"))
             graph.edge(edge.source.id, destination_node.id, label=edge_label, color=color, fontcolor=color,
                        tooltip=edge_label, id=edge.id, labeltooltip=edge_label)
 
@@ -159,9 +162,9 @@ class GraphvizRenderer:
         role_edge_label = f"{edge_counter} {edge.name}"
 
         if role.include_role:  # For include_role, we point to a file
-            url = get_node_url(self.open_protocol_handler, "file", role, self.open_protocol_custom_formats)
+            url = self.get_node_url(role, "file")
         else:  # For normal role invocation, we point to the folder
-            url = get_node_url(self.open_protocol_handler, "folder", role, self.open_protocol_custom_formats)
+            url = self.get_node_url(role, "folder")
 
         with self.digraph.subgraph(name=role.name, node_attr={}) as role_subgraph:
             role_subgraph.node(role.id, id=role.id, label=f"[role] {role.name}", tooltip=role.name, color=color,
@@ -182,8 +185,7 @@ class GraphvizRenderer:
         display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(self.playbook_node.name, style="dotted", id=self.playbook_node.id,
-                          URL=get_node_url(self.open_protocol_handler, "file", self.playbook_node,
-                                           self.open_protocol_custom_formats))
+                          URL=self.get_node_url(self.playbook_node, "file"))
 
         for play_counter, play_edge in enumerate(self.playbook_node.plays, 1):
             # noinspection PyTypeChecker
@@ -194,8 +196,7 @@ class GraphvizRenderer:
                 play_tooltip = ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 self.digraph.node(play.id, id=play.id, label=play.name, style="filled", shape="box", color=color,
                                   fontcolor=play_font_color, tooltip=play_tooltip,
-                                  URL=get_node_url(self.open_protocol_handler, "file", play,
-                                                   self.open_protocol_custom_formats))
+                                  URL=self.get_node_url(play, "file"))
                 # edge from root node to play
                 playbook_to_play_label = f"{play_counter} {play_edge.name}"
                 self.digraph.edge(self.playbook_node.name, play.id, id=play_edge.id, label=playbook_to_play_label,
@@ -223,25 +224,16 @@ class GraphvizRenderer:
                                      node_counter=len(play.pre_tasks) + len(play.roles) + len(
                                          play.tasks) + post_task_counter, node_label_prefix="[post_task] ")
 
-    def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
+    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
         """
-        Render the graph
-        :param output_filename: Output file name without '.svg' extension.
-        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
-        :param view: If true, will automatically open the resulting (PDF, PNG, SVG, etc.) file with your system’s
-            default viewer application for the file type
-        :return: The rendered file path (output_filename.svg)
+        Get the node url based on the chosen protocol
+        :param node_type: task or role
+        :param node: the node to get the url for
+        :return:
         """
-        self._convert_to_graphviz()
+        if node.path:
+            url = self.open_protocol_formats[node_type].format(path=node.path, line=node.line, column=node.column)
+            display.vvvv(f"Open protocol URL for node {node}: {url}")
+            return url
 
-        display.display("Rendering the graph...")
-        rendered_file_path = self.digraph.render(cleanup=not save_dot_file, format="svg", filename=output_filename,
-                                                 view=view)
-
-        if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
-            display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        return rendered_file_path
+        return None
