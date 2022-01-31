@@ -57,9 +57,7 @@ class GrapherCLI(CLI, ABC):
 
         parser = PlaybookParser(
             tags=self.options.tags,
-            skip_tags=self.options.skip_tags,
-            playbook_filename=self.options.playbook_filename,
-            include_role_tasks=self.options.include_role_tasks,
+            skip_tags=self.options.skip_tags,           playbook_filename=self.options.playbook_filename,       include_role_tasks=self.options.include_role_tasks,
         )
 
         playbook_node = parser.parse()
