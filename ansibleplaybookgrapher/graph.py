@@ -65,7 +65,13 @@ class CompositeNode(Node):
     A node that composed of multiple of nodes.
     """
 
-    def __init__(self, node_name: str, node_id: str, raw_object=None, supported_compositions: List[str] = None):
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str,
+        raw_object=None,
+        supported_compositions: List[str] = None,
+    ):
         """
 
         :param node_name:
@@ -96,7 +102,8 @@ class CompositeNode(Node):
         """
         if target_composition not in self._supported_compositions:
             raise Exception(
-                f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}")
+                f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
+            )
         self._compositions[target_composition].append(node)
 
     def links_structure(self) -> Dict[Node, List[Node]]:
@@ -140,12 +147,12 @@ class CompositeTasksNode(CompositeNode):
         super().add_node("tasks", node)
 
     @property
-    def tasks(self) -> List['EdgeNode']:
+    def tasks(self) -> List["EdgeNode"]:
         """
         The tasks attached to this block
         :return:
         """
-        return self._compositions['tasks']
+        return self._compositions["tasks"]
 
 
 class PlaybookNode(CompositeNode):
@@ -154,8 +161,12 @@ class PlaybookNode(CompositeNode):
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
-        super().__init__(node_name, node_id or generate_id("playbook_"), raw_object=raw_object,
-                         supported_compositions=["plays"])
+        super().__init__(
+            node_name,
+            node_id or generate_id("playbook_"),
+            raw_object=raw_object,
+            supported_compositions=["plays"],
+        )
 
     def retrieve_position(self):
         """
@@ -168,14 +179,14 @@ class PlaybookNode(CompositeNode):
         self.column = 1
 
     @property
-    def plays(self) -> List['EdgeNode']:
+    def plays(self) -> List["EdgeNode"]:
         """
         Return the list of plays
         :return:
         """
-        return self._compositions['plays']
+        return self._compositions["plays"]
 
-    def add_play(self, play: 'PlayNode', edge_name: str, **kwargs) -> 'EdgeNode':
+    def add_play(self, play: "PlayNode", edge_name: str, **kwargs) -> "EdgeNode":
         """
         Add a play to the playbook
         :param play:
@@ -196,30 +207,40 @@ class PlayNode(CompositeNode):
      - post_tasks
     """
 
-    def __init__(self, node_name: str, node_id: str = None, raw_object=None, hosts: List[str] = None):
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str = None,
+        raw_object=None,
+        hosts: List[str] = None,
+    ):
         """
         :param node_name:
         :param node_id:
         :param hosts: List of hosts attached to the play
         """
-        super().__init__(node_name, node_id or generate_id("play_"), raw_object=raw_object,
-                         supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"])
+        super().__init__(
+            node_name,
+            node_id or generate_id("play_"),
+            raw_object=raw_object,
+            supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
+        )
         self.hosts = hosts or []
 
     @property
-    def roles(self) -> List['EdgeNode']:
+    def roles(self) -> List["EdgeNode"]:
         return self._compositions["roles"]
 
     @property
-    def pre_tasks(self) -> List['EdgeNode']:
+    def pre_tasks(self) -> List["EdgeNode"]:
         return self._compositions["pre_tasks"]
 
     @property
-    def post_tasks(self) -> List['EdgeNode']:
+    def post_tasks(self) -> List["EdgeNode"]:
         return self._compositions["post_tasks"]
 
     @property
-    def tasks(self) -> List['EdgeNode']:
+    def tasks(self) -> List["EdgeNode"]:
         return self._compositions["tasks"]
 
 
@@ -229,7 +250,9 @@ class BlockNode(CompositeTasksNode):
     """
 
     def __init__(self, node_name: str, node_id: str = None, raw_object=None):
-        super().__init__(node_name, node_id or generate_id("block_"), raw_object=raw_object)
+        super().__init__(
+            node_name, node_id or generate_id("block_"), raw_object=raw_object
+        )
 
 
 class EdgeNode(CompositeNode):
@@ -237,7 +260,9 @@ class EdgeNode(CompositeNode):
     An edge between two nodes. It's a special case of composite node with only one composition with one element
     """
 
-    def __init__(self, source: Node, destination: Node, node_name: str = "", node_id: str = None):
+    def __init__(
+        self, source: Node, destination: Node, node_name: str = "", node_id: str = None
+    ):
         """
 
         :param node_name: The edge name
@@ -245,17 +270,21 @@ class EdgeNode(CompositeNode):
         :param destination: The edge destination node
         :param node_id: The edge id
         """
-        super().__init__(node_name, node_id or generate_id("edge_"), raw_object=None,
-                         supported_compositions=["destination"])
+        super().__init__(
+            node_name,
+            node_id or generate_id("edge_"),
+            raw_object=None,
+            supported_compositions=["destination"],
+        )
         self.source = source
         self.add_node("destination", destination)
 
     def add_node(self, target_composition: str, node: Node):
         """
         Override the add_node. An edge node should only have one linked node
-        :param target_composition: 
-        :param node: 
-        :return: 
+        :param target_composition:
+        :param node:
+        :return:
         """
         current_nodes = self._compositions[target_composition]
         if len(current_nodes) == 1:
@@ -291,14 +320,22 @@ class RoleNode(CompositeTasksNode):
     A role node. A role is a composition of tasks
     """
 
-    def __init__(self, node_name: str, node_id: str = None, raw_object=None, include_role: bool = False):
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str = None,
+        raw_object=None,
+        include_role: bool = False,
+    ):
         """
 
         :param node_name:
         :param node_id:
         :param raw_object:
         """
-        super().__init__(node_name, node_id or generate_id("role_"), raw_object=raw_object)
+        super().__init__(
+            node_name, node_id or generate_id("role_"), raw_object=raw_object
+        )
         self.include_role = include_role
         if raw_object and not include_role:
             # If it's not an include_role, we take the role path which the path to the folder where the role is located

@@ -55,14 +55,22 @@ class GrapherCLI(CLI, ABC):
         initialize_locale()
         display.verbosity = self.options.verbosity
 
-        parser = PlaybookParser(tags=self.options.tags, skip_tags=self.options.skip_tags,
-                                playbook_filename=self.options.playbook_filename,
-                                include_role_tasks=self.options.include_role_tasks)
+        parser = PlaybookParser(
+            tags=self.options.tags,
+            skip_tags=self.options.skip_tags,
+            playbook_filename=self.options.playbook_filename,
+            include_role_tasks=self.options.include_role_tasks,
+        )
 
         playbook_node = parser.parse()
-        renderer = GraphvizRenderer(playbook_node, open_protocol_handler=self.options.open_protocol_handler,
-                                    open_protocol_custom_formats=self.options.open_protocol_custom_formats)
-        svg_path = renderer.render(self.options.output_filename, self.options.save_dot_file, self.options.view)
+        renderer = GraphvizRenderer(
+            playbook_node,
+            open_protocol_handler=self.options.open_protocol_handler,
+            open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+        )
+        svg_path = renderer.render(
+            self.options.output_filename, self.options.save_dot_file, self.options.view
+        )
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
         display.v("Post processing the SVG...")
@@ -94,45 +102,83 @@ class PlaybookGrapherCLI(GrapherCLI):
         """
         self.parser.prog = __prog__
 
-        self.parser.add_argument('-i', '--inventory', dest='inventory', action="append",
-                                 help="specify inventory host path or comma separated host list.")
+        self.parser.add_argument(
+            "-i",
+            "--inventory",
+            dest="inventory",
+            action="append",
+            help="specify inventory host path or comma separated host list.",
+        )
 
-        self.parser.add_argument("--include-role-tasks", dest="include_role_tasks", action='store_true', default=False,
-                                 help="Include the tasks of the role in the graph.")
+        self.parser.add_argument(
+            "--include-role-tasks",
+            dest="include_role_tasks",
+            action="store_true",
+            default=False,
+            help="Include the tasks of the role in the graph.",
+        )
 
-        self.parser.add_argument("-s", "--save-dot-file", dest="save_dot_file", action='store_true', default=False,
-                                 help="Save the dot file used to generate the graph.")
+        self.parser.add_argument(
+            "-s",
+            "--save-dot-file",
+            dest="save_dot_file",
+            action="store_true",
+            default=False,
+            help="Save the dot file used to generate the graph.",
+        )
 
-        self.parser.add_argument("--view", action='store_true', default=False,
-                                 help="Automatically open the resulting SVG file with your system’s default viewer application for the file type")
+        self.parser.add_argument(
+            "--view",
+            action="store_true",
+            default=False,
+            help="Automatically open the resulting SVG file with your system’s default viewer application for the file type",
+        )
 
-        self.parser.add_argument("-o", "--output-file-name", dest='output_filename',
-                                 help="Output filename without the '.svg' extension. Default: <playbook>.svg")
+        self.parser.add_argument(
+            "-o",
+            "--output-file-name",
+            dest="output_filename",
+            help="Output filename without the '.svg' extension. Default: <playbook>.svg",
+        )
 
-        self.parser.add_argument("--open-protocol-handler", dest="open_protocol_handler",
-                                 choices=list(OPEN_PROTOCOL_HANDLERS.keys()), default="default",
-                                 help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
+        self.parser.add_argument(
+            "--open-protocol-handler",
+            dest="open_protocol_handler",
+            choices=list(OPEN_PROTOCOL_HANDLERS.keys()),
+            default="default",
+            help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
                                  viewer. Your SVG viewer must support double-click and Javascript. 
                                  The supported values are 'default', 'vscode' and 'custom'. 
                                  For 'default', the URL will be the path to the file or folders. When using a browser, 
                                  it will open or download them. 
                                  For 'vscode', the folders and files will be open with VSCode.
                                  For 'custom', you need to set a custom format with --open-protocol-custom-formats.
-                                 """)
+                                 """,
+        )
 
-        self.parser.add_argument("--open-protocol-custom-formats", dest="open_protocol_custom_formats", default=None,
-                                 help="""The custom formats to use as URLs for the nodes in the graph. Required if 
+        self.parser.add_argument(
+            "--open-protocol-custom-formats",
+            dest="open_protocol_custom_formats",
+            default=None,
+            help="""The custom formats to use as URLs for the nodes in the graph. Required if 
                                  --open-protocol-handler is set to custom.
                                  You should provide a JSON formatted string like: {"file": "", "folder": ""}.
                                  Example: If you want to open folders (roles) inside the browser and files (tasks) in 
                                  vscode, set this to 
                                  '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
-                                 """)
+                                 """,
+        )
 
-        self.parser.add_argument('--version', action='version',
-                                 version="%s %s (with ansible %s)" % (__prog__, __version__, ansible_version))
+        self.parser.add_argument(
+            "--version",
+            action="version",
+            version="%s %s (with ansible %s)"
+            % (__prog__, __version__, ansible_version),
+        )
 
-        self.parser.add_argument('playbook_filename', help='Playbook to graph', metavar='playbook')
+        self.parser.add_argument(
+            "playbook_filename", help="Playbook to graph", metavar="playbook"
+        )
 
         # Use ansible helper to add some default options also
         option_helpers.add_subset_options(self.parser)
@@ -140,8 +186,11 @@ class PlaybookGrapherCLI(GrapherCLI):
         option_helpers.add_runtask_options(self.parser)
 
     def init_parser(self, usage="", desc=None, epilog=None):
-        super(PlaybookGrapherCLI, self).init_parser(usage="%s [options] playbook.yml" % __prog__,
-                                                    desc="Make graphs from your Ansible Playbooks.", epilog=epilog)
+        super(PlaybookGrapherCLI, self).init_parser(
+            usage="%s [options] playbook.yml" % __prog__,
+            desc="Make graphs from your Ansible Playbooks.",
+            epilog=epilog,
+        )
 
         self._add_my_options()
 
@@ -153,7 +202,9 @@ class PlaybookGrapherCLI(GrapherCLI):
 
         if self.options.output_filename is None:
             # use the playbook name (without the extension) as output filename
-            self.options.output_filename = os.path.splitext(ntpath.basename(self.options.playbook_filename))[0]
+            self.options.output_filename = os.path.splitext(
+                ntpath.basename(self.options.playbook_filename)
+            )[0]
 
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
@@ -168,17 +219,23 @@ class PlaybookGrapherCLI(GrapherCLI):
         error_msg = 'Make sure to provide valid formats. Example: {"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
         format_str = self.options.open_protocol_custom_formats
         if not format_str:
-            raise AnsibleOptionsError("When the protocol handler is to set to custom, you must provide the formats to "
-                                      "use with --open-protocol-custom-formats.")
+            raise AnsibleOptionsError(
+                "When the protocol handler is to set to custom, you must provide the formats to "
+                "use with --open-protocol-custom-formats."
+            )
         try:
             format_dict = json.loads(format_str)
         except Exception as e:
-            display.error(f"{type(e).__name__} when reading the provided formats '{format_str}': {e}")
+            display.error(
+                f"{type(e).__name__} when reading the provided formats '{format_str}': {e}"
+            )
             display.error(error_msg)
             sys.exit(1)
 
         if "file" not in format_dict or "folder" not in format_dict:
-            display.error(f"The field 'file' or 'folder' is missing from the provided format '{format_str}'")
+            display.error(
+                f"The field 'file' or 'folder' is missing from the provided format '{format_str}'"
+            )
             display.error(error_msg)
             sys.exit(1)
 

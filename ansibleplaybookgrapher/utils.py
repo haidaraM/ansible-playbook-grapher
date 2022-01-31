@@ -64,7 +64,7 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: 'PlayNode') -> Tuple[str, str]:
+def get_play_colors(play: "PlayNode") -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play
@@ -91,7 +91,9 @@ def has_role_parent(task_block: Task) -> bool:
     return False
 
 
-def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar: Templar) -> str:
+def handle_include_path(
+    original_task: TaskInclude, loader: DataLoader, templar: Templar
+) -> str:
     """
     handle relative includes by walking up the list of parent include tasks
 
@@ -106,7 +108,9 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
     parent_include = original_task._parent
     include_file = None
     # task path or role name
-    include_param = original_task.args.get('_raw_params', original_task.args.get('name', None))
+    include_param = original_task.args.get(
+        "_raw_params", original_task.args.get("name", None)
+    )
 
     cumulative_path = None
     while parent_include is not None:
@@ -117,13 +121,15 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
             parent_include_dir = parent_include._role_path
         else:
             try:
-                parent_include_dir = os.path.dirname(templar.template(parent_include.args.get('_raw_params')))
+                parent_include_dir = os.path.dirname(
+                    templar.template(parent_include.args.get("_raw_params"))
+                )
             except AnsibleError as e:
-                parent_include_dir = ''
+                parent_include_dir = ""
                 display.warning(
-                    'Templating the path of the parent %s failed. The path to the '
-                    'included file may not be found. '
-                    'The error was: %s.' % (original_task.action, to_text(e))
+                    "Templating the path of the parent %s failed. The path to the "
+                    "included file may not be found. "
+                    "The error was: %s." % (original_task.action, to_text(e))
                 )
 
         if cumulative_path is not None and not os.path.isabs(cumulative_path):
@@ -132,9 +138,15 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
             cumulative_path = parent_include_dir
         include_target = templar.template(include_param)
         if original_task._role:
-            new_basedir = os.path.join(original_task._role._role_path, 'tasks', cumulative_path)
-            candidates = [loader.path_dwim_relative(original_task._role._role_path, 'tasks', include_target),
-                          loader.path_dwim_relative(new_basedir, 'tasks', include_target)]
+            new_basedir = os.path.join(
+                original_task._role._role_path, "tasks", cumulative_path
+            )
+            candidates = [
+                loader.path_dwim_relative(
+                    original_task._role._role_path, "tasks", include_target
+                ),
+                loader.path_dwim_relative(new_basedir, "tasks", include_target),
+            ]
             for include_file in candidates:
                 try:
                     # may throw OSError
@@ -144,7 +156,9 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
                 except OSError:
                     pass
         else:
-            include_file = loader.path_dwim_relative(loader.get_basedir(), cumulative_path, include_target)
+            include_file = loader.path_dwim_relative(
+                loader.get_basedir(), cumulative_path, include_target
+            )
 
         if os.path.exists(include_file):
             break
@@ -154,7 +168,9 @@ def handle_include_path(original_task: TaskInclude, loader: DataLoader, templar:
     if include_file is None:
         if original_task._role:
             include_target = templar.template(include_param)
-            include_file = loader.path_dwim_relative(original_task._role._role_path, 'tasks', include_target)
+            include_file = loader.path_dwim_relative(
+                original_task._role._role_path, "tasks", include_target
+            )
         else:
             include_file = loader.path_dwim(templar.template(include_param))
 

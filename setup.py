@@ -20,46 +20,48 @@ def read_requirements(path):
     return requirements
 
 
-install_requires = read_requirements('requirements.txt')
-test_require = read_requirements('tests/requirements_tests.txt')[1:]
+install_requires = read_requirements("requirements.txt")
+test_require = read_requirements("tests/requirements_tests.txt")[1:]
 
-with open('README.md') as f:
+with open("README.md") as f:
     long_description = f.read()
 
 # add `pytest-runner` distutils plugin for test;
 # see https://pypi.python.org/pypi/pytest-runner
 setup_requires = []
-if {'pytest', 'test', 'ptr'}.intersection(sys.argv[1:]):
-    setup_requires.append('pytest-runner')
+if {"pytest", "test", "ptr"}.intersection(sys.argv[1:]):
+    setup_requires.append("pytest-runner")
 
-setup(name=__prog__,
-      version=__version__,
-      description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
-      long_description=long_description,
-      long_description_content_type='text/markdown',
-      url="https://github.com/haidaraM/ansible-playbook-grapher",
-      author="HAIDARA Mohamed El Mouctar",
-      author_email="elmhaidara@gmail.com",
-      license="MIT",
-      install_requires=install_requires,
-      tests_require=test_require,
-      setup_requires=setup_requires,
-      packages=find_packages(exclude=['tests']),
-      package_data={"ansible-playbook-grapher": ['data/*']},
-      include_package_data=True,
-      download_url="https://github.com/haidaraM/ansible-playbook-grapher/archive/v" + __version__ + ".tar.gz",
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Intended Audience :: Developers',
-          'Intended Audience :: System Administrators',
-          'License :: OSI Approved :: MIT License',
-          'Environment :: Console',
-          'Topic :: Utilities',
-          'Programming Language :: Python :: 3.8',
-          'Programming Language :: Python :: 3.9',
-      ],
-      entry_points={
-          'console_scripts': [
-              '%s = ansibleplaybookgrapher.cli:main' % __prog__
-          ]
-      })
+setup(
+    name=__prog__,
+    version=__version__,
+    description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/haidaraM/ansible-playbook-grapher",
+    author="HAIDARA Mohamed El Mouctar",
+    author_email="elmhaidara@gmail.com",
+    license="MIT",
+    install_requires=install_requires,
+    tests_require=test_require,
+    setup_requires=setup_requires,
+    packages=find_packages(exclude=["tests"]),
+    package_data={"ansible-playbook-grapher": ["data/*"]},
+    include_package_data=True,
+    download_url="https://github.com/haidaraM/ansible-playbook-grapher/archive/v"
+    + __version__
+    + ".tar.gz",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: MIT License",
+        "Environment :: Console",
+        "Topic :: Utilities",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+    ],
+    entry_points={
+        "console_scripts": ["%s = ansibleplaybookgrapher.cli:main" % __prog__]
+    },
+)

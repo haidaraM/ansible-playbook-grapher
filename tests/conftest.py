@@ -7,33 +7,36 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import INVENTORY_FILE, FIXTURES_DIR
 
 
-@pytest.fixture(name='data_loader')
+@pytest.fixture(name="data_loader")
 def fixture_data_loader():
     """
     Return an Ansible  DataLoader
     :return:
     """
     from ansible.parsing.dataloader import DataLoader
+
     return DataLoader()
 
 
-@pytest.fixture(name='inventory_manager')
+@pytest.fixture(name="inventory_manager")
 def fixture_inventory_manager(data_loader):
     """
     Return an Ansible  InventoryManager
     :return:
     """
     from ansible.inventory.manager import InventoryManager
+
     return InventoryManager(loader=data_loader, sources=INVENTORY_FILE)
 
 
-@pytest.fixture(name='variable_manager')
+@pytest.fixture(name="variable_manager")
 def fixture_variable_manager(data_loader, inventory_manager):
     """
     Return an Ansible  VariableManager
     :return:
     """
     from ansible.vars.manager import VariableManager
+
     return VariableManager(loader=data_loader, inventory=inventory_manager)
 
 
@@ -44,6 +47,7 @@ def display():
     :return:
     """
     from ansible.utils.display import Display
+
     display = Display()
     display.verbosity = 3
     return display
