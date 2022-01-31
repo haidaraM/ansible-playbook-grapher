@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  black-check-format:
+  black:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
