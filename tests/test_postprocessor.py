@@ -8,7 +8,7 @@ from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor, SVG_NAME
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
-@pytest.fixture(name='post_processor')
+@pytest.fixture(name="post_processor")
 def fixture_simple_postprocessor(request):
     """
     Return a post processor without a graph structure and with the simple_playbook_no_postproccess
@@ -31,12 +31,12 @@ def _assert_common_svg(svg_root: Element):
     :return:
     """
 
-    assert svg_root.get('id') == 'svg'
+    assert svg_root.get("id") == "svg"
 
     # jquery must be the first element because the next script need jquery
-    assert svg_root[0].get('id') == 'jquery'
-    assert svg_root[1].get('id') == 'my_javascript'
-    assert svg_root[2].get('id') == 'my_css'
+    assert svg_root[0].get("id") == "jquery"
+    assert svg_root[1].get("id") == "my_javascript"
+    assert svg_root[2].get("id") == "my_css"
 
 
 def test_post_processor_insert_tag(post_processor: GraphVizPostProcessor):
@@ -45,10 +45,10 @@ def test_post_processor_insert_tag(post_processor: GraphVizPostProcessor):
     :param post_processor:
     :return:
     """
-    post_processor.insert_script_tag(0, attrib={'id': 'toto'})
+    post_processor.insert_script_tag(0, attrib={"id": "toto"})
 
-    assert post_processor.root[0].tag == 'script'
-    assert post_processor.root[0].get('id') == 'toto'
+    assert post_processor.root[0].tag == "script"
+    assert post_processor.root[0].get("id") == "toto"
 
 
 def test_post_processor_write(post_processor: GraphVizPostProcessor, tmpdir):
@@ -64,7 +64,9 @@ def test_post_processor_write(post_processor: GraphVizPostProcessor, tmpdir):
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
-def test_post_processor_without_graph_representation(post_processor: GraphVizPostProcessor, tmpdir):
+def test_post_processor_without_graph_representation(
+    post_processor: GraphVizPostProcessor, tmpdir
+):
     """
     Test the post processor without a graph representation
     :param post_processor:
@@ -83,26 +85,28 @@ def test_post_processor_without_graph_representation(post_processor: GraphVizPos
     _assert_common_svg(root)
 
     # no links should be in the svg when there is no graph_representation
-    assert len(root.xpath("//ns:links", namespaces={'ns': SVG_NAMESPACE})) == 0
+    assert len(root.xpath("//ns:links", namespaces={"ns": SVG_NAMESPACE})) == 0
 
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
-def test_post_processor_with_graph_representation(post_processor: GraphVizPostProcessor, tmpdir):
+def test_post_processor_with_graph_representation(
+    post_processor: GraphVizPostProcessor, tmpdir
+):
     """
     Test the post processor for a graph representation
     :param post_processor:
     :param tmpdir:
     :return:
     """
-    playbook_node = PlaybookNode('')
+    playbook_node = PlaybookNode("")
     svg_post_processed_path = tmpdir.join("simple_playbook_postprocess_graph.svg")
 
     play = PlayNode("play 1", node_id="play_hostsall")
-    playbook_node.add_node('plays', play)
+    playbook_node.add_node("plays", play)
     task_1 = TaskNode("task 1")
     task_2 = TaskNode("task 1")
-    play.add_node('tasks', task_1)
-    play.add_node('tasks', task_2)
+    play.add_node("tasks", task_1)
+    play.add_node("tasks", task_2)
 
     post_processor.post_process(playbook_node)
 
@@ -113,7 +117,10 @@ def test_post_processor_with_graph_representation(post_processor: GraphVizPostPr
     root = etree.parse(svg_post_processed_path.strpath).getroot()
 
     _assert_common_svg(root)
-    elements_links = root.xpath("ns:g/*[@id='%s']//ns:link" % play.id, namespaces={'ns': SVG_NAMESPACE})
+    elements_links = root.xpath(
+        f"ns:g/*[@id='{play.id}']//ns:link", namespaces={"ns": SVG_NAMESPACE}
+    )
     assert len(elements_links) == 2, "Play should have two links"
-    assert [task_1.id, task_2.id] == [e.get("target") for e in
-                                      elements_links], "The tasks ID should equal to the targets"
+    assert [task_1.id, task_2.id] == [
+        e.get("target") for e in elements_links
+    ], "The tasks ID should equal to the targets"

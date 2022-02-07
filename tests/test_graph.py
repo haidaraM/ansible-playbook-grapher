@@ -1,4 +1,11 @@
-from ansibleplaybookgrapher.graph import RoleNode, TaskNode, EdgeNode, PlayNode, BlockNode, get_all_tasks_nodes
+from ansibleplaybookgrapher.graph import (
+    RoleNode,
+    TaskNode,
+    EdgeNode,
+    PlayNode,
+    BlockNode,
+    get_all_tasks_nodes,
+)
 
 
 def test_links_structure():

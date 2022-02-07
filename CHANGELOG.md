@@ -4,8 +4,9 @@
 - feat: Open node file when double-clicking on it from a
   browser [\#79](https://github.com/haidaraM/ansible-playbook-grapher/pull/79)
 - fix: Unhighlight the current node when clicking on a new one
-- fix: Use the correct LICENSE GPLv3 [\#100](https://github.com/haidaraM/ansible-playbook-grapher/pull/100).
+- fix: Use the correct LICENSE GPLv3 [\#100](https://github.com/haidaraM/ansible-playbook-grapher/pull/100)
 - Add some news messages + fix typo and type hint
+- refactor: format the code with black [\#102](https://github.com/haidaraM/ansible-playbook-grapher/pull/102)
 
 - **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.0.2...v1.1.0
 

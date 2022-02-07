@@ -19,7 +19,7 @@ from lxml import etree
 
 from ansibleplaybookgrapher.graph import PlaybookNode
 
-JQUERY = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'
+JQUERY = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
@@ -30,7 +30,7 @@ def _read_data(filename: str) -> str:
     :return:
     """
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, 'data', filename)
+    javascript_path = os.path.join(current_dir, "data", filename)
 
     with open(javascript_path) as javascript:
         return javascript.read()
@@ -56,7 +56,7 @@ class GraphVizPostProcessor:
         :param attrib:
         :return:
         """
-        element_script_tag = etree.Element('script', attrib=attrib)
+        element_script_tag = etree.Element("script", attrib=attrib)
 
         self.root.insert(index, element_script_tag)
 
@@ -82,18 +82,28 @@ class GraphVizPostProcessor:
         :param kwargs:
         :return:
         """
-        self.root.set('id', 'svg')
+        self.root.set("id", "svg")
 
         # insert jquery
-        self.insert_script_tag(0, attrib={'type': 'text/javascript', 'href': JQUERY, 'id': 'jquery'})
+        self.insert_script_tag(
+            0, attrib={"type": "text/javascript", "href": JQUERY, "id": "jquery"}
+        )
 
         # insert my javascript
-        self.insert_cdata(1, 'script', attrib={'type': 'text/javascript', 'id': 'my_javascript'},
-                          cdata_text=_read_data("highlight-hover.js"))
+        self.insert_cdata(
+            1,
+            "script",
+            attrib={"type": "text/javascript", "id": "my_javascript"},
+            cdata_text=_read_data("highlight-hover.js"),
+        )
 
         # insert my css
-        self.insert_cdata(2, 'style', attrib={'type': 'text/css', 'id': 'my_css'},
-                          cdata_text=_read_data("graph.css"))
+        self.insert_cdata(
+            2,
+            "style",
+            attrib={"type": "text/css", "id": "my_css"},
+            cdata_text=_read_data("graph.css"),
+        )
 
         # Curve the text on the edges
         self._curve_text_on_edges()
@@ -120,12 +130,16 @@ class GraphVizPostProcessor:
         links_structure = graph_representation.links_structure()
         for node, node_links in links_structure.items():
             # Find the group g with the specified id
-            xpath_result = self.root.xpath("ns:g/*[@id='%s']" % node.id, namespaces={'ns': SVG_NAMESPACE})
+            xpath_result = self.root.xpath(
+                f"ns:g/*[@id='{node.id}']", namespaces={"ns": SVG_NAMESPACE}
+            )
             if xpath_result:
                 element = xpath_result[0]
-                root_subelement = etree.Element('links')
+                root_subelement = etree.Element("links")
                 for link in node_links:
-                    root_subelement.append(etree.Element('link', attrib={'target': link.id}))
+                    root_subelement.append(
+                        etree.Element("link", attrib={"target": link.id})
+                    )
 
                 element.append(root_subelement)
 
@@ -135,7 +149,9 @@ class GraphVizPostProcessor:
         :return:
         """
         # Fetch all edges
-        edge_elements = self.root.xpath("ns:g/*[starts-with(@id,'edge_')]", namespaces={'ns': SVG_NAMESPACE})
+        edge_elements = self.root.xpath(
+            "ns:g/*[starts-with(@id,'edge_')]", namespaces={"ns": SVG_NAMESPACE}
+        )
 
         for edge in edge_elements:
             path_element = edge.find(".//path", namespaces=self.root.nsmap)
@@ -144,7 +160,7 @@ class GraphVizPostProcessor:
             path_element.set("id", path_id)
 
             # Create a curved textPath
-            text_path = etree.Element('textPath')
+            text_path = etree.Element("textPath")
             text_path.set("{http://www.w3.org/1999/xlink}href", f"#{path_id}")
             text_path.set("text-anchor", "middle")
             text_path.set("startOffset", "50%")
