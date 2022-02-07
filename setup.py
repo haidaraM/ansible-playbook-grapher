@@ -61,7 +61,5 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    entry_points={
-        "console_scripts": ["%s = ansibleplaybookgrapher.cli:main" % __prog__]
-    },
+    entry_points={"console_scripts": [f"{__prog__} = ansibleplaybookgrapher.cli:main"]},
 )

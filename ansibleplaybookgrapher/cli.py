@@ -172,8 +172,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         self.parser.add_argument(
             "--version",
             action="version",
-            version="%s %s (with ansible %s)"
-            % (__prog__, __version__, ansible_version),
+            version=f"{__prog__} {__version__} (with ansible {ansible_version})",
         )
 
         self.parser.add_argument(
@@ -187,7 +186,7 @@ class PlaybookGrapherCLI(GrapherCLI):
 
     def init_parser(self, usage="", desc=None, epilog=None):
         super().init_parser(
-            usage="%s [options] playbook.yml" % __prog__,
+            usage=f"{__prog__} [options] playbook.yml",
             desc="Make graphs from your Ansible Playbooks.",
             epilog=epilog,
         )

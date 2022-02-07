@@ -118,7 +118,7 @@ def test_post_processor_with_graph_representation(
 
     _assert_common_svg(root)
     elements_links = root.xpath(
-        "ns:g/*[@id='%s']//ns:link" % play.id, namespaces={"ns": SVG_NAMESPACE}
+        f"ns:g/*[@id='{play.id}']//ns:link", namespaces={"ns": SVG_NAMESPACE}
     )
     assert len(elements_links) == 2, "Play should have two links"
     assert [task_1.id, task_2.id] == [

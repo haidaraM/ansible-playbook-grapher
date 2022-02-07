@@ -36,7 +36,7 @@ def test_cli_version(capfd):
         cli.parse()
 
     out, err = capfd.readouterr()
-    assert out == "%s %s (with ansible %s)\n" % (__prog__, __version__, ansible_version)
+    assert out == f"{__prog__} {__version__} (with ansible {ansible_version})\n"
 
 
 @pytest.mark.parametrize(
