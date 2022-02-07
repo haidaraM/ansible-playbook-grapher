@@ -289,7 +289,7 @@ class EdgeNode(CompositeNode):
         current_nodes = self._compositions[target_composition]
         if len(current_nodes) == 1:
             raise Exception("An EdgeNode should have at most one linked node")
-        return super(EdgeNode, self).add_node(target_composition, node)
+        return super().add_node(target_composition, node)
 
     @property
     def destination(self) -> Node:

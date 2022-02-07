@@ -131,7 +131,7 @@ class GraphVizPostProcessor:
         for node, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath(
-                "ns:g/*[@id='%s']" % node.id, namespaces={"ns": SVG_NAMESPACE}
+                f"ns:g/*[@id='{node.id}']", namespaces={"ns": SVG_NAMESPACE}
             )
             if xpath_result:
                 element = xpath_result[0]

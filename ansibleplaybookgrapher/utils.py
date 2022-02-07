@@ -64,7 +64,7 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: "PlayNode") -> Tuple[str, str]:
+def get_play_colors(play: object) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play

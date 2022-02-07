@@ -49,7 +49,7 @@ class GrapherCLI(CLI, ABC):
     """
 
     def run(self):
-        super(GrapherCLI, self).run()
+        super().run()
 
         # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
         initialize_locale()
@@ -88,7 +88,7 @@ class PlaybookGrapherCLI(GrapherCLI):
     """
 
     def __init__(self, args, callback=None):
-        super(PlaybookGrapherCLI, self).__init__(args=args, callback=callback)
+        super().__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
         # But this may change in the future:
@@ -163,7 +163,7 @@ class PlaybookGrapherCLI(GrapherCLI):
             help="""The custom formats to use as URLs for the nodes in the graph. Required if 
                                  --open-protocol-handler is set to custom.
                                  You should provide a JSON formatted string like: {"file": "", "folder": ""}.
-                                 Example: If you want to open folders (roles) inside the browser and files (tasks) in 
+                                 Example: If you want to open folders (roles) inside the browser and files (tasks) in
                                  vscode, set this to 
                                  '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
                                  """,
@@ -186,7 +186,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         option_helpers.add_runtask_options(self.parser)
 
     def init_parser(self, usage="", desc=None, epilog=None):
-        super(PlaybookGrapherCLI, self).init_parser(
+        super().init_parser(
             usage="%s [options] playbook.yml" % __prog__,
             desc="Make graphs from your Ansible Playbooks.",
             epilog=epilog,
@@ -195,7 +195,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         self._add_my_options()
 
     def post_process_args(self, options):
-        options = super(PlaybookGrapherCLI, self).post_process_args(options)
+        options = super().post_process_args(options)
 
         # init the options
         self.options = options
