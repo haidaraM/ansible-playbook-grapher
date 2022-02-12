@@ -282,7 +282,7 @@ class PlaybookParser(BaseParser):
         parent_nodes: List[CompositeNode],
         block: Union[Block, TaskInclude],
         node_type: str,
-        play_vars: Dict = None,
+        play_vars: Dict,
     ):
         """
         Recursively read all the tasks of the block and add it to the graph

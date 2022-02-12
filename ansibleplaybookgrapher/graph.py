@@ -112,7 +112,7 @@ class CompositeNode(Node):
         list of the linked nodes
         :return:
         """
-        links = defaultdict(list)
+        links: Dict[Node, List[Node]] = defaultdict(list)
         self._get_all_links(links)
         return links
 
@@ -364,6 +364,6 @@ def get_all_tasks_nodes(composite: CompositeNode) -> List[TaskNode]:
     :param composite:
     :return:
     """
-    tasks = []
+    tasks: List[TaskNode] = []
     _get_all_tasks_nodes(composite, tasks)
     return tasks

@@ -160,7 +160,7 @@ class PlaybookGrapherCLI(GrapherCLI):
             "--open-protocol-custom-formats",
             dest="open_protocol_custom_formats",
             default=None,
-            help="""The custom formats to use as URLs for the nodes in the graph. Required if 
+            help="""The custom formats to use as URLs for the nodes in the graph. Required if
                                  --open-protocol-handler is set to custom.
                                  You should provide a JSON formatted string like: {"file": "", "folder": ""}.
                                  Example: If you want to open folders (roles) inside the browser and files (tasks) in
