@@ -241,7 +241,7 @@ def test_with_block(request):
     svg_path, playbook_path = run_grapher(
         "with_block.yml",
         output_filename=request.node.name,
-        additional_args=["--include-role-tasks"],
+        additional_args=["--include-role-tasks", "--save-dot-file"],
     )
 
     _common_tests(
