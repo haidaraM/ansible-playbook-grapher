@@ -1,4 +1,4 @@
-# 1.1.0 (unreleased)
+# 1.1.0 (2022-02-12)
 
 - fix: Do not pass display as param since it's a singleton + init locale to fix warning
 - feat: Open node file when double-clicking on it from a
