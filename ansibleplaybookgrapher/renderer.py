@@ -112,9 +112,9 @@ class GraphvizRenderer:
     def render_node(
         self,
         graph: Digraph,
+        edge_counter: int,
         edge: EdgeNode,
         color: str,
-        node_counter: int,
         shape: str = "octagon",
         **kwargs,
     ):
@@ -123,7 +123,7 @@ class GraphvizRenderer:
         :param graph: The graph to render the node to
         :param edge: The edge from a node to the Node
         :param color: The color to apply
-        :param node_counter: The counter for this node
+        :param edge_counter: The counter for this node
         :param shape: the default shape of the node
         :return:
         """
@@ -132,11 +132,13 @@ class GraphvizRenderer:
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
         if isinstance(destination_node, BlockNode):
-            self.render_block(graph, node_counter, edge, color)
+            self.render_block(graph, edge_counter, edge, color)
         elif isinstance(destination_node, RoleNode):
-            self.render_role(graph, node_counter, edge, color)
+            self.render_role(graph, edge_counter, edge, color)
         else:
-            edge_label = f"{node_counter} {edge.name}"
+            # Here we have a TaskNode
+            edge_label = f"{edge_counter} {edge.name}"
+            # Task node
             graph.node(
                 destination_node.id,
                 label=node_label_prefix + destination_node.name,
@@ -146,6 +148,7 @@ class GraphvizRenderer:
                 color=color,
                 URL=self.get_node_url(destination_node, "file"),
             )
+            # Edge from parent to task
             graph.edge(
                 source_node.id,
                 destination_node.id,
@@ -163,7 +166,6 @@ class GraphvizRenderer:
         edge_counter: int,
         edge: EdgeNode,
         color: str,
-        label_prefix="",
         **kwargs,
     ):
         """
@@ -174,16 +176,30 @@ class GraphvizRenderer:
         :param edge: The edge from a node to the BlockNode
         :param color: The color to apply
         :param kwargs:
-        :param label_prefix: A prefix to add to the node label
         :return:
         """
         # noinspection PyTypeChecker
         destination_node = edge.destination  # type: BlockNode
         edge_label = f"{edge_counter}"
 
+        # Edge from parent to the block node inside the cluster
+        graph.edge(
+            edge.source.id,
+            destination_node.id,
+            label=edge_label,
+            color=color,
+            fontcolor=color,
+            tooltip=edge_label,
+            id=edge.id,
+            labeltooltip=edge_label,
+        )
+
         # BlockNode is a special node: a cluster is created instead of a normal node
-        with graph.subgraph(name=f"cluster_{destination_node.id}") as block_subgraph:
-            block_subgraph.node(
+        with graph.subgraph(
+            name=f"cluster_{destination_node.id}"
+        ) as cluster_block_subgraph:
+            # block node
+            cluster_block_subgraph.node(
                 destination_node.id,
                 label=f"[block] {destination_node.name}",
                 shape="box",
@@ -193,16 +209,6 @@ class GraphvizRenderer:
                 labeltooltip=destination_node.name,
                 URL=self.get_node_url(destination_node, "file"),
             )
-            graph.edge(
-                edge.source.id,
-                destination_node.id,
-                label=edge_label,
-                color=color,
-                fontcolor=color,
-                tooltip=edge_label,
-                id=edge.id,
-                labeltooltip=edge_label,
-            )
 
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
             #  Don't really know why for the moment neither if there is an attribute to change that.
@@ -210,10 +216,10 @@ class GraphvizRenderer:
                 reversed(destination_node.tasks)
             ):
                 self.render_node(
-                    block_subgraph,
-                    task_edge_node,
-                    color,
-                    len(destination_node.tasks) - b_counter,
+                    cluster_block_subgraph,
+                    edge_counter=len(destination_node.tasks) - b_counter,
+                    edge=task_edge_node,
+                    color=color,
                 )
 
     def render_role(
@@ -237,7 +243,19 @@ class GraphvizRenderer:
         else:  # For normal role invocation, we point to the folder
             url = self.get_node_url(role, "folder")
 
-        with self.digraph.subgraph(name=role.name, node_attr={}) as role_subgraph:
+        # from parent to the role node
+        graph.edge(
+            edge.source.id,
+            role.id,
+            label=role_edge_label,
+            color=color,
+            fontcolor=color,
+            id=edge.id,
+            tooltip=role_edge_label,
+            labeltooltip=role_edge_label,
+        )
+
+        with graph.subgraph(name=role.name, node_attr={}) as role_subgraph:
             role_subgraph.node(
                 role.id,
                 id=role.id,
@@ -246,22 +264,13 @@ class GraphvizRenderer:
                 color=color,
                 URL=url,
             )
-            # from parent to role
-            graph.edge(
-                edge.source.id,
-                role.id,
-                label=role_edge_label,
-                color=color,
-                fontcolor=color,
-                id=edge.id,
-                tooltip=role_edge_label,
-                labeltooltip=role_edge_label,
-            )
-
             # role tasks
             for role_task_counter, role_task_edge in enumerate(role.tasks, 1):
                 self.render_node(
-                    role_subgraph, role_task_edge, color, node_counter=role_task_counter
+                    role_subgraph,
+                    edge_counter=role_task_counter,
+                    edge=role_task_edge,
+                    color=color,
                 )
 
     def _convert_to_graphviz(self):
@@ -283,11 +292,11 @@ class GraphvizRenderer:
             play = play_edge.destination  # type: PlayNode
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 color, play_font_color = get_play_colors(play)
-                # play node
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )
-                self.digraph.node(
+                # play node
+                play_subgraph.node(
                     play.id,
                     id=play.id,
                     label=play.name,
@@ -315,30 +324,30 @@ class GraphvizRenderer:
                 for pre_task_counter, pre_task_edge in enumerate(play.pre_tasks, 1):
                     self.render_node(
                         play_subgraph,
-                        pre_task_edge,
-                        color,
-                        node_counter=pre_task_counter,
+                        edge_counter=pre_task_counter,
+                        edge=pre_task_edge,
+                        color=color,
                         node_label_prefix="[pre_task] ",
                     )
 
                 # roles
                 for role_counter, role_edge in enumerate(play.roles, 1):
                     self.render_role(
-                        self.digraph,
-                        role_counter + len(play.pre_tasks),
-                        role_edge,
-                        color,
+                        play_subgraph,
+                        edge_counter=role_counter + len(play.pre_tasks),
+                        edge=role_edge,
+                        color=color,
                     )
 
                 # tasks
                 for task_counter, task_edge in enumerate(play.tasks, 1):
                     self.render_node(
                         play_subgraph,
-                        task_edge,
-                        color,
-                        node_counter=len(play.pre_tasks)
+                        edge_counter=len(play.pre_tasks)
                         + len(play.roles)
                         + task_counter,
+                        edge=task_edge,
+                        color=color,
                         node_label_prefix="[task] ",
                     )
 
@@ -346,12 +355,12 @@ class GraphvizRenderer:
                 for post_task_counter, post_task_edge in enumerate(play.post_tasks, 1):
                     self.render_node(
                         play_subgraph,
-                        post_task_edge,
-                        color,
-                        node_counter=len(play.pre_tasks)
+                        edge_counter=len(play.pre_tasks)
                         + len(play.roles)
                         + len(play.tasks)
                         + post_task_counter,
+                        edge=post_task_edge,
+                        color=color,
                         node_label_prefix="[post_task] ",
                     )
 
