@@ -1,3 +1,14 @@
+# 1.1.1 (2022-05-16)
+
+* ci: Ansible 2.11.8 and 2.12.2 and ubuntu-latest by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/103
+* fix: Properly rank the edges in the graphs and sub-graphs by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/104
+* chore(deps): bump pytest from 6.2.5 to 7.0.1 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/105
+* chore(deps): bump pytest from 7.0.1 to 7.1.1 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/106
+
 # 1.1.0 (2022-02-12)
 
 - fix: Do not pass display as param since it's a singleton + init locale to fix warning
