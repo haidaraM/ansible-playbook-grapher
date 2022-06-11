@@ -120,7 +120,7 @@ class CompositeNode(Node):
 
     def _get_all_tasks_nodes(self, task_acc: List["Node"]):
         """
-
+        Recursively get all tasks
         :param task_acc:
         :return:
         """
@@ -282,7 +282,7 @@ class BlockNode(CompositeTasksNode):
 
 class TaskNode(Node):
     """
-    A task node. Can be pre_task, task or post_task
+    A task node. This matches an Ansible Task.
     """
 
     def __init__(
@@ -318,11 +318,19 @@ class RoleNode(CompositeTasksNode):
         :param node_id:
         :param raw_object:
         """
+        self.include_role = include_role
         super().__init__(
             node_name, node_id or generate_id("role_"), when=when, raw_object=raw_object
         )
-        self.include_role = include_role
-        if raw_object and not include_role:
+
+    def retrieve_position(self):
+        """
+        Retrieve the position depending on whether it's an include_role or not
+        :return:
+        """
+        if self.raw_object and not self.include_role:
             # If it's not an include_role, we take the role path which the path to the folder where the role is located
             # on the disk
-            self.path = raw_object._role_path
+            self.path = self.raw_object._role_path
+        else:
+            super().retrieve_position()
