@@ -4,7 +4,6 @@ from ansibleplaybookgrapher.graph import (
     EdgeNode,
     PlayNode,
     BlockNode,
-    get_all_tasks_nodes,
 )
 
 
@@ -56,13 +55,11 @@ def test_get_all_tasks_nodes():
     play = PlayNode("play")
 
     role_1 = RoleNode("my_role_1")
-    edge_role = EdgeNode(play, role_1, "from play to role")
-    play.add_node("roles", edge_role)
+    play.add_node("roles", role_1)
 
     # play -> role 1 -> edge 1 -> task 1
     task_1 = TaskNode("task 1")
-    edge_1 = EdgeNode(role_1, task_1, "from role1 to task 1")
-    role_1.add_node("tasks", edge_1)
+    role_1.add_node("tasks", task_1)
 
     # play -> block_1 -> task 2 and task 3
     block_1 = BlockNode("block 1")
@@ -77,6 +74,6 @@ def test_get_all_tasks_nodes():
     block_2.add_node("tasks", task_4)
     block_1.add_node("tasks", block_2)
 
-    all_tasks = get_all_tasks_nodes(play)
+    all_tasks = play.get_all_tasks()
     assert len(all_tasks) == 4, "There should be 4 tasks in all"
     assert [task_1, task_2, task_3, task_4] == all_tasks

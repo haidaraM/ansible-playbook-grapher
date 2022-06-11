@@ -10,7 +10,7 @@ from ansibleplaybookgrapher.graph import (
     TaskNode,
     BlockNode,
     RoleNode,
-    get_all_tasks_nodes,
+    Node,
     CompositeNode,
 )
 from tests import FIXTURES_DIR
@@ -21,16 +21,19 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_PATH = os.path.join(DIR_PATH, FIXTURES_DIR)
 
 
-def get_all_tasks(composites: List[CompositeNode]) -> List[TaskNode]:
+def get_all_tasks(nodes: List[Node]) -> List[TaskNode]:
     """
-    Get all tasks from a list of composite nodes
-    :param composites:
+    Recursively Get all tasks from a list of nodes
+    :param nodes:
     :return:
     """
     tasks = []
 
-    for c in composites:
-        tasks.extend(get_all_tasks_nodes(c))
+    for n in nodes:
+        if isinstance(n, CompositeNode):
+            tasks.extend(n.get_all_tasks())
+        else:
+            tasks.append(n)
 
     return tasks
 
@@ -50,7 +53,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert playbook_node.line == 1
     assert playbook_node.column == 1
 
-    play_node = playbook_node.plays[0].destination
+    play_node = playbook_node.plays[0]
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert play_node.line == 2
 
@@ -72,10 +75,10 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     parser = PlaybookParser(grapher_cli.options.playbook_filename)
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
-    play_node = playbook_node.plays[0].destination
+    play_node = playbook_node.plays[0]
     assert len(play_node.roles) == 2
 
-    fake_role = play_node.roles[0].destination
+    fake_role = play_node.roles[0]
     assert isinstance(fake_role, RoleNode)
     assert not fake_role.include_role
     assert fake_role.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
@@ -95,7 +98,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     )
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
-    play_node = playbook_node.plays[0].destination
+    play_node = playbook_node.plays[0]
     tasks = play_node.tasks
     assert len(tasks) == 6
 
@@ -106,7 +109,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     ), "A warning should be displayed regarding loop being not supported"
 
     # first include_role
-    include_role_1 = tasks[0].destination
+    include_role_1 = tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
     assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
@@ -116,27 +119,27 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     ), "We don't support adding tasks from include_role with loop"
 
     # first task
-    assert tasks[1].destination.name == "(1) Debug"
-    assert tasks[1].name == '[when: ansible_os == "ubuntu"]'
+    assert tasks[1].name == "(1) Debug"
+    assert tasks[1].when == '[when: ansible_os == "ubuntu"]'
 
     # second include_role
-    include_role_2 = tasks[2].destination
+    include_role_2 = tasks[2]
     assert isinstance(include_role_2, RoleNode)
     assert include_role_2.include_role
     assert len(include_role_2.tasks) == 3
 
     # second task
-    assert tasks[3].destination.name == "(3) Debug 2"
+    assert tasks[3].name == "(3) Debug 2"
 
     # third include_role
-    include_role_3 = tasks[4].destination
-    assert tasks[4].name == "[when: x is not defined]"
+    include_role_3 = tasks[4]
+    assert tasks[4].when == "[when: x is not defined]"
     assert isinstance(include_role_3, RoleNode)
     assert include_role_3.include_role
     assert len(include_role_3.tasks) == 3
 
     # fourth include_role
-    include_role_4 = tasks[5].destination
+    include_role_4 = tasks[5]
     assert isinstance(include_role_4, RoleNode)
     assert include_role_4.include_role
     assert (
@@ -157,13 +160,15 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
 
-    play_node = playbook_node.plays[0].destination
+    play_node = playbook_node.plays[0]
     pre_tasks = play_node.pre_tasks
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
+
     total_pre_tasks = get_all_tasks(pre_tasks)
     total_tasks = get_all_tasks(tasks)
     total_post_tasks = get_all_tasks(post_tasks)
+
     assert (
         len(total_pre_tasks) == 4
     ), f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
@@ -176,9 +181,9 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
 
     # Check pre tasks
     assert isinstance(
-        pre_tasks[0].destination, RoleNode
+        pre_tasks[0], RoleNode
     ), "The first edge should have a RoleNode as destination"
-    pre_task_block = pre_tasks[1].destination
+    pre_task_block = pre_tasks[1]
     assert isinstance(
         pre_task_block, BlockNode
     ), "The second edge should have a BlockNode as destination"
@@ -186,22 +191,22 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert pre_task_block.line == 7
 
     # Check tasks
-    task_1 = tasks[0].destination
+    task_1 = tasks[0]
     assert isinstance(task_1, TaskNode)
     assert task_1.name == "Install tree"
 
     # Check the second task: the first block
-    first_block = tasks[1].destination
+    first_block = tasks[1]
     assert isinstance(first_block, BlockNode)
     assert first_block.name == "Install Apache"
     assert len(first_block.tasks) == 4
 
     # Check the second block (nested block)
-    nested_block = first_block.tasks[2].destination
+    nested_block = first_block.tasks[2]
     assert isinstance(nested_block, BlockNode)
     assert len(nested_block.tasks) == 2
-    assert nested_block.tasks[0].destination.name == "get_url"
-    assert nested_block.tasks[1].destination.name == "command"
+    assert nested_block.tasks[0].name == "get_url"
+    assert nested_block.tasks[1].name == "command"
 
     # Check the post task
-    assert post_tasks[0].destination.name == "Debug"
+    assert post_tasks[0].name == "Debug"

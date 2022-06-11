@@ -28,7 +28,6 @@ from ansible.template import Templar
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph import (
-    EdgeNode,
     TaskNode,
     PlaybookNode,
     RoleNode,
@@ -111,16 +110,15 @@ class BaseParser(ABC):
         display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
 
         task_name = clean_name(self.template(task.get_name(), task_vars))
-        edge_label = convert_when_to_str(task.when)
-
-        edge_node = EdgeNode(
-            source=parent_node,
-            node_name=edge_label,
-            destination=TaskNode(
-                task_name, generate_id(f"{node_type}_"), raw_object=task
+        parent_node.add_node(
+            target_composition=f"{node_type}s",
+            node=TaskNode(
+                task_name,
+                generate_id(f"{node_type}_"),
+                when=convert_when_to_str(task.when),
+                raw_object=task,
             ),
         )
-        parent_node.add_node(target_composition=f"{node_type}s", node=edge_node)
 
         return True
 
@@ -194,7 +192,7 @@ class PlaybookParser(BaseParser):
             display.banner("Parsing " + play_name)
 
             play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
-            playbook_root_node.add_play(play_node, "")
+            playbook_root_node.add_node("plays", play_node)
 
             # loop through the pre_tasks
             display.v("Parsing pre_tasks...")
@@ -228,7 +226,7 @@ class PlaybookParser(BaseParser):
 
                 role_node = RoleNode(clean_name(role.get_name()), raw_object=role)
                 # edge from play to role
-                play_node.add_node("roles", EdgeNode(play_node, role_node))
+                play_node.add_node("roles", role_node)
 
                 if self.include_role_tasks:
                     # loop through the tasks of the roles
@@ -297,11 +295,10 @@ class PlaybookParser(BaseParser):
 
         if not block._implicit and block._role is None:
             # Here we have an explicit block. Ansible internally converts all normal tasks to Block
-            block_node = BlockNode(str(block.name), raw_object=block)
-            parent_nodes[-1].add_node(
-                f"{node_type}s",
-                EdgeNode(parent_nodes[-1], block_node, convert_when_to_str(block.when)),
+            block_node = BlockNode(
+                str(block.name), when=convert_when_to_str(block.when), raw_object=block
             )
+            parent_nodes[-1].add_node(f"{node_type}s", block_node)
             parent_nodes.append(block_node)
 
         # loop through the tasks
@@ -340,16 +337,13 @@ class PlaybookParser(BaseParser):
 
                     role_node = RoleNode(
                         task_or_block.get_name(),
+                        when=convert_when_to_str(task_or_block.when),
                         raw_object=task_or_block,
                         include_role=True,
                     )
                     parent_nodes[-1].add_node(
                         f"{node_type}s",
-                        EdgeNode(
-                            parent_nodes[-1],
-                            role_node,
-                            convert_when_to_str(task_or_block.when),
-                        ),
+                        role_node,
                     )
 
                     if task_or_block.loop:  # Looping on include_role is not supported
