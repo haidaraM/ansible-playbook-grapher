@@ -373,9 +373,9 @@ class GraphvizRenderer:
                         source=play,
                         destination=post_task,
                         counter=len(play.pre_tasks)
-                                + len(play.roles)
-                                + len(play.tasks)
-                                + post_task_counter,
+                        + len(play.roles)
+                        + len(play.tasks)
+                        + post_task_counter,
                         color=color,
                         node_label_prefix="[post_task] ",
                     )
