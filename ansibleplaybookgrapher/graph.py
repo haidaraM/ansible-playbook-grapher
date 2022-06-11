@@ -132,17 +132,17 @@ class CompositeNode(Node):
                 elif isinstance(node, CompositeNode):
                     node._get_all_tasks_nodes(task_acc)
 
-    def links_structure(self) -> Dict[Node, List[Node]]:
+    def links_structure(self) -> Dict[str, List[Node]]:
         """
         Return a representation of the composite node where each key of the dictionary is the node and the value is the
         list of the linked nodes
         :return:
         """
-        links: Dict[Node, List[Node]] = defaultdict(list)
+        links: Dict[str, List[Node]] = defaultdict(list)
         self._get_all_links(links)
         return links
 
-    def _get_all_links(self, links: Dict[Node, List[Node]]):
+    def _get_all_links(self, links: Dict[str, List[Node]]):
         """
         Recursively get the node links
         :return:
@@ -151,7 +151,7 @@ class CompositeNode(Node):
             for node in nodes:
                 if isinstance(node, CompositeNode):
                     node._get_all_links(links)
-                links[self].append(node)
+                links[self.id].append(node)
 
 
 class CompositeTasksNode(CompositeNode):
@@ -278,51 +278,6 @@ class BlockNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
         )
-
-
-class EdgeNode(CompositeNode):
-    """
-    An edge between two nodes. It's a special case of composite node with only one composition with one element
-    """
-
-    def __init__(
-        self, source: Node, destination: Node, node_name: str = "", node_id: str = None
-    ):
-        """
-
-        :param node_name: The edge name
-        :param source: The edge source node
-        :param destination: The edge destination node
-        :param node_id: The edge id
-        """
-        super().__init__(
-            node_name,
-            node_id or generate_id("edge_"),
-            raw_object=None,
-            supported_compositions=["destination"],
-        )
-        self.source = source
-        self.add_node("destination", destination)
-
-    def add_node(self, target_composition: str, node: Node):
-        """
-        Override the add_node. An edge node should only have one linked node
-        :param target_composition:
-        :param node:
-        :return:
-        """
-        current_nodes = self._compositions[target_composition]
-        if len(current_nodes) == 1:
-            raise Exception("An EdgeNode should have at most one linked node")
-        return super().add_node(target_composition, node)
-
-    @property
-    def destination(self) -> Node:
-        """
-        Return the destination of the edge
-        :return:
-        """
-        return self._compositions["destination"][0]
 
 
 class TaskNode(Node):
