@@ -134,8 +134,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[str, List[Node]]:
         """
-        Return a representation of the composite node where each key of the dictionary is the node and the value is the
-        list of the linked nodes
+        Return a representation of the composite node where each key of the dictionary is the node id and the
+         value is the list of the linked nodes
         :return:
         """
         links: Dict[str, List[Node]] = defaultdict(list)
@@ -147,7 +147,7 @@ class CompositeNode(Node):
         Recursively get the node links
         :return:
         """
-        for target, nodes in self._compositions.items():
+        for _, nodes in self._compositions.items():
             for node in nodes:
                 if isinstance(node, CompositeNode):
                     node._get_all_links(links)
