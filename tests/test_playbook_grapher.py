@@ -172,7 +172,7 @@ def test_include_tasks(request):
 
 def test_import_tasks(request):
     """
-    Test include_tasks.yml, an example with some imported tasks
+    Test import_tasks.yml, an example with some imported tasks
     """
     svg_path, playbook_path = run_grapher(
         "import_tasks.yml", output_filename=request.node.name
