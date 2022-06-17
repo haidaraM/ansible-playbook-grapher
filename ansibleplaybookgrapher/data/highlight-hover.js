@@ -25,6 +25,9 @@ function highlightLinkedNodes(rootElement) {
         let currentElement = $('#' + target);
         currentElement.addClass(HIGHLIGHT_CLASS);
 
+        // Highlight the edge point to the target
+        $('#edge_' + target).addClass(HIGHLIGHT_CLASS);
+
         // Recursively highlight
         highlightLinkedNodes(currentElement);
     })
@@ -47,8 +50,10 @@ function unHighlightLinkedNodes(rootElement, isHover) {
             let linkedElementId = $(element).attr('target');
             let linkedElement = $('#' + linkedElementId);
 
-            if (linkedElement.attr("id") !== currentSelectedElementId) {
+            if (linkedElement.attr('id') !== currentSelectedElementId) {
                 linkedElement.removeClass(HIGHLIGHT_CLASS);
+                // Unhighlight the edge point to the target
+                $('#edge_' + linkedElementId).removeClass(HIGHLIGHT_CLASS);
                 // Recursively unhighlight
                 unHighlightLinkedNodes(linkedElement, isHover);
             }

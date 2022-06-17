@@ -128,10 +128,10 @@ class GraphVizPostProcessor:
         Insert graph in the SVG
         """
         links_structure = graph_representation.links_structure()
-        for node, node_links in links_structure.items():
+        for node_id, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath(
-                f"ns:g/*[@id='{node.id}']", namespaces={"ns": SVG_NAMESPACE}
+                f"ns:g/*[@id='{node_id}']", namespaces={"ns": SVG_NAMESPACE}
             )
             if xpath_result:
                 element = xpath_result[0]
