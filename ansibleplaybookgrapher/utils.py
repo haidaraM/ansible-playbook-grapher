@@ -56,7 +56,7 @@ def hash_value(value: str) -> str:
     """
 
     m = hashlib.md5()
-    m.update(value.encode('utf-8'))
+    m.update(value.encode("utf-8"))
     return m.hexdigest()[:8]
 
 

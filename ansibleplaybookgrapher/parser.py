@@ -40,7 +40,8 @@ from ansibleplaybookgrapher.utils import (
     handle_include_path,
     has_role_parent,
     generate_id,
-    convert_when_to_str, hash_value,
+    convert_when_to_str,
+    hash_value,
 )
 
 display = Display()
@@ -224,8 +225,11 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_node = RoleNode(clean_name(role.get_name()), node_id="role_" + hash_value(role.get_name()),
-                                     raw_object=role)
+                role_node = RoleNode(
+                    clean_name(role.get_name()),
+                    node_id="role_" + hash_value(role.get_name()),
+                    raw_object=role,
+                )
                 # edge from play to role
                 play_node.add_node("roles", role_node)
 

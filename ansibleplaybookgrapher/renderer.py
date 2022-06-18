@@ -83,6 +83,8 @@ class GraphvizRenderer:
             edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR,
         )
 
+        self._rendered_roles = {}
+
     def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
         """
         Render the graph
@@ -166,7 +168,7 @@ class GraphvizRenderer:
                 label=edge_label,
                 color=color,
                 fontcolor=color,
-                id=f"edge_{source.id}_{destination.id}",
+                id=f"edge_${counter}_{source.id}_{destination.id}",
                 tooltip=edge_label,
                 labeltooltip=edge_label,
             )
@@ -201,7 +203,7 @@ class GraphvizRenderer:
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{source.id}_{destination.id}",
+            id=f"edge_{counter}_{source.id}_{destination.id}",
             labeltooltip=edge_label,
         )
 
@@ -256,6 +258,31 @@ class GraphvizRenderer:
             url = self.get_node_url(destination, "folder")
 
         role_edge_label = f"{counter} {destination.when}"
+
+        # check if we already rendered this role
+        role_to_render = self._rendered_roles.get(destination.name, None)
+        if role_to_render is None:
+            self._rendered_roles[destination.name] = destination
+
+            with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+                role_subgraph.node(
+                    destination.id,
+                    id=destination.id,
+                    label=f"[role] {destination.name}",
+                    tooltip=destination.name,
+                    color=color,
+                    URL=url,
+                )
+                # role tasks
+                for role_task_counter, role_task in enumerate(destination.tasks, 1):
+                    self.render_node(
+                        role_subgraph,
+                        source=destination,
+                        destination=role_task,
+                        counter=role_task_counter,
+                        color=color,
+                    )
+
         # from parent to the role node
         graph.edge(
             source.id,
@@ -263,29 +290,10 @@ class GraphvizRenderer:
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{source.id}_{destination.id}",
+            id=f"edge_{counter}_{source.id}_{destination.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
-
-        with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
-            role_subgraph.node(
-                destination.id,
-                id=destination.id,
-                label=f"[role] {destination.name}",
-                tooltip=destination.name,
-                color=color,
-                URL=url,
-            )
-            # role tasks
-            for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                self.render_node(
-                    role_subgraph,
-                    source=destination,
-                    destination=role_task,
-                    counter=role_task_counter,
-                    color=color,
-                )
 
     def _convert_to_graphviz(self):
         """
