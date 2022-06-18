@@ -166,7 +166,7 @@ class GraphvizRenderer:
                 label=edge_label,
                 color=color,
                 fontcolor=color,
-                id=f"edge_{destination.id}",
+                id=f"edge_{source.id}_{destination.id}",
                 tooltip=edge_label,
                 labeltooltip=edge_label,
             )
@@ -201,7 +201,7 @@ class GraphvizRenderer:
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{destination.id}",
+            id=f"edge_{source.id}_{destination.id}",
             labeltooltip=edge_label,
         )
 
@@ -263,7 +263,7 @@ class GraphvizRenderer:
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{destination.id}",
+            id=f"edge_{source.id}_{destination.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
@@ -326,7 +326,7 @@ class GraphvizRenderer:
                 self.digraph.edge(
                     self.playbook_node.name,
                     play.id,
-                    id=f"edge_{play.id}",
+                    id=f"edge_{self.playbook_node.id}_{play.id}",
                     label=playbook_to_play_label,
                     color=color,
                     fontcolor=color,

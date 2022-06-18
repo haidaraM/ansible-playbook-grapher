@@ -169,6 +169,7 @@ class GraphVizPostProcessor:
 
             # Move a little the text
             text_element.set("dy", "-0.5%")
+            text_element.set("dx", "2%")
             # Remove unnecessary attributes
             text_element.attrib.pop("x")
             text_element.attrib.pop("y")

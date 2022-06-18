@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import hashlib
 import os
 import uuid
 from typing import Tuple, List
@@ -41,6 +42,22 @@ def convert_when_to_str(when: List) -> str:
     # Convert each element in the list to str
     when_to_str = list(map(str, when))
     return f"[when: {' and '.join(when_to_str)}]"
+
+
+def hash_value(value: str) -> str:
+    """
+    Convert name to md5 to avoid issues with special chars,
+    The ID are not visible to end user in web/rendered graph so we do
+    not have to care to make them look pretty.
+    There are chances for hash collisions, but we do not care for that
+    so much in here.
+    :param value: string which represents id
+    :return: string representing a hex hash
+    """
+
+    m = hashlib.md5()
+    m.update(value.encode('utf-8'))
+    return m.hexdigest()[:8]
 
 
 def generate_id(prefix: str = "") -> str:
