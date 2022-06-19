@@ -243,7 +243,7 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                # end of roles loop
+                    # end of roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -340,9 +340,11 @@ class PlaybookParser(BaseParser):
                         f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'"
                     )
 
+                    # Here we are using the role name instead of the task name to keep the same behavior  as a
+                    #  traditional role
                     role_node = RoleNode(
-                        task_or_block.get_name(),
-                        node_id="role_" + hash_value(task_or_block.get_name()),
+                        task_or_block._role_name,
+                        node_id="role_" + hash_value(task_or_block._role_name),
                         when=convert_when_to_str(task_or_block.when),
                         raw_object=task_or_block,
                         include_role=True,
