@@ -22,12 +22,14 @@ let currentSelectedElement = null;
 function highlightLinkedNodes(parentElement) {
     const parentElementId = $(parentElement).attr('id')
     $(parentElement).find('link').each(function (index, element) {
-        let target = $(element).attr('target');
-        let currentElement = $('#' + target);
+        const target = $(element).attr('target');
+        const edge = $(element).attr('edge');
+
+        const currentElement = $(`#${target}`);
         currentElement.addClass(HIGHLIGHT_CLASS);
 
         // Highlight the edge point to the target
-        $(`#edge_${parentElementId}_${target}`).addClass(HIGHLIGHT_CLASS);
+        $(`#${edge}`).addClass(HIGHLIGHT_CLASS);
 
         // Recursively highlight
         highlightLinkedNodes(currentElement);
@@ -48,14 +50,16 @@ function unHighlightLinkedNodes(parentElement, isHover) {
     if ($(parentElement).attr('id') !== currentSelectedElementId || !isHover) {
 
         $(parentElement).find('link').each(function (index, element) {
-            let linkedElementId = $(element).attr('target');
-            let linkedElement = $('#' + linkedElementId);
+            const linkedElementId = $(element).attr('target');
+            const edge = $(element).attr('edge');
+
+            const linkedElement = $('#' + linkedElementId);
 
             if (linkedElement.attr('id') !== currentSelectedElementId) {
                 linkedElement.removeClass(HIGHLIGHT_CLASS);
 
                 // Unhighlight the edge point to the target
-                $(`#edge_${parentElementId}_${linkedElementId}`).removeClass(HIGHLIGHT_CLASS);
+                $(`#${edge}`).removeClass(HIGHLIGHT_CLASS);
 
                 // Recursively unhighlight
                 unHighlightLinkedNodes(linkedElement, isHover);

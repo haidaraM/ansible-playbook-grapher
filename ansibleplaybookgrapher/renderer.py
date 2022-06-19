@@ -168,7 +168,7 @@ class GraphvizRenderer:
                 label=edge_label,
                 color=color,
                 fontcolor=color,
-                id=f"edge_${counter}_{source.id}_{destination.id}",
+                id=f"edge_{counter}_{source.id}_{destination.id}",
                 tooltip=edge_label,
                 labeltooltip=edge_label,
             )
