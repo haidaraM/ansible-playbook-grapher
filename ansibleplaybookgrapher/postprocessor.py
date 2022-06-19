@@ -168,14 +168,19 @@ class GraphVizPostProcessor:
             # Create a curved textPath
             text_path = etree.Element("textPath")
             text_path.set("{http://www.w3.org/1999/xlink}href", f"#{path_id}")
-            text_path.set("text-anchor", "middle")
-            text_path.set("startOffset", "50%")
+
+            # Depending on the text length, put the edge label near the node
+            if len(text_element.text) < 5:
+                # This is when the edge is only the counter (no when condition)
+                text_path.set("startOffset", "75%")
+            else:
+                text_path.set("startOffset", "50%")
+
             text_path.text = text_element.text
             text_element.append(text_path)
 
             # Move a little the text
-            text_element.set("dy", "-0.5%")
-            text_element.set("dx", "2%")
+            text_element.set("dy", "-0.4%")
             # Remove unnecessary attributes
             text_element.attrib.pop("x")
             text_element.attrib.pop("y")
