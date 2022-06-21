@@ -230,7 +230,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
         playbook_path=playbook_path,
         plays_number=1,
         tasks_number=expected_tasks_number,
-        roles_number=4,
+        roles_number=3,
     )
 
 
