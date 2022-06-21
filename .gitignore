@@ -108,5 +108,5 @@ venv.bak/
 .idea
 .vagrant
 Vagrantfile
-generated_svg
+generated-svgs
 **/.DS_Store

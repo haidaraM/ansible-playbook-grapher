@@ -42,7 +42,7 @@ def run_grapher(
     if output_filename:  # the default filename is the playbook file name minus .yml
         # put the generated svg in a dedicated folder
         output_filename = output_filename.replace("[", "-").replace("]", "")
-        args.extend(["-o", os.path.join(DIR_PATH, "generated_svg", output_filename)])
+        args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
 
     args.extend(additional_args)
 

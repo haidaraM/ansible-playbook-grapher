@@ -190,7 +190,7 @@ export TEST_VIEW_GENERATED_FILE=1
 $ make test # run all tests
 ```
 
-The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts
+The graphs are generated in the folder `tests/generated-svgs`. They are also generated as artefacts
 in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
 submitting PRs.
 
