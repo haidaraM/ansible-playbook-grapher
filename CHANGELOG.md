@@ -1,3 +1,20 @@
+# 1.1.2 (2022-06-22)
+
+## What's Changed
+
+* refactor(internal): Remove useless EdgeNode by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/109
+* chore(deps): bump pytest from 7.1.1 to 7.1.2 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/107
+* Forbid incompatible ansible-core versions >= 2.13 by @jheidbrink
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/114
+
+## New Contributors
+
+* @jheidbrink made their first contribution in https://github.com/haidaraM/ansible-playbook-grapher/pull/114
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.1.1...v1.1.2
+
 # 1.1.1 (2022-05-16)
 
 * ci: Ansible 2.11.8 and 2.12.2 and ubuntu-latest by @haidaraM
