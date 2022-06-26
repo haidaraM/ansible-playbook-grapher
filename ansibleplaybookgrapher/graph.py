@@ -216,18 +216,29 @@ class PlaybookNode(CompositeNode):
         """
         return self._compositions["plays"]
 
-    def roles_usage(self) -> Dict["RoleNode", Set[str]]:
+    def roles_usage(self) -> Dict["RoleNode", List[str]]:
         """
         For each role in the graph, return the plays that reference the role
+        # FIXME: Review this implementation. It may not be the most efficient way, but it's ok for the moment
         :return: A dict with key as role ID and value the list of plays
         """
-        usages = defaultdict(set)
+
+        usages = defaultdict(list)
         links = self.links_structure()
 
         for node_id, linked_nodes in links.items():
             for linked_node in linked_nodes:
                 if isinstance(linked_node, RoleNode):
-                    usages[linked_node].add(node_id)
+                    usages[linked_node].append(node_id)
+
+        # In case a role is used by another role, replace it by the play associated with using role (transitivity)
+        for usages_set in usages.values():
+            for node_id in usages_set.copy():
+                for r in usages:
+                    if node_id == r.id:
+                        usages_set.remove(node_id)
+                        usages_set.extend(usages[r])
+
         return usages
 
 

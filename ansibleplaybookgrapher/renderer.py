@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -73,18 +73,34 @@ class GraphvizRenderer:
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
+        self._play_colors = self._init_play_colors()
+        # A map containing the roles that have been rendered so far
+        self._rendered_roles = {}
         self.roles_usage = playbook_node.roles_usage()
+
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
+
         self.digraph = Digraph(
             format=graph_format,
             graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
             edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR,
         )
 
-        self._rendered_roles = {}
+    def _init_play_colors(self) -> Dict[str, Tuple[str, str]]:
+        """
+        Get random colors for each play in the playbook: color and font color
+        :return:
+        """
+        colors = {}
+        for p in self.playbook_node.plays:
+            colors[p.id] = get_play_colors(p.id)
+
+        # TODO: find a way to create visual distance between the generated colors
+        #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
+        return colors
 
     def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
         """
@@ -274,7 +290,7 @@ class GraphvizRenderer:
 
         # Merge the colors for each play where this role is used
         role_plays = self.roles_usage[destination]
-        colors = list(map(get_play_colors, role_plays))
+        colors = list(map(self._play_colors.get, role_plays))
         # Graphviz support providing multiple colors separated by :
         role_color = ":".join([c[0] for c in colors])
 
@@ -320,7 +336,7 @@ class GraphvizRenderer:
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = get_play_colors(play.id)
+                color, play_font_color = self._play_colors[play.id]
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )
