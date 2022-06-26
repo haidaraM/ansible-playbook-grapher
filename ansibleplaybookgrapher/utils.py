@@ -81,13 +81,13 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: object) -> Tuple[str, str]:
+def get_play_colors(play_id: str) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
-    :param play
+    :param play_id
     :return:
     """
-    picked_color = Color(pick_for=play, luminance=0.4)
+    picked_color = Color(pick_for=play_id, luminance=0.4)
     play_font_color = "#ffffff"
 
     return picked_color.get_hex_l(), play_font_color

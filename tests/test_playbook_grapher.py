@@ -392,6 +392,27 @@ def test_skip_tags(request):
     )
 
 
+def test_multi_plays(request):
+    """
+    Test with multiple plays, include_role and roles
+    """
+
+    svg_path, playbook_path = run_grapher(
+        "multi-plays.yml",
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks"],
+    )
+    _common_tests(
+        svg_path=svg_path,
+        playbook_path=playbook_path,
+        plays_number=3,
+        roles_number=3,
+        pre_tasks_number=2,
+        tasks_number=10,
+        post_tasks_number=2,
+    )
+
+
 def test_with_roles_with_custom_protocol_handlers(request):
     """
     Test with_roles.yml with a custom protocol handlers

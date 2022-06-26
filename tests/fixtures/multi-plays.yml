@@ -1,0 +1,42 @@
+---
+- hosts: all
+  pre_tasks:
+    - name: Pretask
+      debug: msg="Pretask"
+    - name: Pretask 2
+      debug: msg="Pretask"
+      tags:
+        - pre_task_tags
+  post_tasks:
+    - name: Posttask
+      debug: msg="Postask"
+    - name: Posttask 2
+      debug: msg="Postask"
+  roles:
+    - role: fake_role
+      when: ansible_distribution == "Debian"
+      tags:
+        - role_tag
+    - role: display_some_facts
+  tasks:
+    - name: Add backport {{backport}}
+      apt_repository:
+        filename: "{{backport}}"
+        state: present
+    - name: Install packages
+      apt:
+        name: "{{packages}}"
+        state: latest
+
+- hosts: database
+  roles:
+    - role: fake_role
+      when: ansible_distribution == "Debian"
+      tags:
+        - role_tag
+    - role: display_some_facts
+
+- hosts: webserver
+  roles:
+    - role: nested_include_role
+    - role: display_some_facts

@@ -73,6 +73,7 @@ class GraphvizRenderer:
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
+        self.roles_usage = playbook_node.roles_usage()
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
@@ -259,30 +260,6 @@ class GraphvizRenderer:
 
         role_edge_label = f"{counter} {destination.when}"
 
-        # check if we already rendered this role
-        role_to_render = self._rendered_roles.get(destination.name, None)
-        if role_to_render is None:
-            self._rendered_roles[destination.name] = destination
-
-            with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
-                role_subgraph.node(
-                    destination.id,
-                    id=destination.id,
-                    label=f"[role] {destination.name}",
-                    tooltip=destination.name,
-                    color=color,
-                    URL=url,
-                )
-                # role tasks
-                for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                    self.render_node(
-                        role_subgraph,
-                        source=destination,
-                        destination=role_task,
-                        counter=role_task_counter,
-                        color=color,
-                    )
-
         # from parent to the role node
         graph.edge(
             source.id,
@@ -294,6 +271,38 @@ class GraphvizRenderer:
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
+
+        # Merge the colors for each play where this role is used
+        role_plays = self.roles_usage[destination]
+        colors = list(map(get_play_colors, role_plays))
+        # Graphviz support providing multiple colors separated by :
+        role_color = ":".join([c[0] for c in colors])
+
+        # check if we already rendered this role
+        role_to_render = self._rendered_roles.get(destination.name, None)
+        if role_to_render is None:
+            self._rendered_roles[destination.name] = destination
+
+            with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+                role_subgraph.node(
+                    destination.id,
+                    id=destination.id,
+                    label=f"[role] {destination.name}",
+                    tooltip=destination.name,
+                    color=role_color,
+                    fontcolor="white",
+                    style="filled",
+                    URL=url,
+                )
+                # role tasks
+                for role_task_counter, role_task in enumerate(destination.tasks, 1):
+                    self.render_node(
+                        role_subgraph,
+                        source=destination,
+                        destination=role_task,
+                        counter=role_task_counter,
+                        color=role_color,
+                    )
 
     def _convert_to_graphviz(self):
         """
@@ -311,7 +320,7 @@ class GraphvizRenderer:
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = get_play_colors(play)
+                color, play_font_color = get_play_colors(play.id)
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )
