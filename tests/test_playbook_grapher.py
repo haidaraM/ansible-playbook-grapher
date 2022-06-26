@@ -88,28 +88,28 @@ def _common_tests(
     blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
 
-    assert plays_number == len(
-        plays
+    assert (
+        len(plays) == plays_number
     ), f"The graph '{playbook_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
-    assert pre_tasks_number == len(
-        pre_tasks
+    assert (
+        len(pre_tasks) == pre_tasks_number
     ), f"The graph '{playbook_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
-    assert roles_number == len(
-        roles
+    assert (
+        len(roles) == roles_number
     ), f"The playbook '{playbook_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
-    assert tasks_number == len(
-        tasks
+    assert (
+        len(tasks) == tasks_number
     ), f"The graph '{playbook_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
-    assert post_tasks_number == len(
-        post_tasks
+    assert (
+        len(post_tasks) == post_tasks_number
     ), f"The graph '{playbook_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
-    assert blocks_number == len(
-        blocks
+    assert (
+        len(blocks) == blocks_number
     ), f"The graph '{playbook_path}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
 
     return {
