@@ -221,11 +221,15 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
     parser = PlaybookParser(
         grapher_cli.options.playbook_filename, include_role_tasks=True
     )
-    playbook = parser.parse()
-    roles_usage = playbook.roles_usage()
+    playbook_node = parser.parse()
+    roles_usage = playbook_node.roles_usage()
 
     for role, plays in roles_usage.items():
+        assert all(
+            map(lambda node_id: node_id.startswith("play_"), plays)
+        ), "All nodes IDs should be play"
         nb_plays = len(plays)
+
         if role.name == "fake_role":
             assert nb_plays == 3, "The role fake_role is used 3 times in the plays"
         elif role.name == "display_some_facts":

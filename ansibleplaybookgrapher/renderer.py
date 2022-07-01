@@ -305,9 +305,7 @@ class GraphvizRenderer:
                     id=destination.id,
                     label=f"[role] {destination.name}",
                     tooltip=destination.name,
-                    color=role_color,
-                    fontcolor="white",
-                    style="filled",
+                    color=color,
                     URL=url,
                 )
                 # role tasks
