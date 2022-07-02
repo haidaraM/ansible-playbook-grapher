@@ -41,7 +41,7 @@ def convert_when_to_str(when: List) -> str:
 
     # Convert each element in the list to str
     when_to_str = list(map(str, when))
-    return f"[when: {' and '.join(when_to_str)}]"
+    return f"[when: {' and '.join(when_to_str)}]".strip().replace("\n", "")
 
 
 def hash_value(value: str) -> str:
