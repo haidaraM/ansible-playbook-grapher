@@ -113,7 +113,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
     assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
-    assert include_role_1.line == 6
+    assert include_role_1.line == 9, "The first include role should be at line 9"
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
@@ -210,3 +210,31 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
 
     # Check the post task
     assert post_tasks[0].name == "Debug"
+
+
+@pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
+def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
+    """
+
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbook_filename, include_role_tasks=True
+    )
+    playbook_node = parser.parse()
+    roles_usage = playbook_node.roles_usage()
+
+    for role, plays in roles_usage.items():
+        assert all(
+            map(lambda node_id: node_id.startswith("play_"), plays)
+        ), "All nodes IDs should be play"
+        nb_plays = len(plays)
+
+        if role.name == "fake_role":
+            assert nb_plays == 3, "The role fake_role is used 3 times in the plays"
+        elif role.name == "display_some_facts":
+            assert (
+                nb_plays == 4
+            ), "The role display_some_facts is used 4 times in the plays"
+        elif role.name == "nested_included_role":
+            assert nb_plays == 1, "The role nested_included_role is used in 1 play"

@@ -230,7 +230,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
         playbook_path=playbook_path,
         plays_number=1,
         tasks_number=expected_tasks_number,
-        roles_number=4,
+        roles_number=3,
     )
 
 
@@ -389,6 +389,27 @@ def test_skip_tags(request):
         pre_tasks_number=1,
         roles_number=1,
         tasks_number=3,
+    )
+
+
+def test_multi_plays(request):
+    """
+    Test with multiple plays, include_role and roles
+    """
+
+    svg_path, playbook_path = run_grapher(
+        "multi-plays.yml",
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks"],
+    )
+    _common_tests(
+        svg_path=svg_path,
+        playbook_path=playbook_path,
+        plays_number=3,
+        roles_number=3,
+        pre_tasks_number=2,
+        tasks_number=10,
+        post_tasks_number=2,
     )
 
 

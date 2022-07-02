@@ -136,9 +136,15 @@ class GraphVizPostProcessor:
             if xpath_result:
                 element = xpath_result[0]
                 root_subelement = etree.Element("links")
-                for link in node_links:
+                for counter, link in enumerate(node_links, 1):
                     root_subelement.append(
-                        etree.Element("link", attrib={"target": link.id})
+                        etree.Element(
+                            "link",
+                            attrib={
+                                "target": link.id,
+                                "edge": f"edge_{counter}_{node_id}_{link.id}",
+                            },
+                        )
                     )
 
                 element.append(root_subelement)

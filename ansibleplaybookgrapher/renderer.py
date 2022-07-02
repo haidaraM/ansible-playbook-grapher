@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -73,15 +73,34 @@ class GraphvizRenderer:
         :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
+        self._play_colors = self._init_play_colors()
+        # A map containing the roles that have been rendered so far
+        self._rendered_roles = {}
+        self.roles_usage = playbook_node.roles_usage()
+
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
+
         self.digraph = Digraph(
             format=graph_format,
             graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
             edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR,
         )
+
+    def _init_play_colors(self) -> Dict[str, Tuple[str, str]]:
+        """
+        Get random colors for each play in the playbook: color and font color
+        :return:
+        """
+        colors = {}
+        for p in self.playbook_node.plays:
+            colors[p.id] = get_play_colors(p.id)
+
+        # TODO: find a way to create visual distance between the generated colors
+        #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
+        return colors
 
     def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
         """
@@ -166,7 +185,7 @@ class GraphvizRenderer:
                 label=edge_label,
                 color=color,
                 fontcolor=color,
-                id=f"edge_{destination.id}",
+                id=f"edge_{counter}_{source.id}_{destination.id}",
                 tooltip=edge_label,
                 labeltooltip=edge_label,
             )
@@ -201,7 +220,7 @@ class GraphvizRenderer:
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{destination.id}",
+            id=f"edge_{counter}_{source.id}_{destination.id}",
             labeltooltip=edge_label,
         )
 
@@ -256,6 +275,7 @@ class GraphvizRenderer:
             url = self.get_node_url(destination, "folder")
 
         role_edge_label = f"{counter} {destination.when}"
+
         # from parent to the role node
         graph.edge(
             source.id,
@@ -263,29 +283,40 @@ class GraphvizRenderer:
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{destination.id}",
+            id=f"edge_{counter}_{source.id}_{destination.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
 
-        with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
-            role_subgraph.node(
-                destination.id,
-                id=destination.id,
-                label=f"[role] {destination.name}",
-                tooltip=destination.name,
-                color=color,
-                URL=url,
-            )
-            # role tasks
-            for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                self.render_node(
-                    role_subgraph,
-                    source=destination,
-                    destination=role_task,
-                    counter=role_task_counter,
+        # Merge the colors for each play where this role is used
+        role_plays = self.roles_usage[destination]
+        colors = list(map(self._play_colors.get, role_plays))
+        # Graphviz support providing multiple colors separated by :
+        role_color = ":".join([c[0] for c in colors])
+
+        # check if we already rendered this role
+        role_to_render = self._rendered_roles.get(destination.name, None)
+        if role_to_render is None:
+            self._rendered_roles[destination.name] = destination
+
+            with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+                role_subgraph.node(
+                    destination.id,
+                    id=destination.id,
+                    label=f"[role] {destination.name}",
+                    tooltip=destination.name,
                     color=color,
+                    URL=url,
                 )
+                # role tasks
+                for role_task_counter, role_task in enumerate(destination.tasks, 1):
+                    self.render_node(
+                        role_subgraph,
+                        source=destination,
+                        destination=role_task,
+                        counter=role_task_counter,
+                        color=role_color,
+                    )
 
     def _convert_to_graphviz(self):
         """
@@ -303,7 +334,7 @@ class GraphvizRenderer:
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = get_play_colors(play)
+                color, play_font_color = self._play_colors[play.id]
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )
@@ -326,7 +357,7 @@ class GraphvizRenderer:
                 self.digraph.edge(
                     self.playbook_node.name,
                     play.id,
-                    id=f"edge_{play.id}",
+                    id=f"edge_{self.playbook_node.id}_{play.id}",
                     label=playbook_to_play_label,
                     color=color,
                     fontcolor=color,

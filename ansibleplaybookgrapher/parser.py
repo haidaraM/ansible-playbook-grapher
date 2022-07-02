@@ -41,6 +41,7 @@ from ansibleplaybookgrapher.utils import (
     has_role_parent,
     generate_id,
     convert_when_to_str,
+    hash_value,
 )
 
 display = Display()
@@ -224,7 +225,11 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
-                role_node = RoleNode(clean_name(role.get_name()), raw_object=role)
+                role_node = RoleNode(
+                    clean_name(role.get_name()),
+                    node_id="role_" + hash_value(role.get_name()),
+                    raw_object=role,
+                )
                 # edge from play to role
                 play_node.add_node("roles", role_node)
 
@@ -238,7 +243,7 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                # end of roles loop
+                    # end of roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -331,12 +336,13 @@ class PlaybookParser(BaseParser):
                     # Here we have an 'include_role'. The class IncludeRole is a subclass of TaskInclude.
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
-                    display.v(
-                        f"An 'include_role' found. Including tasks from '{task_or_block.get_name()}'"
-                    )
+                    display.v(f"An 'include_role' found: '{task_or_block.get_name()}'")
 
+                    # Here we are using the role name instead of the task name to keep the same behavior  as a
+                    #  traditional role
                     role_node = RoleNode(
-                        task_or_block.get_name(),
+                        task_or_block._role_name,
+                        node_id="role_" + hash_value(task_or_block._role_name),
                         when=convert_when_to_str(task_or_block.when),
                         raw_object=task_or_block,
                         include_role=True,

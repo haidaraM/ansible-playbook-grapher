@@ -1,0 +1,19 @@
+---
+- name: Ensure postgresql is at the latest version
+  ansible.builtin.yum:
+    name: postgresql
+    state: latest
+
+- name: Ensure that postgresql is started
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+
+- name: Include role
+  when: x is not defined
+  include_role:
+    name: display_some_facts
+
+- name: Include role
+  include_role:
+    name: fake_role

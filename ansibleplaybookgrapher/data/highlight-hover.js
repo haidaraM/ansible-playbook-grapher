@@ -17,16 +17,19 @@ let currentSelectedElement = null;
 
 /**
  * Highlight the linked nodes of the given root element
- * @param rootElement
+ * @param {Element} parentElement
  */
-function highlightLinkedNodes(rootElement) {
-    $(rootElement).find('link').each(function (index, element) {
-        let target = $(element).attr('target');
-        let currentElement = $('#' + target);
+function highlightLinkedNodes(parentElement) {
+    const parentElementId = $(parentElement).attr('id')
+    $(parentElement).find('link').each(function (index, element) {
+        const target = $(element).attr('target');
+        const edge = $(element).attr('edge');
+
+        const currentElement = $(`#${target}`);
         currentElement.addClass(HIGHLIGHT_CLASS);
 
         // Highlight the edge point to the target
-        $('#edge_' + target).addClass(HIGHLIGHT_CLASS);
+        $(`#${edge}`).addClass(HIGHLIGHT_CLASS);
 
         // Recursively highlight
         highlightLinkedNodes(currentElement);
@@ -36,24 +39,28 @@ function highlightLinkedNodes(rootElement) {
 
 /**
  * Unhighlight the linked nodes of the given root element
- * @param {Element} rootElement
+ * @param {Element} parentElement
  * @param {boolean} isHover True when we are coming from a mouseleave event. In that case, we should not unhighlight if
- * the rootElement is the current selected element
+ * the parentElement is the current selected element
  */
-function unHighlightLinkedNodes(rootElement, isHover) {
+function unHighlightLinkedNodes(parentElement, isHover) {
     const currentSelectedElementId = $(currentSelectedElement).attr('id');
-
+    const parentElementId = $(parentElement).attr('id')
     // Do not unhighlight the current current selected element
-    if ($(rootElement).attr('id') !== currentSelectedElementId || !isHover) {
+    if ($(parentElement).attr('id') !== currentSelectedElementId || !isHover) {
 
-        $(rootElement).find('link').each(function (index, element) {
-            let linkedElementId = $(element).attr('target');
-            let linkedElement = $('#' + linkedElementId);
+        $(parentElement).find('link').each(function (index, element) {
+            const linkedElementId = $(element).attr('target');
+            const edge = $(element).attr('edge');
+
+            const linkedElement = $('#' + linkedElementId);
 
             if (linkedElement.attr('id') !== currentSelectedElementId) {
                 linkedElement.removeClass(HIGHLIGHT_CLASS);
+
                 // Unhighlight the edge point to the target
-                $('#edge_' + linkedElementId).removeClass(HIGHLIGHT_CLASS);
+                $(`#${edge}`).removeClass(HIGHLIGHT_CLASS);
+
                 // Recursively unhighlight
                 unHighlightLinkedNodes(linkedElement, isHover);
             }

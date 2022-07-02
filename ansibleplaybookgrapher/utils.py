@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import hashlib
 import os
 import uuid
 from typing import Tuple, List
@@ -43,6 +44,22 @@ def convert_when_to_str(when: List) -> str:
     return f"[when: {' and '.join(when_to_str)}]"
 
 
+def hash_value(value: str) -> str:
+    """
+    Convert name to md5 to avoid issues with special chars,
+    The ID are not visible to end user in web/rendered graph so we do
+    not have to care to make them look pretty.
+    There are chances for hash collisions, but we do not care for that
+    so much in here.
+    :param value: string which represents id
+    :return: string representing a hex hash
+    """
+
+    m = hashlib.md5()
+    m.update(value.encode("utf-8"))
+    return m.hexdigest()[:8]
+
+
 def generate_id(prefix: str = "") -> str:
     """
     Generate an uuid to be used as id
@@ -64,13 +81,13 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play: object) -> Tuple[str, str]:
+def get_play_colors(play_id: str) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
-    :param play
+    :param play_id
     :return:
     """
-    picked_color = Color(pick_for=play, luminance=0.4)
+    picked_color = Color(pick_for=play_id, luminance=0.4)
     play_font_color = "#ffffff"
 
     return picked_color.get_hex_l(), play_font_color

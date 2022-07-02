@@ -14,7 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, ItemsView
+from typing import Dict, List, ItemsView, Set
+from collections import defaultdict
 
 from ansibleplaybookgrapher.utils import generate_id
 
@@ -49,14 +50,14 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def __str__(self):
-        return f"{type(self).__name__}(name='{self.name}')"
-
     def __repr__(self):
-        return f"{type(self).__name__}(id='{self.id}',name='{self.name}')"
+        return f"{type(self).__name__}(name='{self.name}',id='{self.id}')"
 
     def __eq__(self, other):
         return self.id == other.id
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def __hash__(self):
         return hash(self.id)
@@ -214,6 +215,31 @@ class PlaybookNode(CompositeNode):
         :return:
         """
         return self._compositions["plays"]
+
+    def roles_usage(self) -> Dict["RoleNode", List[str]]:
+        """
+        For each role in the graph, return the plays that reference the role
+        # FIXME: Review this implementation. It may not be the most efficient way, but it's ok for the moment
+        :return: A dict with key as role ID and value the list of plays
+        """
+
+        usages = defaultdict(list)
+        links = self.links_structure()
+
+        for node_id, linked_nodes in links.items():
+            for linked_node in linked_nodes:
+                if isinstance(linked_node, RoleNode):
+                    usages[linked_node].append(node_id)
+
+        # In case a role is used by another role, replace it by the play associated with using role (transitivity)
+        for usages_set in usages.values():
+            for node_id in usages_set.copy():
+                for r in usages:
+                    if node_id == r.id:
+                        usages_set.remove(node_id)
+                        usages_set.extend(usages[r])
+
+        return usages
 
 
 class PlayNode(CompositeNode):
