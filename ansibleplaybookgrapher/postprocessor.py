@@ -15,9 +15,13 @@
 import os
 from typing import Dict
 
+from ansible.utils.display import Display
 from lxml import etree
+from svg.path import parse_path
 
 from ansibleplaybookgrapher.graph import PlaybookNode
+
+display = Display()
 
 JQUERY = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -149,6 +153,31 @@ class GraphVizPostProcessor:
 
                 element.append(root_subelement)
 
+    def _get_text_path_start_offset(self, path_element, text: str) -> str:
+        """
+
+        :param path_element:
+        :param text:
+        :return:
+        """
+        # Get Bézier curve
+        path_segments = parse_path(path_element.get("d"))
+        # TODO: apply the translation to the segments
+        #  self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
+        # The segments usually contain 3 elements: One MoveTo and one or two CubicBezier objects.
+        display.vvvvv(f"postprocessor: {len(path_segments)} segments found for the path '{path_element.get('id')}'")
+        # This relatively slow to compute. Decreasing the "error" will drastically slow down the post-processing
+        segment_length = path_segments.length(error=1e-4)
+        text_length = len(text)
+        # We divide the segments by 4 and put the label either:
+        #  - at the middle of the curve if only one curve
+        #  - at the middle of the last curve if the segment has 2 curves
+        offset_factor = len(path_segments) / 4
+
+        start_offset = segment_length * offset_factor - text_length / 2
+        display.vvvvv(f"postprocessor: start_offset={start_offset}")
+        return str(start_offset)
+
     def _curve_text_on_edges(self):
         """
         Update the text on each edge to curve it based on the edge
@@ -172,18 +201,14 @@ class GraphVizPostProcessor:
             text_path.set("{http://www.w3.org/1999/xlink}href", f"#{path_id}")
             text_path.text = text_element.text
 
-            # Depending on the text length, put the edge label near the node
-            if len(text_path.text) < 5:
-                # This is when the edge is only the counter (no when condition)
-                text_path.set("startOffset", "75%")
-            else:
-                text_path.set("startOffset", "60%")
+            offset = self._get_text_path_start_offset(path_element, text_path.text)
+            text_path.set("startOffset", offset)
 
             text_element.append(text_path)
 
             # Move a little the text
             text_element.set("dy", "-0.1%")
             # Remove unnecessary attributes and clear the text
-            text_element.attrib.pop("x")
-            text_element.attrib.pop("y")
+            text_element.attrib.pop("x", "")
+            text_element.attrib.pop("y", "")
             text_element.text = None
