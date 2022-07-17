@@ -1,3 +1,14 @@
+# 1.1.3 (2022-07-17)
+
+## What's Changed
+
+* fix: Render a single node when multiple playbooks use the same role by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/111
+* fix: Improve the position of the conditions on the edges by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/116
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.1.2...v1.1.3
+
 # 1.1.2 (2022-06-22)
 
 ## What's Changed
