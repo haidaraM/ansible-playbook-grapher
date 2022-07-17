@@ -155,7 +155,7 @@ class GraphVizPostProcessor:
 
     def _get_text_path_start_offset(self, path_element, text: str) -> str:
         """
-
+        Get the start offset where the edge label should begin
         :param path_element:
         :param text:
         :return:
@@ -163,19 +163,18 @@ class GraphVizPostProcessor:
         # Get Bézier curve
         path_segments = parse_path(path_element.get("d"))
         # TODO: apply the translation to the segments
-        #  self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
+        # transform_attribute = self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
         # The segments usually contain 3 elements: One MoveTo and one or two CubicBezier objects.
-        display.vvvvv(f"postprocessor: {len(path_segments)} segments found for the path '{path_element.get('id')}'")
-        # This relatively slow to compute. Decreasing the "error" will drastically slow down the post-processing
+        # This is relatively slow to compute. Decreasing the "error" will drastically slow down the post-processing
         segment_length = path_segments.length(error=1e-4)
         text_length = len(text)
-        # We divide the segments by 4 and put the label either:
-        #  - at the middle of the curve if only one curve
-        #  - at the middle of the last curve if the segment has 2 curves
-        offset_factor = len(path_segments) / 4
+        # We put the label closer to the target node
+        offset_factor = 0.76
 
-        start_offset = segment_length * offset_factor - text_length / 2
-        display.vvvvv(f"postprocessor: start_offset={start_offset}")
+        start_offset = segment_length * offset_factor - text_length
+        msg = f"postprocessor: {len(path_segments)} segments found for the path '{path_element.get('id')}', "
+        msg += f"segment_length={segment_length}, start_offset={start_offset}, text_length={text_length}"
+        display.vvvvv(msg)
         return str(start_offset)
 
     def _curve_text_on_edges(self):
@@ -207,7 +206,7 @@ class GraphVizPostProcessor:
             text_element.append(text_path)
 
             # Move a little the text
-            text_element.set("dy", "-0.1%")
+            text_element.set("dy", "-0.2%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")
             text_element.attrib.pop("y", "")
