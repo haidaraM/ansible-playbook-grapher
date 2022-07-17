@@ -449,3 +449,15 @@ def test_with_roles_with_custom_protocol_handlers(request):
 
     for r in res["roles"]:
         assert r.find("g/a").get(xlink_ref_selector).startswith(DIR_PATH)
+
+
+def test_community_download_roles_and_collection(request):
+    """
+    Test if the grapher is able to find some downloaded roles and collections when graphing the playbook
+    :return:
+    """
+    run_grapher(
+        "docker-mysql-galaxy.yml",
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks"],
+    )
