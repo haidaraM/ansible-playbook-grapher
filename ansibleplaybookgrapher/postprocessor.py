@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
+import re
 from typing import Dict
 
 from ansible.utils.display import Display
@@ -21,7 +22,11 @@ from svg.path import parse_path
 
 from ansibleplaybookgrapher.graph import PlaybookNode
 
+# This a pattern to extract the "translate" transformation from the svg
+TRANSLATE_PATTERN = re.compile(".*translate\((?P<x>[+-]?[0-9]*[.]?[0-9]+) (?P<y>[+-]?[0-9]*[.]?[0-9]+)\).*")
+
 display = Display()
+DISPLAY_PREFIX = "postprocessor:"
 
 JQUERY = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -162,8 +167,10 @@ class GraphVizPostProcessor:
         """
         # Get Bézier curve
         path_segments = parse_path(path_element.get("d"))
-        # TODO: apply the translation to the segments
-        # transform_attribute = self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
+        # FIXME: apply the translation to the segments ?
+        #  TRANSLATE_PATTERN = re.compile(".*translate\((?P<x>[+-]?[0-9]*[.]?[0-9]+) (?P<y>[+-]?[0-9]*[.]?[0-9]+)\).*")
+        #  transform_attribute = self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
+
         # The segments usually contain 3 elements: One MoveTo and one or two CubicBezier objects.
         # This is relatively slow to compute. Decreasing the "error" will drastically slow down the post-processing
         segment_length = path_segments.length(error=1e-4)
@@ -172,7 +179,7 @@ class GraphVizPostProcessor:
         offset_factor = 0.76
 
         start_offset = segment_length * offset_factor - text_length
-        msg = f"postprocessor: {len(path_segments)} segments found for the path '{path_element.get('id')}', "
+        msg = f"{DISPLAY_PREFIX} {len(path_segments)} segment(s) found for the path '{path_element.get('id')}', "
         msg += f"segment_length={segment_length}, start_offset={start_offset}, text_length={text_length}"
         display.vvvvv(msg)
         return str(start_offset)
@@ -188,14 +195,19 @@ class GraphVizPostProcessor:
         )
 
         for edge in edge_elements:
-            path_element = edge.find(".//path", namespaces=self.root.nsmap)
+            path_elements = edge.findall(".//path", namespaces=self.root.nsmap)
+            display.vvvvv(f"{DISPLAY_PREFIX} {len(path_elements)} path(s) found on the edge '{edge.get('id')}'")
             text_element = edge.find(".//text", namespaces=self.root.nsmap)
 
-            # Define an ID for the path
+            # Define an ID for the path so that we can reference it explicitly
             path_id = f"path_{edge.get('id')}"
+            # Even though we may have more than one path, we only care about a single on.
+            #  We have more than one path (edge) pointing to a single task if role containing the task is used more than
+            #   once.
+            path_element = path_elements[0]
             path_element.set("id", path_id)
 
-            # Create a curved textPath
+            # Create a curved textPath: the text will follow the path
             text_path = etree.Element("textPath")
             text_path.set("{http://www.w3.org/1999/xlink}href", f"#{path_id}")
             text_path.text = text_element.text
@@ -205,8 +217,9 @@ class GraphVizPostProcessor:
 
             text_element.append(text_path)
 
-            # Move a little the text
-            text_element.set("dy", "-0.2%")
+            # The more paths we have, the more we move the text from the path
+            dy = -0.2 - (len(path_elements) - 1) * 0.4
+            text_element.set("dy", f"{dy}%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")
             text_element.attrib.pop("y", "")
