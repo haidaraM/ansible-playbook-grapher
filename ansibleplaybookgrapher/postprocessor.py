@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-import re
 from typing import Dict
 
 from ansible.utils.display import Display
@@ -21,9 +20,6 @@ from lxml import etree
 from svg.path import parse_path
 
 from ansibleplaybookgrapher.graph import PlaybookNode
-
-# This a pattern to extract the "translate" transformation from the svg
-TRANSLATE_PATTERN = re.compile(".*translate\((?P<x>[+-]?[0-9]*[.]?[0-9]+) (?P<y>[+-]?[0-9]*[.]?[0-9]+)\).*")
 
 display = Display()
 DISPLAY_PREFIX = "postprocessor:"
@@ -196,7 +192,9 @@ class GraphVizPostProcessor:
 
         for edge in edge_elements:
             path_elements = edge.findall(".//path", namespaces=self.root.nsmap)
-            display.vvvvv(f"{DISPLAY_PREFIX} {len(path_elements)} path(s) found on the edge '{edge.get('id')}'")
+            display.vvvvv(
+                f"{DISPLAY_PREFIX} {len(path_elements)} path(s) found on the edge '{edge.get('id')}'"
+            )
             text_element = edge.find(".//text", namespaces=self.root.nsmap)
 
             # Define an ID for the path so that we can reference it explicitly
