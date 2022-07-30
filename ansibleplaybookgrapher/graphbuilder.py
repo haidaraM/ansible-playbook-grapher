@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 from typing import Dict, Optional, Tuple
 
 from ansible.utils.display import Display
@@ -88,30 +87,7 @@ class GraphvizGraphBuilder:
         #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
         return colors
 
-    def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
-        """
-        Render the graph
-        :param output_filename: Output file name without '.svg' extension.
-        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
-        :param view: If true, will automatically open the resulting (PDF, PNG, SVG, etc.) file with your system’s
-            default viewer application for the file type
-        :return: The rendered file path (output_filename.svg)
-        """
-
-        display.display("Rendering the graph...")
-        rendered_file_path = self.digraph.render(
-            cleanup=not save_dot_file, format="svg", filename=output_filename, view=view
-        )
-
-        if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
-            display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        return rendered_file_path
-
-    def render_node(
+    def build_node(
         self,
         graph: Digraph,
         counter: int,
@@ -135,7 +111,7 @@ class GraphvizGraphBuilder:
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
         if isinstance(destination, BlockNode):
-            self.render_block(
+            self.build_block(
                 graph,
                 counter,
                 source=source,
@@ -143,7 +119,7 @@ class GraphvizGraphBuilder:
                 color=color,
             )
         elif isinstance(destination, RoleNode):
-            self.render_role(
+            self.build_role(
                 graph,
                 counter,
                 source=source,
@@ -175,7 +151,7 @@ class GraphvizGraphBuilder:
                 labeltooltip=edge_label,
             )
 
-    def render_block(
+    def build_block(
         self,
         graph: Digraph,
         counter: int,
@@ -226,7 +202,7 @@ class GraphvizGraphBuilder:
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
             #  Don't really know why for the moment neither if there is an attribute to change that.
             for b_counter, task in enumerate(reversed(destination.tasks)):
-                self.render_node(
+                self.build_node(
                     cluster_block_subgraph,
                     source=destination,
                     destination=task,
@@ -234,7 +210,7 @@ class GraphvizGraphBuilder:
                     color=color,
                 )
 
-    def render_role(
+    def build_role(
         self,
         graph: Digraph,
         counter: int,
@@ -295,7 +271,7 @@ class GraphvizGraphBuilder:
                 )
                 # role tasks
                 for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         role_subgraph,
                         source=destination,
                         destination=role_task,
@@ -352,7 +328,7 @@ class GraphvizGraphBuilder:
 
                 # pre_tasks
                 for pre_task_counter, pre_task in enumerate(play.pre_tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         counter=pre_task_counter,
                         source=play,
@@ -363,7 +339,7 @@ class GraphvizGraphBuilder:
 
                 # roles
                 for role_counter, role in enumerate(play.roles, 1):
-                    self.render_role(
+                    self.build_role(
                         play_subgraph,
                         source=play,
                         destination=role,
@@ -373,7 +349,7 @@ class GraphvizGraphBuilder:
 
                 # tasks
                 for task_counter, task in enumerate(play.tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         source=play,
                         destination=task,
@@ -384,7 +360,7 @@ class GraphvizGraphBuilder:
 
                 # post_tasks
                 for post_task_counter, post_task in enumerate(play.post_tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         source=play,
                         destination=post_task,
