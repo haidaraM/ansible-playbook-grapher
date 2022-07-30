@@ -1,0 +1,9 @@
+---
+collections:
+  - name: community.general
+  - name: community.mysql
+roles:
+  - name: geerlingguy.docker
+    version: 4.2.4
+  - name: geerlingguy.mysql
+    version: 3.5.0

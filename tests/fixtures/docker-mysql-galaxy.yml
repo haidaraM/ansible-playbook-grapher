@@ -1,0 +1,8 @@
+---
+- hosts: db-servers
+  roles:
+    - geerlingguy.mysql
+
+- hosts: compute-servers
+  roles:
+    - geerlingguy.docker
