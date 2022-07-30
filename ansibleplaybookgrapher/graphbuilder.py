@@ -41,27 +41,17 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
-class GraphvizRenderer:
+class GraphvizGraphBuilder:
     """
-    Render the graph with graphviz
+    Build the graphviz graph
     """
-
-    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
-    DEFAULT_GRAPH_ATTR = {
-        "ratio": "fill",
-        "rankdir": "LR",
-        "concentrate": "true",
-        "ordering": "in",
-    }
 
     def __init__(
         self,
         playbook_node: "PlaybookNode",
         open_protocol_handler: str,
+        digraph: Digraph,
         open_protocol_custom_formats: Dict[str, str] = None,
-        graph_format: str = "svg",
-        graph_attr: Dict = None,
-        edge_attr: Dict = None,
     ):
         """
 
@@ -83,11 +73,7 @@ class GraphvizRenderer:
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
-        self.digraph = Digraph(
-            format=graph_format,
-            graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
-            edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR,
-        )
+        self.digraph = digraph
 
     def _init_play_colors(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -111,7 +97,6 @@ class GraphvizRenderer:
             default viewer application for the file type
         :return: The rendered file path (output_filename.svg)
         """
-        self._convert_to_graphviz()
 
         display.display("Rendering the graph...")
         rendered_file_path = self.digraph.render(
@@ -318,7 +303,7 @@ class GraphvizRenderer:
                         color=role_color,
                     )
 
-    def _convert_to_graphviz(self):
+    def build_graphviz_graph(self):
         """
         Convert the PlaybookNode to the graphviz dot format
         :return:
@@ -404,9 +389,9 @@ class GraphvizRenderer:
                         source=play,
                         destination=post_task,
                         counter=len(play.pre_tasks)
-                        + len(play.roles)
-                        + len(play.tasks)
-                        + post_task_counter,
+                                + len(play.roles)
+                                + len(play.tasks)
+                                + post_task_counter,
                         color=color,
                         node_label_prefix="[post_task] ",
                     )

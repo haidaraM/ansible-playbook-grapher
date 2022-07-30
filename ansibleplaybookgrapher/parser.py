@@ -190,7 +190,7 @@ class PlaybookParser(BaseParser):
             play_name = f"Play: {clean_name(play.get_name())} ({len(play_hosts)})"
             play_name = self.template(play_name, play_vars)
 
-            display.banner("Parsing " + play_name)
+            display.v(f"Parsing {play_name}")
 
             play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
             playbook_root_node.add_node("plays", play_node)
@@ -267,14 +267,10 @@ class PlaybookParser(BaseParser):
                     node_type="post_task",
                 )
             # Summary
-            display.display("")  # just an empty line
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
             display.v(f"{len(play_node.tasks)} task(s) added to the play")
             display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
-
-            display.banner(f"Done parsing {play_name}")
-            display.display("")  # just an empty line
             # moving to the next play
 
         return playbook_root_node

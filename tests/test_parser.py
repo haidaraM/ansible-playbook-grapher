@@ -46,7 +46,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename)
+    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
     assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
@@ -72,7 +72,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filename)
+    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0]
@@ -94,7 +94,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filename, include_role_tasks=True
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
@@ -155,7 +155,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filename, include_role_tasks=True
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
@@ -219,7 +219,7 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filename, include_role_tasks=True
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
     roles_usage = playbook_node.roles_usage()
