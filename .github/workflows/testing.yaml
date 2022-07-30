@@ -34,7 +34,7 @@ jobs:
           pip install -r tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -y graphviz
-          ansible-galaxy install -r tests/requirements.yml
+          ansible-galaxy install -r tests/fixtures/requirements.yml
 
       - name: Pytest
         env:
