@@ -429,10 +429,10 @@ class PlaybookParser(BaseParser):
                     parent_nodes.pop()
             else:  # It's here that we add the task in the graph
                 if (
-                    len(parent_nodes) > 1
-                    and not has_role_parent(task_or_block)  # 1
-                    and parent_nodes[-1].raw_object != task_or_block._parent  # 2
-                ):  # 3
+                    len(parent_nodes) > 1  # 1
+                    and not has_role_parent(task_or_block)  # 2
+                    and parent_nodes[-1].raw_object != task_or_block._parent  # 3
+                ):
                     # We remove a parent node :
                     # 1. When have at least two parents. Every node (except the playbook) should have a parent node
                     #   AND

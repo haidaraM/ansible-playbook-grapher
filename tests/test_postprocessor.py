@@ -108,7 +108,7 @@ def test_post_processor_with_graph_representation(
     play.add_node("tasks", task_1)
     play.add_node("tasks", task_2)
 
-    post_processor.post_process(playbook_node)
+    post_processor.post_process([playbook_node])
 
     post_processor.write(output_filename=svg_post_processed_path.strpath)
 

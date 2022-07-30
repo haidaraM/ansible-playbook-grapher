@@ -23,7 +23,10 @@ from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display, initialize_locale
-from ansibleplaybookgrapher.graphbuilder import GraphvizGraphBuilder, OPEN_PROTOCOL_HANDLERS
+from ansibleplaybookgrapher.graphbuilder import (
+    GraphvizGraphBuilder,
+    OPEN_PROTOCOL_HANDLERS,
+)
 from graphviz import Digraph
 
 from ansibleplaybookgrapher import __prog__, __version__
@@ -63,6 +66,7 @@ class GrapherCLI(CLI, ABC):
         # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
         initialize_locale()
         display.verbosity = self.options.verbosity
+        playbook_nodes = []
 
         digraph = Digraph(
             format="svg",
@@ -81,6 +85,7 @@ class GrapherCLI(CLI, ABC):
             display.display(f"Parsing playbook {playbook_file}")
 
             playbook_node = parser.parse()
+            playbook_nodes.append(playbook_node)
 
             GraphvizGraphBuilder(
                 playbook_node,
@@ -92,8 +97,10 @@ class GrapherCLI(CLI, ABC):
         display.display("Rendering the graph...")
 
         svg_path = digraph.render(
-            cleanup=not self.options.save_dot_file, format="svg", filename=self.options.output_filename,
-            view=self.options.view
+            cleanup=not self.options.save_dot_file,
+            format="svg",
+            filename=self.options.output_filename,
+            view=self.options.view,
         )
 
         if self.options.save_dot_file:
@@ -104,8 +111,8 @@ class GrapherCLI(CLI, ABC):
 
         post_processor = GraphVizPostProcessor(svg_path=svg_path)
         display.v("Post processing the SVG...")
-        # post_processor.post_process(playbook_node=playbook_node)
-        # post_processor.write()
+        post_processor.post_process(playbook_nodes)
+        post_processor.write()
 
         display.display(f"The graph has been exported to {svg_path}", color="green")
 
@@ -206,7 +213,10 @@ class PlaybookGrapherCLI(GrapherCLI):
         )
 
         self.parser.add_argument(
-            "playbook_filenames", help="Playbook(s) to graph", metavar="playbooks", nargs="+"
+            "playbook_filenames",
+            help="Playbook(s) to graph",
+            metavar="playbooks",
+            nargs="+",
         )
 
         # Use ansible helper to add some default options also
