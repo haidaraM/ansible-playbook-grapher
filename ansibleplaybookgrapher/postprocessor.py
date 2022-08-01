@@ -220,7 +220,7 @@ class GraphVizPostProcessor:
             text_element.append(text_path)
 
             # The more paths we have, the more we move the text from the path
-            dy = -0.2 - (len(path_elements) - 1) * 0.4
+            dy = -0.2 - (len(path_elements) - 1) * 0.3
             text_element.set("dy", f"{dy}%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")
