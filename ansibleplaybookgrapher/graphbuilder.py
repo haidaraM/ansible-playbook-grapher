@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 from typing import Dict, Optional, Tuple
 
 from ansible.utils.display import Display
@@ -41,9 +40,9 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
-class GraphvizRenderer:
+class GraphvizGraphBuilder:
     """
-    Render the graph with graphviz
+    Build the graphviz graph
     """
 
     DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
@@ -58,24 +57,21 @@ class GraphvizRenderer:
         self,
         playbook_node: "PlaybookNode",
         open_protocol_handler: str,
+        digraph: Digraph,
         open_protocol_custom_formats: Dict[str, str] = None,
-        graph_format: str = "svg",
-        graph_attr: Dict = None,
-        edge_attr: Dict = None,
     ):
         """
 
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
+        :param digraph: Graphviz graph into which build the graph
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
-        :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
-        :param graph_attr: Default graph attributes
-        :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
         self._play_colors = self._init_play_colors()
         # A map containing the roles that have been rendered so far
         self._rendered_roles = {}
+        # FIXME: should be merged for all playbooks
         self.roles_usage = playbook_node.roles_usage()
 
         self.open_protocol_handler = open_protocol_handler
@@ -83,11 +79,7 @@ class GraphvizRenderer:
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
-        self.digraph = Digraph(
-            format=graph_format,
-            graph_attr=graph_attr or GraphvizRenderer.DEFAULT_GRAPH_ATTR,
-            edge_attr=edge_attr or GraphvizRenderer.DEFAULT_EDGE_ATTR,
-        )
+        self.digraph = digraph
 
     def _init_play_colors(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -102,31 +94,7 @@ class GraphvizRenderer:
         #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
         return colors
 
-    def render(self, output_filename: str, save_dot_file=False, view=False) -> str:
-        """
-        Render the graph
-        :param output_filename: Output file name without '.svg' extension.
-        :param save_dot_file: If true, the dot file will be saved when rendering the graph.
-        :param view: If true, will automatically open the resulting (PDF, PNG, SVG, etc.) file with your system’s
-            default viewer application for the file type
-        :return: The rendered file path (output_filename.svg)
-        """
-        self._convert_to_graphviz()
-
-        display.display("Rendering the graph...")
-        rendered_file_path = self.digraph.render(
-            cleanup=not save_dot_file, format="svg", filename=output_filename, view=view
-        )
-
-        if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
-            display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        return rendered_file_path
-
-    def render_node(
+    def build_node(
         self,
         graph: Digraph,
         counter: int,
@@ -150,7 +118,7 @@ class GraphvizRenderer:
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
         if isinstance(destination, BlockNode):
-            self.render_block(
+            self.build_block(
                 graph,
                 counter,
                 source=source,
@@ -158,7 +126,7 @@ class GraphvizRenderer:
                 color=color,
             )
         elif isinstance(destination, RoleNode):
-            self.render_role(
+            self.build_role(
                 graph,
                 counter,
                 source=source,
@@ -190,7 +158,7 @@ class GraphvizRenderer:
                 labeltooltip=edge_label,
             )
 
-    def render_block(
+    def build_block(
         self,
         graph: Digraph,
         counter: int,
@@ -241,7 +209,7 @@ class GraphvizRenderer:
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
             #  Don't really know why for the moment neither if there is an attribute to change that.
             for b_counter, task in enumerate(reversed(destination.tasks)):
-                self.render_node(
+                self.build_node(
                     cluster_block_subgraph,
                     source=destination,
                     destination=task,
@@ -249,7 +217,7 @@ class GraphvizRenderer:
                     color=color,
                 )
 
-    def render_role(
+    def build_role(
         self,
         graph: Digraph,
         counter: int,
@@ -310,7 +278,7 @@ class GraphvizRenderer:
                 )
                 # role tasks
                 for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         role_subgraph,
                         source=destination,
                         destination=role_task,
@@ -318,7 +286,7 @@ class GraphvizRenderer:
                         color=role_color,
                     )
 
-    def _convert_to_graphviz(self):
+    def build_graphviz_graph(self):
         """
         Convert the PlaybookNode to the graphviz dot format
         :return:
@@ -367,7 +335,7 @@ class GraphvizRenderer:
 
                 # pre_tasks
                 for pre_task_counter, pre_task in enumerate(play.pre_tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         counter=pre_task_counter,
                         source=play,
@@ -378,7 +346,7 @@ class GraphvizRenderer:
 
                 # roles
                 for role_counter, role in enumerate(play.roles, 1):
-                    self.render_role(
+                    self.build_role(
                         play_subgraph,
                         source=play,
                         destination=role,
@@ -388,7 +356,7 @@ class GraphvizRenderer:
 
                 # tasks
                 for task_counter, task in enumerate(play.tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         source=play,
                         destination=task,
@@ -399,7 +367,7 @@ class GraphvizRenderer:
 
                 # post_tasks
                 for post_task_counter, post_task in enumerate(play.post_tasks, 1):
-                    self.render_node(
+                    self.build_node(
                         play_subgraph,
                         source=play,
                         destination=post_task,

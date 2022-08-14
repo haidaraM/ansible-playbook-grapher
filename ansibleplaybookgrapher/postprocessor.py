@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
-from typing import Dict
+from typing import Dict, List
 
 from ansible.utils.display import Display
 from lxml import etree
@@ -79,10 +79,10 @@ class GraphVizPostProcessor:
 
         self.root.insert(index, element)
 
-    def post_process(self, playbook_node: PlaybookNode = None, *args, **kwargs):
+    def post_process(self, playbook_nodes: List[PlaybookNode] = None, *args, **kwargs):
         """
 
-        :param playbook_node:
+        :param playbook_nodes:
         :param args:
         :param kwargs:
         :return:
@@ -113,9 +113,10 @@ class GraphVizPostProcessor:
         # Curve the text on the edges
         self._curve_text_on_edges()
 
-        if playbook_node:
+        playbook_nodes = playbook_nodes or []
+        for p_node in playbook_nodes:
             # Insert the graph representation for the links between the nodes
-            self._insert_graph_representation(playbook_node)
+            self._insert_links(p_node)
 
     def write(self, output_filename: str = None):
         """
@@ -128,11 +129,14 @@ class GraphVizPostProcessor:
 
         self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
-    def _insert_graph_representation(self, graph_representation: PlaybookNode):
+    def _insert_links(self, playbook_node: PlaybookNode):
         """
-        Insert graph in the SVG
+        Insert the links between nodes in the SVG file.
+        :param playbook_node: one of the playbook in the svg
         """
-        links_structure = graph_representation.links_structure()
+        display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
+        links_structure = playbook_node.links_structure()
+
         for node_id, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath(
@@ -216,7 +220,7 @@ class GraphVizPostProcessor:
             text_element.append(text_path)
 
             # The more paths we have, the more we move the text from the path
-            dy = -0.2 - (len(path_elements) - 1) * 0.4
+            dy = -0.2 - (len(path_elements) - 1) * 0.3
             text_element.set("dy", f"{dy}%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")

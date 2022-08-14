@@ -140,6 +140,8 @@ $("#svg").ready(function () {
     playbook.click(clickOnElement);
     playbook.dblclick(dblClickElement);
 
+    // TODO: add hover on playbooks
+
     // Set hover and click events on the plays
     plays.hover(hoverMouseEnter, hoverMouseLeave);
     plays.click(clickOnElement);

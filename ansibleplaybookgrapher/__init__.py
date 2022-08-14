@@ -15,7 +15,7 @@
 
 from .parser import PlaybookParser
 from .postprocessor import GraphVizPostProcessor
-from .renderer import GraphvizRenderer
+from .graphbuilder import GraphvizGraphBuilder
 
 __version__ = "1.1.3"
 __prog__ = "ansible-playbook-grapher"

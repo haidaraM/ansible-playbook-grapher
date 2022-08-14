@@ -189,9 +189,9 @@ def test_cli_multiple_playbooks():
     args = [__prog__, "playbook1.yml", "playbook2.yml"]
 
     cli = get_cli_class()(args)
+    cli.parse()
 
-    with pytest.raises((AnsibleOptionsError, SystemExit)) as exception_info:
-        cli.parse()
+    assert cli.options.playbook_filenames == ["playbook1.yml", "playbook2.yml"]
 
 
 @pytest.mark.parametrize(
