@@ -55,6 +55,7 @@ def run_grapher(
 
 def _common_tests(
     svg_path: str,
+    playbook_paths: List[str],
     playbooks_number: int = 1,
     plays_number: int = 0,
     tasks_number: int = 0,
@@ -89,6 +90,11 @@ def _common_tests(
     pre_tasks = pq("g[id^='pre_task_']")
     blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
+
+    playbooks_file_names = [e.text for e in playbooks.find("text")]
+    assert (
+        playbooks_file_names == playbook_paths
+    ), "The playbook file names should be in the svg file"
 
     assert (
         len(playbooks) == playbooks_number
@@ -137,7 +143,12 @@ def test_simple_playbook(request):
         additional_args=["-i", os.path.join(FIXTURES_DIR, "inventory")],
     )
 
-    _common_tests(svg_path=svg_path, plays_number=1, post_tasks_number=2)
+    _common_tests(
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        post_tasks_number=2,
+    )
 
 
 def test_example(request):
@@ -150,6 +161,7 @@ def test_example(request):
 
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=4,
         post_tasks_number=2,
@@ -165,7 +177,9 @@ def test_include_tasks(request):
         ["include_tasks.yml"], output_filename=request.node.name
     )
 
-    _common_tests(svg_path=svg_path, plays_number=1, tasks_number=7)
+    _common_tests(
+        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=7
+    )
 
 
 def test_import_tasks(request):
@@ -176,7 +190,9 @@ def test_import_tasks(request):
         ["import_tasks.yml"], output_filename=request.node.name
     )
 
-    _common_tests(svg_path=svg_path, plays_number=1, tasks_number=5)
+    _common_tests(
+        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=5
+    )
 
 
 @pytest.mark.parametrize(
@@ -197,6 +213,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
 
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=expected_tasks_number,
         post_tasks_number=2,
@@ -222,6 +239,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
 
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=expected_tasks_number,
         roles_number=3,
@@ -240,6 +258,7 @@ def test_with_block(request):
 
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=7,
         post_tasks_number=2,
@@ -257,7 +276,9 @@ def test_nested_include_tasks(request):
         ["nested_include_tasks.yml"], output_filename=request.node.name
     )
 
-    _common_tests(svg_path=svg_path, plays_number=1, tasks_number=3)
+    _common_tests(
+        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=3
+    )
 
 
 @pytest.mark.parametrize(
@@ -278,6 +299,7 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
 
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=expected_tasks_number,
         roles_number=1,
@@ -294,6 +316,7 @@ def test_import_playbook(request):
     )
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=4,
         post_tasks_number=2,
@@ -317,7 +340,12 @@ def test_nested_import_playbook(
         output_filename=request.node.name,
         additional_args=[include_role_tasks_option],
     )
-    _common_tests(svg_path=svg_path, plays_number=2, tasks_number=expected_tasks_number)
+    _common_tests(
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=2,
+        tasks_number=expected_tasks_number,
+    )
 
 
 def test_relative_var_files(request):
@@ -327,7 +355,9 @@ def test_relative_var_files(request):
     svg_path, playbook_paths = run_grapher(
         ["relative_var_files.yml"], output_filename=request.node.name
     )
-    res = _common_tests(svg_path=svg_path, plays_number=1, tasks_number=2)
+    res = _common_tests(
+        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=2
+    )
 
     # check if the plays title contains the interpolated variables
     assert (
@@ -347,7 +377,12 @@ def test_tags(request):
         output_filename=request.node.name,
         additional_args=["-t", "pre_task_tag_1"],
     )
-    _common_tests(svg_path=svg_path, plays_number=1, pre_tasks_number=1)
+    _common_tests(
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        pre_tasks_number=1,
+    )
 
 
 def test_skip_tags(request):
@@ -361,6 +396,7 @@ def test_skip_tags(request):
     )
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=3,
         roles_number=1,
@@ -380,6 +416,7 @@ def test_multi_plays(request):
     )
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=3,
         tasks_number=10,
         post_tasks_number=2,
@@ -388,7 +425,7 @@ def test_multi_plays(request):
     )
 
 
-def test_multi_playbooks(request):
+def test_multiple_playbooks(request):
     """
     Test with multiple playbooks
     """
@@ -400,6 +437,7 @@ def test_multi_playbooks(request):
     )
     _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         playbooks_number=3,
         plays_number=3 + 1 + 1,
         pre_tasks_number=2 + 0 + 2,
@@ -427,6 +465,7 @@ def test_with_roles_with_custom_protocol_handlers(request):
 
     res = _common_tests(
         svg_path=svg_path,
+        playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=2,
         post_tasks_number=2,
