@@ -45,6 +45,14 @@ class GraphvizGraphBuilder:
     Build the graphviz graph
     """
 
+    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
+    DEFAULT_GRAPH_ATTR = {
+        "ratio": "fill",
+        "rankdir": "LR",
+        "concentrate": "true",
+        "ordering": "in",
+    }
+
     def __init__(
         self,
         playbook_node: "PlaybookNode",
@@ -56,15 +64,14 @@ class GraphvizGraphBuilder:
 
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
+        :param digraph: Graphviz graph into which build the graph
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
-        :param graph_format: the graph format to render. See https://graphviz.org/docs/outputs/
-        :param graph_attr: Default graph attributes
-        :param edge_attr: Default edge attributes
         """
         self.playbook_node = playbook_node
         self._play_colors = self._init_play_colors()
         # A map containing the roles that have been rendered so far
         self._rendered_roles = {}
+        # FIXME: should be merged for all playbooks
         self.roles_usage = playbook_node.roles_usage()
 
         self.open_protocol_handler = open_protocol_handler

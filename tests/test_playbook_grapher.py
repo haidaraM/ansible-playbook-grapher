@@ -131,7 +131,7 @@ def test_simple_playbook(request):
     """
     Test simple_playbook.yml
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
         additional_args=["-i", os.path.join(FIXTURES_DIR, "inventory")],
@@ -144,7 +144,7 @@ def test_example(request):
     """
     Test example.yml
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["example.yml"], output_filename=request.node.name
     )
 
@@ -161,7 +161,7 @@ def test_include_tasks(request):
     """
     Test include_tasks.yml, an example with some included tasks
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["include_tasks.yml"], output_filename=request.node.name
     )
 
@@ -172,7 +172,7 @@ def test_import_tasks(request):
     """
     Test import_tasks.yml, an example with some imported tasks
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["import_tasks.yml"], output_filename=request.node.name
     )
 
@@ -189,7 +189,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
     Test with_roles.yml, an example with roles
     """
 
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["with_roles.yml"],
         output_filename=request.node.name,
         additional_args=[include_role_tasks_option],
@@ -214,7 +214,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
     """
     Test include_role.yml, an example with include_role
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["include_role.yml"],
         output_filename=request.node.name,
         additional_args=[include_role_tasks_option],
@@ -232,7 +232,7 @@ def test_with_block(request):
     """
     Test with_block.yml, an example with roles
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks", "--save-dot-file"],
@@ -253,7 +253,7 @@ def test_nested_include_tasks(request):
     """
     Test nested_include.yml, an example with an include_tasks that include another tasks
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["nested_include_tasks.yml"], output_filename=request.node.name
     )
 
@@ -270,7 +270,7 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
     Test import_role.yml, an example with import role.
     Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is parsed.
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["import_role.yml"],
         output_filename=request.node.name,
         additional_args=[include_role_tasks_option],
@@ -289,7 +289,7 @@ def test_import_playbook(request):
     Test import_playbook
     """
 
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["import_playbook.yml"], output_filename=request.node.name
     )
     _common_tests(
@@ -312,7 +312,7 @@ def test_nested_import_playbook(
     """
     Test nested import playbook with an import_role and include_tasks
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["nested_import_playbook.yml"],
         output_filename=request.node.name,
         additional_args=[include_role_tasks_option],
@@ -324,7 +324,7 @@ def test_relative_var_files(request):
     """
     Test a playbook with a relative var file
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["relative_var_files.yml"], output_filename=request.node.name
     )
     res = _common_tests(svg_path=svg_path, plays_number=1, tasks_number=2)
@@ -342,7 +342,7 @@ def test_tags(request):
     """
     Test a playbook by only graphing a specific tasks based on the given tags
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
         output_filename=request.node.name,
         additional_args=["-t", "pre_task_tag_1"],
@@ -354,7 +354,7 @@ def test_skip_tags(request):
     """
     Test a playbook by only graphing a specific tasks based on the given tags
     """
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
         output_filename=request.node.name,
         additional_args=["--skip-tags", "pre_task_tag_1", "--include-role-tasks"],
@@ -373,7 +373,7 @@ def test_multi_plays(request):
     Test with multiple plays, include_role and roles
     """
 
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks"],
@@ -393,7 +393,7 @@ def test_multi_playbooks(request):
     Test with multiple playbooks
     """
 
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks"],
@@ -414,7 +414,7 @@ def test_with_roles_with_custom_protocol_handlers(request):
     Test with_roles.yml with a custom protocol handlers
     """
     formats_str = '{"file": "vscode://file/{path}:{line}", "folder": "{path}"}'
-    svg_path, playbook_path = run_grapher(
+    svg_path, playbook_paths = run_grapher(
         ["with_roles.yml"],
         output_filename=request.node.name,
         additional_args=[

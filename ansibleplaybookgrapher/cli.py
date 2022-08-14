@@ -23,27 +23,19 @@ from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display, initialize_locale
+from graphviz import Digraph
+
+from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.graphbuilder import (
     GraphvizGraphBuilder,
     OPEN_PROTOCOL_HANDLERS,
 )
-from graphviz import Digraph
-
-from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
 display = Display()
-
-DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
-DEFAULT_GRAPH_ATTR = {
-    "ratio": "fill",
-    "rankdir": "LR",
-    "concentrate": "true",
-    "ordering": "in",
-}
 
 
 def get_cli_class():
@@ -70,10 +62,11 @@ class GrapherCLI(CLI, ABC):
 
         digraph = Digraph(
             format="svg",
-            graph_attr=DEFAULT_GRAPH_ATTR,
-            edge_attr=DEFAULT_EDGE_ATTR,
+            graph_attr=GraphvizGraphBuilder.DEFAULT_GRAPH_ATTR,
+            edge_attr=GraphvizGraphBuilder.DEFAULT_EDGE_ATTR,
         )
 
+        # parsing playbooks and build the graph
         for playbook_file in self.options.playbook_filenames:
             parser = PlaybookParser(
                 tags=self.options.tags,
