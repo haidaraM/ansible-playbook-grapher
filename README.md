@@ -137,12 +137,15 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 
 ## Limitations
 
-Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
-statically: no task is run against your inventory.
-
-The parser tries to interpolate the variables, but some of them are only available when running your playbook (
-ansible_os_family, ansible_system, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
-arguments may not appear in the graph.
+- Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
+  statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
+  only available when running your playbook (
+  ansible_os_family, ansible_system, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
+  arguments may not appear in the graph.
+- The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
+  Always check the edge label to know the tasks order.
+- The label edge may overlap with each other. The edge labels are positioned so that they are as close as possible to
+  the target nodes. If a single role is used in multiple plays or playbooks, this can happen.
 
 ## Contribution
 
