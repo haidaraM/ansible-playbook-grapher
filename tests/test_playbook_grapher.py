@@ -433,17 +433,17 @@ def test_multiple_playbooks(request):
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
-        additional_args=["--include-role-tasks"],
+        additional_args=["--include-role-tasks", "--save-dot-file"],
     )
     _common_tests(
         svg_path=svg_path,
         playbook_paths=playbook_paths,
         playbooks_number=3,
-        plays_number=3 + 1 + 1,
-        pre_tasks_number=2 + 0 + 2,
+        plays_number=5,
+        pre_tasks_number=4,
         roles_number=3,
-        tasks_number=10 + 2 + 8,
-        post_tasks_number=2 + 0 + 2,
+        tasks_number=14,
+        post_tasks_number=4,
     )
 
 

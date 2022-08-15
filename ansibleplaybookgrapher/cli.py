@@ -23,18 +23,17 @@ from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display, initialize_locale
-from graphviz import Digraph
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.graphbuilder import (
-    GraphvizGraphBuilder,
     OPEN_PROTOCOL_HANDLERS,
+    Grapher,
 )
-from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
+
 display = Display()
 
 
@@ -58,37 +57,18 @@ class GrapherCLI(CLI, ABC):
         # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
         initialize_locale()
         display.verbosity = self.options.verbosity
-        playbook_nodes = []
-
-        digraph = Digraph(
-            format="svg",
-            graph_attr=GraphvizGraphBuilder.DEFAULT_GRAPH_ATTR,
-            edge_attr=GraphvizGraphBuilder.DEFAULT_EDGE_ATTR,
+        grapher = Grapher(self.options.playbook_filenames)
+        grapher.parse(
+            include_role_tasks=self.options.include_role_tasks,
+            tags=self.options.tags,
+            skip_tags=self.options.skip_tags,
+        )
+        digraph = grapher.graph(
+            open_protocol_handler=self.options.open_protocol_handler,
+            open_protocol_custom_formats=self.options.open_protocol_custom_formats,
         )
 
-        # parsing playbooks and build the graph
-        for playbook_file in self.options.playbook_filenames:
-            parser = PlaybookParser(
-                tags=self.options.tags,
-                skip_tags=self.options.skip_tags,
-                playbook_filename=playbook_file,
-                include_role_tasks=self.options.include_role_tasks,
-            )
-
-            display.display(f"Parsing playbook {playbook_file}")
-
-            playbook_node = parser.parse()
-            playbook_nodes.append(playbook_node)
-
-            GraphvizGraphBuilder(
-                playbook_node,
-                digraph=digraph,
-                open_protocol_handler=self.options.open_protocol_handler,
-                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-            ).build_graphviz_graph()
-
         display.display("Rendering the graph...")
-
         svg_path = digraph.render(
             cleanup=not self.options.save_dot_file,
             format="svg",
@@ -96,18 +76,17 @@ class GrapherCLI(CLI, ABC):
             view=self.options.view,
         )
 
+        post_processor = GraphVizPostProcessor(svg_path=svg_path)
+        display.v("Post processing the SVG...")
+        post_processor.post_process(grapher.playbook_nodes)
+        post_processor.write()
+
+        display.display(f"The graph has been exported to {svg_path}", color="green")
         if self.options.save_dot_file:
             # add .dot extension. The render doesn't add an extension
             final_name = self.options.output_filename + ".dot"
             os.rename(self.options.output_filename, final_name)
             display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        post_processor = GraphVizPostProcessor(svg_path=svg_path)
-        display.v("Post processing the SVG...")
-        post_processor.post_process(playbook_nodes)
-        post_processor.write()
-
-        display.display(f"The graph has been exported to {svg_path}", color="green")
 
         return svg_path
 

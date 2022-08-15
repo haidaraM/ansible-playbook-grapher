@@ -15,7 +15,10 @@
 import hashlib
 import os
 import uuid
-from typing import Tuple, List
+from collections import defaultdict
+from itertools import chain
+from operator import methodcaller
+from typing import Tuple, List, Dict, Any
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
@@ -106,6 +109,22 @@ def has_role_parent(task_block: Task) -> bool:
         parent = parent._parent
 
     return False
+
+
+def merge_dicts(dict_1: Dict[Any, List], dict_2: Dict[Any, List]) -> Dict[Any, List]:
+    """
+    Merge two dicts by grouping keys and appending values in list
+    :param dict_1:
+    :param dict_2:
+    :return:
+    """
+    final = defaultdict(list)
+    # iterate dict items
+    all_dict_items = map(methodcaller("items"), [dict_1, dict_2])
+    for k, v in chain.from_iterable(all_dict_items):
+        final[k].extend(v)
+
+    return final
 
 
 def handle_include_path(

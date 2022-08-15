@@ -12,18 +12,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 from ansible.utils.display import Display
 from graphviz import Digraph
 
+from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.graph import (
     PlaybookNode,
     RoleNode,
     BlockNode,
     Node,
 )
-from ansibleplaybookgrapher.utils import get_play_colors
+from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
 display = Display()
 
@@ -38,6 +39,92 @@ OPEN_PROTOCOL_HANDLERS = {
     # For custom, the formats need to be provided
     "custom": {},
 }
+
+
+class Grapher:
+    def __init__(self, playbook_filenames: List[str]):
+        """
+
+        :param playbook_filenames: List of playbooks to graph
+        """
+        self.playbook_filenames = playbook_filenames
+        # Colors assigned to plays
+
+        self.plays_color = {}
+        # The usage of the roles in all playbooks
+        self.roles_usage: Dict["RoleNode", List[str]] = {}
+
+        # The parsed playbooks
+        self.playbook_nodes: List[PlaybookNode] = []
+
+    def parse(
+        self,
+        include_role_tasks: bool = False,
+        tags: List[str] = None,
+        skip_tags: List[str] = None,
+    ):
+        """
+        Parses all the provided playbooks
+        :param include_role_tasks: Should we include the role tasks
+        :param tags: Only add plays and tasks tagged with these values
+        :param skip_tags: Only add plays and tasks whose tags do not match these values
+        :return:
+        """
+
+        for playbook_file in self.playbook_filenames:
+            display.display(f"Parsing playbook {playbook_file}")
+            parser = PlaybookParser(
+                tags=tags,
+                skip_tags=skip_tags,
+                playbook_filename=playbook_file,
+                include_role_tasks=include_role_tasks,
+            )
+            playbook_node = parser.parse()
+            self.playbook_nodes.append(playbook_node)
+
+            # Setting colors for play
+            for play in playbook_node.plays:
+                # TODO: find a way to create visual distance between the generated colors
+                #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
+                self.plays_color[play.id] = get_play_colors(play.id)
+
+            # Update the usage of the roles
+            self.roles_usage = merge_dicts(
+                self.roles_usage, playbook_node.roles_usage()
+            )
+
+    def graph(
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str] = None,
+    ) -> Digraph:
+        """
+        Generate the digraph graph
+        :param open_protocol_handler
+        :param open_protocol_custom_formats
+        :return:
+        """
+        digraph = Digraph(
+            format="svg",
+            graph_attr=GraphvizGraphBuilder.DEFAULT_GRAPH_ATTR,
+            edge_attr=GraphvizGraphBuilder.DEFAULT_EDGE_ATTR,
+        )
+        # Map of the rules that have been built so far for all playbooks
+        roles_built = {}
+        for p in self.playbook_nodes:
+            builder = GraphvizGraphBuilder(
+                p,
+                digraph=digraph,
+                roles_usage=self.roles_usage,
+                roles_built=roles_built,
+                play_colors=self.plays_color,
+                open_protocol_handler=open_protocol_handler,
+                open_protocol_custom_formats=open_protocol_custom_formats,
+            )
+            builder.build_graphviz_graph()
+            roles_built.update(builder.roles_built)
+
+        return digraph
 
 
 class GraphvizGraphBuilder:
@@ -58,6 +145,9 @@ class GraphvizGraphBuilder:
         playbook_node: "PlaybookNode",
         open_protocol_handler: str,
         digraph: Digraph,
+        play_colors: Dict[str, Tuple[str, str]],
+        roles_usage: Dict["RoleNode", List[str]] = None,
+        roles_built: Dict = None,
         open_protocol_custom_formats: Dict[str, str] = None,
     ):
         """
@@ -68,11 +158,10 @@ class GraphvizGraphBuilder:
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         """
         self.playbook_node = playbook_node
-        self._play_colors = self._init_play_colors()
-        # A map containing the roles that have been rendered so far
-        self._rendered_roles = {}
-        # FIXME: should be merged for all playbooks
-        self.roles_usage = playbook_node.roles_usage()
+        self.roles_usage = roles_usage or playbook_node.roles_usage()
+        self.play_colors = play_colors
+        # A map containing the roles that have been built so far
+        self.roles_built = roles_built or {}
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
@@ -80,19 +169,6 @@ class GraphvizGraphBuilder:
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
         self.digraph = digraph
-
-    def _init_play_colors(self) -> Dict[str, Tuple[str, str]]:
-        """
-        Get random colors for each play in the playbook: color and font color
-        :return:
-        """
-        colors = {}
-        for p in self.playbook_node.plays:
-            colors[p.id] = get_play_colors(p.id)
-
-        # TODO: find a way to create visual distance between the generated colors
-        #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
-        return colors
 
     def build_node(
         self,
@@ -256,16 +332,16 @@ class GraphvizGraphBuilder:
             labeltooltip=role_edge_label,
         )
 
-        # Merge the colors for each play where this role is used
-        role_plays = self.roles_usage[destination]
-        colors = list(map(self._play_colors.get, role_plays))
-        # Graphviz support providing multiple colors separated by :
-        role_color = ":".join([c[0] for c in colors])
-
-        # check if we already rendered this role
-        role_to_render = self._rendered_roles.get(destination.name, None)
+        # check if we already built this role
+        role_to_render = self.roles_built.get(destination.name, None)
         if role_to_render is None:
-            self._rendered_roles[destination.name] = destination
+            # Merge the colors for each play where this role is used
+            role_plays = self.roles_usage[destination]
+            colors = list(map(self.play_colors.get, role_plays))
+            # Graphviz support providing multiple colors separated by :
+            role_color = ":".join([c[0] for c in colors])
+
+            self.roles_built[destination.name] = destination
 
             with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
                 role_subgraph.node(
@@ -285,6 +361,8 @@ class GraphvizGraphBuilder:
                         counter=role_task_counter,
                         color=role_color,
                     )
+        else:
+            print("here")
 
     def build_graphviz_graph(self):
         """
@@ -302,7 +380,7 @@ class GraphvizGraphBuilder:
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = self._play_colors[play.id]
+                color, play_font_color = self.play_colors[play.id]
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )
