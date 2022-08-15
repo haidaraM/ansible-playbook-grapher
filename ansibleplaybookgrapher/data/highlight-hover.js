@@ -131,16 +131,15 @@ function dblClickElement(event) {
 
 
 $("#svg").ready(function () {
-    let playbook = $("g[id^=playbook_]");
+    let playbooks = $("g[id^=playbook_]");
     let plays = $("g[id^=play_]");
     let roles = $("g[id^=role_]");
     let blocks = $("g[id^=block_]");
     let tasks = $("g[id^=pre_task_], g[id^=task_], g[id^=post_task_]");
 
-    playbook.click(clickOnElement);
-    playbook.dblclick(dblClickElement);
-
-    // TODO: add hover on playbooks
+    playbooks.hover(hoverMouseEnter, hoverMouseLeave);
+    playbooks.click(clickOnElement);
+    playbooks.dblclick(dblClickElement);
 
     // Set hover and click events on the plays
     plays.hover(hoverMouseEnter, hoverMouseLeave);
