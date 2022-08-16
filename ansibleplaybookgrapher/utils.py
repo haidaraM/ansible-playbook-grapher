@@ -18,7 +18,7 @@ import uuid
 from collections import defaultdict
 from itertools import chain
 from operator import methodcaller
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Set
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
@@ -111,18 +111,18 @@ def has_role_parent(task_block: Task) -> bool:
     return False
 
 
-def merge_dicts(dict_1: Dict[Any, List], dict_2: Dict[Any, List]) -> Dict[Any, List]:
+def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set]:
     """
     Merge two dicts by grouping keys and appending values in list
     :param dict_1:
     :param dict_2:
     :return:
     """
-    final = defaultdict(list)
+    final = defaultdict(set)
     # iterate dict items
     all_dict_items = map(methodcaller("items"), [dict_1, dict_2])
     for k, v in chain.from_iterable(all_dict_items):
-        final[k].extend(v)
+        final[k].update(v)
 
     return final
 

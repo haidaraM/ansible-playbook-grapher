@@ -226,7 +226,7 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
 
     for role, plays in roles_usage.items():
         assert all(
-            map(lambda node_id: node_id.startswith("play_"), plays)
+            map(lambda node: node.id.startswith("play_"), plays)
         ), "All nodes IDs should be play"
         nb_plays = len(plays)
 
