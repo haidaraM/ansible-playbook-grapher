@@ -24,7 +24,14 @@ class Node:
     A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
     """
 
-    def __init__(self, node_name: str, node_id: str, when: str = "", raw_object=None, parent: 'Node' = None):
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str,
+        when: str = "",
+        raw_object=None,
+        parent: "Node" = None,
+    ):
         """
 
         :param node_name: The name of the node
@@ -51,7 +58,7 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def get_first_parent_matching_type(self, node_type: Type) -> 'Type':
+    def get_first_parent_matching_type(self, node_type: Type) -> "Type":
         """
         Get the first parent of this node matching the given type
         :return:
@@ -66,7 +73,7 @@ class Node:
         raise ValueError(f"No parent of type {node_type} found for {self}")
 
     def __repr__(self):
-        return f"{type(self).__name__}(name='{self.name}',id='{self.id}')"
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}')"
 
     def __eq__(self, other):
         return self.id == other.id
@@ -89,7 +96,7 @@ class CompositeNode(Node):
         node_id: str,
         when: str = "",
         raw_object=None,
-        parent: 'Node' = None,
+        parent: "Node" = None,
         supported_compositions: List[str] = None,
     ):
         """
@@ -176,8 +183,17 @@ class CompositeTasksNode(CompositeNode):
     A special composite node which only support adding "tasks". Useful for block and role
     """
 
-    def __init__(self, node_name: str, node_id: str, when: str = "", raw_object=None, parent: 'Node' = None):
-        super().__init__(node_name, node_id, when=when, raw_object=raw_object, parent=parent)
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str,
+        when: str = "",
+        raw_object=None,
+        parent: "Node" = None,
+    ):
+        super().__init__(
+            node_name, node_id, when=when, raw_object=raw_object, parent=parent
+        )
         self._supported_compositions = ["tasks"]
 
     def add_node(self, target_composition: str, node: Node):
@@ -232,31 +248,25 @@ class PlaybookNode(CompositeNode):
         """
         return self._compositions["plays"]
 
-    def roles_usage(self) -> Dict["RoleNode", Set[Node]]:
+    def roles_usage(self) -> Dict["RoleNode", List[Node]]:
         """
         For each role in the graph, return the plays that reference the role
         FIXME: Review this implementation. It may not be the most efficient way, but it's ok for the moment
         :return: A dict with key as role node and value the list of plays
         """
 
-        usages = defaultdict(set)
+        usages = defaultdict(list)
         links = self.links_structure()
 
         for node, linked_nodes in links.items():
             for linked_node in linked_nodes:
                 if isinstance(linked_node, RoleNode):
                     if isinstance(node, PlayNode):
-                        usages[linked_node].add(node)
+                        usages[linked_node].append(node)
                     else:
-                        usages[linked_node].add(node.get_first_parent_matching_type(PlayNode))
-
-        # In case a role is used by another role, replace it by the play associated with using role (transitivity)
-        for usages_set in usages.values():
-            for node in usages_set.copy():
-                for r in usages:
-                    if node.id == r.id:
-                        usages_set.remove(node)
-                        usages_set.update(usages[r])
+                        usages[linked_node].append(
+                            node.get_first_parent_matching_type(PlayNode)
+                        )
 
         return usages
 
@@ -276,7 +286,7 @@ class PlayNode(CompositeNode):
         node_id: str = None,
         when: str = "",
         raw_object=None,
-        parent: 'Node' = None,
+        parent: "Node" = None,
         hosts: List[str] = None,
     ):
         """
@@ -317,7 +327,12 @@ class BlockNode(CompositeTasksNode):
     """
 
     def __init__(
-        self, node_name: str, node_id: str = None, when: str = "", raw_object=None, parent: 'Node' = None
+        self,
+        node_name: str,
+        node_id: str = None,
+        when: str = "",
+        raw_object=None,
+        parent: "Node" = None,
     ):
         super().__init__(
             node_name,
@@ -334,7 +349,12 @@ class TaskNode(Node):
     """
 
     def __init__(
-        self, node_name: str, node_id: str = None, when: str = "", raw_object=None, parent: 'Node' = None
+        self,
+        node_name: str,
+        node_id: str = None,
+        when: str = "",
+        raw_object=None,
+        parent: "Node" = None,
     ):
         """
 
@@ -343,7 +363,11 @@ class TaskNode(Node):
         :param raw_object:
         """
         super().__init__(
-            node_name, node_id or generate_id("task_"), when=when, raw_object=raw_object, parent=parent
+            node_name,
+            node_id or generate_id("task_"),
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
         )
 
 
@@ -358,7 +382,7 @@ class RoleNode(CompositeTasksNode):
         node_id: str = None,
         when: str = "",
         raw_object=None,
-        parent: 'Node' = None,
+        parent: "Node" = None,
         include_role: bool = False,
     ):
         """
@@ -369,7 +393,11 @@ class RoleNode(CompositeTasksNode):
         """
         self.include_role = include_role
         super().__init__(
-            node_name, node_id or generate_id("role_"), when=when, raw_object=raw_object, parent=parent
+            node_name,
+            node_id or generate_id("role_"),
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
         )
 
     def retrieve_position(self):

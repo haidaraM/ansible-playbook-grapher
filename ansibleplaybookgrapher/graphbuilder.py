@@ -22,7 +22,8 @@ from ansibleplaybookgrapher.graph import (
     PlaybookNode,
     RoleNode,
     BlockNode,
-    Node, PlayNode,
+    Node,
+    PlayNode,
 )
 from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
@@ -146,7 +147,7 @@ class GraphvizGraphBuilder:
         open_protocol_handler: str,
         digraph: Digraph,
         play_colors: Dict[PlayNode, Tuple[str, str]],
-        roles_usage: Dict[RoleNode, Set[Node]] = None,
+        roles_usage: Dict[RoleNode, List[Node]] = None,
         roles_built: Dict = None,
         open_protocol_custom_formats: Dict[str, str] = None,
     ):

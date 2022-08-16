@@ -111,18 +111,18 @@ def has_role_parent(task_block: Task) -> bool:
     return False
 
 
-def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set]:
+def merge_dicts(dict_1: Dict[Any, List], dict_2: Dict[Any, List]) -> Dict[Any, List]:
     """
     Merge two dicts by grouping keys and appending values in list
     :param dict_1:
     :param dict_2:
     :return:
     """
-    final = defaultdict(set)
+    final = defaultdict(list)
     # iterate dict items
     all_dict_items = map(methodcaller("items"), [dict_1, dict_2])
     for k, v in chain.from_iterable(all_dict_items):
-        final[k].update(v)
+        final[k].extend(v)
 
     return final
 

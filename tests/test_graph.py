@@ -30,9 +30,7 @@ def test_links_structure():
 
     assert len(all_links[play]) == 2, "The play should be linked to 2 nodes"
     for e in [role, task_3]:
-        assert (
-            e in all_links[play]
-        ), f"The play should be linked to the task {task_1}"
+        assert e in all_links[play], f"The play should be linked to the task {task_1}"
 
     assert len(all_links[role]) == 2, "The role should be linked to two nodes"
     for e in [task_1, task_2]:

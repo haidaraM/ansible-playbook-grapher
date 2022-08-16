@@ -228,13 +228,18 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
         assert all(
             map(lambda node: node.id.startswith("play_"), plays)
         ), "All nodes IDs should be play"
-        nb_plays = len(plays)
+
+        nb_plays_for_the_role = len(plays)
 
         if role.name == "fake_role":
-            assert nb_plays == 3, "The role fake_role is used 3 times in the plays"
+            assert (
+                nb_plays_for_the_role == 3
+            ), "The role fake_role is used 3 times in the plays"
         elif role.name == "display_some_facts":
             assert (
-                nb_plays == 4
+                nb_plays_for_the_role == 4
             ), "The role display_some_facts is used 4 times in the plays"
         elif role.name == "nested_included_role":
-            assert nb_plays == 1, "The role nested_included_role is used in 1 play"
+            assert (
+                nb_plays_for_the_role == 1
+            ), "The role nested_included_role is used in 1 play"
