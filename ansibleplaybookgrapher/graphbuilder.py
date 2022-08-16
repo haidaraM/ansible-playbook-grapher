@@ -63,12 +63,14 @@ class Grapher:
         include_role_tasks: bool = False,
         tags: List[str] = None,
         skip_tags: List[str] = None,
+        group_roles_by_name: bool = False,
     ):
         """
         Parses all the provided playbooks
         :param include_role_tasks: Should we include the role tasks
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
+        :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
         :return:
         """
 
@@ -79,6 +81,7 @@ class Grapher:
                 skip_tags=skip_tags,
                 playbook_filename=playbook_file,
                 include_role_tasks=include_role_tasks,
+                group_roles_by_name=group_roles_by_name,
             )
             playbook_node = parser.parse()
             self.playbook_nodes.append(playbook_node)
@@ -334,7 +337,7 @@ class GraphvizGraphBuilder:
         )
 
         # check if we already built this role
-        role_to_render = self.roles_built.get(destination.name, None)
+        role_to_render = self.roles_built.get(destination.id, None)
         if role_to_render is None:
             # Merge the colors for each play where this role is used
             role_plays = self.roles_usage[destination]
@@ -346,7 +349,7 @@ class GraphvizGraphBuilder:
                 colors = list(map(self.play_colors.get, role_plays))[0]
                 role_color = colors[0]
 
-            self.roles_built[destination.name] = destination
+            self.roles_built[destination.id] = destination
 
             with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
                 role_subgraph.node(

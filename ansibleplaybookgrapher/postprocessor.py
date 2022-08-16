@@ -203,9 +203,9 @@ class GraphVizPostProcessor:
 
             # Define an ID for the path so that we can reference it explicitly
             path_id = f"path_{edge.get('id')}"
-            # Even though we may have more than one path, we only care about a single on.
-            #  We have more than one path (edge) pointing to a single task if role containing the task is used more than
-            #   once.
+            # Even though we may have more than one path, we only care about a single one.
+            #  We have more than one path (edge) pointing to a single task if the role containing the task is used more
+            #  than once.
             path_element = path_elements[0]
             path_element.set("id", path_id)
 
