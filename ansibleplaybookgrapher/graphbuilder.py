@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple, List, Set
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -146,7 +146,7 @@ class GraphvizGraphBuilder:
         open_protocol_handler: str,
         digraph: Digraph,
         play_colors: Dict[PlayNode, Tuple[str, str]],
-        roles_usage: Dict[RoleNode, List[str]] = None,
+        roles_usage: Dict[RoleNode, Set[Node]] = None,
         roles_built: Dict = None,
         open_protocol_custom_formats: Dict[str, str] = None,
     ):
@@ -337,9 +337,13 @@ class GraphvizGraphBuilder:
         if role_to_render is None:
             # Merge the colors for each play where this role is used
             role_plays = self.roles_usage[destination]
-            colors = list(map(self.play_colors.get, role_plays))
             # Graphviz support providing multiple colors separated by :
-            role_color = colors[0][0]
+            if len(role_plays) > 1:
+                # If the role is used in multiple plays, we take black as the default color
+                role_color = "black"
+            else:
+                colors = list(map(self.play_colors.get, role_plays))[0]
+                role_color = colors[0]
 
             self.roles_built[destination.name] = destination
 
