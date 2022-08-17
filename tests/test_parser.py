@@ -108,12 +108,14 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
         in capsys.readouterr().err
     ), "A warning should be displayed regarding loop being not supported"
 
-    # first include_role
-    include_role_1 = tasks[0]
+    # first include_role using a block
+    block_include_role = tasks[0]
+    assert isinstance(block_include_role, BlockNode)
+    include_role_1 = block_include_role.tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
     assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
-    assert include_role_1.line == 9, "The first include role should be at line 9"
+    assert include_role_1.line == 10, "The first include role should be at line 9"
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"

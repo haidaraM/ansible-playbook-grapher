@@ -10,10 +10,9 @@
     state: started
 
 - name: Include role block
-  block:
-    - when: x is not defined
-      include_role:
-        name: display_some_facts
+  when: x is not defined
+  include_role:
+    name: display_some_facts
 
 - name: Include role
   include_role:

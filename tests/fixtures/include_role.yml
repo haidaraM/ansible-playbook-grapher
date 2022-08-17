@@ -6,12 +6,13 @@
     - fake_role
     - display_some_facts
   tasks:
-    - name: (0) First Include role (with loop)
-      include_role:
-        name: '{{ item }}'
-      loop:
-        - fake_role
-        - display_some_facts
+    - block:
+        - name: (0) First Include role (with loop)
+          include_role:
+            name: '{{ item }}'
+          loop:
+            - fake_role
+            - display_some_facts
 
     - name: (1) Debug
       debug:
