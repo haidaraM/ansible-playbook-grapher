@@ -137,10 +137,10 @@ class GraphVizPostProcessor:
         display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
         links_structure = playbook_node.links_structure()
 
-        for node_id, node_links in links_structure.items():
+        for node, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath(
-                f"ns:g/*[@id='{node_id}']", namespaces={"ns": SVG_NAMESPACE}
+                f"ns:g/*[@id='{node.id}']", namespaces={"ns": SVG_NAMESPACE}
             )
             if xpath_result:
                 element = xpath_result[0]
@@ -151,7 +151,7 @@ class GraphVizPostProcessor:
                             "link",
                             attrib={
                                 "target": link.id,
-                                "edge": f"edge_{counter}_{node_id}_{link.id}",
+                                "edge": f"edge_{counter}_{node.id}_{link.id}",
                             },
                         )
                     )

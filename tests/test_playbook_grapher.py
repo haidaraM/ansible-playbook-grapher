@@ -241,6 +241,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
         svg_path=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
+        blocks_number=1,
         tasks_number=expected_tasks_number,
         roles_number=3,
     )

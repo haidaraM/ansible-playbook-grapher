@@ -108,12 +108,14 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
         in capsys.readouterr().err
     ), "A warning should be displayed regarding loop being not supported"
 
-    # first include_role
-    include_role_1 = tasks[0]
+    # first include_role using a block
+    block_include_role = tasks[0]
+    assert isinstance(block_include_role, BlockNode)
+    include_role_1 = block_include_role.tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
     assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
-    assert include_role_1.line == 9, "The first include role should be at line 9"
+    assert include_role_1.line == 10, "The first include role should be at line 9"
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
@@ -226,15 +228,20 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
 
     for role, plays in roles_usage.items():
         assert all(
-            map(lambda node_id: node_id.startswith("play_"), plays)
+            map(lambda node: node.id.startswith("play_"), plays)
         ), "All nodes IDs should be play"
-        nb_plays = len(plays)
+
+        nb_plays_for_the_role = len(plays)
 
         if role.name == "fake_role":
-            assert nb_plays == 3, "The role fake_role is used 3 times in the plays"
+            assert (
+                nb_plays_for_the_role == 3
+            ), "The role fake_role is used 3 times in the plays"
         elif role.name == "display_some_facts":
             assert (
-                nb_plays == 4
+                nb_plays_for_the_role == 4
             ), "The role display_some_facts is used 4 times in the plays"
         elif role.name == "nested_included_role":
-            assert nb_plays == 1, "The role nested_included_role is used in 1 play"
+            assert (
+                nb_plays_for_the_role == 1
+            ), "The role nested_included_role is used in 1 play"

@@ -18,7 +18,7 @@ import uuid
 from collections import defaultdict
 from itertools import chain
 from operator import methodcaller
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Set
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text

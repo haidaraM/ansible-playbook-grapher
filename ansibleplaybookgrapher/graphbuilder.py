@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple, List, Set
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -23,6 +23,7 @@ from ansibleplaybookgrapher.graph import (
     RoleNode,
     BlockNode,
     Node,
+    PlayNode,
 )
 from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
@@ -86,7 +87,7 @@ class Grapher:
             for play in playbook_node.plays:
                 # TODO: find a way to create visual distance between the generated colors
                 #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
-                self.plays_color[play.id] = get_play_colors(play.id)
+                self.plays_color[play] = get_play_colors(play.id)
 
             # Update the usage of the roles
             self.roles_usage = merge_dicts(
@@ -142,11 +143,11 @@ class GraphvizGraphBuilder:
 
     def __init__(
         self,
-        playbook_node: "PlaybookNode",
+        playbook_node: PlaybookNode,
         open_protocol_handler: str,
         digraph: Digraph,
-        play_colors: Dict[str, Tuple[str, str]],
-        roles_usage: Dict["RoleNode", List[str]] = None,
+        play_colors: Dict[PlayNode, Tuple[str, str]],
+        roles_usage: Dict[RoleNode, List[Node]] = None,
         roles_built: Dict = None,
         open_protocol_custom_formats: Dict[str, str] = None,
     ):
@@ -337,9 +338,13 @@ class GraphvizGraphBuilder:
         if role_to_render is None:
             # Merge the colors for each play where this role is used
             role_plays = self.roles_usage[destination]
-            colors = list(map(self.play_colors.get, role_plays))
             # Graphviz support providing multiple colors separated by :
-            role_color = ":".join([c[0] for c in colors])
+            if len(role_plays) > 1:
+                # If the role is used in multiple plays, we take black as the default color
+                role_color = "black"
+            else:
+                colors = list(map(self.play_colors.get, role_plays))[0]
+                role_color = colors[0]
 
             self.roles_built[destination.name] = destination
 
@@ -361,8 +366,6 @@ class GraphvizGraphBuilder:
                         counter=role_task_counter,
                         color=role_color,
                     )
-        else:
-            print("here")
 
     def build_graphviz_graph(self):
         """
@@ -380,7 +383,7 @@ class GraphvizGraphBuilder:
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = self.play_colors[play.id]
+                color, play_font_color = self.play_colors[play]
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )

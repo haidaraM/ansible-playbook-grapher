@@ -9,7 +9,7 @@
     name: postgresql
     state: started
 
-- name: Include role
+- name: Include role block
   when: x is not defined
   include_role:
     name: display_some_facts
