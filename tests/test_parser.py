@@ -216,15 +216,24 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
 @pytest.mark.parametrize(
-    ["group_roles_by_name", "roles_number", "fake_role_usage", "display_some_facts_usage", "nested_include_role"],
     [
-        (False, 8, 1, 1, 1),
-        (True, 3, 3, 4, 1)
+        "group_roles_by_name",
+        "roles_number",
+        "fake_role_usage",
+        "display_some_facts_usage",
+        "nested_include_role",
     ],
+    [(False, 8, 1, 1, 1), (True, 3, 3, 4, 1)],
     ids=["no_group", "group"],
 )
-def test_roles_usage(grapher_cli: PlaybookGrapherCLI, roles_number, group_roles_by_name: bool, fake_role_usage,
-                     display_some_facts_usage, nested_include_role):
+def test_roles_usage(
+    grapher_cli: PlaybookGrapherCLI,
+    roles_number,
+    group_roles_by_name: bool,
+    fake_role_usage,
+    display_some_facts_usage,
+    nested_include_role,
+):
     """
 
     :param grapher_cli:
@@ -236,7 +245,9 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI, roles_number, group_roles_
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0], include_role_tasks=True, group_roles_by_name=group_roles_by_name
+        grapher_cli.options.playbook_filenames[0],
+        include_role_tasks=True,
+        group_roles_by_name=group_roles_by_name,
     )
     playbook_node = parser.parse()
     roles_usage = playbook_node.roles_usage()
@@ -244,10 +255,12 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI, roles_number, group_roles_
     expectation = {
         "fake_role": fake_role_usage,
         "display_some_facts": display_some_facts_usage,
-        "nested_include_role": nested_include_role
+        "nested_include_role": nested_include_role,
     }
 
-    assert roles_number == len(roles_usage), "The number of unique roles should be equal to the number of usages"
+    assert roles_number == len(
+        roles_usage
+    ), "The number of unique roles should be equal to the number of usages"
 
     for role, plays in roles_usage.items():
         assert all(
@@ -256,5 +269,6 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI, roles_number, group_roles_
 
         nb_plays_for_the_role = len(plays)
 
-        assert expectation.get(
-            role.name) == nb_plays_for_the_role, f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"
+        assert (
+            expectation.get(role.name) == nb_plays_for_the_role
+        ), f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"

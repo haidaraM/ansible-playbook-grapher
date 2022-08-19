@@ -136,7 +136,7 @@ class PlaybookParser(BaseParser):
         include_role_tasks=False,
         tags: List[str] = None,
         skip_tags: List[str] = None,
-        group_roles_by_name: bool = False
+        group_roles_by_name: bool = False,
     ):
         """
         :param playbook_filename: The filename of the playbook to parse

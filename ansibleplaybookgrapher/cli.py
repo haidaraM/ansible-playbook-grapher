@@ -62,7 +62,7 @@ class GrapherCLI(CLI, ABC):
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
-            group_roles_by_name=self.options.group_roles_by_name
+            group_roles_by_name=self.options.group_roles_by_name,
         )
         digraph = grapher.graph(
             open_protocol_handler=self.options.open_protocol_handler,
@@ -179,8 +179,12 @@ class PlaybookGrapherCLI(GrapherCLI):
                                  """,
         )
 
-        self.parser.add_argument("--group-roles-by-name", action="store_true", default=False,
-                                 help="When rendering the graph, only a single role will be display for all roles having the same names.")
+        self.parser.add_argument(
+            "--group-roles-by-name",
+            action="store_true",
+            default=False,
+            help="When rendering the graph, only a single role will be display for all roles having the same names.",
+        )
 
         self.parser.add_argument(
             "--version",

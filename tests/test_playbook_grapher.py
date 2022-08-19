@@ -503,7 +503,9 @@ def test_community_download_roles_and_collection(request):
     [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
     ids=["no_group", "group"],
 )
-def test_group_roles_by_name(request, flag, roles_number, tasks_number, post_tasks_number):
+def test_group_roles_by_name(
+    request, flag, roles_number, tasks_number, post_tasks_number
+):
     """
     Test group roles by name
     :return:
@@ -520,5 +522,5 @@ def test_group_roles_by_name(request, flag, roles_number, tasks_number, post_tas
         roles_number=roles_number,
         tasks_number=tasks_number,
         post_tasks_number=post_tasks_number,
-        blocks_number=1
+        blocks_number=1,
     )

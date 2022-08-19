@@ -7,7 +7,7 @@
   tasks:
     - block:
         - include_role:
-            name: fake_rol
+            name: fake_role
   post_tasks:
     - include_role:
         name: nested_include_role
