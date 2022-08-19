@@ -180,7 +180,7 @@ class PlaybookGrapherCLI(GrapherCLI):
         )
 
         self.parser.add_argument("--group-roles-by-name", action="store_true", default=False,
-                                 help="When rendering the graph, only a single role will be displayed per for all roles having the same names.")
+                                 help="When rendering the graph, only a single role will be display for all roles having the same names.")
 
         self.parser.add_argument(
             "--version",

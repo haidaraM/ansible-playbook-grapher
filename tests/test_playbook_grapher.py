@@ -110,7 +110,7 @@ def _common_tests(
 
     assert (
         len(roles) == roles_number
-    ), f"The playbook '{svg_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    ), f"The graph '{svg_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
         len(tasks) == tasks_number
@@ -224,7 +224,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
 
 @pytest.mark.parametrize(
     ["include_role_tasks_option", "expected_tasks_number"],
-    [("--", 2), ("--include-role-tasks", 8)],
+    [("--", 2), ("--include-role-tasks", 14)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_include_role(request, include_role_tasks_option, expected_tasks_number):
@@ -243,7 +243,7 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
         plays_number=1,
         blocks_number=1,
         tasks_number=expected_tasks_number,
-        roles_number=3,
+        roles_number=6,
     )
 
 
@@ -419,9 +419,9 @@ def test_multi_plays(request):
         svg_path=svg_path,
         playbook_paths=playbook_paths,
         plays_number=3,
-        tasks_number=10,
+        tasks_number=25,
         post_tasks_number=2,
-        roles_number=3,
+        roles_number=8,
         pre_tasks_number=2,
     )
 
@@ -442,8 +442,8 @@ def test_multiple_playbooks(request):
         playbooks_number=3,
         plays_number=5,
         pre_tasks_number=4,
-        roles_number=3,
-        tasks_number=14,
+        roles_number=10,
+        tasks_number=35,
         post_tasks_number=4,
     )
 
@@ -495,4 +495,30 @@ def test_community_download_roles_and_collection(request):
         ["docker-mysql-galaxy.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks"],
+    )
+
+
+@pytest.mark.parametrize(
+    ["flag", "roles_number", "tasks_number", "post_tasks_number"],
+    [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
+    ids=["no_group", "group"],
+)
+def test_group_roles_by_name(request, flag, roles_number, tasks_number, post_tasks_number):
+    """
+    Test group roles by name
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["group-roles-by-name.yml"],
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks", flag],
+    )
+    _common_tests(
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        roles_number=roles_number,
+        tasks_number=tasks_number,
+        post_tasks_number=post_tasks_number,
+        blocks_number=1
     )

@@ -215,16 +215,39 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
 
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
-def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
+@pytest.mark.parametrize(
+    ["group_roles_by_name", "roles_number", "fake_role_usage", "display_some_facts_usage", "nested_include_role"],
+    [
+        (False, 8, 1, 1, 1),
+        (True, 3, 3, 4, 1)
+    ],
+    ids=["no_group", "group"],
+)
+def test_roles_usage(grapher_cli: PlaybookGrapherCLI, roles_number, group_roles_by_name: bool, fake_role_usage,
+                     display_some_facts_usage, nested_include_role):
     """
 
+    :param grapher_cli:
+    :param roles_number: The number of uniq roles in the graph
+    :param group_roles_by_name: flag to enable grouping roles or not
+    :param fake_role_usage: number of usages for the role fake_role
+    :param display_some_facts_usage: number of usages for the role display_some_facts
+    :param nested_include_role: number of usages for the role nested_include_role
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True, group_roles_by_name=group_roles_by_name
     )
     playbook_node = parser.parse()
     roles_usage = playbook_node.roles_usage()
+
+    expectation = {
+        "fake_role": fake_role_usage,
+        "display_some_facts": display_some_facts_usage,
+        "nested_include_role": nested_include_role
+    }
+
+    assert roles_number == len(roles_usage), "The number of unique roles should be equal to the number of usages"
 
     for role, plays in roles_usage.items():
         assert all(
@@ -233,15 +256,5 @@ def test_roles_usage(grapher_cli: PlaybookGrapherCLI):
 
         nb_plays_for_the_role = len(plays)
 
-        if role.name == "fake_role":
-            assert (
-                nb_plays_for_the_role == 3
-            ), "The role fake_role is used 3 times in the plays"
-        elif role.name == "display_some_facts":
-            assert (
-                nb_plays_for_the_role == 4
-            ), "The role display_some_facts is used 4 times in the plays"
-        elif role.name == "nested_included_role":
-            assert (
-                nb_plays_for_the_role == 1
-            ), "The role nested_included_role is used in 1 play"
+        assert expectation.get(
+            role.name) == nb_plays_for_the_role, f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"

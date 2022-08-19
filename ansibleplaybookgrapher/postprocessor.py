@@ -195,18 +195,12 @@ class GraphVizPostProcessor:
         )
 
         for edge in edge_elements:
-            path_elements = edge.findall(".//path", namespaces=self.root.nsmap)
-            display.vvvvv(
-                f"{DISPLAY_PREFIX} {len(path_elements)} path(s) found on the edge '{edge.get('id')}'"
-            )
             text_element = edge.find(".//text", namespaces=self.root.nsmap)
 
             # Define an ID for the path so that we can reference it explicitly
             path_id = f"path_{edge.get('id')}"
-            # Even though we may have more than one path, we only care about a single one.
-            #  We have more than one path (edge) pointing to a single task if the role containing the task is used more
-            #  than once.
-            path_element = path_elements[0]
+
+            path_element = edge.find(".//path", namespaces=self.root.nsmap)
             path_element.set("id", path_id)
 
             # Create a curved textPath: the text will follow the path
@@ -219,8 +213,7 @@ class GraphVizPostProcessor:
 
             text_element.append(text_path)
 
-            # The more paths we have, the more we move the text from the path
-            dy = -0.2 - (len(path_elements) - 1) * 0.3
+            dy = -0.5
             text_element.set("dy", f"{dy}%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")
