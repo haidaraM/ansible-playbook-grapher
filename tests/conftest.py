@@ -63,7 +63,7 @@ def grapher_cli(request) -> PlaybookGrapherCLI:
     :return:
     """
     # The request param should be the path to the playbook
-    args_params = request.param
+    args_params = request.param.copy()
     # The last item of the args should be the name of the playbook file in the fixtures.
     args_params[-1] = os.path.join(FIXTURES_DIR, args_params[-1])
     cli = PlaybookGrapherCLI([__prog__] + args_params)

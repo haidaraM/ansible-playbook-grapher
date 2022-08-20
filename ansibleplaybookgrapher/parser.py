@@ -136,16 +136,18 @@ class PlaybookParser(BaseParser):
         include_role_tasks=False,
         tags: List[str] = None,
         skip_tags: List[str] = None,
+        group_roles_by_name: bool = False,
     ):
         """
         :param playbook_filename: The filename of the playbook to parse
         :param include_role_tasks: If true, the tasks of the role will be included in the graph
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
+        :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
         """
 
         super().__init__(tags=tags, skip_tags=skip_tags)
-
+        self.group_roles_by_name = group_roles_by_name
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
 
@@ -226,9 +228,15 @@ class PlaybookParser(BaseParser):
                     # Go to the next role
                     continue
 
+                if self.group_roles_by_name:
+                    # If we are grouping roles, we use the hash of role name as the node id
+                    role_node_id = "role_" + hash_value(role.get_name())
+                else:
+                    # Otherwise, a random id is used
+                    role_node_id = generate_id("role_")
                 role_node = RoleNode(
                     clean_name(role.get_name()),
-                    node_id="role_" + hash_value(role.get_name()),
+                    node_id=role_node_id,
                     raw_object=role,
                     parent=play_node,
                 )
@@ -341,9 +349,15 @@ class PlaybookParser(BaseParser):
 
                     # Here we are using the role name instead of the task name to keep the same behavior  as a
                     #  traditional role
+                    if self.group_roles_by_name:
+                        # If we are grouping roles, we use the hash of role name as the node id
+                        role_node_id = "role_" + hash_value(task_or_block._role_name)
+                    else:
+                        # Otherwise, a random id is used
+                        role_node_id = generate_id("role_")
                     role_node = RoleNode(
                         task_or_block._role_name,
-                        node_id="role_" + hash_value(task_or_block._role_name),
+                        node_id=role_node_id,
                         when=convert_when_to_str(task_or_block.when),
                         raw_object=task_or_block,
                         parent=parent_nodes[-1],

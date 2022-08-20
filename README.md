@@ -81,48 +81,73 @@ regarding the blocks.
 The available options:
 
 ```
-ansible-playbook-grapher --help
-usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY] [--include-role-tasks] [-s] [--view] [-o OUTPUT_FILENAME]
-                                [--open-protocol-handler {default,vscode,custom}] [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--version]
-                                [-t TAGS] [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
-                                [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
-                                playbook
+usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
+                                [--include-role-tasks] [-s] [--view]
+                                [-o OUTPUT_FILENAME]
+                                [--open-protocol-handler {default,vscode,custom}]
+                                [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
+                                [--group-roles-by-name] [--version] [-t TAGS]
+                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
+                                [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
+                                [-e EXTRA_VARS]
+                                playbooks [playbooks ...]
 
 Make graphs from your Ansible Playbooks.
 
 positional arguments:
-  playbook              Playbook to graph
+  playbooks             Playbook(s) to graph
 
 optional arguments:
   --ask-vault-password, --ask-vault-pass
                         ask for vault password
+  --group-roles-by-name
+                        When rendering the graph, only a single role will be
+                        display for all roles having the same names.
   --include-role-tasks  Include the tasks of the role in the graph.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
-                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should
-                        provide a JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser
-                        and files (tasks) in vscode, set this to '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
+                        The custom formats to use as URLs for the nodes in the
+                        graph. Required if --open-protocol-handler is set to
+                        custom. You should provide a JSON formatted string
+                        like: {"file": "", "folder": ""}. Example: If you want
+                        to open folders (roles) inside the browser and files
+                        (tasks) in vscode, set this to '{"file":
+                        "vscode://file/{path}:{line}:{column}", "folder":
+                        "{path}"}'
   --open-protocol-handler {default,vscode,custom}
-                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer. Your SVG viewer must support double-click
-                        and Javascript. The supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the file or
-                        folders. When using a browser, it will open or download them. For 'vscode', the folders and files will be open with VSCode. For
-                        'custom', you need to set a custom format with --open-protocol-custom-formats.
+                        The protocol to use to open the nodes when double-
+                        clicking on them in your SVG viewer. Your SVG viewer
+                        must support double-click and Javascript. The
+                        supported values are 'default', 'vscode' and 'custom'.
+                        For 'default', the URL will be the path to the file or
+                        folders. When using a browser, it will open or
+                        download them. For 'vscode', the folders and files
+                        will be open with VSCode. For 'custom', you need to
+                        set a custom format with --open-protocol-custom-
+                        formats.
   --skip-tags SKIP_TAGS
-                        only run plays and tasks whose tags do not match these values
+                        only run plays and tasks whose tags do not match these
+                        values
   --vault-id VAULT_IDS  the vault identity to use
   --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
   --version             show program's version number and exit
-  --view                Automatically open the resulting SVG file with your system’s default viewer application for the file type
+  --view                Automatically open the resulting SVG file with your
+                        system’s default viewer application for the file type
   -e EXTRA_VARS, --extra-vars EXTRA_VARS
-                        set additional variables as key=value or YAML/JSON, if filename prepend with @
+                        set additional variables as key=value or YAML/JSON, if
+                        filename prepend with @
   -h, --help            show this help message and exit
   -i INVENTORY, --inventory INVENTORY
-                        specify inventory host path or comma separated host list.
+                        specify inventory host path or comma separated host
+                        list.
   -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
-                        Output filename without the '.svg' extension. Default: <playbook>.svg
+                        Output filename without the '.svg' extension. Default:
+                        <playbook>.svg
   -s, --save-dot-file   Save the dot file used to generate the graph.
   -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
-  -v, --verbose         verbose mode (-vvv for more, -vvvv to enable connection debugging)
+  -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
+                        connection debugging)
+
 ```
 
 ## Configuration: ansible.cfg
