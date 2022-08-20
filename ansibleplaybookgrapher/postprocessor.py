@@ -213,7 +213,7 @@ class GraphVizPostProcessor:
 
             text_element.append(text_path)
 
-            dy = -0.5
+            dy = -0.2
             text_element.set("dy", f"{dy}%")
             # Remove unnecessary attributes and clear the text
             text_element.attrib.pop("x", "")
