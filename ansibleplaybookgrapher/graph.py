@@ -251,7 +251,6 @@ class PlaybookNode(CompositeNode):
     def roles_usage(self) -> Dict["RoleNode", List[Node]]:
         """
         For each role in the graph, return the plays that reference the role
-        FIXME: Review this implementation. It may not be the most efficient way, but it's ok for the moment
         :return: A dict with key as role node and value the list of plays
         """
 

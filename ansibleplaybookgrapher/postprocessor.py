@@ -167,10 +167,6 @@ class GraphVizPostProcessor:
         """
         # Get Bézier curve
         path_segments = parse_path(path_element.get("d"))
-        # FIXME: apply the translation to the segments ?
-        #  TRANSLATE_PATTERN = re.compile(".*translate\((?P<x>[+-]?[0-9]*[.]?[0-9]+) (?P<y>[+-]?[0-9]*[.]?[0-9]+)\).*")
-        #  transform_attribute = self.root.xpath("//*[@id='graph0']", namespaces={"ns": SVG_NAMESPACE})[0].get("transform")
-
         # The segments usually contain 3 elements: One MoveTo and one or two CubicBezier objects.
         # This is relatively slow to compute. Decreasing the "error" will drastically slow down the post-processing
         segment_length = path_segments.length(error=1e-4)
