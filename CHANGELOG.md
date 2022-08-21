@@ -1,3 +1,20 @@
+# 1.2.0 (2022-08-21)
+
+## What's Changed
+
+* feat: Add test case for community downloaded roles and collections by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/117
+* feat: Add support multiple playbooks in one graph by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/118
+* fix: Roles usages and do not use multiple edges for role tasks by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/120
+* feat: Add a flag to group roles by name - Revert the old behavior by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/122
+* fix: Avoid recursive endless loop when a role references itself by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/123
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v1.1.3...v1.2.0
+
 # 1.1.3 (2022-07-17)
 
 ## What's Changed
