@@ -3,7 +3,7 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.cli import get_cli_class
+from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
@@ -16,7 +16,7 @@ def test_cli_help(help_option, capfd):
     """
     args = [__prog__, help_option]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     with pytest.raises(SystemExit) as exception_info:
         cli.parse()
@@ -31,7 +31,7 @@ def test_cli_version(capfd):
     Test version printing
     :return:
     """
-    cli = get_cli_class()([__prog__, "--version"])
+    cli = PlaybookGrapherCLI([__prog__, "--version"])
     with pytest.raises(SystemExit) as exception_info:
         cli.parse()
 
@@ -53,7 +53,7 @@ def test_cli_save_dot_file(save_dot_file_option, expected):
     """
     args = [__prog__] + save_dot_file_option + ["playbook.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -78,7 +78,7 @@ def test_cli_output_filename(output_filename_option, expected):
     """
     args = [__prog__] + output_filename_option + ["playbook.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -100,7 +100,7 @@ def test_cli_include_role_tasks(include_role_tasks_option, expected):
 
     args = [__prog__] + include_role_tasks_option + ["playboook.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -126,7 +126,7 @@ def test_cli_tags(tags_option, expected):
     """
     args = [__prog__] + tags_option + ["playbook.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -159,7 +159,7 @@ def test_skip_tags(skip_tags_option, expected):
     """
     args = [__prog__] + skip_tags_option + ["playbook.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
@@ -175,7 +175,7 @@ def test_cli_no_playbook():
     """
     args = [__prog__]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     with pytest.raises((AnsibleOptionsError, SystemExit)) as exception_info:
         cli.parse()
@@ -188,7 +188,7 @@ def test_cli_multiple_playbooks():
     """
     args = [__prog__, "playbook1.yml", "playbook2.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
     cli.parse()
 
     assert cli.options.playbook_filenames == ["playbook1.yml", "playbook2.yml"]
@@ -205,7 +205,7 @@ def test_cli_verbosity_options(verbosity, verbosity_number):
     """
     args = [__prog__, verbosity, "playbook1.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
     cli.parse()
 
     assert cli.options.verbosity == verbosity_number
@@ -226,7 +226,7 @@ def test_cli_open_protocol_custom_formats():
         "playbook1.yml",
     ]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
     cli.parse()
     assert cli.options.open_protocol_custom_formats == {
         "file": "{path}",
@@ -241,7 +241,7 @@ def test_cli_open_protocol_custom_formats_not_provided():
     """
     args = [__prog__, "--open-protocol-handler", "custom", "playbook1.yml"]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
     with pytest.raises(AnsibleOptionsError) as exception_info:
         cli.parse()
 
@@ -274,7 +274,7 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
         "playbook1.yml",
     ]
 
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
     with pytest.raises(SystemExit) as exception_info:
         cli.parse()
 
