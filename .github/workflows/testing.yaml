@@ -17,7 +17,7 @@ jobs:
       matrix:
         python-version: [ 3.8, 3.9 ]
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
-        ansible-version: [ 2.11.8, 2.12.2 ]
+        ansible-version: [ 2.12.9, 2.13.4 ]
 
     steps:
       - name: Checkout code
