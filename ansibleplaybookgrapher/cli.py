@@ -16,7 +16,6 @@ import json
 import ntpath
 import os
 import sys
-from abc import ABC
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
@@ -37,19 +36,20 @@ from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 display = Display()
 
 
-def get_cli_class():
+class PlaybookGrapherCLI(CLI):
     """
-    Utility function to return the class to use as CLI
-    :return:
+    The dedicated playbook grapher CLI
     """
 
-    return PlaybookGrapherCLI
+    name = __prog__
 
-
-class GrapherCLI(CLI, ABC):
-    """
-    An abstract class to be implemented by the different Grapher CLIs.
-    """
+    def __init__(self, args, callback=None):
+        super().__init__(args=args, callback=callback)
+        # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
+        # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
+        # But this may change in the future:
+        # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
+        self.options = None
 
     def run(self):
         super().run()
@@ -90,20 +90,6 @@ class GrapherCLI(CLI, ABC):
             display.display(f"Graphviz dot file has been exported to {final_name}")
 
         return svg_path
-
-
-class PlaybookGrapherCLI(GrapherCLI):
-    """
-    The dedicated playbook grapher CLI
-    """
-
-    def __init__(self, args, callback=None):
-        super().__init__(args=args, callback=callback)
-        # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
-        # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
-        # But this may change in the future:
-        # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
-        self.options = None
 
     def _add_my_options(self):
         """
@@ -264,7 +250,7 @@ class PlaybookGrapherCLI(GrapherCLI):
 
 def main(args=None):
     args = args or sys.argv
-    cli = get_cli_class()(args)
+    cli = PlaybookGrapherCLI(args)
 
     cli.run()
 
