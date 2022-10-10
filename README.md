@@ -17,8 +17,8 @@ JavaScript:
 
 - Highlighting of all the related nodes of a given node when clicking or hovering. Example: Click on a role to select
   all its tasks when `--include-role-tasks` is set.
-- A double click on a node opens its corresponding file or folders depending on if it's the playbook, a play, a task or
-  a role. By default, the browser will open folders and download files since it may not be able to render the YAML
+- A double click on a node opens the corresponding file or folder depending whether if it's a playbook, a play, a task
+  or a role. By default, the browser will open folders and download files since it may not be able to render the YAML
   file.  
   Optionally, you can
   set [the open protocol to use VSCode](https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls)
@@ -26,7 +26,7 @@ JavaScript:
   the files for the others nodes. The cursor will be at the task exact position in the file.  
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
-  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/main/ansibleplaybookgrapher/renderer.py#L27)
+  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/12cee0fbd59ffbb706731460e301f0b886515357/ansibleplaybookgrapher/graphbuilder.py#L33-L42)
 - Filer tasks based on tags
 - Export the dot file using to generate the graph with Graphviz.
 

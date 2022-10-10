@@ -109,3 +109,4 @@ venv.bak/
 .vagrant
 Vagrantfile
 generated_svg
+**/.DS_Store
