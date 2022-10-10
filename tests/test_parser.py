@@ -281,8 +281,7 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI):
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
-        include_role_tasks=True
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
     roles = playbook_node.plays[0].roles
@@ -292,7 +291,11 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI):
 
     expected_tasks = 5
     dependant_role_name = "fake_role"
-    assert len(tasks) == expected_tasks, f"There should be {expected_tasks} tasks in the graph"
+    assert (
+        len(tasks) == expected_tasks
+    ), f"There should be {expected_tasks} tasks in the graph"
     # The first 3 tasks are coming from the dependency
     for task_from_dependency in tasks[:3]:
-        assert dependant_role_name in task_from_dependency.name, f"The task name should include the dependant role name '{dependant_role_name}'"
+        assert (
+            dependant_role_name in task_from_dependency.name
+        ), f"The task name should include the dependant role name '{dependant_role_name}'"
