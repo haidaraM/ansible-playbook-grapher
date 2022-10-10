@@ -272,3 +272,30 @@ def test_roles_usage(
         assert (
             expectation.get(role.name) == nb_plays_for_the_role
         ), f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"
+
+
+@pytest.mark.parametrize("grapher_cli", [["roles_dependencies.yml"]], indirect=True)
+def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI):
+    """
+    Test if the role dependencies in meta/main.yml are included in the graph
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbook_filenames[0], include_role_tasks=True
+    )
+    playbook_node = parser.parse()
+    roles = playbook_node.plays[0].roles
+    assert len(roles) == 1, "Only one explicit role is called inside the playbook"
+    role_with_dependencies = roles[0]
+    tasks = role_with_dependencies.tasks
+
+    expected_tasks = 5
+    dependant_role_name = "fake_role"
+    assert (
+        len(tasks) == expected_tasks
+    ), f"There should be {expected_tasks} tasks in the graph"
+    # The first 3 tasks are coming from the dependency
+    for task_from_dependency in tasks[:3]:
+        assert (
+            dependant_role_name in task_from_dependency.name
+        ), f"The task name should include the dependant role name '{dependant_role_name}'"
