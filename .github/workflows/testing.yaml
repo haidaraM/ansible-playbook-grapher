@@ -8,9 +8,14 @@ on:
     branches:
       - main
 
+permissions: write-all
+
 jobs:
   pytest:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
+    env:
+      MATRIX_JOB_IDENTIFIER: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+      SVG_FILES_PATH: tests/generated-svgs
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,9 +24,12 @@ jobs:
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
         ansible-version: [ 2.12.9, 2.13.4 ]
 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
 
       - uses: actions/setup-python@v4
         name: Setup Python ${{ matrix.python-version }}
@@ -30,23 +38,42 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
-          pip install -r tests/requirements_tests.txt
+          pip install -q ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install -qr tests/requirements_tests.txt
           pip freeze
-          sudo apt-get install -y graphviz
+          sudo apt-get install -yq graphviz
           ansible-galaxy install -r tests/fixtures/requirements.yml
 
       - name: Pytest
         env:
           PY_COLORS: "1"
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.head_ref }}
         run: make test
 
       - name: Upload generated SVGs as artefacts
         uses: actions/upload-artifact@v3
         with:
-          name: generated-svgs-py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
-          path: tests/generated_svg/
+          name: generated-svgs-${{ env.MATRIX_JOB_IDENTIFIER }}
+          path: ${{ env.SVG_FILES_PATH }}/
           if-no-files-found: error # the tests should generate SVGs files
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit-svg-files
+        with:
+          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
+          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
+          skip_dirty_check: true
+          add_options: '--force'
+          push_options: '--force'
+          branch: generated-svgs-${{ github.head_ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
+          create_branch: true
+
+      - name: Publish job summary
+        env:
+          SVG_COMMIT_SHA: ${{ steps.commit-svg-files.outputs.commit_hash }}
+        run: |
+          env
+          python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
       - name: Test installation in virtualenv
         run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}

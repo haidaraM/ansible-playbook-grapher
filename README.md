@@ -26,9 +26,9 @@ JavaScript:
   the files for the others nodes. The cursor will be at the task exact position in the file.  
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
-  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/12cee0fbd59ffbb706731460e301f0b886515357/ansibleplaybookgrapher/graphbuilder.py#L33-L42)
+  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/12cee0fbd59ffbb706731460e301f0b886515357/ansibleplaybookgrapher/graphbuilder.py#L33-L42).
 - Filer tasks based on tags
-- Export the dot file using to generate the graph with Graphviz.
+- Export the dot file used to generate the graph with Graphviz.
 
 ## Prerequisites
 
@@ -110,9 +110,14 @@ optional arguments:
                         custom. You should provide a JSON formatted string
                         like: {"file": "", "folder": ""}. Example: If you want
                         to open folders (roles) inside the browser and files
-                        (tasks) in vscode, set this to '{"file":
+                        (tasks) in vscode, set it to: '{"file":
                         "vscode://file/{path}:{line}:{column}", "folder":
-                        "{path}"}'
+                        "{path}"}'. path: the absolute path to the file
+                        containing the the plays/tasks/roles. line/column: the
+                        position of the plays/tasks/roles in the file. You can
+                        optionally add the attribute "remove_from_path" to
+                        remove some parts of the path if you want relative
+                        paths.
   --open-protocol-handler {default,vscode,custom}
                         The protocol to use to open the nodes when double-
                         clicking on them in your SVG viewer. Your SVG viewer
@@ -145,8 +150,11 @@ optional arguments:
                         <playbook>.svg
   -s, --save-dot-file   Save the dot file used to generate the graph.
   -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
-  -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
-                        connection debugging)
+  -v, --verbose         Causes Ansible to print more debug messages. Adding
+                        multiple -v will increase the verbosity, the builtin
+                        plugins currently evaluate up to -vvvvvv. A reasonable
+                        level to start is -vvv, connection debugging might
+                        require -vvvv.
 
 ```
 
@@ -169,8 +177,8 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   arguments may not appear in the graph.
 - The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
   Always check the edge label to know the tasks order.
-- The label edge may overlap with each other. The edge labels are positioned so that they are as close as possible to
-  the target nodes. If a single role is used in multiple plays or playbooks, this can happen.
+- The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
+  the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
 
 ## Contribution
 
@@ -190,7 +198,7 @@ export TEST_VIEW_GENERATED_FILE=1
 $ make test # run all tests
 ```
 
-The graphs are generated in the folder `tests/generated_svg`. They are also generated as artefacts
+The graphs are generated in the folder `tests/generated-svgs`. They are also generated as artefacts
 in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
 submitting PRs.
 
