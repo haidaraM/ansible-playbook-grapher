@@ -42,7 +42,7 @@ jobs:
         run: make test
 
       - name: Upload generated SVGs as artefacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: generated-svgs-py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
           path: tests/generated_svg/
