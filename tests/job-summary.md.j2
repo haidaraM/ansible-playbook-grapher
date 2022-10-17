@@ -1,6 +1,6 @@
 ### Generated SVG files
-| Images  |
-|:-------:|
-{% for svg_file in svg_files -%}
-| ![svg]({{ svg_file }}) |
+| Main branch  | Current branch|
+|:-------:|:-----------:|
+{% for link in links -%}
+| ![svg]({{ link[0] }}) | ![svg]({{ link[1] }}) |
 {% endfor %}
