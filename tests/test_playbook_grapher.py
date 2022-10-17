@@ -39,7 +39,7 @@ def run_grapher(
         additional_args.insert(1, "custom")
 
         repo = os.environ["GITHUB_REPOSITORY"]
-        commit_sha = os.environ["GITHUB_SHA"]
+        commit_sha = os.environ["GITHUB_COMMIT_SHA"]
         formats = {
             "file": f"https://github.com/{repo}/blob/{commit_sha}" + "/{path}#L{line}",
             "folder": f"https://github.com/{repo}/tree/{commit_sha}" + "/{path}",

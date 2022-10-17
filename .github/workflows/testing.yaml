@@ -47,6 +47,7 @@ jobs:
       - name: Pytest
         env:
           PY_COLORS: "1"
+          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.head_ref }}
         run: make test
 
       - name: Upload generated SVGs as artefacts
@@ -66,12 +67,6 @@ jobs:
           push_options: '--force'
           branch: generated-svgs-${{ github.head_ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
           create_branch: true
-
-
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
 
       - name: Publish job summary
         env:
