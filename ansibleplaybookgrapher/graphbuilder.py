@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, Optional, Tuple, List, Set
+from typing import Dict, Optional, Tuple, List
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -471,8 +471,11 @@ class GraphvizGraphBuilder:
         :return:
         """
         if node.path:
+            remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
+            path = node.path.replace(remove_from_path, "")
+
             url = self.open_protocol_formats[node_type].format(
-                path=node.path, line=node.line, column=node.column
+                path=path, line=node.line, column=node.column
             )
             display.vvvv(f"Open protocol URL for node {node}: {url}")
             return url

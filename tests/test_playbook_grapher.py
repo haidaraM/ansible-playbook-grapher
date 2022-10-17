@@ -1,3 +1,4 @@
+import json
 import os
 from _elementtree import Element
 from typing import Dict, List, Tuple
@@ -31,6 +32,22 @@ def run_grapher(
 
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
+
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        # Setting a custom protocol handler for browsing on github
+        additional_args.insert(0, "--open-protocol-handler")
+        additional_args.insert(1, "custom")
+
+        repo = os.environ["GITHUB_REPOSITORY"]
+        commit_sha = os.environ["GITHUB_SHA"]
+        formats = {
+            "file": f"https://github.com/{repo}/blob/{commit_sha}" + "/{path}#{line}",
+            "folder": f"https://github.com/{repo}/tree/{commit_sha}" + "/{path}",
+            "remove_from_path": os.environ["GITHUB_WORKSPACE"],
+        }
+
+        additional_args.insert(2, "--open-protocol-custom-formats")
+        additional_args.insert(3, json.dumps(formats))
 
     if "--open-protocol-handler" not in additional_args:
         additional_args.insert(0, "--open-protocol-handler")
