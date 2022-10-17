@@ -47,7 +47,7 @@ jobs:
       - name: Pytest
         env:
           PY_COLORS: "1"
-          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.head_ref }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.head_ref }}
         run: make test
 
       - name: Upload generated SVGs as artefacts

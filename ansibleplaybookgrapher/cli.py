@@ -160,8 +160,12 @@ class PlaybookGrapherCLI(CLI):
                                  --open-protocol-handler is set to custom.
                                  You should provide a JSON formatted string like: {"file": "", "folder": ""}.
                                  Example: If you want to open folders (roles) inside the browser and files (tasks) in
-                                 vscode, set this to 
-                                 '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
+                                 vscode, set it to: 
+                                 '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'.
+                                  path: the absolute path to the file containing the the plays/tasks/roles.
+                                  line/column: the position of the plays/tasks/roles in the file.  
+                                  You can optionally add the attribute "remove_from_path" to remove some parts of the 
+                                  path if you want relative paths. 
                                  """,
         )
 
