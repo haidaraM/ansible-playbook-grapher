@@ -41,7 +41,7 @@ def run_grapher(
         repo = os.environ["GITHUB_REPOSITORY"]
         commit_sha = os.environ["GITHUB_SHA"]
         formats = {
-            "file": f"https://github.com/{repo}/blob/{commit_sha}" + "/{path}#{line}",
+            "file": f"https://github.com/{repo}/blob/{commit_sha}" + "/{path}#L{line}",
             "folder": f"https://github.com/{repo}/tree/{commit_sha}" + "/{path}",
             "remove_from_path": os.environ["GITHUB_WORKSPACE"],
         }

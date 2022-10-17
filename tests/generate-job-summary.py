@@ -24,7 +24,7 @@ if __name__ == "__main__":
     links = []
     for f in svg_files:
         links.append(
-            f"https://raw.githubusercontent.com/{os.environ['GITHUB_REPOSITORY']}/{os.environ['SVG_COMMIT_HASH']}/{f}"
+            f"https://raw.githubusercontent.com/{os.environ['GITHUB_REPOSITORY']}/{os.environ['SVG_COMMIT_SHA']}/{f}"
         )
 
     print(template.render(svg_files=links))

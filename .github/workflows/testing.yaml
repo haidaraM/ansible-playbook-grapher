@@ -68,9 +68,14 @@ jobs:
           create_branch: true
 
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Publish job summary
         env:
-          SVG_COMMIT_HASH: ${{ steps.commit-svg-files.outputs.commit_hash }}
+          SVG_COMMIT_SHA: ${{ steps.commit-svg-files.outputs.commit_hash }}
         run: |
           env
           python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
