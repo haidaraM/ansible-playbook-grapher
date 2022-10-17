@@ -6,10 +6,9 @@ updates:
       interval: monthly
       time: "04:00"
     open-pull-requests-limit: 10
-    ignore:
-      - dependency-name: lxml
-        versions:
-          - 4.6.3
-      - dependency-name: pytest
-        versions:
-          - 6.2.1
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+      time: "04:00"
