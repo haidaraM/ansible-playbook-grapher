@@ -57,23 +57,23 @@ jobs:
           path: ${{ env.SVG_FILES_PATH }}/
           if-no-files-found: error # the tests should generate SVGs files
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        id: commit-svg-files
-        with:
-          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
-          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
-          skip_dirty_check: true
-          add_options: '--force'
-          push_options: '--force'
-          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
-          create_branch: true
-
-      - name: Publish job summary
-        env:
-          SVG_COMMIT_SHA: ${{ steps.commit-svg-files.outputs.commit_hash }}
-        run: |
-          env
-          python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
+#      - uses: stefanzweifel/git-auto-commit-action@v4
+#        id: commit-svg-files
+#        with:
+#          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
+#          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
+#          skip_dirty_check: true
+#          add_options: '--force'
+#          push_options: '--force'
+#          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
+#          create_branch: true
+#
+#      - name: Publish job summary
+#        env:
+#          SVG_COMMIT_SHA: ${{ steps.commit-svg-files.outputs.commit_hash }}
+#        run: |
+#          env
+#          python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
       - name: Test installation in virtualenv
         run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}
