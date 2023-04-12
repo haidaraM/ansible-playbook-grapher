@@ -37,7 +37,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install -q ansible-core=='${{ matrix.ansible-version }}' virtualenv setuptools wheel
+          pip install -q ansible-core=='${{ matrix.ansible-version }}' virtualenv setuptools wheel coveralls
           pip install -qr tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
