@@ -62,6 +62,7 @@ class PlaybookGrapherCLI(CLI):
             # The function has been moved in this PR and it now called by default in ansible >= 2.14
             # https://github.com/ansible/ansible/pull/78175/files
             from ansible.utils.display import initialize_locale
+
             initialize_locale()
 
         display.verbosity = self.options.verbosity
