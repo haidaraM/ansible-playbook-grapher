@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: psf/black@stable
         with:
           version: "~= 23.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
