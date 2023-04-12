@@ -22,7 +22,7 @@ jobs:
       matrix:
         python-version: [ '3.9', '3.10' ]
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
-        ansible-version: [ '2.13', '2.14' ]
+        ansible-version: [ '2.13.*', '2.14.*' ]
 
 
     steps:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install -q ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install -q ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel
           pip install -qr tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
