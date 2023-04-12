@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ class BaseParser(ABC):
         pass
 
     def template(
-        self, data: Union[str, AnsibleUnicode], variables: Dict, fail_on_undefined=False
+            self, data: Union[str, AnsibleUnicode], variables: Dict, fail_on_undefined=False
     ) -> Union[str, AnsibleUnicode]:
         """
         Template the data using Jinja. Return data if an error occurs during the templating
@@ -91,7 +91,7 @@ class BaseParser(ABC):
             return data
 
     def _add_task(
-        self, task: Task, task_vars: Dict, node_type: str, parent_node: CompositeNode
+            self, task: Task, task_vars: Dict, node_type: str, parent_node: CompositeNode
     ) -> bool:
         """
         Include the task in the graph.
@@ -103,7 +103,7 @@ class BaseParser(ABC):
             return False
 
         if not task.evaluate_tags(
-            only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars
+                only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars
         ):
             display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
@@ -131,12 +131,12 @@ class PlaybookParser(BaseParser):
     """
 
     def __init__(
-        self,
-        playbook_filename: str,
-        include_role_tasks=False,
-        tags: List[str] = None,
-        skip_tags: List[str] = None,
-        group_roles_by_name: bool = False,
+            self,
+            playbook_filename: str,
+            include_role_tasks=False,
+            tags: List[str] = None,
+            skip_tags: List[str] = None,
+            group_roles_by_name: bool = False,
     ):
         """
         :param playbook_filename: The filename of the playbook to parse
@@ -219,7 +219,7 @@ class PlaybookParser(BaseParser):
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
                 if not role.evaluate_tags(
-                    only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars
+                        only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars
                 ):
                     display.vv(
                         f"The role '{role.get_name()}' is skipped due to the tags."
@@ -285,12 +285,12 @@ class PlaybookParser(BaseParser):
         return playbook_root_node
 
     def _include_tasks_in_blocks(
-        self,
-        current_play: Play,
-        parent_nodes: List[CompositeNode],
-        block: Union[Block, TaskInclude],
-        node_type: str,
-        play_vars: Dict,
+            self,
+            current_play: Play,
+            parent_nodes: List[CompositeNode],
+            block: Union[Block, TaskInclude],
+            node_type: str,
+            play_vars: Dict,
     ):
         """
         Recursively read all the tasks of the block and add it to the graph
@@ -331,7 +331,7 @@ class PlaybookParser(BaseParser):
                     play_vars=play_vars,
                 )
             elif isinstance(
-                task_or_block, TaskInclude
+                    task_or_block, TaskInclude
             ):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
@@ -427,9 +427,9 @@ class PlaybookParser(BaseParser):
                     )
 
                 for (
-                    b
+                        b
                 ) in (
-                    block_list
+                        block_list
                 ):  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(
                         current_play=current_play,
@@ -439,17 +439,17 @@ class PlaybookParser(BaseParser):
                         node_type=node_type,
                     )
                 if (
-                    self.include_role_tasks
-                    and isinstance(task_or_block, IncludeRole)
-                    and len(parent_nodes) > 1
+                        self.include_role_tasks
+                        and isinstance(task_or_block, IncludeRole)
+                        and len(parent_nodes) > 1
                 ):
                     # We remove the parent node we have added if we included some tasks from a role
                     parent_nodes.pop()
             else:  # It's here that we add the task in the graph
                 if (
-                    len(parent_nodes) > 1  # 1
-                    and not has_role_parent(task_or_block)  # 2
-                    and parent_nodes[-1].raw_object != task_or_block._parent  # 3
+                        len(parent_nodes) > 1  # 1
+                        and not has_role_parent(task_or_block)  # 2
+                        and parent_nodes[-1].raw_object != task_or_block._parent  # 3
                 ):
                     # We remove a parent node :
                     # 1. When have at least two parents. Every node (except the playbook) should have a parent node
