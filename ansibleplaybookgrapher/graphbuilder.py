@@ -52,7 +52,7 @@ class Grapher:
 
         self.plays_color = {}
         # The usage of the roles in all playbooks
-        self.roles_usage: Dict["RoleNode", List[str]] = {}
+        self.roles_usage: Dict["RoleNode", List[Node]] = {}
 
         # The parsed playbooks
         self.playbook_nodes: List[PlaybookNode] = []
