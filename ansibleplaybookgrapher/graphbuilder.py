@@ -43,14 +43,14 @@ OPEN_PROTOCOL_HANDLERS = {
 
 
 class Grapher:
-    def __init__(self,playbook_filenames: List[str]):
+    def __init__(self, playbook_filenames: List[str]):
         """
         :param playbook_filenames: List of playbooks to graph
         """
-        self.playbook_filenames =playbook_filenames
+        self.playbook_filenames = playbook_filenames
         # Colors assigned to plays
 
-        self.plays_color ={}
+        self.plays_color = {}
         # The usage of the roles in all playbooks
         self.roles_usage: Dict["RoleNode", List[str]] = {}
 
