@@ -12,6 +12,13 @@ on:
     paths:
       - '**.py'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
 jobs:
   black:
     runs-on: ubuntu-latest
@@ -19,5 +26,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
-          options: "--check --diff --color"
+          options: "--diff --color"
 
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Autoformat code using black
+          skip_dirty_check: true
