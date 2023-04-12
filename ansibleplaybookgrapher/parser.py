@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -175,7 +175,6 @@ class PlaybookParser(BaseParser):
         playbook_root_node = PlaybookNode(self.playbook_filename, raw_object=playbook)
         # loop through the plays
         for play in playbook.get_plays():
-
             # the load basedir is relative to the playbook path
             if play._included_path is not None:
                 self.data_loader.set_basedir(play._included_path)
@@ -317,7 +316,6 @@ class PlaybookParser(BaseParser):
 
         # loop through the tasks
         for task_or_block in block.block:
-
             if hasattr(task_or_block, "loop") and task_or_block.loop:
                 display.warning(
                     "Looping on tasks or roles are not supported for the moment. "

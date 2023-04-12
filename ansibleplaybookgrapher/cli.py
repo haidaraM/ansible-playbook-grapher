@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
-from ansible.utils.display import Display, initialize_locale
+from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.graphbuilder import (
@@ -32,7 +32,6 @@ from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
-
 display = Display()
 
 
@@ -54,8 +53,6 @@ class PlaybookGrapherCLI(CLI):
     def run(self):
         super().run()
 
-        # Required to fix the warning "ansible.utils.display.initialize_locale has not been called..."
-        initialize_locale()
         display.verbosity = self.options.verbosity
         grapher = Grapher(self.options.playbook_filenames)
         grapher.parse(

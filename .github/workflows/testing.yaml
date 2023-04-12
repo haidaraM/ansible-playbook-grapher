@@ -14,15 +14,14 @@ jobs:
   pytest:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     env:
-      MATRIX_JOB_IDENTIFIER: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
       SVG_FILES_PATH: tests/generated-svgs
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.8, 3.9 ]
+        python-version: [ '3.9', '3.10' ]
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
-        ansible-version: [ 2.12.9, 2.13.4 ]
+        ansible-version: [ '2.13.*', '2.14.*' ]
 
 
     steps:
@@ -38,7 +37,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install -q ansible-core==${{ matrix.ansible-version }} virtualenv setuptools wheel coveralls
+          pip install -q ansible-core=='${{ matrix.ansible-version }}' virtualenv setuptools wheel coveralls
           pip install -qr tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
@@ -49,6 +48,12 @@ jobs:
           PY_COLORS: "1"
           COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
         run: make test
+
+      - name: Set variables
+        run: |
+          matrix_ansible_version='${{ matrix.ansible-version }}'
+          clean_version=${matrix_ansible_version//.\*/} # Remove '.*' from the version name
+          echo "MATRIX_JOB_IDENTIFIER=py${{ matrix.python-version }}-ansible-${clean_version}" >> $GITHUB_ENV
 
       - name: Upload generated SVGs as artefacts
         uses: actions/upload-artifact@v3
