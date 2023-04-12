@@ -42,14 +42,13 @@ def test_get_all_tasks_nodes():
     Test the function get_all_tasks_nodes
     :return:
     """
-    play =PlayNode("play")
-    role_1= RoleNode("my_role_1")
+    play = PlayNode("play")
+    role_1 = RoleNode("my_role_1")
     play.add_node("roles", role_1)
 
     # play -> role 1 -> edge 1 -> task 1
-    task_1= TaskNode("task 1")
-    role_1.add_node("tasks",
-                    task_1)
+    task_1 = TaskNode("task 1")
+    role_1.add_node("tasks", task_1)
 
     # play -> block_1 -> task 2 and task 3
     block_1 = BlockNode("block 1")
