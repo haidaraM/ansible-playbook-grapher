@@ -4,15 +4,32 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.py'
   pull_request:
     branches:
       - main
+    paths:
+      - '**.py'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   black:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: psf/black@stable
         with:
-          options: "--check --diff --color"
+          version: "~= 23.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
+          options: ""
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Autoformat code using black

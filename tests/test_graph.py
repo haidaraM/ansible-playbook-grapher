@@ -43,7 +43,6 @@ def test_get_all_tasks_nodes():
     :return:
     """
     play = PlayNode("play")
-
     role_1 = RoleNode("my_role_1")
     play.add_node("roles", role_1)
 

@@ -202,6 +202,10 @@ The graphs are generated in the folder `tests/generated-svgs`. They are also gen
 in [Github Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
 submitting PRs.
 
+### Lint and format
+
+The project uses black to format the code. Run `black .` to format.
+
 ## License
 
 GNU General Public License v3.0 or later (Same as Ansible)

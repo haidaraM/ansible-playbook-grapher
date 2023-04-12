@@ -45,7 +45,6 @@ OPEN_PROTOCOL_HANDLERS = {
 class Grapher:
     def __init__(self, playbook_filenames: List[str]):
         """
-
         :param playbook_filenames: List of playbooks to graph
         """
         self.playbook_filenames = playbook_filenames
