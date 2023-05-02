@@ -58,11 +58,11 @@ class Grapher:
         self.playbook_nodes: List[PlaybookNode] = []
 
     def parse(
-        self,
-        include_role_tasks: bool = False,
-        tags: List[str] = None,
-        skip_tags: List[str] = None,
-        group_roles_by_name: bool = False,
+            self,
+            include_role_tasks: bool = False,
+            tags: List[str] = None,
+            skip_tags: List[str] = None,
+            group_roles_by_name: bool = False,
     ):
         """
         Parses all the provided playbooks
@@ -97,9 +97,9 @@ class Grapher:
             )
 
     def graph(
-        self,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str] = None,
+            self,
+            open_protocol_handler: str,
+            open_protocol_custom_formats: Dict[str, str] = None,
     ) -> Digraph:
         """
         Generate the digraph graph
@@ -115,50 +115,27 @@ class Grapher:
         # Map of the rules that have been built so far for all playbooks
         roles_built = {}
         for p in self.playbook_nodes:
-            builder = GraphvizGraphBuilder(
-                p,
-                digraph=digraph,
-                roles_usage=self.roles_usage,
-                roles_built=roles_built,
-                play_colors=self.plays_color,
-                open_protocol_handler=open_protocol_handler,
-                open_protocol_custom_formats=open_protocol_custom_formats,
-            )
+            builder = GraphvizGraphBuilder(p, play_colors=self.plays_color, open_protocol_handler=open_protocol_handler,
+                                           open_protocol_custom_formats=open_protocol_custom_formats,
+                                           roles_usage=self.roles_usage, roles_built=roles_built, digraph=digraph)
             builder.build_graphviz_graph()
             roles_built.update(builder.roles_built)
 
         return digraph
 
 
-class GraphvizGraphBuilder:
-    """
-    Build the graphviz graph
-    """
-
-    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
-    DEFAULT_GRAPH_ATTR = {
-        "ratio": "fill",
-        "rankdir": "LR",
-        "concentrate": "true",
-        "ordering": "in",
-    }
-
-    def __init__(
-        self,
-        playbook_node: PlaybookNode,
-        open_protocol_handler: str,
-        digraph: Digraph,
-        play_colors: Dict[PlayNode, Tuple[str, str]],
-        roles_usage: Dict[RoleNode, List[Node]] = None,
-        roles_built: Dict = None,
-        open_protocol_custom_formats: Dict[str, str] = None,
-    ):
+class Builder:
+    def __init__(self, playbook_node: PlaybookNode, play_colors: Dict[PlayNode, Tuple[str, str]],
+                 open_protocol_handler: str, open_protocol_custom_formats: Dict[str, str] = None,
+                 roles_usage: Dict[RoleNode, List[Node]] = None, roles_built: Dict = None):
         """
 
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
-        :param digraph: Graphviz graph into which build the graph
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
+        :param play_colors: The colors associated to the play
+        :param roles_usage: The usage of the roles in the whole playbook
+        :param roles_built: The roles that have been "built" so far
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
@@ -171,17 +148,60 @@ class GraphvizGraphBuilder:
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
+    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
+        """
+        Get the node url based on the chosen protocol
+        :param node_type: task or role
+        :param node: the node to get the url for
+        :return:
+        """
+        if node.path:
+            remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
+            path = node.path.replace(remove_from_path, "")
+
+            url = self.open_protocol_formats[node_type].format(
+                path=path, line=node.line, column=node.column
+            )
+            display.vvvv(f"Open protocol URL for node {node}: {url}")
+            return url
+
+        return None
+
+
+class GraphvizGraphBuilder(Builder):
+    """
+    Build the graphviz graph
+    """
+
+    DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
+    DEFAULT_GRAPH_ATTR = {
+        "ratio": "fill",
+        "rankdir": "LR",
+        "concentrate": "true",
+        "ordering": "in",
+    }
+
+    def __init__(self, playbook_node: PlaybookNode, play_colors: Dict[PlayNode, Tuple[str, str]],
+                 open_protocol_handler: str, open_protocol_custom_formats: Dict[str, str],
+                 roles_usage: Dict[RoleNode, List[Node]], roles_built: Dict, digraph: Digraph):
+        """
+
+        :param digraph: Graphviz graph into which build the graph
+        """
+        super().__init__(playbook_node, play_colors, open_protocol_handler, open_protocol_custom_formats, roles_usage,
+                         roles_built)
+
         self.digraph = digraph
 
     def build_node(
-        self,
-        graph: Digraph,
-        counter: int,
-        source: Node,
-        destination: Node,
-        color: str,
-        shape: str = "octagon",
-        **kwargs,
+            self,
+            graph: Digraph,
+            counter: int,
+            source: Node,
+            destination: Node,
+            color: str,
+            shape: str = "octagon",
+            **kwargs,
     ):
         """
         Render a generic node in the graph
@@ -238,13 +258,12 @@ class GraphvizGraphBuilder:
             )
 
     def build_block(
-        self,
-        graph: Digraph,
-        counter: int,
-        source: Node,
-        destination: BlockNode,
-        color: str,
-        **kwargs,
+            self,
+            graph: Digraph,
+            counter: int,
+            source: Node,
+            destination: BlockNode,
+            color: str,
     ):
         """
         Render a block in the graph.
@@ -254,7 +273,6 @@ class GraphvizGraphBuilder:
         :param source: The source node
         :param destination: The BlockNode to render
         :param color: The color to apply
-        :param kwargs:
         :return:
         """
         edge_label = f"{counter}"
@@ -297,13 +315,12 @@ class GraphvizGraphBuilder:
                 )
 
     def build_role(
-        self,
-        graph: Digraph,
-        counter: int,
-        source: Node,
-        destination: RoleNode,
-        color: str,
-        **kwargs,
+            self,
+            graph: Digraph,
+            counter: int,
+            source: Node,
+            destination: RoleNode,
+            color: str,
     ):
         """
         Render a role in the graph
@@ -312,7 +329,6 @@ class GraphvizGraphBuilder:
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
-        :param kwargs:
         :return:
         """
 
@@ -455,28 +471,9 @@ class GraphvizGraphBuilder:
                         source=play,
                         destination=post_task,
                         counter=len(play.pre_tasks)
-                        + len(play.roles)
-                        + len(play.tasks)
-                        + post_task_counter,
+                                + len(play.roles)
+                                + len(play.tasks)
+                                + post_task_counter,
                         color=color,
                         node_label_prefix="[post_task] ",
                     )
-
-    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
-        """
-        Get the node url based on the chosen protocol
-        :param node_type: task or role
-        :param node: the node to get the url for
-        :return:
-        """
-        if node.path:
-            remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
-            path = node.path.replace(remove_from_path, "")
-
-            url = self.open_protocol_formats[node_type].format(
-                path=path, line=node.line, column=node.column
-            )
-            display.vvvv(f"Open protocol URL for node {node}: {url}")
-            return url
-
-        return None
