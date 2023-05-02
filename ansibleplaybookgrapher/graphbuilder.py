@@ -220,80 +220,92 @@ class GraphvizGraphBuilder(Builder):
 
     def build_node(
         self,
-        graph: Digraph,
         counter: int,
         source: Node,
         destination: Node,
         color: str,
-        shape: str = "octagon",
         **kwargs,
     ):
         """
         Render a generic node in the graph
-        :param graph: The graph to render the node to
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
         :param counter: The counter for this node
-        :param shape: the default shape of the node
         :return:
         """
 
-        node_label_prefix = kwargs.get("node_label_prefix", "")
+        node_label_prefix = kwargs.pop("node_label_prefix", "")
 
         if isinstance(destination, BlockNode):
             self.build_block(
-                graph,
-                counter,
+                counter=counter,
                 source=source,
                 destination=destination,
                 color=color,
+                **kwargs,
             )
         elif isinstance(destination, RoleNode):
             self.build_role(
-                graph,
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                **kwargs,
+            )
+        else:
+            self.build_task(
                 counter,
                 source=source,
                 destination=destination,
                 color=color,
-            )
-        else:
-            # Here we have a TaskNode
-            edge_label = f"{counter} {destination.when}"
-            # Task node
-            graph.node(
-                destination.id,
-                label=node_label_prefix + destination.name,
-                shape=shape,
-                id=destination.id,
-                tooltip=destination.name,
-                color=color,
-                URL=self.get_node_url(destination, "file"),
-            )
-            # Edge from parent to task
-            graph.edge(
-                source.id,
-                destination.id,
-                label=edge_label,
-                color=color,
-                fontcolor=color,
-                id=f"edge_{counter}_{source.id}_{destination.id}",
-                tooltip=edge_label,
-                labeltooltip=edge_label,
+                node_label_prefix=node_label_prefix,
+                **kwargs,
             )
 
+    def build_task(self, counter, source, destination, color, **kwargs):
+        """
+        Build a task
+        :param counter:
+        :param source:
+        :param destination:
+        :param color:
+        :param node_label_prefix:
+        :param kwargs:
+        :return:
+        """
+        # Here we have a TaskNode
+        digraph = kwargs["digraph"]
+        node_label_prefix = kwargs["node_label_prefix"]
+        edge_label = f"{counter} {destination.when}"
+        # Task node
+        digraph.node(
+            destination.id,
+            label=node_label_prefix + destination.name,
+            shape="octagon",
+            id=destination.id,
+            tooltip=destination.name,
+            color=color,
+            URL=self.get_node_url(destination, "file"),
+        )
+        # Edge from parent to task
+        digraph.edge(
+            source.id,
+            destination.id,
+            label=edge_label,
+            color=color,
+            fontcolor=color,
+            id=f"edge_{counter}_{source.id}_{destination.id}",
+            tooltip=edge_label,
+            labeltooltip=edge_label,
+        )
+
     def build_block(
-        self,
-        graph: Digraph,
-        counter: int,
-        source: Node,
-        destination: BlockNode,
-        color: str,
+        self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
     ):
         """
         Render a block in the graph.
         A BlockNode is a special node: a cluster is created instead of a normal node.
-        :param graph: The graph to render the block into
         :param counter: The counter for this block in the graph
         :param source: The source node
         :param destination: The BlockNode to render
@@ -301,9 +313,10 @@ class GraphvizGraphBuilder(Builder):
         :return:
         """
         edge_label = f"{counter}"
+        digraph = kwargs["digraph"]
 
         # Edge from parent to the block node inside the cluster
-        graph.edge(
+        digraph.edge(
             source.id,
             destination.id,
             label=edge_label,
@@ -315,7 +328,9 @@ class GraphvizGraphBuilder(Builder):
         )
 
         # BlockNode is a special node: a cluster is created instead of a normal node
-        with graph.subgraph(name=f"cluster_{destination.id}") as cluster_block_subgraph:
+        with digraph.subgraph(
+            name=f"cluster_{destination.id}"
+        ) as cluster_block_subgraph:
             # block node
             cluster_block_subgraph.node(
                 destination.id,
@@ -332,30 +347,25 @@ class GraphvizGraphBuilder(Builder):
             #  Don't really know why for the moment neither if there is an attribute to change that.
             for b_counter, task in enumerate(reversed(destination.tasks)):
                 self.build_node(
-                    cluster_block_subgraph,
+                    counter=len(destination.tasks) - b_counter,
                     source=destination,
                     destination=task,
-                    counter=len(destination.tasks) - b_counter,
                     color=color,
+                    digraph=cluster_block_subgraph,
                 )
 
     def build_role(
-        self,
-        graph: Digraph,
-        counter: int,
-        source: Node,
-        destination: RoleNode,
-        color: str,
+        self, counter: int, source: Node, destination: RoleNode, color: str, **kwargs
     ):
         """
         Render a role in the graph
-        :param graph: The graph to render the role into
         :param counter: The counter for this role in the graph
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
         :return:
         """
+        digraph = kwargs["digraph"]
 
         if destination.include_role:  # For include_role, we point to a file
             url = self.get_node_url(destination, "file")
@@ -365,7 +375,7 @@ class GraphvizGraphBuilder(Builder):
         role_edge_label = f"{counter} {destination.when}"
 
         # from parent to the role node
-        graph.edge(
+        digraph.edge(
             source.id,
             destination.id,
             label=role_edge_label,
@@ -391,7 +401,7 @@ class GraphvizGraphBuilder(Builder):
 
             self.roles_built[destination.id] = destination
 
-            with graph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+            with digraph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
                 role_subgraph.node(
                     destination.id,
                     id=destination.id,
@@ -403,11 +413,11 @@ class GraphvizGraphBuilder(Builder):
                 # role tasks
                 for role_task_counter, role_task in enumerate(destination.tasks, 1):
                     self.build_node(
-                        role_subgraph,
+                        counter=role_task_counter,
                         source=destination,
                         destination=role_task,
-                        counter=role_task_counter,
                         color=role_color,
+                        digraph=role_subgraph,
                     )
 
     def build_graphviz_graph(self):
@@ -460,45 +470,45 @@ class GraphvizGraphBuilder(Builder):
                 # pre_tasks
                 for pre_task_counter, pre_task in enumerate(play.pre_tasks, 1):
                     self.build_node(
-                        play_subgraph,
                         counter=pre_task_counter,
                         source=play,
                         destination=pre_task,
                         color=color,
+                        digraph=play_subgraph,
                         node_label_prefix="[pre_task] ",
                     )
 
                 # roles
                 for role_counter, role in enumerate(play.roles, 1):
                     self.build_role(
-                        play_subgraph,
+                        counter=role_counter + len(play.pre_tasks),
                         source=play,
                         destination=role,
-                        counter=role_counter + len(play.pre_tasks),
                         color=color,
+                        digraph=play_subgraph,
                     )
 
                 # tasks
                 for task_counter, task in enumerate(play.tasks, 1):
                     self.build_node(
-                        play_subgraph,
+                        counter=len(play.pre_tasks) + len(play.roles) + task_counter,
                         source=play,
                         destination=task,
-                        counter=len(play.pre_tasks) + len(play.roles) + task_counter,
                         color=color,
+                        digraph=play_subgraph,
                         node_label_prefix="[task] ",
                     )
 
                 # post_tasks
                 for post_task_counter, post_task in enumerate(play.post_tasks, 1):
                     self.build_node(
-                        play_subgraph,
-                        source=play,
-                        destination=post_task,
                         counter=len(play.pre_tasks)
                         + len(play.roles)
                         + len(play.tasks)
                         + post_task_counter,
+                        source=play,
+                        destination=post_task,
                         color=color,
+                        digraph=play_subgraph,
                         node_label_prefix="[post_task] ",
                     )
