@@ -58,11 +58,11 @@ class Grapher:
         self.playbook_nodes: List[PlaybookNode] = []
 
     def parse(
-            self,
-            include_role_tasks: bool = False,
-            tags: List[str] = None,
-            skip_tags: List[str] = None,
-            group_roles_by_name: bool = False,
+        self,
+        include_role_tasks: bool = False,
+        tags: List[str] = None,
+        skip_tags: List[str] = None,
+        group_roles_by_name: bool = False,
     ):
         """
         Parses all the provided playbooks
@@ -97,9 +97,9 @@ class Grapher:
             )
 
     def graph(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str] = None,
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str] = None,
     ) -> Digraph:
         """
         Generate the digraph graph
@@ -115,9 +115,15 @@ class Grapher:
         # Map of the rules that have been built so far for all playbooks
         roles_built = {}
         for p in self.playbook_nodes:
-            builder = GraphvizGraphBuilder(p, play_colors=self.plays_color, open_protocol_handler=open_protocol_handler,
-                                           open_protocol_custom_formats=open_protocol_custom_formats,
-                                           roles_usage=self.roles_usage, roles_built=roles_built, digraph=digraph)
+            builder = GraphvizGraphBuilder(
+                p,
+                play_colors=self.plays_color,
+                open_protocol_handler=open_protocol_handler,
+                open_protocol_custom_formats=open_protocol_custom_formats,
+                roles_usage=self.roles_usage,
+                roles_built=roles_built,
+                digraph=digraph,
+            )
             builder.build_graphviz_graph()
             roles_built.update(builder.roles_built)
 
@@ -125,9 +131,15 @@ class Grapher:
 
 
 class Builder:
-    def __init__(self, playbook_node: PlaybookNode, play_colors: Dict[PlayNode, Tuple[str, str]],
-                 open_protocol_handler: str, open_protocol_custom_formats: Dict[str, str] = None,
-                 roles_usage: Dict[RoleNode, List[Node]] = None, roles_built: Dict = None):
+    def __init__(
+        self,
+        playbook_node: PlaybookNode,
+        play_colors: Dict[PlayNode, Tuple[str, str]],
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str] = None,
+        roles_usage: Dict[RoleNode, List[Node]] = None,
+        roles_built: Dict = None,
+    ):
         """
 
         :param playbook_node: Playbook parsed node
@@ -181,27 +193,40 @@ class GraphvizGraphBuilder(Builder):
         "ordering": "in",
     }
 
-    def __init__(self, playbook_node: PlaybookNode, play_colors: Dict[PlayNode, Tuple[str, str]],
-                 open_protocol_handler: str, open_protocol_custom_formats: Dict[str, str],
-                 roles_usage: Dict[RoleNode, List[Node]], roles_built: Dict, digraph: Digraph):
+    def __init__(
+        self,
+        playbook_node: PlaybookNode,
+        play_colors: Dict[PlayNode, Tuple[str, str]],
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        roles_usage: Dict[RoleNode, List[Node]],
+        roles_built: Dict,
+        digraph: Digraph,
+    ):
         """
 
         :param digraph: Graphviz graph into which build the graph
         """
-        super().__init__(playbook_node, play_colors, open_protocol_handler, open_protocol_custom_formats, roles_usage,
-                         roles_built)
+        super().__init__(
+            playbook_node,
+            play_colors,
+            open_protocol_handler,
+            open_protocol_custom_formats,
+            roles_usage,
+            roles_built,
+        )
 
         self.digraph = digraph
 
     def build_node(
-            self,
-            graph: Digraph,
-            counter: int,
-            source: Node,
-            destination: Node,
-            color: str,
-            shape: str = "octagon",
-            **kwargs,
+        self,
+        graph: Digraph,
+        counter: int,
+        source: Node,
+        destination: Node,
+        color: str,
+        shape: str = "octagon",
+        **kwargs,
     ):
         """
         Render a generic node in the graph
@@ -258,12 +283,12 @@ class GraphvizGraphBuilder(Builder):
             )
 
     def build_block(
-            self,
-            graph: Digraph,
-            counter: int,
-            source: Node,
-            destination: BlockNode,
-            color: str,
+        self,
+        graph: Digraph,
+        counter: int,
+        source: Node,
+        destination: BlockNode,
+        color: str,
     ):
         """
         Render a block in the graph.
@@ -315,12 +340,12 @@ class GraphvizGraphBuilder(Builder):
                 )
 
     def build_role(
-            self,
-            graph: Digraph,
-            counter: int,
-            source: Node,
-            destination: RoleNode,
-            color: str,
+        self,
+        graph: Digraph,
+        counter: int,
+        source: Node,
+        destination: RoleNode,
+        color: str,
     ):
         """
         Render a role in the graph
@@ -471,9 +496,9 @@ class GraphvizGraphBuilder(Builder):
                         source=play,
                         destination=post_task,
                         counter=len(play.pre_tasks)
-                                + len(play.roles)
-                                + len(play.tasks)
-                                + post_task_counter,
+                        + len(play.roles)
+                        + len(play.tasks)
+                        + post_task_counter,
                         color=color,
                         node_label_prefix="[post_task] ",
                     )
