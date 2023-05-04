@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from abc import ABC, abstractmethod
 from typing import Dict, Optional, Tuple, List
 
 from ansible.utils.display import Display
@@ -24,6 +25,7 @@ from ansibleplaybookgrapher.graph import (
     BlockNode,
     Node,
     PlayNode,
+    TaskNode,
 )
 from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
@@ -130,7 +132,7 @@ class Grapher:
         return digraph
 
 
-class Builder:
+class Builder(ABC):
     def __init__(
         self,
         playbook_node: PlaybookNode,
@@ -159,6 +161,93 @@ class Builder:
         # Merge the two dicts
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
+
+    def build_node(
+        self,
+        counter: int,
+        source: Node,
+        destination: Node,
+        color: str,
+        **kwargs,
+    ):
+        """
+        Render a generic node in the graph
+        :param source: The source node
+        :param destination: The RoleNode to render
+        :param color: The color to apply
+        :param counter: The counter for this node
+        :return:
+        """
+
+        if isinstance(destination, BlockNode):
+            self.build_block(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                **kwargs,
+            )
+        elif isinstance(destination, RoleNode):
+            self.build_role(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                **kwargs,
+            )
+        else:  # This is necessarily a TaskNode
+            self.build_task(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                node_label_prefix=kwargs.pop("node_label_prefix", ""),
+                **kwargs,
+            )
+
+    @abstractmethod
+    def build_task(
+        self, counter: int, source: Node, destination: TaskNode, color: str, **kwargs
+    ):
+        """
+        Build a single task to be rendered
+        :param counter: The counter for the task
+        :param source: The source node
+        :param destination: The task
+        :param color: Color from the play
+        :param kwargs:
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def build_role(
+        self, counter: int, source: Node, destination: RoleNode, color: str, **kwargs
+    ):
+        """
+        Render a role in the graph
+        :param counter: The counter for this role in the graph
+        :param source: The source node
+        :param destination: The RoleNode to render
+        :param color: The color to apply
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def build_block(
+        self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
+    ):
+        """
+        Build a block to be rendered.
+        A BlockNode is a special node: a cluster is created instead of a normal node.
+        :param counter: The counter for this block in the graph
+        :param source: The source node
+        :param destination: The BlockNode to build
+        :param color: The color from the play to apply
+        :return:
+        """
+        pass
 
     def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
         """
@@ -218,62 +307,17 @@ class GraphvizGraphBuilder(Builder):
 
         self.digraph = digraph
 
-    def build_node(
-        self,
-        counter: int,
-        source: Node,
-        destination: Node,
-        color: str,
-        **kwargs,
-    ):
-        """
-        Render a generic node in the graph
-        :param source: The source node
-        :param destination: The RoleNode to render
-        :param color: The color to apply
-        :param counter: The counter for this node
-        :return:
-        """
-
-        node_label_prefix = kwargs.pop("node_label_prefix", "")
-
-        if isinstance(destination, BlockNode):
-            self.build_block(
-                counter=counter,
-                source=source,
-                destination=destination,
-                color=color,
-                **kwargs,
-            )
-        elif isinstance(destination, RoleNode):
-            self.build_role(
-                counter=counter,
-                source=source,
-                destination=destination,
-                color=color,
-                **kwargs,
-            )
-        else:
-            self.build_task(
-                counter,
-                source=source,
-                destination=destination,
-                color=color,
-                node_label_prefix=node_label_prefix,
-                **kwargs,
-            )
-
-    def build_task(self, counter, source, destination, color, **kwargs):
+    def build_task(self, counter, source: Node, destination: TaskNode, color, **kwargs):
         """
         Build a task
         :param counter:
         :param source:
         :param destination:
         :param color:
-        :param node_label_prefix:
         :param kwargs:
         :return:
         """
+
         # Here we have a TaskNode
         digraph = kwargs["digraph"]
         node_label_prefix = kwargs["node_label_prefix"]
@@ -304,12 +348,12 @@ class GraphvizGraphBuilder(Builder):
         self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
     ):
         """
-        Render a block in the graph.
+        Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
         :param counter: The counter for this block in the graph
         :param source: The source node
-        :param destination: The BlockNode to render
-        :param color: The color to apply
+        :param destination: The BlockNode to build
+        :param color: The color from the play to apply
         :return:
         """
         edge_label = f"{counter}"
@@ -359,10 +403,6 @@ class GraphvizGraphBuilder(Builder):
     ):
         """
         Render a role in the graph
-        :param counter: The counter for this role in the graph
-        :param source: The source node
-        :param destination: The RoleNode to render
-        :param color: The color to apply
         :return:
         """
         digraph = kwargs["digraph"]
