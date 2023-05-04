@@ -65,7 +65,7 @@ class PlaybookGrapherCLI(CLI):
         renderer = GraphvizRenderer(
             playbook_nodes=playbook_nodes,
             plays_colors=grapher.plays_colors,
-            roles_usage=grapher.roles_usage
+            roles_usage=grapher.roles_usage,
         )
         output_path = renderer.render(
             open_protocol_handler=self.options.open_protocol_handler,

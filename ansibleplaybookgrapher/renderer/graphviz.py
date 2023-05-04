@@ -122,7 +122,9 @@ class GraphvizGraphBuilder(Builder):
 
         self.digraph = digraph
 
-    def build_task(self, counter, source: Node, destination: TaskNode, color:str, **kwargs):
+    def build_task(
+        self, counter, source: Node, destination: TaskNode, color: str, **kwargs
+    ):
         """
         Build a task
         :param counter:

@@ -42,11 +42,11 @@ class Grapher:
         self.roles_usage: Dict["RoleNode", List[Node]] = {}
 
     def parse(
-            self,
-            include_role_tasks: bool = False,
-            tags: List[str] = None,
-            skip_tags: List[str] = None,
-            group_roles_by_name: bool = False,
+        self,
+        include_role_tasks: bool = False,
+        tags: List[str] = None,
+        skip_tags: List[str] = None,
+        group_roles_by_name: bool = False,
     ) -> List[PlaybookNode]:
         """
         Parses all the provided playbooks
@@ -84,9 +84,9 @@ class Grapher:
         return playbook_nodes
 
     def render(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str] = None,
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str] = None,
     ) -> Digraph:
         """
         Render the graph
