@@ -15,7 +15,6 @@
 from typing import Dict, List
 
 from ansible.utils.display import Display
-from graphviz import Digraph
 
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.graph import (
@@ -23,7 +22,6 @@ from ansibleplaybookgrapher.graph import (
     RoleNode,
     Node,
 )
-from ansibleplaybookgrapher.renderer.graphviz import GraphvizGraphBuilder
 from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
 display = Display()
@@ -82,36 +80,3 @@ class Grapher:
             )
 
         return playbook_nodes
-
-    def render(
-        self,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str] = None,
-    ) -> Digraph:
-        """
-        Render the graph
-        :param open_protocol_handler
-        :param open_protocol_custom_formats
-        :return:
-        """
-        digraph = Digraph(
-            format="svg",
-            graph_attr=GraphvizGraphBuilder.DEFAULT_GRAPH_ATTR,
-            edge_attr=GraphvizGraphBuilder.DEFAULT_EDGE_ATTR,
-        )
-        # Map of the roles that have been built so far for all playbooks
-        roles_built = {}
-        for p in self.playbook_nodes:
-            builder = GraphvizGraphBuilder(
-                p,
-                play_colors=self.plays_colors,
-                open_protocol_handler=open_protocol_handler,
-                open_protocol_custom_formats=open_protocol_custom_formats,
-                roles_usage=self.roles_usage,
-                roles_built=roles_built,
-                digraph=digraph,
-            )
-            builder.build()
-            roles_built.update(builder.roles_built)
-
-        return digraph

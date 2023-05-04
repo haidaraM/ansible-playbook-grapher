@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .parser import PlaybookParser
 from ansibleplaybookgrapher.renderer.postprocessor import GraphVizPostProcessor
-from .graphbuilder import GraphvizGraphBuilder
+from .parser import PlaybookParser
+from .graph import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
 
-__version__ = "1.2.0"
+__version__ = "2.0.0-dev"
 __prog__ = "ansible-playbook-grapher"
