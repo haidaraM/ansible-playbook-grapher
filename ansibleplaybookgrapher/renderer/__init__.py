@@ -1,0 +1,178 @@
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from abc import ABC, abstractmethod
+from typing import Dict, List, Tuple, Optional
+
+from ansible.utils.display import Display
+
+from ansibleplaybookgrapher.graph import (
+    PlaybookNode,
+    PlayNode,
+    RoleNode,
+    Node,
+    BlockNode,
+    TaskNode,
+)
+
+display = Display()
+
+# The supported protocol handlers to open roles and tasks from the viewer
+OPEN_PROTOCOL_HANDLERS = {
+    "default": {"folder": "{path}", "file": "{path}"},
+    # https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls
+    "vscode": {
+        "folder": "vscode://file/{path}",
+        "file": "vscode://file/{path}:{line}:{column}",
+    },
+    # For custom, the formats need to be provided
+    "custom": {},
+}
+
+
+class Builder(ABC):
+    def __init__(
+        self,
+        playbook_node: PlaybookNode,
+        play_colors: Dict[PlayNode, Tuple[str, str]],
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str] = None,
+        roles_usage: Dict[RoleNode, List[Node]] = None,
+        roles_built: Dict = None,
+    ):
+        """
+
+        :param playbook_node: Playbook parsed node
+        :param open_protocol_handler: The protocol handler name to use
+        :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
+        :param play_colors: The colors associated to the play
+        :param roles_usage: The usage of the roles in the whole playbook
+        :param roles_built: The roles that have been "built" so far
+        """
+        self.playbook_node = playbook_node
+        self.roles_usage = roles_usage or playbook_node.roles_usage()
+        self.play_colors = play_colors
+        # A map containing the roles that have been built so far
+        self.roles_built = roles_built or {}
+
+        self.open_protocol_handler = open_protocol_handler
+        # Merge the two dicts
+        formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
+        self.open_protocol_formats = formats[self.open_protocol_handler]
+
+    def build_node(
+        self,
+        counter: int,
+        source: Node,
+        destination: Node,
+        color: str,
+        **kwargs,
+    ):
+        """
+        Build a generic node.
+        :param source: The source node
+        :param destination: The RoleNode to render
+        :param color: The color to apply
+        :param counter: The counter for this node
+        :return:
+        """
+
+        if isinstance(destination, BlockNode):
+            self.build_block(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                **kwargs,
+            )
+        elif isinstance(destination, RoleNode):
+            self.build_role(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                **kwargs,
+            )
+        else:  # This is necessarily a TaskNode
+            self.build_task(
+                counter=counter,
+                source=source,
+                destination=destination,
+                color=color,
+                node_label_prefix=kwargs.pop("node_label_prefix", ""),
+                **kwargs,
+            )
+
+    @abstractmethod
+    def build_task(
+        self, counter: int, source: Node, destination: TaskNode, color: str, **kwargs
+    ):
+        """
+        Build a single task to be rendered
+        :param counter: The counter for the task
+        :param source: The source node
+        :param destination: The task
+        :param color: Color from the play
+        :param kwargs:
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def build_role(
+        self, counter: int, source: Node, destination: RoleNode, color: str, **kwargs
+    ):
+        """
+        Render a role in the graph
+        :param counter: The counter for this role in the graph
+        :param source: The source node
+        :param destination: The RoleNode to render
+        :param color: The color to apply
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def build_block(
+        self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
+    ):
+        """
+        Build a block to be rendered.
+        A BlockNode is a special node: a cluster is created instead of a normal node.
+        :param counter: The counter for this block in the graph
+        :param source: The source node
+        :param destination: The BlockNode to build
+        :param color: The color from the play to apply
+        :return:
+        """
+        pass
+
+    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
+        """
+        Get the node url based on the chosen protocol
+        :param node_type: task or role
+        :param node: the node to get the url for
+        :return:
+        """
+        if node.path:
+            remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
+            path = node.path.replace(remove_from_path, "")
+
+            url = self.open_protocol_formats[node_type].format(
+                path=path, line=node.line, column=node.column
+            )
+            display.vvvv(f"Open protocol URL for node {node}: {url}")
+            return url
+
+        return None

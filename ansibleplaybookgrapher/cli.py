@@ -25,10 +25,10 @@ from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.graphbuilder import (
-    OPEN_PROTOCOL_HANDLERS,
     Grapher,
 )
-from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor
+from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
+from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
@@ -55,38 +55,27 @@ class PlaybookGrapherCLI(CLI):
 
         display.verbosity = self.options.verbosity
         grapher = Grapher(self.options.playbook_filenames)
-        grapher.parse(
+        playbook_nodes = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
         )
-        digraph = grapher.graph(
+        # TODO: add condition to choose the renderer
+        renderer = GraphvizRenderer(
+            playbook_nodes=playbook_nodes,
+            plays_colors=grapher.plays_colors,
+            roles_usage=grapher.roles_usage
+        )
+        output_path = renderer.render(
             open_protocol_handler=self.options.open_protocol_handler,
             open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-        )
-
-        display.display("Rendering the graph...")
-        svg_path = digraph.render(
-            cleanup=not self.options.save_dot_file,
-            format="svg",
-            filename=self.options.output_filename,
+            save_dot_file=self.options.save_dot_file,
+            output_filename=self.options.output_filename,
             view=self.options.view,
         )
 
-        post_processor = GraphVizPostProcessor(svg_path=svg_path)
-        display.v("Post processing the SVG...")
-        post_processor.post_process(grapher.playbook_nodes)
-        post_processor.write()
-
-        display.display(f"The graph has been exported to {svg_path}", color="green")
-        if self.options.save_dot_file:
-            # add .dot extension. The render doesn't add an extension
-            final_name = self.options.output_filename + ".dot"
-            os.rename(self.options.output_filename, final_name)
-            display.display(f"Graphviz dot file has been exported to {final_name}")
-
-        return svg_path
+        return output_path
 
     def _add_my_options(self):
         """

@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .parser import PlaybookParser
-from .postprocessor import GraphVizPostProcessor
+from ansibleplaybookgrapher.renderer.postprocessor import GraphVizPostProcessor
 from .graphbuilder import GraphvizGraphBuilder
 
 __version__ = "1.2.0"

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ def _read_data(filename: str) -> str:
     :return:
     """
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, "data", filename)
+    javascript_path = os.path.join(current_dir, "../data", filename)
 
     with open(javascript_path) as javascript:
         return javascript.read()
