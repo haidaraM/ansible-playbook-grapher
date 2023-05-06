@@ -4,7 +4,7 @@ import pytest
 from lxml import etree
 
 from ansibleplaybookgrapher.graph import PlaybookNode, PlayNode, TaskNode
-from ansibleplaybookgrapher.renderer.postprocessor import (
+from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
     GraphVizPostProcessor,
     SVG_NAMESPACE,
 )

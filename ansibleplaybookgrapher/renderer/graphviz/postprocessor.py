@@ -34,7 +34,7 @@ def _read_data(filename: str) -> str:
     :return:
     """
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, "../data", filename)
+    javascript_path = os.path.join(current_dir, "../../data", filename)
 
     with open(javascript_path) as javascript:
         return javascript.read()
