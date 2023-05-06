@@ -88,7 +88,7 @@ def get_play_colors(play_id: str) -> Tuple[str, str]:
     """
     Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play_id
-    :return:
+    :return: The main color and the font color
     """
     picked_color = Color(pick_for=play_id, luminance=0.4)
     play_font_color = "#ffffff"
@@ -118,11 +118,11 @@ def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set
     :param dict_2:
     :return:
     """
-    final = defaultdict(list)
+    final = defaultdict(set)
     # iterate dict items
     all_dict_items = map(methodcaller("items"), [dict_1, dict_2])
     for k, v in chain.from_iterable(all_dict_items):
-        final[k].extend(v)
+        final[k].update(v)
 
     return final
 

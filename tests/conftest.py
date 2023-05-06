@@ -57,7 +57,7 @@ def display():
 def grapher_cli(request) -> PlaybookGrapherCLI:
     """
     Because Ansible is not designed to be used as a library, we need the CLI everywhere. The CLI is the main entrypoint
-    of Ansible and it sets some global variables that are needed by some classes and methods.
+    of Ansible, and it sets some global variables that are needed by some classes and methods.
     See this commit: https://github.com/ansible/ansible/commit/afdbb0d9d5bebb91f632f0d4a1364de5393ba17a
     As such, this fixture is just used to init this global context
     :return:

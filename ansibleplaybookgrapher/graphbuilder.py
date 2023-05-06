@@ -22,20 +22,17 @@ from ansibleplaybookgrapher.graph import (
     RoleNode,
     PlayNode,
 )
-from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
+from ansibleplaybookgrapher.utils import merge_dicts
 
 display = Display()
 
 
-# TODO: this class seems useless. Can be replaced by a function
 class Grapher:
     def __init__(self, playbook_filenames: List[str]):
         """
         :param playbook_filenames: List of playbooks to graph
         """
         self.playbook_filenames = playbook_filenames
-        # Colors assigned to plays
-        self.plays_colors = {}
 
         # The usage of the roles in all playbooks
         self.roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
@@ -67,13 +64,6 @@ class Grapher:
             )
             playbook_node = parser.parse()
             playbook_nodes.append(playbook_node)
-
-            # Setting colors for play
-            for play in playbook_node.plays:
-                # TODO: find a way to create visual distance between the generated colors
-                # TODO: assign the color to the playnode directly instead of maintaining a separate dict
-                #   https://stackoverflow.com/questions/9018016/how-to-compare-two-colors-for-similarity-difference
-                self.plays_colors[play] = get_play_colors(play.id)
 
             # Update the usage of the roles
             self.roles_usage = merge_dicts(

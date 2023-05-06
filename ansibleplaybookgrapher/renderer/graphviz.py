@@ -30,10 +30,8 @@ class GraphvizRenderer:
     def __init__(
         self,
         playbook_nodes: List[PlaybookNode],
-        plays_colors: Dict[PlayNode, Tuple[str, str]],
         roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
-        self.plays_colors = plays_colors
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
@@ -59,7 +57,6 @@ class GraphvizRenderer:
         for p in self.playbook_nodes:
             builder = GraphvizGraphBuilder(
                 p,
-                play_colors=self.plays_colors,
                 open_protocol_handler=open_protocol_handler,
                 open_protocol_custom_formats=open_protocol_custom_formats,
                 roles_usage=self.roles_usage,
@@ -100,7 +97,6 @@ class GraphvizGraphBuilder(Builder):
     def __init__(
         self,
         playbook_node: PlaybookNode,
-        play_colors: Dict[PlayNode, Tuple[str, str]],
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str],
         roles_usage: Dict[RoleNode, Set[PlayNode]],
@@ -113,7 +109,6 @@ class GraphvizGraphBuilder(Builder):
         """
         super().__init__(
             playbook_node,
-            play_colors,
             open_protocol_handler,
             open_protocol_custom_formats,
             roles_usage,
@@ -253,16 +248,18 @@ class GraphvizGraphBuilder(Builder):
         if len(plays_using_this_role) > 1:
             # If the role is used in multiple plays, we take black as the default color
             role_color = "black"
+            fontcolor = "#ffffff"
         else:
-            colors = list(map(self.play_colors.get, plays_using_this_role))[0]
-            role_color = colors[0]
+            role_color, fontcolor = list(plays_using_this_role)[0].colors
 
         with digraph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
             role_subgraph.node(
                 destination.id,
                 id=destination.id,
                 label=f"[role] {destination.name}",
+                style="filled",
                 tooltip=destination.name,
+                fontcolor=fontcolor,
                 color=color,
                 URL=url,
             )
@@ -292,7 +289,7 @@ class GraphvizGraphBuilder(Builder):
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = self.play_colors[play]
+                color, play_font_color = play.colors
                 play_tooltip = (
                     ",".join(play.hosts) if len(play.hosts) > 0 else play.name
                 )

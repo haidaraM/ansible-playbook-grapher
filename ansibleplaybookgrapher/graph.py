@@ -14,9 +14,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, ItemsView, Set, Type
+from typing import Dict, List, ItemsView, Set, Type, Tuple
 
-from ansibleplaybookgrapher.utils import generate_id
+from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
 class Node:
@@ -302,6 +302,7 @@ class PlayNode(CompositeNode):
             supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
         )
         self.hosts = hosts or []
+        self.colors: Tuple[str, str] = get_play_colors(self.id)
 
     @property
     def roles(self) -> List["RoleNode"]:

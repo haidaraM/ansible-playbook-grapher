@@ -45,7 +45,6 @@ class Builder(ABC):
     def __init__(
         self,
         playbook_node: PlaybookNode,
-        play_colors: Dict[PlayNode, Tuple[str, str]],
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str] = None,
         roles_usage: Dict[RoleNode, Set[PlayNode]] = None,
@@ -56,13 +55,11 @@ class Builder(ABC):
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
-        :param play_colors: The colors associated to the play
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
-        self.play_colors = play_colors
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
 

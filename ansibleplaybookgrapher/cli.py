@@ -64,7 +64,6 @@ class PlaybookGrapherCLI(CLI):
         # TODO: add condition to choose the renderer
         renderer = GraphvizRenderer(
             playbook_nodes=playbook_nodes,
-            plays_colors=grapher.plays_colors,
             roles_usage=grapher.roles_usage,
         )
         output_path = renderer.render(
