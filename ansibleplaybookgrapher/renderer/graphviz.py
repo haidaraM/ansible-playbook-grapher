@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -31,7 +31,7 @@ class GraphvizRenderer:
         self,
         playbook_nodes: List[PlaybookNode],
         plays_colors: Dict[PlayNode, Tuple[str, str]],
-        roles_usage: Dict["RoleNode", List[Node]],
+        roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
         self.plays_colors = plays_colors
         self.playbook_nodes = playbook_nodes
@@ -49,8 +49,8 @@ class GraphvizRenderer:
         """
         :return: The filename where the playbooks where rendered
         """
-        # Map of the roles that have been built so far for all playbooks
-        roles_built = {}
+        # Set of the roles that have been built so far for all the playbooks
+        roles_built = set()
         digraph = Digraph(
             format="svg",
             graph_attr=DEFAULT_GRAPH_ATTR,
@@ -103,8 +103,8 @@ class GraphvizGraphBuilder(Builder):
         play_colors: Dict[PlayNode, Tuple[str, str]],
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str],
-        roles_usage: Dict[RoleNode, List[Node]],
-        roles_built: Dict,
+        roles_usage: Dict[RoleNode, Set[PlayNode]],
+        roles_built: Set,
         digraph: Digraph,
     ):
         """
@@ -123,7 +123,7 @@ class GraphvizGraphBuilder(Builder):
         self.digraph = digraph
 
     def build_task(
-        self, counter, source: Node, destination: TaskNode, color: str, **kwargs
+        self, counter: int, source: Node, destination: TaskNode, color: str, **kwargs
     ):
         """
         Build a task
@@ -134,12 +134,11 @@ class GraphvizGraphBuilder(Builder):
         :param kwargs:
         :return:
         """
-
         # Here we have a TaskNode
         digraph = kwargs["digraph"]
         node_label_prefix = kwargs["node_label_prefix"]
         edge_label = f"{counter} {destination.when}"
-        # Task node
+
         digraph.node(
             destination.id,
             label=node_label_prefix + destination.name,
@@ -149,6 +148,7 @@ class GraphvizGraphBuilder(Builder):
             color=color,
             URL=self.get_node_url(destination, "file"),
         )
+
         # Edge from parent to task
         digraph.edge(
             source.id,
@@ -244,38 +244,37 @@ class GraphvizGraphBuilder(Builder):
         )
 
         # check if we already built this role
-        role_to_render = self.roles_built.get(destination.id, None)
-        if role_to_render is None:
-            # Merge the colors for each play where this role is used
-            role_plays = self.roles_usage[destination]
-            # Graphviz support providing multiple colors separated by :
-            if len(role_plays) > 1:
-                # If the role is used in multiple plays, we take black as the default color
-                role_color = "black"
-            else:
-                colors = list(map(self.play_colors.get, role_plays))[0]
-                role_color = colors[0]
+        if destination in self.roles_built:
+            return
 
-            self.roles_built[destination.id] = destination
+        self.roles_built.add(destination)
 
-            with digraph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
-                role_subgraph.node(
-                    destination.id,
-                    id=destination.id,
-                    label=f"[role] {destination.name}",
-                    tooltip=destination.name,
-                    color=color,
-                    URL=url,
+        plays_using_this_role = self.roles_usage[destination]
+        if len(plays_using_this_role) > 1:
+            # If the role is used in multiple plays, we take black as the default color
+            role_color = "black"
+        else:
+            colors = list(map(self.play_colors.get, plays_using_this_role))[0]
+            role_color = colors[0]
+
+        with digraph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+            role_subgraph.node(
+                destination.id,
+                id=destination.id,
+                label=f"[role] {destination.name}",
+                tooltip=destination.name,
+                color=color,
+                URL=url,
+            )
+            # role tasks
+            for role_task_counter, role_task in enumerate(destination.tasks, 1):
+                self.build_node(
+                    counter=role_task_counter,
+                    source=destination,
+                    destination=role_task,
+                    color=role_color,
+                    digraph=role_subgraph,
                 )
-                # role tasks
-                for role_task_counter, role_task in enumerate(destination.tasks, 1):
-                    self.build_node(
-                        counter=role_task_counter,
-                        source=destination,
-                        destination=role_task,
-                        color=role_color,
-                        digraph=role_subgraph,
-                    )
 
     def build(self, **kwargs):
         """

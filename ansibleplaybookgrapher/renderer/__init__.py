@@ -49,7 +49,7 @@ class Builder(ABC):
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str] = None,
         roles_usage: Dict[RoleNode, Set[PlayNode]] = None,
-        roles_built: Dict = None,
+        roles_built: Set = None,
     ):
         """
 
@@ -64,7 +64,7 @@ class Builder(ABC):
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         self.play_colors = play_colors
         # A map containing the roles that have been built so far
-        self.roles_built = roles_built or {}
+        self.roles_built = roles_built or set()
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
