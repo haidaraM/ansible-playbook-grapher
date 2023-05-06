@@ -219,29 +219,29 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     [
         "group_roles_by_name",
         "roles_number",
-        "fake_role_usage",
-        "display_some_facts_usage",
-        "nested_include_role",
+        "nb_fake_role",
+        "nb_display_some_facts",
+        "nb_nested_include_role",
     ],
-    [(False, 8, 1, 1, 1), (True, 3, 3, 4, 1)],
+    [(False, 8, 1, 1, 1), (True, 3, 3, 3, 1)],
     ids=["no_group", "group"],
 )
-def test_roles_usage(
+def test_roles_usage_multi_plays(
     grapher_cli: PlaybookGrapherCLI,
-    roles_number,
+    roles_number: int,
     group_roles_by_name: bool,
-    fake_role_usage,
-    display_some_facts_usage,
-    nested_include_role,
+    nb_fake_role: int,
+    nb_display_some_facts: int,
+    nb_nested_include_role: int,
 ):
     """
-
+    Test the role_usages method for multiple plays referencing the same roles
     :param grapher_cli:
     :param roles_number: The number of uniq roles in the graph
     :param group_roles_by_name: flag to enable grouping roles or not
-    :param fake_role_usage: number of usages for the role fake_role
-    :param display_some_facts_usage: number of usages for the role display_some_facts
-    :param nested_include_role: number of usages for the role nested_include_role
+    :param nb_fake_role: number of usages for the role fake_role
+    :param nb_display_some_facts: number of usages for the role display_some_facts
+    :param nb_nested_include_role: number of usages for the role nested_include_role
     :return:
     """
     parser = PlaybookParser(
@@ -253,9 +253,9 @@ def test_roles_usage(
     roles_usage = playbook_node.roles_usage()
 
     expectation = {
-        "fake_role": fake_role_usage,
-        "display_some_facts": display_some_facts_usage,
-        "nested_include_role": nested_include_role,
+        "fake_role": nb_fake_role,
+        "display_some_facts": nb_display_some_facts,
+        "nested_include_role": nb_nested_include_role,
     }
 
     assert roles_number == len(
@@ -271,7 +271,34 @@ def test_roles_usage(
 
         assert (
             expectation.get(role.name) == nb_plays_for_the_role
-        ), f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"
+        ), f"The role '{role.name}' is used {nb_plays_for_the_role} times but we expect {expectation.get(role.name)}"
+
+
+@pytest.mark.parametrize("grapher_cli", [["group-roles-by-name.yml"]], indirect=True)
+@pytest.mark.parametrize(
+    [
+        "group_roles_by_name",
+    ],
+    [(False,), (True,)],
+    ids=["no_group", "group"],
+)
+def test_roles_usage_single_play(
+    grapher_cli: PlaybookGrapherCLI, group_roles_by_name: bool
+):
+    """
+    Test the role_usages method for a single play using the same roles multiple times.
+    The role usage should always be one regardless of the number of usages
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbook_filenames[0],
+        include_role_tasks=True,
+        group_roles_by_name=group_roles_by_name,
+    )
+    playbook_node = parser.parse()
+    roles_usage = playbook_node.roles_usage()
+    for role, plays in roles_usage.items():
+        assert len(plays) == 1, "The number of plays should be equal to 1"
 
 
 @pytest.mark.parametrize("grapher_cli", [["roles_dependencies.yml"]], indirect=True)

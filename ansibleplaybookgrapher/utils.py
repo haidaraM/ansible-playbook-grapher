@@ -111,7 +111,7 @@ def has_role_parent(task_block: Task) -> bool:
     return False
 
 
-def merge_dicts(dict_1: Dict[Any, List], dict_2: Dict[Any, List]) -> Dict[Any, List]:
+def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set]:
     """
     Merge two dicts by grouping keys and appending values in list
     :param dict_1:

@@ -248,22 +248,22 @@ class PlaybookNode(CompositeNode):
         """
         return self._compositions["plays"]
 
-    def roles_usage(self) -> Dict["RoleNode", List[Node]]:
+    def roles_usage(self) -> Dict["RoleNode", Set["PlayNode"]]:
         """
-        For each role in the graph, return the plays that reference the role
-        :return: A dict with key as role node and value the list of plays
+        For each role in the playbook, get the uniq plays that reference the role
+        :return: A dict with key as role node and value the list of uniq plays that use it
         """
 
-        usages = defaultdict(list)
+        usages = defaultdict(set)
         links = self.links_structure()
 
         for node, linked_nodes in links.items():
             for linked_node in linked_nodes:
                 if isinstance(linked_node, RoleNode):
                     if isinstance(node, PlayNode):
-                        usages[linked_node].append(node)
+                        usages[linked_node].add(node)
                     else:
-                        usages[linked_node].append(
+                        usages[linked_node].add(
                             node.get_first_parent_matching_type(PlayNode)
                         )
 

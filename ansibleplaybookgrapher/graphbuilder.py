@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from ansible.utils.display import Display
 
@@ -20,13 +20,14 @@ from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.graph import (
     PlaybookNode,
     RoleNode,
-    Node,
+    PlayNode,
 )
 from ansibleplaybookgrapher.utils import get_play_colors, merge_dicts
 
 display = Display()
 
 
+# TODO: this class seems useless. Can be replaced by a function
 class Grapher:
     def __init__(self, playbook_filenames: List[str]):
         """
@@ -37,7 +38,7 @@ class Grapher:
         self.plays_colors = {}
 
         # The usage of the roles in all playbooks
-        self.roles_usage: Dict["RoleNode", List[Node]] = {}
+        self.roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
 
     def parse(
         self,

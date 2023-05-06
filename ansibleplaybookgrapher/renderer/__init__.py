@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Set
 
 from ansible.utils.display import Display
 
@@ -48,7 +48,7 @@ class Builder(ABC):
         play_colors: Dict[PlayNode, Tuple[str, str]],
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str] = None,
-        roles_usage: Dict[RoleNode, List[Node]] = None,
+        roles_usage: Dict[RoleNode, Set[PlayNode]] = None,
         roles_built: Dict = None,
     ):
         """
