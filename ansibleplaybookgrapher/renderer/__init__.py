@@ -68,43 +68,24 @@ class PlaybookBuilder(ABC):
         formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
-    def build_node(
-        self,
-        source: Node,
-        destination: Node,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_node(self, node: Node, color: str, fontcolor: str, **kwargs):
         """
         Build a generic node.
-        :param source: The source node
-        :param destination: The RoleNode to render
+        :param node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
         :return:
         """
 
-        if isinstance(destination, BlockNode):
+        if isinstance(node, BlockNode):
             self.build_block(
-                source=source,
-                destination=destination,
-                color=color,
-                fontcolor=fontcolor,
-                **kwargs,
+                block_node=node, color=color, fontcolor=fontcolor, **kwargs
             )
-        elif isinstance(destination, RoleNode):
-            self.build_role(
-                source=source,
-                destination=destination,
-                color=color,
-                fontcolor=fontcolor,
-                **kwargs,
-            )
+        elif isinstance(node, RoleNode):
+            self.build_role(role_node=node, color=color, fontcolor=fontcolor, **kwargs)
         else:  # This is necessarily a TaskNode
             self.build_task(
-                source=source,
-                destination=destination,
+                task_node=node,
                 color=color,
                 fontcolor=fontcolor,
                 node_label_prefix=kwargs.pop("node_label_prefix", ""),
@@ -116,22 +97,14 @@ class PlaybookBuilder(ABC):
         pass
 
     @abstractmethod
-    def build_play(self, destination: PlayNode, **kwargs):
+    def build_play(self, play_node: PlayNode, **kwargs):
         pass
 
     @abstractmethod
-    def build_task(
-        self,
-        source: Node,
-        destination: TaskNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """
         Build a single task to be rendered
-        :param source: The source node
-        :param destination: The task
+        :param task_node: The task
         :param fontcolor: The font color to apply
         :param color: Color from the play
         :param kwargs:
@@ -140,18 +113,10 @@ class PlaybookBuilder(ABC):
         pass
 
     @abstractmethod
-    def build_role(
-        self,
-        source: Node,
-        destination: RoleNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
         """
         Render a role in the graph
-        :param source: The source node
-        :param destination: The RoleNode to render
+        :param role_node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
         :return:
@@ -159,19 +124,11 @@ class PlaybookBuilder(ABC):
         pass
 
     @abstractmethod
-    def build_block(
-        self,
-        source: Node,
-        destination: BlockNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
         """
         Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
-        :param source: The source node
-        :param destination: The BlockNode to build
+        :param block_node: The BlockNode to build
         :param color: The color from the play to apply
         :param fontcolor: The font color to apply
         :return:

@@ -131,18 +131,10 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
         self.digraph = digraph
 
-    def build_task(
-        self,
-        source: Node,
-        destination: TaskNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """
         Build a task
-        :param source:
-        :param destination:
+        :param task_node:
         :param color:
         :param fontcolor:
         :param kwargs:
@@ -151,126 +143,111 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         # Here we have a TaskNode
         digraph = kwargs["digraph"]
         node_label_prefix = kwargs["node_label_prefix"]
-        edge_label = f"{destination.index} {destination.when}"
+        edge_label = f"{task_node.index} {task_node.when}"
 
         digraph.node(
-            destination.id,
-            label=node_label_prefix + destination.name,
+            task_node.id,
+            label=node_label_prefix + task_node.name,
             shape="octagon",
-            id=destination.id,
-            tooltip=destination.name,
+            id=task_node.id,
+            tooltip=task_node.name,
             color=color,
-            URL=self.get_node_url(destination, "file"),
+            URL=self.get_node_url(task_node, "file"),
         )
 
         # Edge from parent to task
         digraph.edge(
-            source.id,
-            destination.id,
+            task_node.parent.id,
+            task_node.id,
             label=edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{destination.index}_{source.id}_{destination.id}",
+            id=f"edge_{task_node.index}_{task_node.parent.id}_{task_node.id}",
             tooltip=edge_label,
             labeltooltip=edge_label,
         )
 
-    def build_block(
-        self,
-        source: Node,
-        destination: BlockNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
         """
 
         :return:
         """
-        edge_label = f"{destination.index}"
+        edge_label = f"{block_node.index}"
         digraph = kwargs["digraph"]
 
         # Edge from parent to the block node inside the cluster
         digraph.edge(
-            source.id,
-            destination.id,
+            block_node.parent.id,
+            block_node.id,
             label=edge_label,
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{destination.index}_{source.id}_{destination.id}",
+            id=f"edge_{block_node.index}_{block_node.parent.id}_{block_node.id}",
             labeltooltip=edge_label,
         )
 
         # BlockNode is a special node: a cluster is created instead of a normal node
         with digraph.subgraph(
-            name=f"cluster_{destination.id}"
+            name=f"cluster_{block_node.id}"
         ) as cluster_block_subgraph:
             # block node
             cluster_block_subgraph.node(
-                destination.id,
-                label=f"[block] {destination.name}",
+                block_node.id,
+                label=f"[block] {block_node.name}",
                 shape="box",
                 style="filled",
-                id=destination.id,
-                tooltip=destination.name,
+                id=block_node.id,
+                tooltip=block_node.name,
                 color=color,
                 fontcolor=fontcolor,
-                labeltooltip=destination.name,
-                URL=self.get_node_url(destination, "file"),
+                labeltooltip=block_node.name,
+                URL=self.get_node_url(block_node, "file"),
             )
 
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
             #  Don't really know why for the moment neither if there is an attribute to change that.
-            for task in reversed(destination.tasks):
+            for task in reversed(block_node.tasks):
                 self.build_node(
-                    source=destination,
-                    destination=task,
-                    fontcolor=fontcolor,
+                    node=task,
                     color=color,
+                    fontcolor=fontcolor,
                     digraph=cluster_block_subgraph,
                 )
 
-    def build_role(
-        self,
-        source: Node,
-        destination: RoleNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
-    ):
+    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
         """
         Render a role in the graph
         :return:
         """
         digraph = kwargs["digraph"]
 
-        if destination.include_role:  # For include_role, we point to a file
-            url = self.get_node_url(destination, "file")
+        if role_node.include_role:  # For include_role, we point to a file
+            url = self.get_node_url(role_node, "file")
         else:  # For normal role invocation, we point to the folder
-            url = self.get_node_url(destination, "folder")
+            url = self.get_node_url(role_node, "folder")
 
-        role_edge_label = f"{destination.index} {destination.when}"
+        role_edge_label = f"{role_node.index} {role_node.when}"
 
         # from parent to the role node
         digraph.edge(
-            source.id,
-            destination.id,
+            role_node.parent.id,
+            role_node.id,
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{destination.index}_{source.id}_{destination.id}",
+            id=f"edge_{role_node.index}_{role_node.parent.id}_{role_node.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
 
         # check if we already built this role
-        if destination in self.roles_built:
+        if role_node in self.roles_built:
             return
 
-        self.roles_built.add(destination)
+        self.roles_built.add(role_node)
 
-        plays_using_this_role = self.roles_usage[destination]
+        plays_using_this_role = self.roles_usage[role_node]
         if len(plays_using_this_role) > 1:
             # If the role is used in multiple plays, we take black as the default color
             role_color = "black"
@@ -278,22 +255,21 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         else:
             role_color, fontcolor = list(plays_using_this_role)[0].colors
 
-        with digraph.subgraph(name=destination.name, node_attr={}) as role_subgraph:
+        with digraph.subgraph(name=role_node.name, node_attr={}) as role_subgraph:
             role_subgraph.node(
-                destination.id,
-                id=destination.id,
-                label=f"[role] {destination.name}",
+                role_node.id,
+                id=role_node.id,
+                label=f"[role] {role_node.name}",
                 style="filled",
-                tooltip=destination.name,
+                tooltip=role_node.name,
                 fontcolor=fontcolor,
                 color=color,
                 URL=url,
             )
             # role tasks
-            for role_task in destination.tasks:
+            for role_task in role_node.tasks:
                 self.build_node(
-                    source=destination,
-                    destination=role_task,
+                    node=role_task,
                     color=role_color,
                     fontcolor=fontcolor,
                     digraph=role_subgraph,
@@ -317,40 +293,40 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         for play in self.playbook_node.plays:
             self.build_play(play, **kwargs)
 
-    def build_play(self, destination: PlayNode, **kwargs):
+    def build_play(self, play_node: PlayNode, **kwargs):
         """
 
-        :param destination:
+        :param play_node:
         :param kwargs:
         :return:
         """
-        with self.digraph.subgraph(name=destination.name) as play_subgraph:
-            color, play_font_color = destination.colors
+        with self.digraph.subgraph(name=play_node.name) as play_subgraph:
+            color, play_font_color = play_node.colors
             play_tooltip = (
-                ",".join(destination.hosts)
-                if len(destination.hosts) > 0
-                else destination.name
+                ",".join(play_node.hosts)
+                if len(play_node.hosts) > 0
+                else play_node.name
             )
 
             # play node
             play_subgraph.node(
-                destination.id,
-                id=destination.id,
-                label=destination.name,
+                play_node.id,
+                id=play_node.id,
+                label=play_node.name,
                 style="filled",
                 shape="box",
                 color=color,
                 fontcolor=play_font_color,
                 tooltip=play_tooltip,
-                URL=self.get_node_url(destination, "file"),
+                URL=self.get_node_url(play_node, "file"),
             )
 
             # edge from root node to play
-            playbook_to_play_label = f"{destination.index} {destination.name}"
+            playbook_to_play_label = f"{play_node.index} {play_node.name}"
             self.digraph.edge(
                 self.playbook_node.id,
-                destination.id,
-                id=f"edge_{self.playbook_node.id}_{destination.id}",
+                play_node.id,
+                id=f"edge_{self.playbook_node.id}_{play_node.id}",
                 label=playbook_to_play_label,
                 color=color,
                 fontcolor=color,
@@ -359,10 +335,9 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             )
 
             # pre_tasks
-            for pre_task in destination.pre_tasks:
+            for pre_task in play_node.pre_tasks:
                 self.build_node(
-                    source=destination,
-                    destination=pre_task,
+                    node=pre_task,
                     color=color,
                     fontcolor=play_font_color,
                     digraph=play_subgraph,
@@ -371,35 +346,32 @@ class GraphvizGraphBuilder(PlaybookBuilder):
                 )
 
             # roles
-            for role in destination.roles:
+            for role in play_node.roles:
                 self.build_role(
-                    source=destination,
-                    destination=role,
                     color=color,
                     fontcolor=play_font_color,
+                    role_node=role,
                     digraph=play_subgraph,
                     **kwargs,
                 )
 
             # tasks
-            for task in destination.tasks:
+            for task in play_node.tasks:
                 self.build_node(
-                    source=destination,
-                    destination=task,
-                    fontcolor=play_font_color,
+                    node=task,
                     color=color,
+                    fontcolor=play_font_color,
                     digraph=play_subgraph,
                     node_label_prefix="[task] ",
                     **kwargs,
                 )
 
             # post_tasks
-            for post_task in destination.post_tasks:
+            for post_task in play_node.post_tasks:
                 self.build_node(
-                    source=destination,
-                    destination=post_task,
-                    fontcolor=play_font_color,
+                    node=post_task,
                     color=color,
+                    fontcolor=play_font_color,
                     digraph=play_subgraph,
                     node_label_prefix="[post_task] ",
                     **kwargs,
