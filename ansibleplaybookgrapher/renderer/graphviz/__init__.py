@@ -305,9 +305,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
         color, play_font_color = play_node.colors
         play_tooltip = (
-            ",".join(play_node.hosts)
-            if len(play_node.hosts) > 0
-            else play_node.name
+            ",".join(play_node.hosts) if len(play_node.hosts) > 0 else play_node.name
         )
 
         # play node
