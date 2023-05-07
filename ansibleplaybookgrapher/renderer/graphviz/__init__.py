@@ -26,7 +26,7 @@ from ansibleplaybookgrapher.graph import (
     BlockNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import Builder
+from ansibleplaybookgrapher.renderer import PlaybookBuilder
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphVizPostProcessor
 
 display = Display()
@@ -68,16 +68,16 @@ class GraphvizRenderer:
             graph_attr=DEFAULT_GRAPH_ATTR,
             edge_attr=DEFAULT_EDGE_ATTR,
         )
-        for p in self.playbook_nodes:
+        for playbook_node in self.playbook_nodes:
             builder = GraphvizGraphBuilder(
-                p,
+                playbook_node,
                 open_protocol_handler=open_protocol_handler,
                 open_protocol_custom_formats=open_protocol_custom_formats,
                 roles_usage=self.roles_usage,
                 roles_built=roles_built,
                 digraph=digraph,
             )
-            builder.build()
+            builder.build_playbook()
             roles_built.update(builder.roles_built)
 
         display.display("Rendering the graph...")
@@ -103,7 +103,7 @@ class GraphvizRenderer:
         return svg_path
 
 
-class GraphvizGraphBuilder(Builder):
+class GraphvizGraphBuilder(PlaybookBuilder):
     """
     Build the graphviz graph
     """
@@ -305,7 +305,7 @@ class GraphvizGraphBuilder(Builder):
                     digraph=role_subgraph,
                 )
 
-    def build(self, **kwargs):
+    def build_playbook(self, **kwargs):
         """
         Convert the PlaybookNode to the graphviz dot format
         :return:
@@ -313,91 +313,110 @@ class GraphvizGraphBuilder(Builder):
         display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(
-            self.playbook_node.name,
+            self.playbook_node.id,
+            label=self.playbook_node.name,
             style="dotted",
             id=self.playbook_node.id,
             URL=self.get_node_url(self.playbook_node, "file"),
         )
 
         for play_counter, play in enumerate(self.playbook_node.plays, 1):
-            with self.digraph.subgraph(name=play.name) as play_subgraph:
-                color, play_font_color = play.colors
-                play_tooltip = (
-                    ",".join(play.hosts) if len(play.hosts) > 0 else play.name
-                )
+            self.build_play(play_counter, play, **kwargs)
 
-                # play node
-                play_subgraph.node(
-                    play.id,
-                    id=play.id,
-                    label=play.name,
-                    style="filled",
-                    shape="box",
+    def build_play(self, counter: int, destination: PlayNode, **kwargs):
+        """
+
+        :param counter:
+        :param destination:
+        :param kwargs:
+        :return:
+        """
+        with self.digraph.subgraph(name=destination.name) as play_subgraph:
+            color, play_font_color = destination.colors
+            play_tooltip = (
+                ",".join(destination.hosts)
+                if len(destination.hosts) > 0
+                else destination.name
+            )
+
+            # play node
+            play_subgraph.node(
+                destination.id,
+                id=destination.id,
+                label=destination.name,
+                style="filled",
+                shape="box",
+                color=color,
+                fontcolor=play_font_color,
+                tooltip=play_tooltip,
+                URL=self.get_node_url(destination, "file"),
+            )
+
+            # edge from root node to play
+            playbook_to_play_label = f"{counter} {destination.name}"
+            self.digraph.edge(
+                self.playbook_node.id,
+                destination.id,
+                id=f"edge_{self.playbook_node.id}_{destination.id}",
+                label=playbook_to_play_label,
+                color=color,
+                fontcolor=color,
+                tooltip=playbook_to_play_label,
+                labeltooltip=playbook_to_play_label,
+            )
+
+            # pre_tasks
+            for pre_task_counter, pre_task in enumerate(destination.pre_tasks, 1):
+                self.build_node(
+                    counter=pre_task_counter,
+                    source=destination,
+                    destination=pre_task,
                     color=color,
                     fontcolor=play_font_color,
-                    tooltip=play_tooltip,
-                    URL=self.get_node_url(play, "file"),
+                    digraph=play_subgraph,
+                    node_label_prefix="[pre_task] ",
+                    **kwargs,
                 )
 
-                # edge from root node to play
-                playbook_to_play_label = f"{play_counter} {play.name}"
-                self.digraph.edge(
-                    self.playbook_node.name,
-                    play.id,
-                    id=f"edge_{self.playbook_node.id}_{play.id}",
-                    label=playbook_to_play_label,
+            # roles
+            for role_counter, role in enumerate(destination.roles, 1):
+                self.build_role(
+                    counter=role_counter + len(destination.pre_tasks),
+                    source=destination,
+                    destination=role,
                     color=color,
-                    fontcolor=color,
-                    tooltip=playbook_to_play_label,
-                    labeltooltip=playbook_to_play_label,
+                    fontcolor=play_font_color,
+                    digraph=play_subgraph,
+                    **kwargs,
                 )
 
-                # pre_tasks
-                for pre_task_counter, pre_task in enumerate(play.pre_tasks, 1):
-                    self.build_node(
-                        counter=pre_task_counter,
-                        source=play,
-                        destination=pre_task,
-                        color=color,
-                        fontcolor=play_font_color,
-                        digraph=play_subgraph,
-                        node_label_prefix="[pre_task] ",
-                    )
+            # tasks
+            for task_counter, task in enumerate(destination.tasks, 1):
+                self.build_node(
+                    counter=len(destination.pre_tasks)
+                    + len(destination.roles)
+                    + task_counter,
+                    source=destination,
+                    destination=task,
+                    fontcolor=play_font_color,
+                    color=color,
+                    digraph=play_subgraph,
+                    node_label_prefix="[task] ",
+                    **kwargs,
+                )
 
-                # roles
-                for role_counter, role in enumerate(play.roles, 1):
-                    self.build_role(
-                        counter=role_counter + len(play.pre_tasks),
-                        source=play,
-                        destination=role,
-                        color=color,
-                        fontcolor=play_font_color,
-                        digraph=play_subgraph,
-                    )
-
-                # tasks
-                for task_counter, task in enumerate(play.tasks, 1):
-                    self.build_node(
-                        counter=len(play.pre_tasks) + len(play.roles) + task_counter,
-                        source=play,
-                        destination=task,
-                        fontcolor=play_font_color,
-                        color=color,
-                        digraph=play_subgraph,
-                        node_label_prefix="[task] ",
-                    )
-
-                # post_tasks
-                for post_task_counter, post_task in enumerate(play.post_tasks, 1):
-                    self.build_node(
-                        counter=len(play.pre_tasks)
-                        + len(play.roles)
-                        + len(play.tasks)
-                        + post_task_counter,
-                        source=play,
-                        destination=post_task,
-                        fontcolor=play_font_color,
-                        color=color,
-                        digraph=play_subgraph,
-                        node_label_prefix="[post_task] ",
-                    )
+            # post_tasks
+            for post_task_counter, post_task in enumerate(destination.post_tasks, 1):
+                self.build_node(
+                    counter=len(destination.pre_tasks)
+                    + len(destination.roles)
+                    + len(destination.tasks)
+                    + post_task_counter,
+                    source=destination,
+                    destination=post_task,
+                    fontcolor=play_font_color,
+                    color=color,
+                    digraph=play_subgraph,
+                    node_label_prefix="[post_task] ",
+                    **kwargs,
+                )

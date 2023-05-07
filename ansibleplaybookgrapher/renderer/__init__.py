@@ -41,7 +41,7 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
-class Builder(ABC):
+class PlaybookBuilder(ABC):
     def __init__(
         self,
         playbook_node: PlaybookNode,
@@ -115,6 +115,14 @@ class Builder(ABC):
                 node_label_prefix=kwargs.pop("node_label_prefix", ""),
                 **kwargs,
             )
+
+    @abstractmethod
+    def build_playbook(self, **kwargs):
+        pass
+
+    @abstractmethod
+    def build_play(self, counter: int, destination: PlayNode, **kwargs):
+        pass
 
     @abstractmethod
     def build_task(
