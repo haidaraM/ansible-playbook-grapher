@@ -291,7 +291,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         )
 
         for play in self.playbook_node.plays:
-            self.build_play(play, **kwargs)
+            with self.digraph.subgraph(name=play.name) as play_subgraph:
+                self.build_play(play, digraph=play_subgraph, **kwargs)
 
     def build_play(self, play_node: PlayNode, **kwargs):
         """
@@ -300,79 +301,76 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        with self.digraph.subgraph(name=play_node.name) as play_subgraph:
-            color, play_font_color = play_node.colors
-            play_tooltip = (
-                ",".join(play_node.hosts)
-                if len(play_node.hosts) > 0
-                else play_node.name
-            )
+        digraph = kwargs["digraph"]
 
-            # play node
-            play_subgraph.node(
-                play_node.id,
-                id=play_node.id,
-                label=play_node.name,
-                style="filled",
-                shape="box",
+        color, play_font_color = play_node.colors
+        play_tooltip = (
+            ",".join(play_node.hosts)
+            if len(play_node.hosts) > 0
+            else play_node.name
+        )
+
+        # play node
+        digraph.node(
+            play_node.id,
+            id=play_node.id,
+            label=play_node.name,
+            style="filled",
+            shape="box",
+            color=color,
+            fontcolor=play_font_color,
+            tooltip=play_tooltip,
+            URL=self.get_node_url(play_node, "file"),
+        )
+
+        # edge from root node to play
+        playbook_to_play_label = f"{play_node.index} {play_node.name}"
+        self.digraph.edge(
+            self.playbook_node.id,
+            play_node.id,
+            id=f"edge_{self.playbook_node.id}_{play_node.id}",
+            label=playbook_to_play_label,
+            color=color,
+            fontcolor=color,
+            tooltip=playbook_to_play_label,
+            labeltooltip=playbook_to_play_label,
+        )
+
+        # pre_tasks
+        for pre_task in play_node.pre_tasks:
+            self.build_node(
+                node=pre_task,
                 color=color,
                 fontcolor=play_font_color,
-                tooltip=play_tooltip,
-                URL=self.get_node_url(play_node, "file"),
+                node_label_prefix="[pre_task] ",
+                **kwargs,
             )
 
-            # edge from root node to play
-            playbook_to_play_label = f"{play_node.index} {play_node.name}"
-            self.digraph.edge(
-                self.playbook_node.id,
-                play_node.id,
-                id=f"edge_{self.playbook_node.id}_{play_node.id}",
-                label=playbook_to_play_label,
+        # roles
+        for role in play_node.roles:
+            self.build_role(
                 color=color,
-                fontcolor=color,
-                tooltip=playbook_to_play_label,
-                labeltooltip=playbook_to_play_label,
+                fontcolor=play_font_color,
+                role_node=role,
+                **kwargs,
             )
 
-            # pre_tasks
-            for pre_task in play_node.pre_tasks:
-                self.build_node(
-                    node=pre_task,
-                    color=color,
-                    fontcolor=play_font_color,
-                    digraph=play_subgraph,
-                    node_label_prefix="[pre_task] ",
-                    **kwargs,
-                )
+        # tasks
+        for task in play_node.tasks:
+            self.build_node(
+                node=task,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[task] ",
+                **kwargs,
+            )
 
-            # roles
-            for role in play_node.roles:
-                self.build_role(
-                    color=color,
-                    fontcolor=play_font_color,
-                    role_node=role,
-                    digraph=play_subgraph,
-                    **kwargs,
-                )
-
-            # tasks
-            for task in play_node.tasks:
-                self.build_node(
-                    node=task,
-                    color=color,
-                    fontcolor=play_font_color,
-                    digraph=play_subgraph,
-                    node_label_prefix="[task] ",
-                    **kwargs,
-                )
-
-            # post_tasks
-            for post_task in play_node.post_tasks:
-                self.build_node(
-                    node=post_task,
-                    color=color,
-                    fontcolor=play_font_color,
-                    digraph=play_subgraph,
-                    node_label_prefix="[post_task] ",
-                    **kwargs,
-                )
+        # post_tasks
+        for post_task in play_node.post_tasks:
+            self.build_node(
+                node=post_task,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[post_task] ",
+                **kwargs,
+            )
