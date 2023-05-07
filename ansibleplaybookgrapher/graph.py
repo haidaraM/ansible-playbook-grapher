@@ -129,6 +129,8 @@ class CompositeNode(Node):
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
+        # Used to count the number of nodes in this composite node
+        self._node_counter = 0
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -142,8 +144,9 @@ class CompositeNode(Node):
                 f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
             )
         # The node index is position in the composition regardless of the type of the node
-        node.index = sum(map(lambda x: len(x), self._compositions.values())) + 1
+        node.index = self._node_counter + 1
         self._compositions[target_composition].append(node)
+        self._node_counter += 1
 
     def get_all_tasks(self) -> List["TaskNode"]:
         """
