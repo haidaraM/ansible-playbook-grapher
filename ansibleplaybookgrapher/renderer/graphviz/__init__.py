@@ -132,7 +132,13 @@ class GraphvizGraphBuilder(Builder):
         self.digraph = digraph
 
     def build_task(
-        self, counter: int, source: Node, destination: TaskNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
         Build a task
@@ -140,6 +146,7 @@ class GraphvizGraphBuilder(Builder):
         :param source:
         :param destination:
         :param color:
+        :param fontcolor:
         :param kwargs:
         :return:
         """
@@ -171,15 +178,16 @@ class GraphvizGraphBuilder(Builder):
         )
 
     def build_block(
-        self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
-        Build a block to be rendered.
-        A BlockNode is a special node: a cluster is created instead of a normal node.
-        :param counter: The counter for this block in the graph
-        :param source: The source node
-        :param destination: The BlockNode to build
-        :param color: The color from the play to apply
+
         :return:
         """
         edge_label = f"{counter}"
@@ -206,9 +214,11 @@ class GraphvizGraphBuilder(Builder):
                 destination.id,
                 label=f"[block] {destination.name}",
                 shape="box",
+                style="filled",
                 id=destination.id,
                 tooltip=destination.name,
                 color=color,
+                fontcolor=fontcolor,
                 labeltooltip=destination.name,
                 URL=self.get_node_url(destination, "file"),
             )
@@ -220,12 +230,19 @@ class GraphvizGraphBuilder(Builder):
                     counter=len(destination.tasks) - b_counter,
                     source=destination,
                     destination=task,
+                    fontcolor=fontcolor,
                     color=color,
                     digraph=cluster_block_subgraph,
                 )
 
     def build_role(
-        self, counter: int, source: Node, destination: RoleNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
         Render a role in the graph
@@ -284,6 +301,7 @@ class GraphvizGraphBuilder(Builder):
                     source=destination,
                     destination=role_task,
                     color=role_color,
+                    fontcolor=fontcolor,
                     digraph=role_subgraph,
                 )
 
@@ -341,6 +359,7 @@ class GraphvizGraphBuilder(Builder):
                         source=play,
                         destination=pre_task,
                         color=color,
+                        fontcolor=play_font_color,
                         digraph=play_subgraph,
                         node_label_prefix="[pre_task] ",
                     )
@@ -352,6 +371,7 @@ class GraphvizGraphBuilder(Builder):
                         source=play,
                         destination=role,
                         color=color,
+                        fontcolor=play_font_color,
                         digraph=play_subgraph,
                     )
 
@@ -361,6 +381,7 @@ class GraphvizGraphBuilder(Builder):
                         counter=len(play.pre_tasks) + len(play.roles) + task_counter,
                         source=play,
                         destination=task,
+                        fontcolor=play_font_color,
                         color=color,
                         digraph=play_subgraph,
                         node_label_prefix="[task] ",
@@ -375,6 +396,7 @@ class GraphvizGraphBuilder(Builder):
                         + post_task_counter,
                         source=play,
                         destination=post_task,
+                        fontcolor=play_font_color,
                         color=color,
                         digraph=play_subgraph,
                         node_label_prefix="[post_task] ",

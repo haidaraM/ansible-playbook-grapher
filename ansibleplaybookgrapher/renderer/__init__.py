@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, Optional, Set
 
 from ansible.utils.display import Display
 
@@ -74,6 +74,7 @@ class Builder(ABC):
         source: Node,
         destination: Node,
         color: str,
+        fontcolor: str,
         **kwargs,
     ):
         """
@@ -81,6 +82,7 @@ class Builder(ABC):
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
+        :param fontcolor: The font color to apply
         :param counter: The counter for this node
         :return:
         """
@@ -91,6 +93,7 @@ class Builder(ABC):
                 source=source,
                 destination=destination,
                 color=color,
+                fontcolor=fontcolor,
                 **kwargs,
             )
         elif isinstance(destination, RoleNode):
@@ -99,6 +102,7 @@ class Builder(ABC):
                 source=source,
                 destination=destination,
                 color=color,
+                fontcolor=fontcolor,
                 **kwargs,
             )
         else:  # This is necessarily a TaskNode
@@ -107,19 +111,27 @@ class Builder(ABC):
                 source=source,
                 destination=destination,
                 color=color,
+                fontcolor=fontcolor,
                 node_label_prefix=kwargs.pop("node_label_prefix", ""),
                 **kwargs,
             )
 
     @abstractmethod
     def build_task(
-        self, counter: int, source: Node, destination: TaskNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
         Build a single task to be rendered
         :param counter: The counter for the task
         :param source: The source node
         :param destination: The task
+        :param fontcolor: The font color to apply
         :param color: Color from the play
         :param kwargs:
         :return:
@@ -128,7 +140,13 @@ class Builder(ABC):
 
     @abstractmethod
     def build_role(
-        self, counter: int, source: Node, destination: RoleNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
         Render a role in the graph
@@ -136,13 +154,20 @@ class Builder(ABC):
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
+        :param fontcolor: The font color to apply
         :return:
         """
         pass
 
     @abstractmethod
     def build_block(
-        self, counter: int, source: Node, destination: BlockNode, color: str, **kwargs
+        self,
+        counter: int,
+        source: Node,
+        destination: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ):
         """
         Build a block to be rendered.
@@ -151,6 +176,7 @@ class Builder(ABC):
         :param source: The source node
         :param destination: The BlockNode to build
         :param color: The color from the play to apply
+        :param fontcolor: The font color to apply
         :return:
         """
         pass
