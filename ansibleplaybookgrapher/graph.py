@@ -14,14 +14,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, ItemsView, Set, Type, Tuple
+from typing import Dict, List, Set, Type, Tuple
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
 class Node:
     """
-    A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
+    A node in the graph. Everything of the final graph is a node: playbook, plays, tasks and roles.
     """
 
     def __init__(
@@ -39,14 +39,15 @@ class Node:
         :param when: The conditional attached to the node
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
-        :param parent: The parent of this node
+        :param parent: The parent node of this node
         """
         self.name = node_name
         self.parent = parent
         self.id = node_id
         self.when = when
         self.raw_object = raw_object
-        # Trying to get the object position in the parsed files. Format: (path,line,column)
+
+        # Get the node position in the parsed files. Format: (path,line,column)
         self.path = self.line = self.column = None
         self.retrieve_position()
 
@@ -58,9 +59,10 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def get_first_parent_matching_type(self, node_type: Type) -> "Type":
+    def get_first_parent_matching_type(self, node_type: Type) -> Type:
         """
         Get the first parent of this node matching the given type
+        :param node_type: The type of the parent to get
         :return:
         """
         current_parent = self.parent
@@ -87,7 +89,11 @@ class Node:
 
 class CompositeNode(Node):
     """
-    A node that composed of multiple of nodes.
+    A node composed of multiple of nodes:
+     - playbook containing plays
+     - play containing tasks
+     - role containing tasks
+     - block containing tasks
     """
 
     def __init__(
@@ -105,20 +111,12 @@ class CompositeNode(Node):
         :param node_id:
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
-        :param supported_compositions:
+        :param supported_compositions: The list of the supported compositions for this composite node.
         """
         super().__init__(node_name, node_id, when, raw_object, parent)
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
-
-    def items(self) -> ItemsView[str, List[Node]]:
-        """
-        Return a view object (list of tuples) of all the nodes inside this composite node. The first element of the
-        tuple is the composition name and the second one a list of nodes
-        :return:
-        """
-        return self._compositions.items()
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -135,7 +133,7 @@ class CompositeNode(Node):
 
     def get_all_tasks(self) -> List["TaskNode"]:
         """
-        Return all the TaskNode inside a composite node
+        Return all the TaskNode inside this composite node
         :return:
         """
         tasks: List[TaskNode] = []
@@ -148,7 +146,7 @@ class CompositeNode(Node):
         :param task_acc:
         :return:
         """
-        items = self.items()
+        items = self._compositions.items()
         for _, nodes in items:
             for node in nodes:
                 if isinstance(node, TaskNode):
@@ -158,7 +156,7 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of the dictionary is the node id and the
+        Return a representation of the composite node where each key of the dictionary is the node and the
          value is the list of the linked nodes
         :return:
         """
