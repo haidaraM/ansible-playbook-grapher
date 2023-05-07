@@ -133,7 +133,6 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
     def build_task(
         self,
-        counter: int,
         source: Node,
         destination: TaskNode,
         color: str,
@@ -142,7 +141,6 @@ class GraphvizGraphBuilder(PlaybookBuilder):
     ):
         """
         Build a task
-        :param counter:
         :param source:
         :param destination:
         :param color:
@@ -153,7 +151,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         # Here we have a TaskNode
         digraph = kwargs["digraph"]
         node_label_prefix = kwargs["node_label_prefix"]
-        edge_label = f"{counter} {destination.when}"
+        edge_label = f"{destination.index} {destination.when}"
 
         digraph.node(
             destination.id,
@@ -172,14 +170,13 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             label=edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{counter}_{source.id}_{destination.id}",
+            id=f"edge_{destination.index}_{source.id}_{destination.id}",
             tooltip=edge_label,
             labeltooltip=edge_label,
         )
 
     def build_block(
         self,
-        counter: int,
         source: Node,
         destination: BlockNode,
         color: str,
@@ -190,7 +187,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
         :return:
         """
-        edge_label = f"{counter}"
+        edge_label = f"{destination.index}"
         digraph = kwargs["digraph"]
 
         # Edge from parent to the block node inside the cluster
@@ -201,7 +198,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{counter}_{source.id}_{destination.id}",
+            id=f"edge_{destination.index}_{source.id}_{destination.id}",
             labeltooltip=edge_label,
         )
 
@@ -225,9 +222,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
             #  Don't really know why for the moment neither if there is an attribute to change that.
-            for b_counter, task in enumerate(reversed(destination.tasks)):
+            for task in reversed(destination.tasks):
                 self.build_node(
-                    counter=len(destination.tasks) - b_counter,
                     source=destination,
                     destination=task,
                     fontcolor=fontcolor,
@@ -237,7 +233,6 @@ class GraphvizGraphBuilder(PlaybookBuilder):
 
     def build_role(
         self,
-        counter: int,
         source: Node,
         destination: RoleNode,
         color: str,
@@ -255,7 +250,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         else:  # For normal role invocation, we point to the folder
             url = self.get_node_url(destination, "folder")
 
-        role_edge_label = f"{counter} {destination.when}"
+        role_edge_label = f"{destination.index} {destination.when}"
 
         # from parent to the role node
         digraph.edge(
@@ -264,7 +259,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{counter}_{source.id}_{destination.id}",
+            id=f"edge_{destination.index}_{source.id}_{destination.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
@@ -295,9 +290,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
                 URL=url,
             )
             # role tasks
-            for role_task_counter, role_task in enumerate(destination.tasks, 1):
+            for role_task in destination.tasks:
                 self.build_node(
-                    counter=role_task_counter,
                     source=destination,
                     destination=role_task,
                     color=role_color,
@@ -320,13 +314,12 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             URL=self.get_node_url(self.playbook_node, "file"),
         )
 
-        for play_counter, play in enumerate(self.playbook_node.plays, 1):
-            self.build_play(play_counter, play, **kwargs)
+        for play in self.playbook_node.plays:
+            self.build_play(play, **kwargs)
 
-    def build_play(self, counter: int, destination: PlayNode, **kwargs):
+    def build_play(self, destination: PlayNode, **kwargs):
         """
 
-        :param counter:
         :param destination:
         :param kwargs:
         :return:
@@ -353,7 +346,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             )
 
             # edge from root node to play
-            playbook_to_play_label = f"{counter} {destination.name}"
+            playbook_to_play_label = f"{destination.index} {destination.name}"
             self.digraph.edge(
                 self.playbook_node.id,
                 destination.id,
@@ -366,9 +359,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
             )
 
             # pre_tasks
-            for pre_task_counter, pre_task in enumerate(destination.pre_tasks, 1):
+            for pre_task in destination.pre_tasks:
                 self.build_node(
-                    counter=pre_task_counter,
                     source=destination,
                     destination=pre_task,
                     color=color,
@@ -379,9 +371,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
                 )
 
             # roles
-            for role_counter, role in enumerate(destination.roles, 1):
+            for role in destination.roles:
                 self.build_role(
-                    counter=role_counter + len(destination.pre_tasks),
                     source=destination,
                     destination=role,
                     color=color,
@@ -391,11 +382,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
                 )
 
             # tasks
-            for task_counter, task in enumerate(destination.tasks, 1):
+            for task in destination.tasks:
                 self.build_node(
-                    counter=len(destination.pre_tasks)
-                    + len(destination.roles)
-                    + task_counter,
                     source=destination,
                     destination=task,
                     fontcolor=play_font_color,
@@ -406,12 +394,8 @@ class GraphvizGraphBuilder(PlaybookBuilder):
                 )
 
             # post_tasks
-            for post_task_counter, post_task in enumerate(destination.post_tasks, 1):
+            for post_task in destination.post_tasks:
                 self.build_node(
-                    counter=len(destination.pre_tasks)
-                    + len(destination.roles)
-                    + len(destination.tasks)
-                    + post_task_counter,
                     source=destination,
                     destination=post_task,
                     fontcolor=play_font_color,

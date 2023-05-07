@@ -31,6 +31,7 @@ class Node:
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         """
 
@@ -49,9 +50,12 @@ class Node:
 
         # Get the node position in the parsed files. Format: (path,line,column)
         self.path = self.line = self.column = None
-        self.retrieve_position()
+        self.set_position()
 
-    def retrieve_position(self):
+        # The index of this node in the parent node if it has one (starting from 1)
+        self.index: int = index
+
+    def set_position(self):
         """
         Set the path of this based on the raw object. Not all objects have path
         :return:
@@ -103,6 +107,7 @@ class CompositeNode(Node):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         supported_compositions: List[str] = None,
     ):
         """
@@ -113,7 +118,14 @@ class CompositeNode(Node):
         Ansible side
         :param supported_compositions: The list of the supported compositions for this composite node.
         """
-        super().__init__(node_name, node_id, when, raw_object, parent)
+        super().__init__(
+            node_name=node_name,
+            node_id=node_id,
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            index=index,
+        )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
@@ -129,6 +141,8 @@ class CompositeNode(Node):
             raise Exception(
                 f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
             )
+        # The node index is position in the composition regardless of the type of the node
+        node.index = sum(map(lambda x: len(x), self._compositions.values())) + 1
         self._compositions[target_composition].append(node)
 
     def get_all_tasks(self) -> List["TaskNode"]:
@@ -188,9 +202,15 @@ class CompositeTasksNode(CompositeNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         super().__init__(
-            node_name, node_id, when=when, raw_object=raw_object, parent=parent
+            node_name=node_name,
+            node_id=node_id,
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            index=index,
         )
         self._supported_compositions = ["tasks"]
 
@@ -218,17 +238,23 @@ class PlaybookNode(CompositeNode):
     """
 
     def __init__(
-        self, node_name: str, node_id: str = None, when: str = "", raw_object=None
+        self,
+        node_name: str,
+        node_id: str = None,
+        when: str = "",
+        raw_object=None,
+        index: int = None,
     ):
         super().__init__(
-            node_name,
-            node_id or generate_id("playbook_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("playbook_"),
             when=when,
             raw_object=raw_object,
+            index=index,
             supported_compositions=["plays"],
         )
 
-    def retrieve_position(self):
+    def set_position(self):
         """
         Playbooks only have path as position
         :return:
@@ -284,6 +310,7 @@ class PlayNode(CompositeNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         hosts: List[str] = None,
     ):
         """
@@ -297,6 +324,7 @@ class PlayNode(CompositeNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
             supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
         )
         self.hosts = hosts or []
@@ -331,13 +359,15 @@ class BlockNode(CompositeTasksNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         super().__init__(
-            node_name,
-            node_id or generate_id("block_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("block_"),
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
 
@@ -353,6 +383,7 @@ class TaskNode(Node):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         """
 
@@ -361,11 +392,12 @@ class TaskNode(Node):
         :param raw_object:
         """
         super().__init__(
-            node_name,
-            node_id or generate_id("task_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("task_"),
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
 
@@ -381,6 +413,7 @@ class RoleNode(CompositeTasksNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         include_role: bool = False,
     ):
         """
@@ -396,9 +429,10 @@ class RoleNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
-    def retrieve_position(self):
+    def set_position(self):
         """
         Retrieve the position depending on whether it's an include_role or not
         :return:
@@ -408,4 +442,4 @@ class RoleNode(CompositeTasksNode):
             # on the disk
             self.path = self.raw_object._role_path
         else:
-            super().retrieve_position()
+            super().set_position()

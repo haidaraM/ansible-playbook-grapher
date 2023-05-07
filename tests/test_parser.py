@@ -56,13 +56,26 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     play_node = playbook_node.plays[0]
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert play_node.line == 2
+    assert play_node.index == 1
 
     pre_tasks = play_node.pre_tasks
-    tasks = play_node.tasks
-    post_tasks = play_node.post_tasks
     assert len(pre_tasks) == 2
+    assert pre_tasks[0].index == 1, "The index of the first pre_task should be 1"
+    assert pre_tasks[1].index == 2, "The index of the second pre_task should be 2"
+
+    tasks = play_node.tasks
     assert len(tasks) == 4
+    for task_counter, task in enumerate(tasks):
+        assert (
+            task.index == task_counter + len(pre_tasks) + 1
+        ), "The index of the task should start after the pre_tasks"
+
+    post_tasks = play_node.post_tasks
     assert len(post_tasks) == 2
+    for post_task_counter, task in enumerate(post_tasks):
+        assert (
+            task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1
+        ), "The index of the post task should start after the pre_tasks and tasks"
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_roles.yml"]], indirect=True)
@@ -76,6 +89,8 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0]
+    assert play_node.index == 1
+
     assert len(play_node.roles) == 2
 
     fake_role = play_node.roles[0]
@@ -84,6 +99,18 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     assert fake_role.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
     assert fake_role.line is None
     assert fake_role.column is None
+    assert fake_role.index == 3
+
+    for task_counter, task in enumerate(fake_role.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the role should start at 1"
+
+    display_some_facts = play_node.roles[1]
+    for task_counter, task in enumerate(display_some_facts.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the role the should start at 1"
 
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
@@ -202,6 +229,11 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert isinstance(first_block, BlockNode)
     assert first_block.name == "Install Apache"
     assert len(first_block.tasks) == 4
+    assert first_block.index == 4
+    for task_counter, task in enumerate(first_block.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the block should start at 1"
 
     # Check the second block (nested block)
     nested_block = first_block.tasks[2]
@@ -209,9 +241,16 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert len(nested_block.tasks) == 2
     assert nested_block.tasks[0].name == "get_url"
     assert nested_block.tasks[1].name == "command"
+    assert nested_block.index == 3
+
+    for task_counter, task in enumerate(nested_block.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the block should start at 1"
 
     # Check the post task
     assert post_tasks[0].name == "Debug"
+    assert post_tasks[0].index == 6
 
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)

@@ -70,7 +70,6 @@ class PlaybookBuilder(ABC):
 
     def build_node(
         self,
-        counter: int,
         source: Node,
         destination: Node,
         color: str,
@@ -83,13 +82,11 @@ class PlaybookBuilder(ABC):
         :param destination: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
-        :param counter: The counter for this node
         :return:
         """
 
         if isinstance(destination, BlockNode):
             self.build_block(
-                counter=counter,
                 source=source,
                 destination=destination,
                 color=color,
@@ -98,7 +95,6 @@ class PlaybookBuilder(ABC):
             )
         elif isinstance(destination, RoleNode):
             self.build_role(
-                counter=counter,
                 source=source,
                 destination=destination,
                 color=color,
@@ -107,7 +103,6 @@ class PlaybookBuilder(ABC):
             )
         else:  # This is necessarily a TaskNode
             self.build_task(
-                counter=counter,
                 source=source,
                 destination=destination,
                 color=color,
@@ -121,13 +116,12 @@ class PlaybookBuilder(ABC):
         pass
 
     @abstractmethod
-    def build_play(self, counter: int, destination: PlayNode, **kwargs):
+    def build_play(self, destination: PlayNode, **kwargs):
         pass
 
     @abstractmethod
     def build_task(
         self,
-        counter: int,
         source: Node,
         destination: TaskNode,
         color: str,
@@ -136,7 +130,6 @@ class PlaybookBuilder(ABC):
     ):
         """
         Build a single task to be rendered
-        :param counter: The counter for the task
         :param source: The source node
         :param destination: The task
         :param fontcolor: The font color to apply
@@ -149,7 +142,6 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_role(
         self,
-        counter: int,
         source: Node,
         destination: RoleNode,
         color: str,
@@ -158,7 +150,6 @@ class PlaybookBuilder(ABC):
     ):
         """
         Render a role in the graph
-        :param counter: The counter for this role in the graph
         :param source: The source node
         :param destination: The RoleNode to render
         :param color: The color to apply
@@ -170,7 +161,6 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_block(
         self,
-        counter: int,
         source: Node,
         destination: BlockNode,
         color: str,
@@ -180,7 +170,6 @@ class PlaybookBuilder(ABC):
         """
         Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
-        :param counter: The counter for this block in the graph
         :param source: The source node
         :param destination: The BlockNode to build
         :param color: The color from the play to apply

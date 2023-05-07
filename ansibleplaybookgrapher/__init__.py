@@ -59,7 +59,7 @@ class Grapher:
         :return:
         """
         playbook_nodes = []
-        for playbook_file in self.playbook_filenames:
+        for counter, playbook_file in enumerate(self.playbook_filenames, 1):
             display.display(f"Parsing playbook {playbook_file}")
             playbook_parser = PlaybookParser(
                 playbook_filename=playbook_file,
@@ -69,6 +69,7 @@ class Grapher:
                 group_roles_by_name=group_roles_by_name,
             )
             playbook_node = playbook_parser.parse()
+            playbook_node.index = counter
             playbook_nodes.append(playbook_node)
 
             # Update the usage of the roles
