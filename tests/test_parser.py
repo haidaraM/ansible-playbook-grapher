@@ -52,17 +52,33 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert playbook_node.line == 1
     assert playbook_node.column == 1
+    assert (
+        playbook_node.index is None
+    ), "The index of the playbook should be None (it has no parent)"
 
     play_node = playbook_node.plays[0]
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert play_node.line == 2
+    assert play_node.index == 1
 
     pre_tasks = play_node.pre_tasks
-    tasks = play_node.tasks
-    post_tasks = play_node.post_tasks
     assert len(pre_tasks) == 2
+    assert pre_tasks[0].index == 1, "The index of the first pre_task should be 1"
+    assert pre_tasks[1].index == 2, "The index of the second pre_task should be 2"
+
+    tasks = play_node.tasks
     assert len(tasks) == 4
+    for task_counter, task in enumerate(tasks):
+        assert (
+            task.index == task_counter + len(pre_tasks) + 1
+        ), "The index of the task should start after the pre_tasks"
+
+    post_tasks = play_node.post_tasks
     assert len(post_tasks) == 2
+    for post_task_counter, task in enumerate(post_tasks):
+        assert (
+            task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1
+        ), "The index of the post task should start after the pre_tasks and tasks"
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_roles.yml"]], indirect=True)
@@ -76,6 +92,8 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     playbook_node = parser.parse()
     assert len(playbook_node.plays) == 1
     play_node = playbook_node.plays[0]
+    assert play_node.index == 1
+
     assert len(play_node.roles) == 2
 
     fake_role = play_node.roles[0]
@@ -84,6 +102,18 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     assert fake_role.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
     assert fake_role.line is None
     assert fake_role.column is None
+    assert fake_role.index == 3
+
+    for task_counter, task in enumerate(fake_role.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the role should start at 1"
+
+    display_some_facts = play_node.roles[1]
+    for task_counter, task in enumerate(display_some_facts.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the role the should start at 1"
 
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
@@ -202,6 +232,11 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert isinstance(first_block, BlockNode)
     assert first_block.name == "Install Apache"
     assert len(first_block.tasks) == 4
+    assert first_block.index == 4
+    for task_counter, task in enumerate(first_block.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the block should start at 1"
 
     # Check the second block (nested block)
     nested_block = first_block.tasks[2]
@@ -209,9 +244,16 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert len(nested_block.tasks) == 2
     assert nested_block.tasks[0].name == "get_url"
     assert nested_block.tasks[1].name == "command"
+    assert nested_block.index == 3
+
+    for task_counter, task in enumerate(nested_block.tasks):
+        assert (
+            task.index == task_counter + 1
+        ), "The index of the task in the block should start at 1"
 
     # Check the post task
     assert post_tasks[0].name == "Debug"
+    assert post_tasks[0].index == 6
 
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
@@ -219,29 +261,29 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     [
         "group_roles_by_name",
         "roles_number",
-        "fake_role_usage",
-        "display_some_facts_usage",
-        "nested_include_role",
+        "nb_fake_role",
+        "nb_display_some_facts",
+        "nb_nested_include_role",
     ],
-    [(False, 8, 1, 1, 1), (True, 3, 3, 4, 1)],
+    [(False, 8, 1, 1, 1), (True, 3, 3, 3, 1)],
     ids=["no_group", "group"],
 )
-def test_roles_usage(
+def test_roles_usage_multi_plays(
     grapher_cli: PlaybookGrapherCLI,
-    roles_number,
+    roles_number: int,
     group_roles_by_name: bool,
-    fake_role_usage,
-    display_some_facts_usage,
-    nested_include_role,
+    nb_fake_role: int,
+    nb_display_some_facts: int,
+    nb_nested_include_role: int,
 ):
     """
-
+    Test the role_usages method for multiple plays referencing the same roles
     :param grapher_cli:
     :param roles_number: The number of uniq roles in the graph
     :param group_roles_by_name: flag to enable grouping roles or not
-    :param fake_role_usage: number of usages for the role fake_role
-    :param display_some_facts_usage: number of usages for the role display_some_facts
-    :param nested_include_role: number of usages for the role nested_include_role
+    :param nb_fake_role: number of usages for the role fake_role
+    :param nb_display_some_facts: number of usages for the role display_some_facts
+    :param nb_nested_include_role: number of usages for the role nested_include_role
     :return:
     """
     parser = PlaybookParser(
@@ -253,9 +295,9 @@ def test_roles_usage(
     roles_usage = playbook_node.roles_usage()
 
     expectation = {
-        "fake_role": fake_role_usage,
-        "display_some_facts": display_some_facts_usage,
-        "nested_include_role": nested_include_role,
+        "fake_role": nb_fake_role,
+        "display_some_facts": nb_display_some_facts,
+        "nested_include_role": nb_nested_include_role,
     }
 
     assert roles_number == len(
@@ -271,7 +313,34 @@ def test_roles_usage(
 
         assert (
             expectation.get(role.name) == nb_plays_for_the_role
-        ), f"The role {role.name} is used {fake_role_usage} times in the play instead of {nb_plays_for_the_role}"
+        ), f"The role '{role.name}' is used {nb_plays_for_the_role} times but we expect {expectation.get(role.name)}"
+
+
+@pytest.mark.parametrize("grapher_cli", [["group-roles-by-name.yml"]], indirect=True)
+@pytest.mark.parametrize(
+    [
+        "group_roles_by_name",
+    ],
+    [(False,), (True,)],
+    ids=["no_group", "group"],
+)
+def test_roles_usage_single_play(
+    grapher_cli: PlaybookGrapherCLI, group_roles_by_name: bool
+):
+    """
+    Test the role_usages method for a single play using the same roles multiple times.
+    The role usage should always be one regardless of the number of usages
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbook_filenames[0],
+        include_role_tasks=True,
+        group_roles_by_name=group_roles_by_name,
+    )
+    playbook_node = parser.parse()
+    roles_usage = playbook_node.roles_usage()
+    for role, plays in roles_usage.items():
+        assert len(plays) == 1, "The number of plays should be equal to 1"
 
 
 @pytest.mark.parametrize("grapher_cli", [["roles_dependencies.yml"]], indirect=True)

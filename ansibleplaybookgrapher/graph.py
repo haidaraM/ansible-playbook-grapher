@@ -14,14 +14,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, ItemsView, Set, Type
+from typing import Dict, List, Set, Type, Tuple
 
-from ansibleplaybookgrapher.utils import generate_id
+from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
 class Node:
     """
-    A node in the graph. Everything of the final graph is a node: playbook, plays, edges, tasks and roles.
+    A node in the graph. Everything of the final graph is a node: playbook, plays, tasks and roles.
     """
 
     def __init__(
@@ -31,6 +31,7 @@ class Node:
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         """
 
@@ -39,18 +40,22 @@ class Node:
         :param when: The conditional attached to the node
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
-        :param parent: The parent of this node
+        :param parent: The parent node of this node
         """
         self.name = node_name
         self.parent = parent
         self.id = node_id
         self.when = when
         self.raw_object = raw_object
-        # Trying to get the object position in the parsed files. Format: (path,line,column)
-        self.path = self.line = self.column = None
-        self.retrieve_position()
 
-    def retrieve_position(self):
+        # Get the node position in the parsed files. Format: (path,line,column)
+        self.path = self.line = self.column = None
+        self.set_position()
+
+        # The index of this node in the parent node if it has one (starting from 1)
+        self.index: int = index
+
+    def set_position(self):
         """
         Set the path of this based on the raw object. Not all objects have path
         :return:
@@ -58,9 +63,10 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def get_first_parent_matching_type(self, node_type: Type) -> "Type":
+    def get_first_parent_matching_type(self, node_type: Type) -> Type:
         """
         Get the first parent of this node matching the given type
+        :param node_type: The type of the parent to get
         :return:
         """
         current_parent = self.parent
@@ -87,7 +93,11 @@ class Node:
 
 class CompositeNode(Node):
     """
-    A node that composed of multiple of nodes.
+    A node composed of multiple of nodes:
+     - playbook containing plays
+     - play containing tasks
+     - role containing tasks
+     - block containing tasks
     """
 
     def __init__(
@@ -97,6 +107,7 @@ class CompositeNode(Node):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         supported_compositions: List[str] = None,
     ):
         """
@@ -105,20 +116,21 @@ class CompositeNode(Node):
         :param node_id:
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
-        :param supported_compositions:
+        :param supported_compositions: The list of the supported compositions for this composite node.
         """
-        super().__init__(node_name, node_id, when, raw_object, parent)
+        super().__init__(
+            node_name=node_name,
+            node_id=node_id,
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            index=index,
+        )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition.
         self._compositions = defaultdict(list)  # type: Dict[str, List]
-
-    def items(self) -> ItemsView[str, List[Node]]:
-        """
-        Return a view object (list of tuples) of all the nodes inside this composite node. The first element of the
-        tuple is the composition name and the second one a list of nodes
-        :return:
-        """
-        return self._compositions.items()
+        # Used to count the number of nodes in this composite node
+        self._node_counter = 0
 
     def add_node(self, target_composition: str, node: Node):
         """
@@ -131,11 +143,14 @@ class CompositeNode(Node):
             raise Exception(
                 f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
             )
+        # The node index is position in the composition regardless of the type of the node
+        node.index = self._node_counter + 1
         self._compositions[target_composition].append(node)
+        self._node_counter += 1
 
     def get_all_tasks(self) -> List["TaskNode"]:
         """
-        Return all the TaskNode inside a composite node
+        Return all the TaskNode inside this composite node
         :return:
         """
         tasks: List[TaskNode] = []
@@ -148,7 +163,7 @@ class CompositeNode(Node):
         :param task_acc:
         :return:
         """
-        items = self.items()
+        items = self._compositions.items()
         for _, nodes in items:
             for node in nodes:
                 if isinstance(node, TaskNode):
@@ -158,7 +173,7 @@ class CompositeNode(Node):
 
     def links_structure(self) -> Dict[Node, List[Node]]:
         """
-        Return a representation of the composite node where each key of the dictionary is the node id and the
+        Return a representation of the composite node where each key of the dictionary is the node and the
          value is the list of the linked nodes
         :return:
         """
@@ -190,9 +205,15 @@ class CompositeTasksNode(CompositeNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         super().__init__(
-            node_name, node_id, when=when, raw_object=raw_object, parent=parent
+            node_name=node_name,
+            node_id=node_id,
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            index=index,
         )
         self._supported_compositions = ["tasks"]
 
@@ -220,17 +241,23 @@ class PlaybookNode(CompositeNode):
     """
 
     def __init__(
-        self, node_name: str, node_id: str = None, when: str = "", raw_object=None
+        self,
+        node_name: str,
+        node_id: str = None,
+        when: str = "",
+        raw_object=None,
+        index: int = None,
     ):
         super().__init__(
-            node_name,
-            node_id or generate_id("playbook_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("playbook_"),
             when=when,
             raw_object=raw_object,
+            index=index,
             supported_compositions=["plays"],
         )
 
-    def retrieve_position(self):
+    def set_position(self):
         """
         Playbooks only have path as position
         :return:
@@ -248,22 +275,22 @@ class PlaybookNode(CompositeNode):
         """
         return self._compositions["plays"]
 
-    def roles_usage(self) -> Dict["RoleNode", List[Node]]:
+    def roles_usage(self) -> Dict["RoleNode", Set["PlayNode"]]:
         """
-        For each role in the graph, return the plays that reference the role
-        :return: A dict with key as role node and value the list of plays
+        For each role in the playbook, get the uniq plays that reference the role
+        :return: A dict with key as role node and value the list of uniq plays that use it
         """
 
-        usages = defaultdict(list)
+        usages = defaultdict(set)
         links = self.links_structure()
 
         for node, linked_nodes in links.items():
             for linked_node in linked_nodes:
                 if isinstance(linked_node, RoleNode):
                     if isinstance(node, PlayNode):
-                        usages[linked_node].append(node)
+                        usages[linked_node].add(node)
                     else:
-                        usages[linked_node].append(
+                        usages[linked_node].add(
                             node.get_first_parent_matching_type(PlayNode)
                         )
 
@@ -286,6 +313,7 @@ class PlayNode(CompositeNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         hosts: List[str] = None,
     ):
         """
@@ -299,9 +327,11 @@ class PlayNode(CompositeNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
             supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
         )
         self.hosts = hosts or []
+        self.colors: Tuple[str, str] = get_play_colors(self.id)
 
     @property
     def roles(self) -> List["RoleNode"]:
@@ -332,13 +362,15 @@ class BlockNode(CompositeTasksNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         super().__init__(
-            node_name,
-            node_id or generate_id("block_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("block_"),
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
 
@@ -354,6 +386,7 @@ class TaskNode(Node):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
     ):
         """
 
@@ -362,11 +395,12 @@ class TaskNode(Node):
         :param raw_object:
         """
         super().__init__(
-            node_name,
-            node_id or generate_id("task_"),
+            node_name=node_name,
+            node_id=node_id or generate_id("task_"),
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
 
@@ -382,6 +416,7 @@ class RoleNode(CompositeTasksNode):
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
+        index: int = None,
         include_role: bool = False,
     ):
         """
@@ -397,9 +432,10 @@ class RoleNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            index=index,
         )
 
-    def retrieve_position(self):
+    def set_position(self):
         """
         Retrieve the position depending on whether it's an include_role or not
         :return:
@@ -409,4 +445,4 @@ class RoleNode(CompositeTasksNode):
             # on the disk
             self.path = self.raw_object._role_path
         else:
-            super().retrieve_position()
+            super().set_position()

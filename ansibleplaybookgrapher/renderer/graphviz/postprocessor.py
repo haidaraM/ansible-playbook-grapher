@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ from svg.path import parse_path
 from ansibleplaybookgrapher.graph import PlaybookNode
 
 display = Display()
-DISPLAY_PREFIX = "postprocessor:"
 
 JQUERY = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -35,15 +34,15 @@ def _read_data(filename: str) -> str:
     :return:
     """
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, "data", filename)
+    javascript_path = os.path.join(current_dir, "../../data", filename)
 
     with open(javascript_path) as javascript:
         return javascript.read()
 
 
-class GraphVizPostProcessor:
+class GraphvizPostProcessor:
     """
-    Post process the svg by adding some javascript and css
+    Post process the svg by adding some javascript, css and hover effects
     """
 
     def __init__(self, svg_path: str):
@@ -175,7 +174,7 @@ class GraphVizPostProcessor:
         offset_factor = 0.76
 
         start_offset = segment_length * offset_factor - text_length
-        msg = f"{DISPLAY_PREFIX} {len(path_segments)} segment(s) found for the path '{path_element.get('id')}', "
+        msg = f"{len(path_segments)} segment(s) found for the path '{path_element.get('id')}', "
         msg += f"segment_length={segment_length}, start_offset={start_offset}, text_length={text_length}"
         display.vvvvv(msg)
         return str(start_offset)

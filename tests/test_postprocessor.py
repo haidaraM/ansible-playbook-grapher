@@ -4,7 +4,10 @@ import pytest
 from lxml import etree
 
 from ansibleplaybookgrapher.graph import PlaybookNode, PlayNode, TaskNode
-from ansibleplaybookgrapher.postprocessor import GraphVizPostProcessor, SVG_NAMESPACE
+from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
+    GraphvizPostProcessor,
+    SVG_NAMESPACE,
+)
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
@@ -20,7 +23,7 @@ def fixture_simple_postprocessor(request):
         # if the svg is not provided, we use the simple one
         svg_path = SIMPLE_PLAYBOOK_SVG
 
-    post_processor = GraphVizPostProcessor(svg_path=svg_path)
+    post_processor = GraphvizPostProcessor(svg_path=svg_path)
     return post_processor
 
 
@@ -39,7 +42,7 @@ def _assert_common_svg(svg_root: Element):
     assert svg_root[2].get("id") == "my_css"
 
 
-def test_post_processor_insert_tag(post_processor: GraphVizPostProcessor):
+def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor):
     """
     Test method insert_tag of the PostProcessor
     :param post_processor:
@@ -51,7 +54,7 @@ def test_post_processor_insert_tag(post_processor: GraphVizPostProcessor):
     assert post_processor.root[0].get("id") == "toto"
 
 
-def test_post_processor_write(post_processor: GraphVizPostProcessor, tmpdir):
+def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir):
     """
     Test method write of the PostProcessor
     :param post_processor:
@@ -65,7 +68,7 @@ def test_post_processor_write(post_processor: GraphVizPostProcessor, tmpdir):
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_without_graph_representation(
-    post_processor: GraphVizPostProcessor, tmpdir
+    post_processor: GraphvizPostProcessor, tmpdir
 ):
     """
     Test the post processor without a graph representation
@@ -90,7 +93,7 @@ def test_post_processor_without_graph_representation(
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_with_graph_representation(
-    post_processor: GraphVizPostProcessor, tmpdir
+    post_processor: GraphvizPostProcessor, tmpdir
 ):
     """
     Test the post processor for a graph representation
