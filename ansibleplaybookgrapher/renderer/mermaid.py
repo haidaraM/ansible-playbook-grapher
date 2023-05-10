@@ -3,12 +3,12 @@ from typing import Dict, Set, List
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import BlockNode, RoleNode, TaskNode, PlayNode, PlaybookNode
-from ansibleplaybookgrapher.renderer import PlaybookBuilder
+from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 
 display = Display()
 
 
-class MermaidFlowChartRenderer:
+class MermaidFlowChartRenderer(Renderer):
     def __init__(
         self,
         playbook_nodes: List[PlaybookNode],
@@ -22,6 +22,7 @@ class MermaidFlowChartRenderer:
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str],
         output_filename: str,
+        view: bool,
         **kwargs,
     ) -> str:
         """
@@ -29,6 +30,7 @@ class MermaidFlowChartRenderer:
         :param open_protocol_handler:
         :param open_protocol_custom_formats:
         :param output_filename: without any extension
+        :param view:
         :param kwargs:
         :return:
         """
@@ -125,7 +127,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # traverse the play
         self.traverse_play(play_node)
         self.mermaid_code += f"\t%% End of play {play_node.name}\n"
-        self.mermaid_code += "\n"
+        self.mermaid_code += "\n\n"
 
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """

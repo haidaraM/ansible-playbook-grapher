@@ -25,7 +25,7 @@ from ansibleplaybookgrapher.graph import (
     BlockNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import PlaybookBuilder
+from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphvizPostProcessor
 
 display = Display()
@@ -39,7 +39,7 @@ DEFAULT_GRAPH_ATTR = {
 }
 
 
-class GraphvizRenderer:
+class GraphvizRenderer(Renderer):
     def __init__(
         self,
         playbook_nodes: List[PlaybookNode],
@@ -52,7 +52,6 @@ class GraphvizRenderer:
         self,
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str],
-        save_dot_file: bool,
         output_filename: str,
         view: bool,
         **kwargs,
@@ -60,6 +59,8 @@ class GraphvizRenderer:
         """
         :return: The filename where the playbooks where rendered
         """
+        save_dot_file = kwargs.get("save_dot_file", False)
+
         # Set of the roles that have been built so far for all the playbooks
         roles_built = set()
         digraph = Digraph(

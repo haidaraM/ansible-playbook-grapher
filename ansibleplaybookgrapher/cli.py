@@ -59,7 +59,7 @@ class PlaybookGrapherCLI(CLI):
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
         )
-        # TODO: add condition to choose the renderer
+
         if self.options.renderer == "graphviz":
             renderer = GraphvizRenderer(
                 playbook_nodes=playbook_nodes,
@@ -68,9 +68,9 @@ class PlaybookGrapherCLI(CLI):
             output_path = renderer.render(
                 open_protocol_handler=self.options.open_protocol_handler,
                 open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-                save_dot_file=self.options.save_dot_file,
                 output_filename=self.options.output_filename,
                 view=self.options.view,
+                save_dot_file=self.options.save_dot_file,
             )
 
             return output_path
@@ -83,6 +83,7 @@ class PlaybookGrapherCLI(CLI):
                 open_protocol_handler=self.options.open_protocol_handler,
                 open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                 output_filename=self.options.output_filename,
+                view=self.options.view,
             )
             return output_path
 

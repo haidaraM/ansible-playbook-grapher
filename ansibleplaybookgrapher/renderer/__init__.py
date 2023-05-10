@@ -41,6 +41,36 @@ OPEN_PROTOCOL_HANDLERS = {
 }
 
 
+class Renderer(ABC):
+    def __init__(
+        self,
+        playbook_nodes: PlaybookNode,
+        roles_usage: Dict[RoleNode, Set[PlayNode]],
+    ):
+        self.playbook_nodes = playbook_nodes
+        self.roles_usage = roles_usage
+
+    @abstractmethod
+    def render(
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        output_filename: str,
+        view: bool,
+        **kwargs,
+    ) -> str:
+        """
+        Render the playbooks to a file.
+        :param open_protocol_handler: The protocol handler name to use
+        :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
+        :param output_filename: without any extension
+        :param view: Whether to open the rendered file in the default viewer
+        :param kwargs:
+        :return: The filename of the rendered file
+        """
+        pass
+
+
 class PlaybookBuilder(ABC):
     def __init__(
         self,
