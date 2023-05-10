@@ -318,8 +318,7 @@ class PlaybookParser(BaseParser):
         for task_or_block in block.block:
             if hasattr(task_or_block, "loop") and task_or_block.loop:
                 display.warning(
-                    "Looping on tasks or roles are not supported for the moment. "
-                    f"Only the task having the loop argument will be added to the graph."
+                    "Looping on tasks or roles are not supported for the moment. Only the task having the loop argument will be added to the graph."
                 )
 
             if isinstance(task_or_block, Block):
