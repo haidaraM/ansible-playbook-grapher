@@ -41,21 +41,21 @@ DEFAULT_GRAPH_ATTR = {
 
 class GraphvizRenderer:
     def __init__(
-            self,
-            playbook_nodes: List[PlaybookNode],
-            roles_usage: Dict["RoleNode", Set[PlayNode]],
+        self,
+        playbook_nodes: List[PlaybookNode],
+        roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
     def render(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            save_dot_file: bool,
-            output_filename: str,
-            view: bool,
-            **kwargs,
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        save_dot_file: bool,
+        output_filename: str,
+        view: bool,
+        **kwargs,
     ) -> str:
         """
         :return: The filename where the playbooks where rendered
@@ -108,13 +108,13 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
     """
 
     def __init__(
-            self,
-            playbook_node: PlaybookNode,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            roles_usage: Dict[RoleNode, Set[PlayNode]],
-            roles_built: Set[RoleNode],
-            digraph: Digraph,
+        self,
+        playbook_node: PlaybookNode,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        roles_usage: Dict[RoleNode, Set[PlayNode]],
+        roles_built: Set[RoleNode],
+        digraph: Digraph,
     ):
         """
 
@@ -188,7 +188,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         # BlockNode is a special node: a cluster is created instead of a normal node
         with digraph.subgraph(
-                name=f"cluster_{block_node.id}"
+            name=f"cluster_{block_node.id}"
         ) as cluster_block_subgraph:
             # block node
             cluster_block_subgraph.node(

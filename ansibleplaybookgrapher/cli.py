@@ -79,9 +79,11 @@ class PlaybookGrapherCLI(CLI):
                 playbook_nodes=playbook_nodes,
                 roles_usage=grapher.roles_usage,
             )
-            output_path = renderer.render(open_protocol_handler=self.options.open_protocol_handler,
-                                          open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-                                          output_filename=self.options.output_filename)
+            output_path = renderer.render(
+                open_protocol_handler=self.options.open_protocol_handler,
+                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                output_filename=self.options.output_filename,
+            )
             return output_path
 
     def _add_my_options(self):

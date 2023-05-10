@@ -10,19 +10,19 @@ display = Display()
 
 class MermaidFlowChartRenderer:
     def __init__(
-            self,
-            playbook_nodes: List[PlaybookNode],
-            roles_usage: Dict["RoleNode", Set[PlayNode]],
+        self,
+        playbook_nodes: List[PlaybookNode],
+        roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
     def render(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            output_filename: str,
-            **kwargs
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        output_filename: str,
+        **kwargs,
     ) -> str:
         """
 
@@ -53,18 +53,20 @@ class MermaidFlowChartRenderer:
         with open(final_output_filename, "w") as f:
             f.write(mermaid_code)
 
-        display.display(f"Mermaid code written to {final_output_filename}", color="green")
+        display.display(
+            f"Mermaid code written to {final_output_filename}", color="green"
+        )
         return final_output_filename
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     def __init__(
-            self,
-            playbook_node: PlaybookNode,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            roles_usage: Dict[RoleNode, Set[PlayNode]],
-            roles_built: Set[RoleNode],
+        self,
+        playbook_node: PlaybookNode,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        roles_usage: Dict[RoleNode, Set[PlayNode]],
+        roles_built: Set[RoleNode],
     ):
         super().__init__(
             playbook_node,
@@ -98,7 +100,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.mermaid_code += f'\t{play_node.id}["{play_node.name}"]\n'
 
         # From playbook to play
-        self.mermaid_code += f'\t{self.playbook_node.id} --> |{play_node.index}| {play_node.id}\n'
+        self.mermaid_code += (
+            f"\t{self.playbook_node.id} --> |{play_node.index}| {play_node.id}\n"
+        )
 
         # traverse the play
         self.traverse_play(play_node)
@@ -114,11 +118,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         node_label_prefix = kwargs.get("node_label_prefix", "")
         # Task node
-        self.mermaid_code += f'\t{task_node.id}["{node_label_prefix}{task_node.name}"]\n'
+        self.mermaid_code += (
+            f'\t{task_node.id}["{node_label_prefix}{task_node.name}"]\n'
+        )
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes
-        when = task_node.when.replace("\"", "'")
+        when = task_node.when.replace('"', "'")
         # From parent to task
-        self.mermaid_code += f'\t{task_node.parent.id} --> |"{task_node.index} {when}"| {task_node.id}\n'
+        self.mermaid_code += (
+            f'\t{task_node.parent.id} --> |"{task_node.index} {when}"| {task_node.id}\n'
+        )
 
     def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
         """
@@ -138,7 +146,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # Role node
         self.mermaid_code += f'\t{role_node.id}("{role_node.name}")\n'
         # from parent to role
-        self.mermaid_code += f'\t{role_node.parent.id} --> |"{role_node.index}"| {role_node.id}\n'
+        self.mermaid_code += (
+            f'\t{role_node.parent.id} --> |"{role_node.index}"| {role_node.id}\n'
+        )
 
         # role tasks
         for role_task in role_node.tasks:
@@ -161,7 +171,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # Block node
         self.mermaid_code += f'\t{block_node.id}["[block] {block_node.name}"]\n'
         # from parent to block
-        self.mermaid_code += f'\t{block_node.parent.id} --> |"{block_node.index}"| {block_node.id}\n'
+        self.mermaid_code += (
+            f'\t{block_node.parent.id} --> |"{block_node.index}"| {block_node.id}\n'
+        )
 
         for task in block_node.tasks:
             self.build_node(
