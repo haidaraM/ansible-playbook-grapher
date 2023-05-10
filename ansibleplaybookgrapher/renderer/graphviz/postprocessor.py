@@ -40,9 +40,9 @@ def _read_data(filename: str) -> str:
         return javascript.read()
 
 
-class GraphVizPostProcessor:
+class GraphvizPostProcessor:
     """
-    Post process the svg by adding some javascript and css
+    Post process the svg by adding some javascript, css and hover effects
     """
 
     def __init__(self, svg_path: str):

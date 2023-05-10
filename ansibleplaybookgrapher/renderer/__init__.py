@@ -48,10 +48,10 @@ class PlaybookBuilder(ABC):
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str] = None,
         roles_usage: Dict[RoleNode, Set[PlayNode]] = None,
-        roles_built: Set = None,
+        roles_built: Set[Node] = None,
     ):
         """
-
+        The base class for all playbook builders.
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
@@ -94,10 +94,21 @@ class PlaybookBuilder(ABC):
 
     @abstractmethod
     def build_playbook(self, **kwargs):
+        """
+        Build the whole playbook
+        :param kwargs:
+        :return:
+        """
         pass
 
     @abstractmethod
     def build_play(self, play_node: PlayNode, **kwargs):
+        """
+        Build a single play to be rendered
+        :param play_node:
+        :param kwargs:
+        :return:
+        """
         pass
 
     @abstractmethod

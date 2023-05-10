@@ -22,12 +22,11 @@ from ansibleplaybookgrapher.graph import (
     PlaybookNode,
     PlayNode,
     RoleNode,
-    Node,
     BlockNode,
     TaskNode,
 )
 from ansibleplaybookgrapher.renderer import PlaybookBuilder
-from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphVizPostProcessor
+from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphvizPostProcessor
 
 display = Display()
 
@@ -69,7 +68,7 @@ class GraphvizRenderer:
             edge_attr=DEFAULT_EDGE_ATTR,
         )
         for playbook_node in self.playbook_nodes:
-            builder = GraphvizGraphBuilder(
+            builder = GraphvizPlaybookBuilder(
                 playbook_node,
                 open_protocol_handler=open_protocol_handler,
                 open_protocol_custom_formats=open_protocol_custom_formats,
@@ -88,7 +87,7 @@ class GraphvizRenderer:
             view=view,
         )
 
-        post_processor = GraphVizPostProcessor(svg_path=svg_path)
+        post_processor = GraphvizPostProcessor(svg_path=svg_path)
         display.v("Post processing the SVG...")
         post_processor.post_process(self.playbook_nodes)
         post_processor.write()
@@ -103,7 +102,7 @@ class GraphvizRenderer:
         return svg_path
 
 
-class GraphvizGraphBuilder(PlaybookBuilder):
+class GraphvizPlaybookBuilder(PlaybookBuilder):
     """
     Build the graphviz graph
     """
@@ -114,7 +113,7 @@ class GraphvizGraphBuilder(PlaybookBuilder):
         open_protocol_handler: str,
         open_protocol_custom_formats: Dict[str, str],
         roles_usage: Dict[RoleNode, Set[PlayNode]],
-        roles_built: Set,
+        roles_built: Set[RoleNode],
         digraph: Digraph,
     ):
         """
