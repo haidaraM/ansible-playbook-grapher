@@ -26,6 +26,7 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher import __prog__, __version__, Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
+from ansibleplaybookgrapher.renderer.mermaid import MermaidFlowChartRenderer
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
@@ -59,19 +60,29 @@ class PlaybookGrapherCLI(CLI):
             group_roles_by_name=self.options.group_roles_by_name,
         )
         # TODO: add condition to choose the renderer
-        renderer = GraphvizRenderer(
-            playbook_nodes=playbook_nodes,
-            roles_usage=grapher.roles_usage,
-        )
-        output_path = renderer.render(
-            open_protocol_handler=self.options.open_protocol_handler,
-            open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-            save_dot_file=self.options.save_dot_file,
-            output_filename=self.options.output_filename,
-            view=self.options.view,
-        )
+        if self.options.renderer == "graphviz":
+            renderer = GraphvizRenderer(
+                playbook_nodes=playbook_nodes,
+                roles_usage=grapher.roles_usage,
+            )
+            output_path = renderer.render(
+                open_protocol_handler=self.options.open_protocol_handler,
+                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                save_dot_file=self.options.save_dot_file,
+                output_filename=self.options.output_filename,
+                view=self.options.view,
+            )
 
-        return output_path
+            return output_path
+        else:
+            renderer = MermaidFlowChartRenderer(
+                playbook_nodes=playbook_nodes,
+                roles_usage=grapher.roles_usage,
+            )
+            output_path = renderer.render(open_protocol_handler=self.options.open_protocol_handler,
+                                          open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                                          output_filename=self.options.output_filename)
+            return output_path
 
     def _add_my_options(self):
         """
@@ -102,7 +113,7 @@ class PlaybookGrapherCLI(CLI):
             dest="save_dot_file",
             action="store_true",
             default=False,
-            help="Save the dot file used to generate the graph.",
+            help="Save the graphviz dot file used to generate the graph.",
         )
 
         self.parser.add_argument(
@@ -156,6 +167,13 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="When rendering the graph, only a single role will be display for all roles having the same names.",
+        )
+
+        self.parser.add_argument(
+            "--renderer",
+            choices=["graphviz", "mermaid"],
+            default="graphviz",
+            help="The renderer to use to generate the graph. Default: graphviz",
         )
 
         self.parser.add_argument(

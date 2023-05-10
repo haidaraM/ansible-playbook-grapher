@@ -93,11 +93,11 @@ class PlaybookBuilder(ABC):
             )
 
     @abstractmethod
-    def build_playbook(self, **kwargs):
+    def build_playbook(self, **kwargs) -> str:
         """
         Build the whole playbook
         :param kwargs:
-        :return:
+        :return: The rendered playbook as a string
         """
         pass
 
@@ -110,6 +110,53 @@ class PlaybookBuilder(ABC):
         :return:
         """
         pass
+
+    def traverse_play(self, play_node: PlayNode, **kwargs):
+        """
+        Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
+        :param play_node:
+        :param kwargs:
+        :return:
+        """
+        color, play_font_color = play_node.colors
+        # pre_tasks
+        for pre_task in play_node.pre_tasks:
+            self.build_node(
+                node=pre_task,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[pre_task] ",
+                **kwargs,
+            )
+
+        # roles
+        for role in play_node.roles:
+            self.build_role(
+                color=color,
+                fontcolor=play_font_color,
+                role_node=role,
+                **kwargs,
+            )
+
+        # tasks
+        for task in play_node.tasks:
+            self.build_node(
+                node=task,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[task] ",
+                **kwargs,
+            )
+
+        # post_tasks
+        for post_task in play_node.post_tasks:
+            self.build_node(
+                node=post_task,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[post_task] ",
+                **kwargs,
+            )
 
     @abstractmethod
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):

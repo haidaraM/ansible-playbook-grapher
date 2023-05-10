@@ -41,21 +41,21 @@ DEFAULT_GRAPH_ATTR = {
 
 class GraphvizRenderer:
     def __init__(
-        self,
-        playbook_nodes: List[PlaybookNode],
-        roles_usage: Dict["RoleNode", Set[PlayNode]],
+            self,
+            playbook_nodes: List[PlaybookNode],
+            roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
     def render(
-        self,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
-        save_dot_file: bool,
-        output_filename: str,
-        view: bool,
-        **kwargs,
+            self,
+            open_protocol_handler: str,
+            open_protocol_custom_formats: Dict[str, str],
+            save_dot_file: bool,
+            output_filename: str,
+            view: bool,
+            **kwargs,
     ) -> str:
         """
         :return: The filename where the playbooks where rendered
@@ -108,13 +108,13 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
     """
 
     def __init__(
-        self,
-        playbook_node: PlaybookNode,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
-        roles_usage: Dict[RoleNode, Set[PlayNode]],
-        roles_built: Set[RoleNode],
-        digraph: Digraph,
+            self,
+            playbook_node: PlaybookNode,
+            open_protocol_handler: str,
+            open_protocol_custom_formats: Dict[str, str],
+            roles_usage: Dict[RoleNode, Set[PlayNode]],
+            roles_built: Set[RoleNode],
+            digraph: Digraph,
     ):
         """
 
@@ -188,7 +188,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         # BlockNode is a special node: a cluster is created instead of a normal node
         with digraph.subgraph(
-            name=f"cluster_{block_node.id}"
+                name=f"cluster_{block_node.id}"
         ) as cluster_block_subgraph:
             # block node
             cluster_block_subgraph.node(
@@ -219,6 +219,13 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         Render a role in the graph
         :return:
         """
+
+        # check if we already built this role
+        if role_node in self.roles_built:
+            return
+
+        self.roles_built.add(role_node)
+
         digraph = kwargs["digraph"]
 
         if role_node.include_role:  # For include_role, we point to a file
@@ -239,12 +246,6 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
-
-        # check if we already built this role
-        if role_node in self.roles_built:
-            return
-
-        self.roles_built.add(role_node)
 
         plays_using_this_role = self.roles_usage[role_node]
         if len(plays_using_this_role) > 1:
@@ -274,10 +275,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     digraph=role_subgraph,
                 )
 
-    def build_playbook(self, **kwargs):
+    def build_playbook(self, **kwargs) -> str:
         """
         Convert the PlaybookNode to the graphviz dot format
-        :return:
+        :return: The text representation of the graphviz dot format for the playbook
         """
         display.vvv(f"Converting the graph to the dot format for graphviz")
         # root node
@@ -292,6 +293,8 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         for play in self.playbook_node.plays:
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 self.build_play(play, digraph=play_subgraph, **kwargs)
+
+        return self.digraph.source
 
     def build_play(self, play_node: PlayNode, **kwargs):
         """
@@ -320,7 +323,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             URL=self.get_node_url(play_node, "file"),
         )
 
-        # edge from root node to play
+        # from playbook to play
         playbook_to_play_label = f"{play_node.index} {play_node.name}"
         self.digraph.edge(
             self.playbook_node.id,
@@ -333,41 +336,5 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             labeltooltip=playbook_to_play_label,
         )
 
-        # pre_tasks
-        for pre_task in play_node.pre_tasks:
-            self.build_node(
-                node=pre_task,
-                color=color,
-                fontcolor=play_font_color,
-                node_label_prefix="[pre_task] ",
-                **kwargs,
-            )
-
-        # roles
-        for role in play_node.roles:
-            self.build_role(
-                color=color,
-                fontcolor=play_font_color,
-                role_node=role,
-                **kwargs,
-            )
-
-        # tasks
-        for task in play_node.tasks:
-            self.build_node(
-                node=task,
-                color=color,
-                fontcolor=play_font_color,
-                node_label_prefix="[task] ",
-                **kwargs,
-            )
-
-        # post_tasks
-        for post_task in play_node.post_tasks:
-            self.build_node(
-                node=post_task,
-                color=color,
-                fontcolor=play_font_color,
-                node_label_prefix="[post_task] ",
-                **kwargs,
-            )
+        # traverse the play
+        self.traverse_play(play_node, **kwargs)
