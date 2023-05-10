@@ -52,6 +52,9 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert playbook_node.line == 1
     assert playbook_node.column == 1
+    assert (
+        playbook_node.index is None
+    ), "The index of the playbook should be None (it has no parent)"
 
     play_node = playbook_node.plays[0]
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
