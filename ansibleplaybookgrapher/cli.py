@@ -173,7 +173,7 @@ class PlaybookGrapherCLI(CLI):
 
         self.parser.add_argument(
             "--renderer",
-            choices=["graphviz", "mermaid"],
+            choices=["graphviz", "mermaid-flowchart"],
             default="graphviz",
             help="The renderer to use to generate the graph. Default: graphviz",
         )

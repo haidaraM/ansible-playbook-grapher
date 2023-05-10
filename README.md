@@ -86,8 +86,10 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [-o OUTPUT_FILENAME]
                                 [--open-protocol-handler {default,vscode,custom}]
                                 [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
-                                [--group-roles-by-name] [--version] [-t TAGS]
-                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
+                                [--group-roles-by-name]
+                                [--renderer {graphviz,mermaid-flowchart}]
+                                [--version] [-t TAGS] [--skip-tags SKIP_TAGS]
+                                [--vault-id VAULT_IDS]
                                 [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
                                 [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
@@ -97,7 +99,7 @@ Make graphs from your Ansible Playbooks.
 positional arguments:
   playbooks             Playbook(s) to graph
 
-optional arguments:
+options:
   --ask-vault-password, --ask-vault-pass
                         ask for vault password
   --group-roles-by-name
@@ -129,6 +131,9 @@ optional arguments:
                         will be open with VSCode. For 'custom', you need to
                         set a custom format with --open-protocol-custom-
                         formats.
+  --renderer {graphviz,mermaid-flowchart}
+                        The renderer to use to generate the graph. Default:
+                        graphviz
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these
                         values
@@ -148,14 +153,13 @@ optional arguments:
   -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
                         Output filename without the '.svg' extension. Default:
                         <playbook>.svg
-  -s, --save-dot-file   Save the dot file used to generate the graph.
+  -s, --save-dot-file   Save the graphviz dot file used to generate the graph.
   -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
   -v, --verbose         Causes Ansible to print more debug messages. Adding
                         multiple -v will increase the verbosity, the builtin
                         plugins currently evaluate up to -vvvvvv. A reasonable
                         level to start is -vvv, connection debugging might
                         require -vvvv.
-
 ```
 
 ## Configuration: ansible.cfg
