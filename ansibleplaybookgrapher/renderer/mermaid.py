@@ -35,6 +35,10 @@ class MermaidFlowChartRenderer(Renderer):
         :return:
         """
         # TODO: Add support to customize this
+        mermaid_code = "---\n"
+        mermaid_code += "title: Ansible Playbook Grapher\n"
+        mermaid_code += "---\n"
+
         mermaid_code = "%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%\n"
         mermaid_code += "flowchart LR\n"
 
@@ -65,6 +69,9 @@ class MermaidFlowChartRenderer(Renderer):
         display.display(
             f"Mermaid code written to {final_output_filename}", color="green"
         )
+        # TODO: implement the view option
+        #  https://github.com/mermaidjs/mermaid-live-editor/issues/41
+        #  https://mermaid.ink/
         return final_output_filename
 
 
