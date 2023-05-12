@@ -232,10 +232,11 @@ class PlaybookGrapherCLI(CLI):
         self.options = options
 
         if self.options.output_filename is None:
-            # use the first playbook name (without the extension) as output filename
-            self.options.output_filename = os.path.splitext(
-                ntpath.basename(self.options.playbook_filenames[0])
-            )[0]
+            basenames = map(ntpath.basename, self.options.playbook_filenames)
+            basenames_without_ext = "-".join(
+                [os.path.splitext(basename)[0] for basename in basenames]
+            )
+            self.options.output_filename = basenames_without_ext
 
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
