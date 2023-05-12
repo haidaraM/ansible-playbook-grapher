@@ -57,7 +57,7 @@ class PlaybookGrapherCLI(CLI):
 
         display.verbosity = self.options.verbosity
         grapher = Grapher(self.options.playbook_filenames)
-        playbook_nodes = grapher.parse(
+        playbook_nodes, roles_usage = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
@@ -67,7 +67,7 @@ class PlaybookGrapherCLI(CLI):
         if self.options.renderer == "graphviz":
             renderer = GraphvizRenderer(
                 playbook_nodes=playbook_nodes,
-                roles_usage=grapher.roles_usage,
+                roles_usage=roles_usage,
             )
             output_path = renderer.render(
                 open_protocol_handler=self.options.open_protocol_handler,
@@ -81,7 +81,7 @@ class PlaybookGrapherCLI(CLI):
         else:
             renderer = MermaidFlowChartRenderer(
                 playbook_nodes=playbook_nodes,
-                roles_usage=grapher.roles_usage,
+                roles_usage=roles_usage,
             )
             output_path = renderer.render(
                 open_protocol_handler=self.options.open_protocol_handler,

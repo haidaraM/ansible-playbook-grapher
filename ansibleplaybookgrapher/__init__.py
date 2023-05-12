@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 from ansible.utils.display import Display
 
@@ -40,16 +40,13 @@ class Grapher:
         """
         self.playbook_filenames = playbook_filenames
 
-        # The usage of the roles in all playbooks
-        self.roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
-
     def parse(
         self,
         include_role_tasks: bool = False,
         tags: List[str] = None,
         skip_tags: List[str] = None,
         group_roles_by_name: bool = False,
-    ) -> List[PlaybookNode]:
+    ) -> Tuple[List[PlaybookNode], Dict[RoleNode, Set[PlayNode]]]:
         """
         Parses all the provided playbooks
         :param include_role_tasks: Should we include the role tasks
@@ -59,6 +56,8 @@ class Grapher:
         :return:
         """
         playbook_nodes = []
+        roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
+
         for playbook_file in self.playbook_filenames:
             display.display(f"Parsing playbook {playbook_file}")
             playbook_parser = PlaybookParser(
@@ -72,8 +71,6 @@ class Grapher:
             playbook_nodes.append(playbook_node)
 
             # Update the usage of the roles
-            self.roles_usage = merge_dicts(
-                self.roles_usage, playbook_node.roles_usage()
-            )
+            roles_usage = merge_dicts(roles_usage, playbook_node.roles_usage())
 
-        return playbook_nodes
+        return playbook_nodes, roles_usage
