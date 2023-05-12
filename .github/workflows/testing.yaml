@@ -17,6 +17,7 @@ jobs:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
     env:
       SVG_FILES_PATH: tests/generated-svgs
+      MERMAID_FILES_PATH: tests/generated-mermaids
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -75,12 +76,8 @@ jobs:
 #          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
 #          create_branch: true
 #
-#      - name: Publish job summary
-#        env:
-#          SVG_COMMIT_SHA: ${{ steps.commit-svg-files.outputs.commit_hash }}
-#        run: |
-#          env
-#          python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
+      - name: Publish job summary
+        run: python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
       - name: Test installation in virtualenv
         run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}

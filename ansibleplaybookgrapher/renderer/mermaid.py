@@ -144,7 +144,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.traverse_play(play_node)
 
         self.mermaid_code += f"\t%% End of play {play_node.name}\n"
-        self.mermaid_code += "\n\n"
+        self.mermaid_code += "\n"
 
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """
