@@ -62,7 +62,7 @@ class MermaidFlowChartRenderer(Renderer):
             )
 
             mermaid_code += playbook_builder.build_playbook()
-            link_order += playbook_builder.link_order
+            link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
 
         final_output_path_file = Path(f"{output_filename}.mmd")
