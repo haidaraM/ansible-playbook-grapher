@@ -109,4 +109,5 @@ venv.bak/
 .vagrant
 Vagrantfile
 generated-svgs
+generated-mermaids
 **/.DS_Store

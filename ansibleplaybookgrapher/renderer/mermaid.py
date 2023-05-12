@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict, Set, List
 
 from ansible.utils.display import Display
@@ -35,6 +36,8 @@ class MermaidFlowChartRenderer(Renderer):
         :return:
         """
         # TODO: Add support to customize this
+        # TODO: Add support for protocol handler
+        # TODO: Add support for hover
         mermaid_code = "---\n"
         mermaid_code += "title: Ansible Playbook Grapher\n"
         mermaid_code += "---\n"
@@ -62,17 +65,18 @@ class MermaidFlowChartRenderer(Renderer):
             link_order += playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
 
-        final_output_filename = f"{output_filename}.mmd"
-        with open(final_output_filename, "w") as f:
-            f.write(mermaid_code)
+        final_output_path_file = Path(f"{output_filename}.mmd")
+        # Make the sure the parents directories exist
+        final_output_path_file.parent.mkdir(exist_ok=True, parents=True)
+        final_output_path_file.write_text(mermaid_code)
 
         display.display(
-            f"Mermaid code written to {final_output_filename}", color="green"
+            f"Mermaid code written to {final_output_path_file}", color="green"
         )
         # TODO: implement the view option
         #  https://github.com/mermaidjs/mermaid-live-editor/issues/41
         #  https://mermaid.ink/
-        return final_output_filename
+        return final_output_path_file
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
@@ -96,6 +100,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.link_order = link_order
 
     def build_playbook(self, **kwargs):
+        """
+        Build the playbook
+        :param kwargs:
+        :return:
+        """
         display.vvv(f"Converting the graph to the dot format for graphviz")
 
         # Playbook node
@@ -133,6 +142,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # traverse the play
         self.traverse_play(play_node)
+
         self.mermaid_code += f"\t%% End of play {play_node.name}\n"
         self.mermaid_code += "\n\n"
 
@@ -182,7 +192,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.mermaid_code += f'\t\t{role_node.id}("{role_node.name}")\n'
+        self.mermaid_code += f'\t\t{role_node.id}("[role] {role_node.name}")\n'
         self.mermaid_code += (
             f"\t\tstyle {role_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
         )

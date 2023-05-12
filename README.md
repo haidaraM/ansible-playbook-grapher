@@ -51,6 +51,19 @@ for the supported Ansible version.
 pip install ansible-playbook-grapher
 ```
 
+### Renderers
+
+At the time of writing, two renderers are supported:
+
+1. `graphviz` (default): Generate the graph in SVG. It has more features and is more tested: open protocol,
+   highlight linked nodes...
+2. `mermaid-flowchart`: Generate the graph in [Mermaid](https://mermaid.js.org/syntax/flowchart.html) format. You can
+   directly embed the graph in your markdown and GitHub (
+   and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it. **Early support**.
+
+If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
+renderers.
+
 ## Usage
 
 ```shell
