@@ -225,12 +225,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        # TODO: add support for subgraph for blocks
+
         # Block node
         self.mermaid_code += (
             f'{self.indentation}{block_node.id}["[block] {block_node.name}"]\n'
         )
         self.mermaid_code += f"{self.indentation}style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
+
         # from parent to block
         self.add_link(
             source_id=block_node.parent.id,
@@ -238,6 +239,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             dest_id=block_node.id,
             style=f"stroke:{color},color:{color}",
         )
+
+        self.mermaid_code += f"{self.indentation}subgraph subgraph_{block_node.id}\n"
 
         self.depth_level += 1
         for task in block_node.tasks:
@@ -247,6 +250,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
                 fontcolor=fontcolor,
             )
         self.depth_level -= 1
+        self.mermaid_code += f"{self.indentation} end\n"
 
     def add_link(
         self,
