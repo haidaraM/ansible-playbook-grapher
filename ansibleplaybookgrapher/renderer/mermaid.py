@@ -240,7 +240,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=f"stroke:{color},color:{color}",
         )
 
-        self.mermaid_code += f"{self.indentation}subgraph subgraph_{block_node.id}\n"
+        self.mermaid_code += f'{self.indentation}subgraph subgraph_{block_node.id}["{block_node.name} "]\n'
 
         self.depth_level += 1
         for task in block_node.tasks:
@@ -250,7 +250,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
                 fontcolor=fontcolor,
             )
         self.depth_level -= 1
-        self.mermaid_code += f"{self.indentation} end\n"
+        self.mermaid_code += f"{self.indentation}end\n"
 
     def add_link(
         self,
