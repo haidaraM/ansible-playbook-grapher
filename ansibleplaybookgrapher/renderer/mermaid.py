@@ -119,7 +119,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         for play_node in self.playbook_node.plays:
             self.build_play(play_node)
         self.depth_level -= 1
-        self.add_comment(f"End of playbook {self.playbook_node.name}")
+        self.add_comment(f"End of playbook {self.playbook_node.name}\n")
 
         return self.mermaid_code
 
@@ -151,7 +151,6 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.depth_level -= 1
 
         self.add_comment(f"End of play {play_node.name}")
-        self.mermaid_code += "\n"
 
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """
