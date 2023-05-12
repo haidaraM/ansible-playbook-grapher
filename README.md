@@ -39,7 +39,7 @@ JavaScript:
   since `ansible` [package has been split](https://www.ansible.com/blog/ansible-3.0.0-qa)).
 - **Graphviz**: The tool used to generate the graph in SVG.
   ```shell script
-  $ sudo apt-get install graphviz # or yum install or brew install
+  sudo apt-get install graphviz # or yum install or brew install
   ```
 
 I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine)
@@ -400,6 +400,8 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
                                 [--group-roles-by-name]
                                 [--renderer {graphviz,mermaid-flowchart}]
+                                [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
+                                [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}]
                                 [--version] [-t TAGS] [--skip-tags SKIP_TAGS]
                                 [--vault-id VAULT_IDS]
                                 [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
@@ -416,7 +418,8 @@ options:
                         ask for vault password
   --group-roles-by-name
                         When rendering the graph, only a single role will be
-                        display for all roles having the same names.
+                        display for all roles having the same names. Default:
+                        False
   --include-role-tasks  Include the tasks of the role in the graph.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the
@@ -446,6 +449,13 @@ options:
   --renderer {graphviz,mermaid-flowchart}
                         The renderer to use to generate the graph. Default:
                         graphviz
+  --renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE
+                        The directive for the mermaid renderer. Can be used to
+                        customize the output: fonts, theme, curve etc. More
+                        info at https://mermaid.js.org/config/directives.html.
+                        Default: '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
+  --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
+                        The orientation of the flow chart. Default: 'LR'
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these
                         values
@@ -472,6 +482,7 @@ options:
                         plugins currently evaluate up to -vvvvvv. A reasonable
                         level to start is -vvv, connection debugging might
                         require -vvvv.
+
 ```
 
 ## Configuration: ansible.cfg
@@ -511,7 +522,7 @@ Run the tests and open the generated files in your system’s default viewer app
 
 ```shell script
 export TEST_VIEW_GENERATED_FILE=1
-$ make test # run all tests
+make test # run all tests
 ```
 
 The graphs are generated in the folder `tests/generated-svgs`. They are also generated as artefacts

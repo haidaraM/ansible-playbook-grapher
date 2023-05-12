@@ -25,7 +25,7 @@ def run_grapher(
     """
     additional_args = additional_args or []
     # Explicitly add verbosity to the tests
-    additional_args.insert(0, "-vv")
+    additional_args.insert(0, "-vvv")
 
     playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
     args = [__prog__]

@@ -8,6 +8,13 @@ from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 
 display = Display()
 
+# Default directive when rendering the graph.
+# More info at
+#   https://mermaid.js.org/config/directives.html
+#
+DEFAULT_DIRECTIVE = '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
+DEFAULT_ORIENTATION = "LR"  # Left to right
+
 
 class MermaidFlowChartRenderer(Renderer):
     def __init__(
@@ -41,9 +48,13 @@ class MermaidFlowChartRenderer(Renderer):
         mermaid_code += "title: Ansible Playbook Grapher\n"
         mermaid_code += "---\n"
 
-        # TODO: Add support to customize this
-        mermaid_code += "%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%\n"
-        mermaid_code += "flowchart LR\n"
+        directive = kwargs.get("directive", DEFAULT_DIRECTIVE)
+        orientation = kwargs.get("orientation", DEFAULT_ORIENTATION)
+
+        display.vvv(f"Using '{directive}' as directive for the mermaid chart")
+        mermaid_code += f"{directive}\n"
+
+        mermaid_code += f"flowchart {orientation}\n"
 
         # Mermaid only supports adding style to links by using the order of the link when it is created
         # https://mermaid.js.org/syntax/flowchart.html#styling-links
@@ -73,9 +84,14 @@ class MermaidFlowChartRenderer(Renderer):
         display.display(
             f"Mermaid code written to {final_output_path_file}", color="green"
         )
-        # TODO: implement the view option
-        #  https://github.com/mermaidjs/mermaid-live-editor/issues/41
-        #  https://mermaid.ink/
+
+        if view:
+            # TODO: implement the view option
+            #  https://github.com/mermaidjs/mermaid-live-editor/issues/41 and https://mermaid.ink/
+            display.warning(
+                "The --view option is not supported yet by the mermaid renderer"
+            )
+
         return final_output_path_file
 
 
@@ -108,7 +124,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        display.vvv(f"Converting the playbook to mermaid format")
+        display.vvv(
+            f"Converting the playbook '{self.playbook_node.name}' to mermaid format"
+        )
 
         # Playbook node
         self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")

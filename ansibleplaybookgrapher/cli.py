@@ -26,7 +26,11 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher import __prog__, __version__, Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
-from ansibleplaybookgrapher.renderer.mermaid import MermaidFlowChartRenderer
+from ansibleplaybookgrapher.renderer.mermaid import (
+    MermaidFlowChartRenderer,
+    DEFAULT_DIRECTIVE as MERMAID_DEFAULT_DIRECTIVE,
+    DEFAULT_ORIENTATION as MERMAID_DEFAULT_ORIENTATION,
+)
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
@@ -84,6 +88,8 @@ class PlaybookGrapherCLI(CLI):
                 open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                 output_filename=self.options.output_filename,
                 view=self.options.view,
+                directive=self.options.renderer_mermaid_directive,
+                orientation=self.options.renderer_mermaid_orientation,
             )
             return output_path
 
@@ -169,14 +175,27 @@ class PlaybookGrapherCLI(CLI):
             "--group-roles-by-name",
             action="store_true",
             default=False,
-            help="When rendering the graph, only a single role will be display for all roles having the same names.",
+            help="When rendering the graph, only a single role will be display for all roles having the same names. Default: %(default)s",
         )
 
         self.parser.add_argument(
             "--renderer",
             choices=["graphviz", "mermaid-flowchart"],
             default="graphviz",
-            help="The renderer to use to generate the graph. Default: graphviz",
+            help="The renderer to use to generate the graph. Default: %(default)s",
+        )
+
+        self.parser.add_argument(
+            "--renderer-mermaid-directive",
+            default=MERMAID_DEFAULT_DIRECTIVE,
+            help="The directive for the mermaid renderer. Can be used to customize the output: fonts, theme, curve etc. More info at https://mermaid.js.org/config/directives.html. Default: '%(default)s'",
+        )
+
+        self.parser.add_argument(
+            "--renderer-mermaid-orientation",
+            default=MERMAID_DEFAULT_ORIENTATION,
+            choices=["TD", "RL", "BT", "RL", "LR"],
+            help="The orientation of the flow chart. Default: '%(default)s'",
         )
 
         self.parser.add_argument(
