@@ -194,7 +194,9 @@ class PlaybookParser(BaseParser):
 
             display.v(f"Parsing {play_name}")
 
-            play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
+            play_node = PlayNode(
+                play_name, hosts=play_hosts, raw_object=play, parent=playbook_root_node
+            )
             playbook_root_node.add_node("plays", play_node)
 
             # loop through the pre_tasks

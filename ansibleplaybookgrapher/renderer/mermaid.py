@@ -100,7 +100,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # Used as an identifier for the links
         self.link_order = link_order
         # The current depth level of the nodes. Used for indentation
-        self.depth_level = 1
+        self._identation_level = 1
 
     def build_playbook(self, **kwargs) -> str:
         """
@@ -111,15 +111,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         display.vvv(f"Converting the playbook to mermaid format")
 
         # Playbook node
-        self.add_comment(f"Start of playbook {self.playbook_node.name}")
-        playbook = f'\t{self.playbook_node.id}("{self.playbook_node.name}")\n'
-        self.mermaid_code += playbook
+        self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")
+        self.add_text(f'{self.playbook_node.id}("{self.playbook_node.name}")')
 
-        self.depth_level += 1
+        self._identation_level += 1
         for play_node in self.playbook_node.plays:
             self.build_play(play_node)
-        self.depth_level -= 1
-        self.add_comment(f"End of playbook {self.playbook_node.name}\n")
+        self._identation_level -= 1
+
+        self.add_comment(f"End of the playbook '{self.playbook_node.name}'\n")
 
         return self.mermaid_code
 
@@ -132,25 +132,25 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         # Play node
         color, play_font_color = play_node.colors
-        self.add_comment(f"Start of play {play_node.name}")
+        self.add_comment(f"Start of the play '{play_node.name}'")
 
-        self.mermaid_code += f'{self.indentation}{play_node.id}["{play_node.name}"]\n'
-        self.mermaid_code += f"{self.indentation}style {play_node.id} fill:{color},color:{play_font_color}\n"
+        self.add_text(f'{play_node.id}["{play_node.name}"]')
+        self.add_text(f"style {play_node.id} fill:{color},color:{play_font_color}")
 
         # From playbook to play
         self.add_link(
-            source_id=self.playbook_node.id,
+            source_id=play_node.parent.id,
             text=f"{play_node.index}",
             dest_id=play_node.id,
             style=f"stroke:{color},color:{color}",
         )
 
         # traverse the play
-        self.depth_level += 1
+        self._identation_level += 1
         self.traverse_play(play_node)
-        self.depth_level -= 1
+        self._identation_level -= 1
 
-        self.add_comment(f"End of play {play_node.name}")
+        self.add_comment(f"End of the play '{play_node.name}'")
 
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
         """
@@ -163,12 +163,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         node_label_prefix = kwargs.get("node_label_prefix", "")
         # Task node
-        self.mermaid_code += (
-            f'{self.indentation}{task_node.id}["{node_label_prefix}{task_node.name}"]\n'
-        )
-        self.mermaid_code += (
-            f"{self.indentation}style {task_node.id} stroke:{color},fill:{fontcolor}\n"
-        )
+        self.add_text(f'{task_node.id}["{node_label_prefix}{task_node.name}"]')
+        self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
 
         # From parent to task
         self.add_link(
@@ -194,10 +190,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.mermaid_code += (
-            f'{self.indentation}{role_node.id}("[role] {role_node.name}")\n'
+        self.add_comment(f"Start of the role '{role_node.name}'")
+        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
+        self.add_text(
+            f"style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}"
         )
-        self.mermaid_code += f"{self.indentation}style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
+
         # from parent to role
         self.add_link(
             source_id=role_node.parent.id,
@@ -207,14 +205,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # role tasks
-        self.depth_level += 1
+        self._identation_level += 1
         for role_task in role_node.tasks:
             self.build_node(
                 node=role_task,
                 color=color,
                 fontcolor=fontcolor,
             )
-        self.depth_level -= 1
+        self._identation_level -= 1
+        self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
         """
@@ -227,10 +226,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
 
         # Block node
-        self.mermaid_code += (
-            f'{self.indentation}{block_node.id}["[block] {block_node.name}"]\n'
+        self.add_comment(f"Start of the block '{block_node.name}'")
+        self.add_text(f'{block_node.id}["[block] {block_node.name}"]')
+        self.add_text(
+            f"style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}"
         )
-        self.mermaid_code += f"{self.indentation}style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
 
         # from parent to block
         self.add_link(
@@ -240,17 +240,19 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=f"stroke:{color},color:{color}",
         )
 
-        self.mermaid_code += f'{self.indentation}subgraph subgraph_{block_node.id}["{block_node.name} "]\n'
+        self.add_text(f'subgraph subgraph_{block_node.id}["{block_node.name} "]')
 
-        self.depth_level += 1
+        self._identation_level += 1
         for task in block_node.tasks:
             self.build_node(
                 node=task,
                 color=color,
                 fontcolor=fontcolor,
             )
-        self.depth_level -= 1
-        self.mermaid_code += f"{self.indentation}end\n"
+        self._identation_level -= 1
+
+        self.add_text("end")  # End of the subgraph
+        self.add_comment(f"End of the block '{block_node.name}'")
 
     def add_link(
         self,
@@ -271,14 +273,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes
         text = text.replace('"', "'").strip()
-        self.mermaid_code += (
-            f'{self.indentation}{source_id} {link_type}> |"{text}"| {dest_id}\n'
-        )
+        self.add_text(f'{source_id} {link_type}> |"{text}"| {dest_id}')
 
         if style != "" or style is not None:
-            self.mermaid_code += (
-                f"{self.indentation}linkStyle {self.link_order} {style}\n"
-            )
+            self.add_text(f"linkStyle {self.link_order} {style}")
 
         self.link_order += 1
 
@@ -290,10 +288,18 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         self.mermaid_code += f"{self.indentation}%% {text}\n"
 
-    @property
-    def indentation(self):
+    def add_text(self, text: str):
         """
-        Return the current indentation level
+        Add a text to the mermaid diagram
+        :param text:
         :return:
         """
-        return "\t" * self.depth_level
+        self.mermaid_code += f"{self.indentation}{text}\n"
+
+    @property
+    def indentation(self) -> str:
+        """
+        Return the current indentation level as tabulations
+        :return:
+        """
+        return "\t" * self._identation_level
