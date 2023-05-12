@@ -21,8 +21,9 @@ if __name__ == "__main__":
         template = Template(template_file.read())
 
     mermaid_files = list_files(f"{os.environ['MERMAID_FILES_PATH']}/*.mmd")
+    matrix_job_identifier = os.environ["MATRIX_JOB_IDENTIFIER"]
     files = []
     for filename in mermaid_files:
         files.append({"name": filename, "content": open(filename).read()})
 
-    print(template.render(files=files))
+    print(template.render(files=files, matrix_job_identifier=matrix_job_identifier))

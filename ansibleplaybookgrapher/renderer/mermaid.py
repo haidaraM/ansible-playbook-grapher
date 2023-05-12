@@ -42,7 +42,7 @@ class MermaidFlowChartRenderer(Renderer):
         mermaid_code += "title: Ansible Playbook Grapher\n"
         mermaid_code += "---\n"
 
-        mermaid_code = "%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%\n"
+        mermaid_code += "%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%\n"
         mermaid_code += "flowchart LR\n"
 
         # Mermaid only supports adding style to links by using the order of the link when it is created
