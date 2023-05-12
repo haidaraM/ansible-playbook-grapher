@@ -105,7 +105,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        display.vvv(f"Converting the graph to the dot format for graphviz")
+        display.vvv(f"Converting the playbook to mermaid format")
 
         # Playbook node
         playbook = f'\t{self.playbook_node.id}("{self.playbook_node.name}")\n'
@@ -115,6 +115,32 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             self.build_play(play_node)
 
         return self.mermaid_code
+
+    def add_link(
+        self,
+        source_id: str,
+        text: str,
+        dest_id: str,
+        style: str = "",
+        link_type: str = "--",
+    ):
+        """
+        Add link between two nodes
+        :param source_id: The link source
+        :param text: The text on the link
+        :param dest_id: The link destination
+        :param style: The style to apply to the link
+        :param link_type: Type of link to create. https://mermaid.js.org/syntax/flowchart.html#links-between-nodes
+        :return:
+        """
+        # Replace double quotes with single quotes. Mermaid doesn't like double quotes
+        text = text.replace('"', "'").strip()
+        self.mermaid_code += f'\t{source_id} {link_type}> |"{text}"| {dest_id}\n'
+
+        if style != "" or style is not None:
+            self.mermaid_code += f"\tlinkStyle {self.link_order} {style}\n"
+
+        self.link_order += 1
 
     def build_play(self, play_node: PlayNode, **kwargs):
         """
@@ -132,13 +158,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # From playbook to play
-        self.mermaid_code += (
-            f'\t{self.playbook_node.id} --> |"{play_node.index}"| {play_node.id}\n'
+        self.add_link(
+            source_id=self.playbook_node.id,
+            text=f"{play_node.index}",
+            dest_id=play_node.id,
+            style=f"stroke:{color},color:{color}",
         )
-        self.mermaid_code += (
-            f"\tlinkStyle {self.link_order} stroke:{color},color:{color}\n"
-        )
-        self.link_order += 1
 
         # traverse the play
         self.traverse_play(play_node)
@@ -164,17 +189,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             f"\t\tstyle {task_node.id} stroke:{color},fill:{fontcolor}\n"
         )
 
-        # Replace double quotes with single quotes. Mermaid doesn't like double quotes
-        when = task_node.when.replace('"', "'")
-        link_label = f"{task_node.index} {when}".strip()
         # From parent to task
-        self.mermaid_code += (
-            f'\t\t{task_node.parent.id} --> |"{link_label}"| {task_node.id}\n'
+        self.add_link(
+            source_id=task_node.parent.id,
+            text=f"{task_node.index} {task_node.when}",
+            dest_id=task_node.id,
+            style=f"stroke:{color},color:{color}",
         )
-        self.mermaid_code += (
-            f"\t\tlinkStyle {self.link_order} stroke:{color},color:{color}\n"
-        )
-        self.link_order += 1
 
     def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
         """
@@ -197,15 +218,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             f"\t\tstyle {role_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
         )
         # from parent to role
-        when = role_node.when.replace('"', "'")
-        link_label = f"{role_node.index} {when}".strip()
-        self.mermaid_code += (
-            f'\t{role_node.parent.id} --> |"{link_label}"| {role_node.id}\n'
+        self.add_link(
+            source_id=role_node.parent.id,
+            text=f"{role_node.index} {role_node.when}",
+            dest_id=role_node.id,
+            style=f"stroke:{color},color:{color}",
         )
-        self.mermaid_code += (
-            f"\t\tlinkStyle {self.link_order} stroke:{color},color:{color}\n"
-        )
-        self.link_order += 1
 
         # role tasks
         for role_task in role_node.tasks:
@@ -231,15 +249,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             f"\t\tstyle {block_node.id} fill:{color},color:{fontcolor},stroke:{color}\n"
         )
         # from parent to block
-        when = block_node.when.replace('"', "'")
-        link_label = f"{block_node.index} {when}".strip()
-        self.mermaid_code += (
-            f'\t\t{block_node.parent.id} --> |"{link_label}"| {block_node.id}\n'
+        self.add_link(
+            source_id=block_node.parent.id,
+            text=f"{block_node.index} {block_node.when}",
+            dest_id=block_node.id,
+            style=f"stroke:{color},color:{color}",
         )
-        self.mermaid_code += (
-            f"\t\tlinkStyle {self.link_order} stroke:{color},color:{color}\n"
-        )
-        self.link_order += 1
 
         for task in block_node.tasks:
             self.build_node(

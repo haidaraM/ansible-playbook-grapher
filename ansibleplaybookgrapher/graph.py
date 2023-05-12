@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, Set, Type, Tuple
+from typing import Dict, List, Set, Type, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -31,7 +31,7 @@ class Node:
         when: str = "",
         raw_object=None,
         parent: "Node" = None,
-        index: int = None,
+        index: Optional[int] = None,
     ):
         """
 
@@ -53,7 +53,7 @@ class Node:
         self.set_position()
 
         # The index of this node in the parent node if it has one (starting from 1)
-        self.index: int = index
+        self.index: Optional[int] = index
 
     def set_position(self):
         """
