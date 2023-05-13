@@ -88,7 +88,7 @@ def _common_tests(mermaid_path: str, playbook_paths: List[str], **kwargs):
         "with_roles.yml",
     ],
 )
-def test_playbook(request, playbook_file):
+def test_playbook(request, playbook_file: str):
     """
     Test the renderer with a single playbook
     """

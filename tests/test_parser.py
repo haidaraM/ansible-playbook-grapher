@@ -149,6 +149,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
+    assert include_role_1.has_loop(), "The first include role has a loop"
 
     # first task
     assert tasks[1].name == "(1) Debug"
@@ -159,6 +160,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     assert isinstance(include_role_2, RoleNode)
     assert include_role_2.include_role
     assert len(include_role_2.tasks) == 3
+    assert not include_role_2.has_loop(), "The second include role doesn't have a loop"
 
     # second task
     assert tasks[3].name == "(3) Debug 2"
@@ -169,6 +171,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     assert isinstance(include_role_3, RoleNode)
     assert include_role_3.include_role
     assert len(include_role_3.tasks) == 3
+    assert not include_role_3.has_loop(), "The second include role doesn't have a loop"
 
     # fourth include_role
     include_role_4 = tasks[5]
@@ -177,6 +180,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     assert (
         len(include_role_4.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
+    assert include_role_4.has_loop(), "The third include role has a loop"
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_block.yml"]], indirect=True)
@@ -237,6 +241,9 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
         assert (
             task.index == task_counter + 1
         ), "The index of the task in the block should start at 1"
+
+    assert first_block.tasks[0].name == "Install some packages"
+    assert first_block.tasks[0].has_loop(), "The task has a 'with_items'"
 
     # Check the second block (nested block)
     nested_block = first_block.tasks[2]
