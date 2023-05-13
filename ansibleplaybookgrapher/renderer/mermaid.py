@@ -200,7 +200,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # Task node
         self.add_text(
-            f'{task_node.id}["{loop_icon}{node_label_prefix} {task_node.name}"]'
+            f'{task_node.id}["{loop_icon} {node_label_prefix} {task_node.name}"]'
         )
         self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
 
@@ -232,7 +232,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         loop_icon = ""
         if role_node.has_loop():
             loop_icon = "fa:fa-repeat"
-        self.add_text(f'{role_node.id}("{loop_icon}[role]{role_node.name}")')
+        self.add_text(f'{role_node.id}("{loop_icon} [role] {role_node.name}")')
         self.add_text(
             f"style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}"
         )
