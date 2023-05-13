@@ -26,6 +26,11 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher import __prog__, __version__, Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
+from ansibleplaybookgrapher.renderer.mermaid import (
+    MermaidFlowChartRenderer,
+    DEFAULT_DIRECTIVE as MERMAID_DEFAULT_DIRECTIVE,
+    DEFAULT_ORIENTATION as MERMAID_DEFAULT_ORIENTATION,
+)
 
 # The display is a singleton. This instruction will NOT return a new instance.
 # We explicitly set the verbosity after the init.
@@ -52,26 +57,41 @@ class PlaybookGrapherCLI(CLI):
 
         display.verbosity = self.options.verbosity
         grapher = Grapher(self.options.playbook_filenames)
-        playbook_nodes = grapher.parse(
+        playbook_nodes, roles_usage = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
         )
-        # TODO: add condition to choose the renderer
-        renderer = GraphvizRenderer(
-            playbook_nodes=playbook_nodes,
-            roles_usage=grapher.roles_usage,
-        )
-        output_path = renderer.render(
-            open_protocol_handler=self.options.open_protocol_handler,
-            open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-            save_dot_file=self.options.save_dot_file,
-            output_filename=self.options.output_filename,
-            view=self.options.view,
-        )
 
-        return output_path
+        if self.options.renderer == "graphviz":
+            renderer = GraphvizRenderer(
+                playbook_nodes=playbook_nodes,
+                roles_usage=roles_usage,
+            )
+            output_path = renderer.render(
+                open_protocol_handler=self.options.open_protocol_handler,
+                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                output_filename=self.options.output_filename,
+                view=self.options.view,
+                save_dot_file=self.options.save_dot_file,
+            )
+
+            return output_path
+        else:
+            renderer = MermaidFlowChartRenderer(
+                playbook_nodes=playbook_nodes,
+                roles_usage=roles_usage,
+            )
+            output_path = renderer.render(
+                open_protocol_handler=self.options.open_protocol_handler,
+                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                output_filename=self.options.output_filename,
+                view=self.options.view,
+                directive=self.options.renderer_mermaid_directive,
+                orientation=self.options.renderer_mermaid_orientation,
+            )
+            return output_path
 
     def _add_my_options(self):
         """
@@ -102,7 +122,7 @@ class PlaybookGrapherCLI(CLI):
             dest="save_dot_file",
             action="store_true",
             default=False,
-            help="Save the dot file used to generate the graph.",
+            help="Save the graphviz dot file used to generate the graph.",
         )
 
         self.parser.add_argument(
@@ -155,7 +175,27 @@ class PlaybookGrapherCLI(CLI):
             "--group-roles-by-name",
             action="store_true",
             default=False,
-            help="When rendering the graph, only a single role will be display for all roles having the same names.",
+            help="When rendering the graph, only a single role will be display for all roles having the same names. Default: %(default)s",
+        )
+
+        self.parser.add_argument(
+            "--renderer",
+            choices=["graphviz", "mermaid-flowchart"],
+            default="graphviz",
+            help="The renderer to use to generate the graph. Default: %(default)s",
+        )
+
+        self.parser.add_argument(
+            "--renderer-mermaid-directive",
+            default=MERMAID_DEFAULT_DIRECTIVE,
+            help="The directive for the mermaid renderer. Can be used to customize the output: fonts, theme, curve etc. More info at https://mermaid.js.org/config/directives.html. Default: '%(default)s'",
+        )
+
+        self.parser.add_argument(
+            "--renderer-mermaid-orientation",
+            default=MERMAID_DEFAULT_ORIENTATION,
+            choices=["TD", "RL", "BT", "RL", "LR"],
+            help="The orientation of the flow chart. Default: '%(default)s'",
         )
 
         self.parser.add_argument(
@@ -192,10 +232,11 @@ class PlaybookGrapherCLI(CLI):
         self.options = options
 
         if self.options.output_filename is None:
-            # use the first playbook name (without the extension) as output filename
-            self.options.output_filename = os.path.splitext(
-                ntpath.basename(self.options.playbook_filenames[0])
-            )[0]
+            basenames = map(ntpath.basename, self.options.playbook_filenames)
+            basenames_without_ext = "-".join(
+                [os.path.splitext(basename)[0] for basename in basenames]
+            )
+            self.options.output_filename = basenames_without_ext
 
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()

@@ -1,4 +1,4 @@
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
     PlayNode,

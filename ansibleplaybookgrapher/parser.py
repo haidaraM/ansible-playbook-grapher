@@ -27,7 +27,7 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     TaskNode,
     PlaybookNode,
     RoleNode,
@@ -194,7 +194,9 @@ class PlaybookParser(BaseParser):
 
             display.v(f"Parsing {play_name}")
 
-            play_node = PlayNode(play_name, hosts=play_hosts, raw_object=play)
+            play_node = PlayNode(
+                play_name, hosts=play_hosts, raw_object=play, parent=playbook_root_node
+            )
             playbook_root_node.add_node("plays", play_node)
 
             # loop through the pre_tasks
@@ -318,8 +320,7 @@ class PlaybookParser(BaseParser):
         for task_or_block in block.block:
             if hasattr(task_or_block, "loop") and task_or_block.loop:
                 display.warning(
-                    "Looping on tasks or roles are not supported for the moment. "
-                    f"Only the task having the loop argument will be added to the graph."
+                    "Looping on tasks or roles are not supported for the moment. Only the task having the loop argument will be added to the graph."
                 )
 
             if isinstance(task_or_block, Block):

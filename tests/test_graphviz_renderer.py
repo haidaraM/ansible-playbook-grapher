@@ -16,7 +16,7 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def run_grapher(
     playbook_files: List[str],
-    output_filename: str = None,
+    output_filename: str,
     additional_args: List[str] = None,
 ) -> Tuple[str, List[str]]:
     """
@@ -24,7 +24,7 @@ def run_grapher(
     :param output_filename:
     :param additional_args:
     :param playbook_files:
-    :return: SVG path and playbook absolute path
+    :return: SVG path and playbooks absolute paths
     """
     additional_args = additional_args or []
     # Explicitly add verbosity to the tests
@@ -56,10 +56,10 @@ def run_grapher(
     playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
     args = [__prog__]
 
-    if output_filename:  # the default filename is the playbook file name minus .yml
-        # put the generated svg in a dedicated folder
-        output_filename = output_filename.replace("[", "-").replace("]", "")
-        args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
+    # Clean the name a little bit
+    output_filename = output_filename.replace("[", "-").replace("]", "")
+    # put the generated file in a dedicated folder
+    args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
 
     args.extend(additional_args)
 
@@ -94,11 +94,11 @@ def _common_tests(
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values
     """
 
-    pq = PyQuery(filename=svg_path)
-    pq.remove_namespaces()
-
     # test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(svg_path), "The svg file should exist"
+
+    pq = PyQuery(filename=svg_path)
+    pq.remove_namespaces()
 
     playbooks = pq("g[id^='playbook_']")
     plays = pq("g[id^='play_']")

@@ -85,6 +85,20 @@ def test_cli_output_filename(output_filename_option, expected):
     assert cli.options.output_filename == expected
 
 
+def test_cli_output_filename_multiple_playbooks():
+    """
+    Test for the output filename when using multiple playbooks
+    :return:
+    """
+    args = [__prog__] + ["playbook.yml", "second-playbook.yml", "third-playbook.yaml"]
+
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    assert cli.options.output_filename == "playbook-second-playbook-third-playbook"
+
+
 @pytest.mark.parametrize(
     "include_role_tasks_option, expected",
     [(["--"], False), (["--include-role-tasks"], True)],

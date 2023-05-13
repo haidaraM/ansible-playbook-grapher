@@ -3,7 +3,7 @@ from _elementtree import Element
 import pytest
 from lxml import etree
 
-from ansibleplaybookgrapher.graph import PlaybookNode, PlayNode, TaskNode
+from ansibleplaybookgrapher.graph_model import PlaybookNode, PlayNode, TaskNode
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
     GraphvizPostProcessor,
     SVG_NAMESPACE,
