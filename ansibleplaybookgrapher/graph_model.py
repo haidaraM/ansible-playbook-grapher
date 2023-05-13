@@ -19,6 +19,22 @@ from typing import Dict, List, Set, Type, Tuple, Optional
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
+class LoopMixin:
+    """
+    A mixin class for nodes that support looping
+    """
+
+    def has_loop(self) -> bool:
+        """
+        Return true if the node has a loop (`loop` or `with_`).
+        https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html
+        :return:
+        """
+        if self.raw_object is None:
+            return False
+        return self.raw_object.loop is not None
+
+
 class Node:
     """
     A node in the graph. Everything of the final graph is a node: playbook, plays, tasks and roles.
@@ -143,9 +159,9 @@ class CompositeNode(Node):
             raise Exception(
                 f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
             )
+        self._compositions[target_composition].append(node)
         # The node index is position in the composition regardless of the type of the node
         node.index = self._node_counter + 1
-        self._compositions[target_composition].append(node)
         self._node_counter += 1
 
     def get_all_tasks(self) -> List["TaskNode"]:
@@ -374,7 +390,7 @@ class BlockNode(CompositeTasksNode):
         )
 
 
-class TaskNode(Node):
+class TaskNode(LoopMixin, Node):
     """
     A task node. This matches an Ansible Task.
     """
@@ -404,7 +420,7 @@ class TaskNode(Node):
         )
 
 
-class RoleNode(CompositeTasksNode):
+class RoleNode(LoopMixin, CompositeTasksNode):
     """
     A role node. A role is a composition of tasks
     """
@@ -446,3 +462,10 @@ class RoleNode(CompositeTasksNode):
             self.path = self.raw_object._role_path
         else:
             super().set_position()
+
+    def has_loop(self) -> bool:
+        if not self.include_role:
+            # Only include_role supports loop
+            return False
+
+        return super().has_loop()
