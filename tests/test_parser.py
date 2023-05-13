@@ -6,7 +6,7 @@ from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     TaskNode,
     BlockNode,
     RoleNode,

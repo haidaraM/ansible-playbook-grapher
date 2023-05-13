@@ -27,7 +27,7 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.template import Templar
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     TaskNode,
     PlaybookNode,
     RoleNode,

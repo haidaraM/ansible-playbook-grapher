@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,14 +17,14 @@ from typing import Dict, List, Set, Tuple
 
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     PlaybookNode,
     RoleNode,
     PlayNode,
 )
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.utils import merge_dicts
-from .graph import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
+from .graph_model import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
 from .parser import PlaybookParser
 
 __version__ = "2.0.0-dev"

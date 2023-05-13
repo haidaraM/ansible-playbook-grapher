@@ -19,7 +19,7 @@ from ansible.utils.display import Display
 from lxml import etree
 from svg.path import parse_path
 
-from ansibleplaybookgrapher.graph import PlaybookNode
+from ansibleplaybookgrapher.graph_model import PlaybookNode
 
 display = Display()
 

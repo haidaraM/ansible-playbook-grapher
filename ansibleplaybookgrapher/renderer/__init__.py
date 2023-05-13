@@ -17,7 +17,7 @@ from typing import Dict, Optional, Set
 
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.graph import (
+from ansibleplaybookgrapher.graph_model import (
     PlaybookNode,
     PlayNode,
     RoleNode,
