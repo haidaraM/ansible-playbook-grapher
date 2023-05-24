@@ -216,21 +216,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-
-        # check if we already built this role
-        if role_node in self.roles_built:
-            return
-        self.roles_built.add(role_node)
-
-        # Role node
         self.add_comment(f"Start of the role '{role_node.name}'")
-
-        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
-        self.add_text(
-            f"style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}"
-        )
-
-        # from parent to role
+        # From parent to role
         self.add_link(
             source_id=role_node.parent.id,
             text=f"{role_node.index} {role_node.when}",
@@ -238,7 +225,17 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=f"stroke:{color},color:{color}",
         )
 
-        # role tasks
+        # Check if we already built this role
+        if role_node in self.roles_built:
+            return
+
+        self.roles_built.add(role_node)
+
+        # Role node
+        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
+        self.add_text(f"style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}")
+
+        # Role tasks
         self._identation_level += 1
         for role_task in role_node.tasks:
             self.build_node(
@@ -247,6 +244,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
                 fontcolor=fontcolor,
             )
         self._identation_level -= 1
+
         self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
