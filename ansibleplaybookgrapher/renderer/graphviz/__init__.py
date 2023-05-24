@@ -221,21 +221,9 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         :return:
         """
 
-        # check if we already built this role
-        if role_node in self.roles_built:
-            return
-
-        self.roles_built.add(role_node)
-
         digraph = kwargs["digraph"]
 
-        if role_node.include_role:  # For include_role, we point to a file
-            url = self.get_node_url(role_node, "file")
-        else:  # For normal role invocation, we point to the folder
-            url = self.get_node_url(role_node, "folder")
-
         role_edge_label = f"{role_node.index} {role_node.when}"
-
         # from parent to the role node
         digraph.edge(
             role_node.parent.id,
@@ -248,11 +236,24 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             labeltooltip=role_edge_label,
         )
 
+        # check if we already built this role
+        if role_node in self.roles_built:
+            return
+
+        self.roles_built.add(role_node)
+
+        if role_node.include_role:  # For include_role, we point to a file
+            url = self.get_node_url(role_node, "file")
+        else:  # For normal role invocation, we point to the folder
+            url = self.get_node_url(role_node, "folder")
+
         plays_using_this_role = self.roles_usage[role_node]
+        name_suffix = ""
         if len(plays_using_this_role) > 1:
             # If the role is used in multiple plays, we take black as the default color
             role_color = "black"
             fontcolor = "#ffffff"
+            name_suffix = f"({len(plays_using_this_role)})"
         else:
             role_color, fontcolor = list(plays_using_this_role)[0].colors
 
@@ -260,7 +261,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             role_subgraph.node(
                 role_node.id,
                 id=role_node.id,
-                label=f"[role] {role_node.name}",
+                label=f"[role] {role_node.name} {name_suffix}".strip(),
                 style="filled",
                 tooltip=role_node.name,
                 fontcolor=fontcolor,
