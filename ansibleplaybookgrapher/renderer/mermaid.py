@@ -32,20 +32,20 @@ DEFAULT_ORIENTATION = "LR"  # Left to right
 
 class MermaidFlowChartRenderer(Renderer):
     def __init__(
-            self,
-            playbook_nodes: List[PlaybookNode],
-            roles_usage: Dict["RoleNode", Set[PlayNode]],
+        self,
+        playbook_nodes: List[PlaybookNode],
+        roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
     def render(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            output_filename: str,
-            view: bool,
-            **kwargs,
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        output_filename: str,
+        view: bool,
+        **kwargs,
     ) -> str:
         """
 
@@ -111,13 +111,13 @@ class MermaidFlowChartRenderer(Renderer):
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     def __init__(
-            self,
-            playbook_node: PlaybookNode,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: Dict[str, str],
-            roles_usage: Dict[RoleNode, Set[PlayNode]],
-            roles_built: Set[RoleNode],
-            link_order: int = 0,
+        self,
+        playbook_node: PlaybookNode,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: Dict[str, str],
+        roles_usage: Dict[RoleNode, Set[PlayNode]],
+        roles_built: Set[RoleNode],
+        link_order: int = 0,
     ):
         super().__init__(
             playbook_node,
@@ -196,9 +196,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
         # Task node
-        self.add_text(
-            f'{task_node.id}["{node_label_prefix} {task_node.name}"]'
-        )
+        self.add_text(f'{task_node.id}["{node_label_prefix} {task_node.name}"]')
         self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
 
         # From parent to task
@@ -291,12 +289,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the block '{block_node.name}'")
 
     def add_link(
-            self,
-            source_id: str,
-            text: str,
-            dest_id: str,
-            style: str = "",
-            link_type: str = "--",
+        self,
+        source_id: str,
+        text: str,
+        dest_id: str,
+        style: str = "",
+        link_type: str = "--",
     ):
         """
         Add link between two nodes
