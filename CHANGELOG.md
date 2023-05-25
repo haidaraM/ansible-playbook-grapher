@@ -5,9 +5,7 @@
 - 🚀🚀Add support for MermaidJS 🚀🚀. See https://github.com/haidaraM/ansible-playbook-grapher/issues/137
 - Update various Dependencies: pytest, pytest-cov, ansible-core, pyquery etc...
 - ci: Add dependabot for github-actions
-- When using `--group-roles-by-name`, the roles used multiple times will include a counter corresponding to the number
-  of times they are used.
-- Rename some tests files
+- Rename some tests files..
 
 ## Breaking changes
 

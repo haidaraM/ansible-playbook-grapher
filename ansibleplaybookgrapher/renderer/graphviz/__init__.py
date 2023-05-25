@@ -248,12 +248,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             url = self.get_node_url(role_node, "folder")
 
         plays_using_this_role = self.roles_usage[role_node]
-        name_suffix = ""
         if len(plays_using_this_role) > 1:
             # If the role is used in multiple plays, we take black as the default color
             role_color = "black"
             fontcolor = "#ffffff"
-            name_suffix = f"({len(plays_using_this_role)})"
         else:
             role_color, fontcolor = list(plays_using_this_role)[0].colors
 
@@ -261,7 +259,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             role_subgraph.node(
                 role_node.id,
                 id=role_node.id,
-                label=f"[role] {role_node.name} {name_suffix}".strip(),
+                label=f"[role] {role_node.name}",
                 style="filled",
                 tooltip=role_node.name,
                 fontcolor=fontcolor,

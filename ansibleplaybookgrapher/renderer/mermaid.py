@@ -220,11 +220,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         plays_using_this_role = len(self.roles_usage[role_node])
         node_color = color
-        name_suffix = ""
         if plays_using_this_role > 1:
             # If the role is used in multiple plays, we take black as the default color
             node_color = "#000000"  # black
-            name_suffix = f"({plays_using_this_role})"
 
         # From parent to role
         self.add_link(
@@ -241,7 +239,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.add_text(f'{role_node.id}("[role] {role_node.name} {name_suffix}")')
+        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
         self.add_text(
             f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}"
         )
