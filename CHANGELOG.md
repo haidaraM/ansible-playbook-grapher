@@ -2,18 +2,19 @@
 
 ## What's Changed
 
-- Add support for MermaidJS. See https://github.com/haidaraM/ansible-playbook-grapher/issues/137
+- 🚀🚀Add support for MermaidJS 🚀🚀. See https://github.com/haidaraM/ansible-playbook-grapher/issues/137
 - Update various Dependencies: pytest, pytest-cov, ansible-core, pyquery etc...
 - ci: Add dependabot for github-actions
+- When using `--group-roles-by-name`, the roles used multiple times will include a counter corresponding to the number
+  of times they are used.
 - Rename some tests files
-- ...
 
 ## Breaking changes
 
 This version contains the following breaking changes. Some of them may likely affect you if you were using the grapher
 as a library inside another project:
 
-- Completely refactor the rendering part of the part by making it more extensible in order to support Mermaid. 
+- Completely refactor the rendering part of the part by making it more extensible in order to support Mermaid.
 - Fill the plays, blocks and node with color to make them more visible in the output
 - Rename the file `graph.py` to `graph_model.py`
 - Use the concatenation of the playbook names as the output filename when graphing multiple playbooks instead of the
