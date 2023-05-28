@@ -216,37 +216,44 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-
-        # check if we already built this role
-        if role_node in self.roles_built:
-            return
-        self.roles_built.add(role_node)
-
-        # Role node
         self.add_comment(f"Start of the role '{role_node.name}'")
 
-        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
-        self.add_text(
-            f"style {role_node.id} fill:{color},color:{fontcolor},stroke:{color}"
-        )
+        plays_using_this_role = len(self.roles_usage[role_node])
+        node_color = color
+        if plays_using_this_role > 1:
+            # If the role is used in multiple plays, we take black as the default color
+            node_color = "#000000"  # black
 
-        # from parent to role
+        # From parent to role
         self.add_link(
             source_id=role_node.parent.id,
             text=f"{role_node.index} {role_node.when}",
             dest_id=role_node.id,
-            style=f"stroke:{color},color:{color}",
+            style=f"stroke:{color},color:{node_color}",
         )
 
-        # role tasks
+        # Check if we already built this role
+        if role_node in self.roles_built:
+            return
+
+        self.roles_built.add(role_node)
+
+        # Role node
+        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
+        self.add_text(
+            f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}"
+        )
+
+        # Role tasks
         self._identation_level += 1
         for role_task in role_node.tasks:
             self.build_node(
                 node=role_task,
-                color=color,
+                color=node_color,
                 fontcolor=fontcolor,
             )
         self._identation_level -= 1
+
         self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
@@ -328,7 +335,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param text:
         :return:
         """
-        self.mermaid_code += f"{self.indentation}{text}\n"
+        self.mermaid_code += f"{self.indentation}{text.strip()}\n"
 
     @property
     def indentation(self) -> str:
