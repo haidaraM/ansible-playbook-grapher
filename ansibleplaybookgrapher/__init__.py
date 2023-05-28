@@ -27,7 +27,7 @@ from ansibleplaybookgrapher.utils import merge_dicts
 from .graph_model import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
 from .parser import PlaybookParser
 
-__version__ = "2.0.0-dev"
+__version__ = "2.0.0-dev2"
 __prog__ = "ansible-playbook-grapher"
 
 display = Display()
