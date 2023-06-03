@@ -3,9 +3,10 @@
 ## What's Changed
 
 - 🚀🚀Add support for MermaidJS 🚀🚀. See https://github.com/haidaraM/ansible-playbook-grapher/issues/137
+- Add generated images in the CI job summary
 - Update various Dependencies: pytest, pytest-cov, ansible-core, pyquery etc...
 - ci: Add dependabot for github-actions
-- Rename some tests files..
+- Rename some tests files...
 
 ## Breaking changes
 
