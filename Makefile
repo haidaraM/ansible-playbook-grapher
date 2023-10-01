@@ -1,4 +1,3 @@
-ANSIBLE_CORE_VERSION=2.10.7
 VIRTUALENV_DIR=venv-test-install
 PACKAGE := dist/$(shell ls dist 2> /dev/null)
 SRC=$(wildcard ansibleplaybookgrapher/*.py setup.py ansibleplaybookgrapher/data/*)
