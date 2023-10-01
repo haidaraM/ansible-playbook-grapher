@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from ansible.plugins.loader import init_plugin_loader
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -68,4 +69,7 @@ def grapher_cli(request) -> PlaybookGrapherCLI:
     args_params[-1] = os.path.join(FIXTURES_DIR, args_params[-1])
     cli = PlaybookGrapherCLI([__prog__] + args_params)
     cli.parse()
+    # This init plugin is called in CLI.run but here we are not using that.
+    # It was called automatically in ansible-core < 2.15 but changed in https://github.com/ansible/ansible/pull/78915
+    init_plugin_loader()
     return cli
