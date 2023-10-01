@@ -1,4 +1,24 @@
-# 2.0.0
+# 2.1.0 (2023-10-01)
+
+## What's Changed
+
+* Support for ansible-core 2.15 by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/151.
+* chore(deps): bump pytest-cov from 4.0.0 to 4.1.0 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/149
+* chore(deps): update black requirement from ~=23.3 to ~=23.7 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/153
+* chore(deps): bump pytest from 7.3.1 to 7.4.0 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/152
+* chore(deps): bump pytest from 7.4.0 to 7.4.2 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/157
+* chore(deps): update black requirement from ~=23.7 to ~=23.9 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/156
+* chore(deps): bump actions/checkout from 3 to 4 by @dependabot
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/155
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.0.0...v2.1.0
+
+# 2.0.0 (2023-06-03)
 
 ## What's Changed
 
