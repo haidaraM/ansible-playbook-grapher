@@ -6,14 +6,14 @@
 - Add generated images in the CI job summary
 - Update various Dependencies: pytest, pytest-cov, ansible-core, pyquery etc...
 - ci: Add dependabot for github-actions
-- Rename some tests files...
+- Rename some tests files
 
 ## Breaking changes
 
 This version contains the following breaking changes. Some of them may likely affect you if you were using the grapher
 as a library inside another project:
 
-- Completely refactor the rendering part of the part by making it more extensible in order to support Mermaid.
+- Completely refactor the rendering part of the grapher by making it more extensible in order to support Mermaid.
 - Fill the plays, blocks and node with color to make them more visible in the output
 - Rename the file `graph.py` to `graph_model.py`
 - Use the concatenation of the playbook names as the output filename when graphing multiple playbooks instead of the
