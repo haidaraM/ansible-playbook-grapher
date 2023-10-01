@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   pytest:
-    name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-version }}
+    name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-core-version }}
     env:
       SVG_FILES_PATH: tests/generated-svgs
       MERMAID_FILES_PATH: tests/generated-mermaids
@@ -24,7 +24,7 @@ jobs:
       matrix:
         python-version: [ '3.10', '3.11' ]
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
-        ansible-version: [ '2.14.*', '2.15.*' ]
+        ansible-core-version: [ '2.15.*' ]
 
 
     steps:
@@ -40,7 +40,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          pip install -q ansible-core=='${{ matrix.ansible-version }}' virtualenv setuptools wheel coveralls
+          pip install -q ansible-core=='${{ matrix.ansible-core-version }}' virtualenv setuptools wheel coveralls
           pip install -qr tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
@@ -54,7 +54,7 @@ jobs:
 
       - name: Set variables
         run: |
-          matrix_ansible_version='${{ matrix.ansible-version }}'
+          matrix_ansible_version='${{ matrix.ansible-core-version }}'
           clean_version=${matrix_ansible_version//.\*/} # Remove '.*' from the version name
           echo "MATRIX_JOB_IDENTIFIER=py${{ matrix.python-version }}-ansible-${clean_version}" >> $GITHUB_ENV
 
@@ -65,28 +65,28 @@ jobs:
           path: ${{ env.SVG_FILES_PATH }}/
           if-no-files-found: error # the tests should generate SVGs files
 
-#      - uses: stefanzweifel/git-auto-commit-action@v4
-#        id: commit-svg-files
-#        with:
-#          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
-#          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
-#          skip_dirty_check: true
-#          add_options: '--force'
-#          push_options: '--force'
-#          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
-#          create_branch: true
-#
+      #      - uses: stefanzweifel/git-auto-commit-action@v4
+      #        id: commit-svg-files
+      #        with:
+      #          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
+      #          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
+      #          skip_dirty_check: true
+      #          add_options: '--force'
+      #          push_options: '--force'
+      #          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
+      #          create_branch: true
+      #
       - name: Publish job summary
         run: python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
       - name: Test installation in virtualenv
-        run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-version }}
+        run: make test_install ANSIBLE_VERSION=${{ matrix.ansible-core-version }}
 
       - name: Upload Coverage
         run: cd tests && coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-version }}
+          COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-core-version }}
           COVERALLS_PARALLEL: true
 
   coveralls:
