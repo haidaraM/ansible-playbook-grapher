@@ -32,7 +32,8 @@ JavaScript:
 
 ## Prerequisites
 
-- Python 3.8 at least
+- Python 3.10 at least. Might work with some previous versions but the code is tested against them.
+  See [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix).
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
   some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
   some older versions of Ansible (
@@ -436,4 +437,3 @@ The project uses black to format the code. Run `black .` to format.
 GNU General Public License v3.0 or later (Same as Ansible)
 
 See [LICENSE](./LICENSE) for the full text
-
