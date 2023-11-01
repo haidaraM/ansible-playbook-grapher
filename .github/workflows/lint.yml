@@ -30,6 +30,6 @@ jobs:
           version: "~= 23.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
           options: ""
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Autoformat code using black
