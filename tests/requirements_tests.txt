@@ -2,4 +2,4 @@
 pytest==7.4.2
 pytest-cov==4.1.0
 pyquery==2.0.0
-black~=23.9
+black~=23.10
