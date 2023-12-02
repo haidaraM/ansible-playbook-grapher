@@ -8,6 +8,7 @@
 * chore(deps): bump stefanzweifel/git-auto-commit-action from 4 to 5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/159
 * chore(deps): update black requirement from ~=23.10 to ~=23.11 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/163
 
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.1.0...v2.1.1
 
 # 2.1.0 (2023-10-01)
 
