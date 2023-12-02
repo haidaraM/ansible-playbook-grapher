@@ -1,3 +1,14 @@
+# 2.1.1 (2023-12-02)
+
+## What's Changed
+
+* fix: pin to ansible-core 2.15.5 before fixing the grapher
+* chore(deps): bump pytest from 7.4.2 to 7.4.3 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/160
+* chore(deps): update black requirement from ~=23.9 to ~=23.10 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/161
+* chore(deps): bump stefanzweifel/git-auto-commit-action from 4 to 5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/159
+* chore(deps): update black requirement from ~=23.10 to ~=23.11 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/163
+
+
 # 2.1.0 (2023-10-01)
 
 ## What's Changed

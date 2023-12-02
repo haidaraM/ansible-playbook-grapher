@@ -27,7 +27,7 @@ from ansibleplaybookgrapher.utils import merge_dicts
 from .graph_model import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
 from .parser import PlaybookParser
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __prog__ = "ansible-playbook-grapher"
 
 display = Display()
@@ -41,11 +41,11 @@ class Grapher:
         self.playbook_filenames = playbook_filenames
 
     def parse(
-        self,
-        include_role_tasks: bool = False,
-        tags: List[str] = None,
-        skip_tags: List[str] = None,
-        group_roles_by_name: bool = False,
+            self,
+            include_role_tasks: bool = False,
+            tags: List[str] = None,
+            skip_tags: List[str] = None,
+            group_roles_by_name: bool = False,
     ) -> Tuple[List[PlaybookNode], Dict[RoleNode, Set[PlayNode]]]:
         """
         Parses all the provided playbooks
