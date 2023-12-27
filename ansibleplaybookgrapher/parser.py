@@ -224,6 +224,7 @@ class PlaybookParser(BaseParser):
                 role.tags = role.tags + play.tags
 
                 # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
+                # This seems to work for now.
                 role._parent = None
 
                 if not role.evaluate_tags(
