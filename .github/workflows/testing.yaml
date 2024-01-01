@@ -59,7 +59,7 @@ jobs:
           echo "MATRIX_JOB_IDENTIFIER=py${{ matrix.python-version }}-ansible-${clean_version}" >> $GITHUB_ENV
 
       - name: Upload generated SVGs as artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: generated-svgs-${{ env.MATRIX_JOB_IDENTIFIER }}
           path: ${{ env.SVG_FILES_PATH }}/
