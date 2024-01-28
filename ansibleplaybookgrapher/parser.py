@@ -18,9 +18,11 @@ from typing import Dict, Union, List
 from ansible.cli import CLI
 from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
 from ansible.parsing.yaml.objects import AnsibleUnicode
-from ansible.playbook import Playbook, Play
+from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
+from ansible.playbook.play import Play
+from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -213,13 +215,18 @@ class PlaybookParser(BaseParser):
             # loop through the roles
             display.v("Parsing roles...")
 
-            for role in play.get_roles():
+            for role in play.get_roles():  # type: Role
                 # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
                 if role.from_include:
                     continue
 
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
+
+                # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
+                # This seems to work for now.
+                role._parent = None
+
                 if not role.evaluate_tags(
                     only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars
                 ):
