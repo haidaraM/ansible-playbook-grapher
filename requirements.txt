@@ -1,4 +1,4 @@
-ansible-core>=2.15,<2.16.1
+ansible-core>=2.15,<2.16.4
 graphviz>=0.18,<1
 colour<1
 lxml<6
