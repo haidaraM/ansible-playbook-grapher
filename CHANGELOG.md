@@ -4,24 +4,15 @@
 
 Dependency updates:
 
-* chore(deps): bump actions/upload-artifact from 3 to 4 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/166
-* chore(deps): bump actions/setup-python from 4 to 5 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/165
-* chore(deps): bump pytest from 7.4.3 to 7.4.4 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/168
-* chore(deps): update black requirement from ~=23.11 to ~=23.12 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/169
-* chore(deps): update lxml requirement from <5 to <6 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/167
-* chore(deps): update ansible-core requirement from <2.16,>=2.15 to >=2.15,<2.17 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/164
-* chore(deps): bump pytest from 7.4.4 to 8.0.0 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/171
-* chore(deps): update black requirement from ~=23.12 to ~=24.1 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/172
-* chore(deps): update ansible-core requirement from <2.16.1,>=2.15 to >=2.15,<2.16.4 by @dependabot
-  in https://github.com/haidaraM/ansible-playbook-grapher/pull/170
+* chore(deps): bump actions/upload-artifact from 3 to 4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/166
+* chore(deps): bump actions/setup-python from 4 to 5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/165
+* chore(deps): bump pytest from 7.4.3 to 7.4.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/168
+* chore(deps): update black requirement from ~=23.11 to ~=23.12 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/169
+* chore(deps): update lxml requirement from <5 to <6 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/167
+* chore(deps): update ansible-core requirement from <2.16,>=2.15 to >=2.15,<2.17 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/164
+* chore(deps): bump pytest from 7.4.4 to 8.0.0 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/171
+* chore(deps): update black requirement from ~=23.12 to ~=24.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/172
+* chore(deps): update ansible-core requirement from <2.16.1,>=2.15 to >=2.15,<2.16.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/170
 
 **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.1.1...v2.1.2
 
