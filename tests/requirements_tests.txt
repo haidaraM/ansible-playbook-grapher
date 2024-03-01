@@ -1,5 +1,5 @@
 -r ../requirements.txt
-pytest==8.0.0
+pytest==8.0.2
 pytest-cov==4.1.0
 pyquery==2.0.0
 black~=24.2
