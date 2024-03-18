@@ -226,11 +226,11 @@ class CompositeNode(Node):
         Returns true if the composte node is empty
         :return:
         """
-        counter = 0
         for _, nodes in self._compositions.items():
-            counter += len(nodes)
+            if len(nodes) > 0:
+                return False
 
-        return counter == 0
+        return True
 
 
 class CompositeTasksNode(CompositeNode):
