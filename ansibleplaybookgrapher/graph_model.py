@@ -164,6 +164,19 @@ class CompositeNode(Node):
         node.index = self._node_counter + 1
         self._node_counter += 1
 
+    def get_node(self, target_composition: str) -> List:
+        """
+        Get a node from the compositions
+        :param target_composition:
+        :return: A list of the nodes
+        """
+        if target_composition not in self._supported_compositions:
+            raise Exception(
+                f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
+            )
+
+        return self._compositions[target_composition]
+
     def get_all_tasks(self) -> List["TaskNode"]:
         """
         Return all the TaskNode inside this composite node
@@ -248,7 +261,7 @@ class CompositeTasksNode(CompositeNode):
         The tasks attached to this block
         :return:
         """
-        return self._compositions["tasks"]
+        return self.get_node("tasks")
 
 
 class PlaybookNode(CompositeNode):
@@ -289,7 +302,7 @@ class PlaybookNode(CompositeNode):
         Return the list of plays
         :return:
         """
-        return self._compositions["plays"]
+        return self.get_node("plays")
 
     def roles_usage(self) -> Dict["RoleNode", Set["PlayNode"]]:
         """
@@ -351,19 +364,19 @@ class PlayNode(CompositeNode):
 
     @property
     def roles(self) -> List["RoleNode"]:
-        return self._compositions["roles"]
+        return self.get_node("roles")
 
     @property
     def pre_tasks(self) -> List["Node"]:
-        return self._compositions["pre_tasks"]
+        return self.get_node("pre_tasks")
 
     @property
     def post_tasks(self) -> List["Node"]:
-        return self._compositions["post_tasks"]
+        return self.get_node("post_tasks")
 
     @property
     def tasks(self) -> List["Node"]:
-        return self._compositions["tasks"]
+        return self.get_node("tasks")
 
 
 class BlockNode(CompositeTasksNode):
