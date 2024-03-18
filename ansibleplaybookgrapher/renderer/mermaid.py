@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from pathlib import Path
 from typing import Dict, Set, List
 
@@ -23,9 +24,7 @@ from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 display = Display()
 
 # Default directive when rendering the graph.
-# More info at
-#   https://mermaid.js.org/config/directives.html
-#
+# More info at https://mermaid.js.org/config/directives.html
 DEFAULT_DIRECTIVE = '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
 DEFAULT_ORIENTATION = "LR"  # Left to right
 
@@ -36,8 +35,7 @@ class MermaidFlowChartRenderer(Renderer):
         playbook_nodes: List[PlaybookNode],
         roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
-        self.playbook_nodes = playbook_nodes
-        self.roles_usage = roles_usage
+        super().__init__(playbook_nodes, roles_usage)
 
     def render(
         self,
@@ -106,7 +104,7 @@ class MermaidFlowChartRenderer(Renderer):
                 "The --view option is not supported yet by the mermaid renderer"
             )
 
-        return final_output_path_file
+        return str(final_output_path_file)
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):

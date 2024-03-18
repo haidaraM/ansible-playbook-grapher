@@ -45,8 +45,7 @@ class GraphvizRenderer(Renderer):
         playbook_nodes: List[PlaybookNode],
         roles_usage: Dict["RoleNode", Set[PlayNode]],
     ):
-        self.playbook_nodes = playbook_nodes
-        self.roles_usage = roles_usage
+        super().__init__(playbook_nodes, roles_usage)
 
     def render(
         self,

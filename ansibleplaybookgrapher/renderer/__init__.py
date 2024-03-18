@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, List
 
 from ansible.utils.display import Display
 
@@ -44,7 +44,7 @@ OPEN_PROTOCOL_HANDLERS = {
 class Renderer(ABC):
     def __init__(
         self,
-        playbook_nodes: PlaybookNode,
+        playbook_nodes: List[PlaybookNode],
         roles_usage: Dict[RoleNode, Set[PlayNode]],
     ):
         self.playbook_nodes = playbook_nodes
@@ -73,7 +73,7 @@ class Renderer(ABC):
 
 class PlaybookBuilder(ABC):
     """
-    This the base class to inherit from by the renderer to build a single Playbook in the target format.
+    This is the base class to inherit from by the renderer to build a single Playbook in the target format.
     It provides some methods that need to be implemented
     """
 
