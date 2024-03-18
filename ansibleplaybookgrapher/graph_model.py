@@ -221,6 +221,17 @@ class CompositeNode(Node):
                     node._get_all_links(links)
                 links[self].append(node)
 
+    def is_empty(self) -> bool:
+        """
+        Returns true if the composte node is empty
+        :return:
+        """
+        counter = 0
+        for _, nodes in self._compositions.items():
+            counter += len(nodes)
+
+        return counter == 0
+
 
 class CompositeTasksNode(CompositeNode):
     """

@@ -114,7 +114,7 @@ class PlaybookGrapherCLI(CLI):
             dest="include_role_tasks",
             action="store_true",
             default=False,
-            help="Include the tasks of the role in the graph.",
+            help="Include the tasks of the roles in the graph. Applied when parsing the playbooks.",
         )
 
         self.parser.add_argument(
@@ -203,6 +203,23 @@ class PlaybookGrapherCLI(CLI):
             "--version",
             action="version",
             version=f"{__prog__} {__version__} (with ansible {ansible_version})",
+        )
+
+        """
+        self.parser.add_argument(
+            "--hide-plays-without-roles",
+            action="store_true",
+            default=False,
+            help="Hide the plays that end up with no roles in the graph (after applying the tags filter). "
+            "Only roles at the play level and include_role are considered",
+        )
+        """
+
+        self.parser.add_argument(
+            "--hide-empty-plays",
+            action="store_true",
+            default=False,
+            help="Hide the plays that end up with no tasks in the graph (after applying the tags filter).",
         )
 
         self.parser.add_argument(

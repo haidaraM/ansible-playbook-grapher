@@ -66,3 +66,16 @@ def test_get_all_tasks_nodes():
     all_tasks = play.get_all_tasks()
     assert len(all_tasks) == 4, "There should be 4 tasks in all"
     assert [task_1, task_2, task_3, task_4] == all_tasks
+
+
+def test_empty_play():
+    """
+    Testing the emptiness of a play
+    :return:
+    """
+
+    play = PlayNode("play")
+    assert play.is_empty()
+
+    play.add_node("roles", RoleNode("my_role_1"))
+    assert not play.is_empty()
