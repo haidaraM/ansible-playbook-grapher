@@ -15,9 +15,9 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def run_grapher(
-    playbook_files: List[str],
-    output_filename: str,
-    additional_args: List[str] = None,
+        playbook_files: List[str],
+        output_filename: str,
+        additional_args: List[str] = None,
 ) -> Tuple[str, List[str]]:
     """
     Utility function to run the grapher
@@ -71,15 +71,15 @@ def run_grapher(
 
 
 def _common_tests(
-    svg_path: str,
-    playbook_paths: List[str],
-    playbooks_number: int = 1,
-    plays_number: int = 0,
-    tasks_number: int = 0,
-    post_tasks_number: int = 0,
-    roles_number: int = 0,
-    pre_tasks_number: int = 0,
-    blocks_number: int = 0,
+        svg_path: str,
+        playbook_paths: List[str],
+        playbooks_number: int = 1,
+        plays_number: int = 0,
+        tasks_number: int = 0,
+        post_tasks_number: int = 0,
+        roles_number: int = 0,
+        pre_tasks_number: int = 0,
+        blocks_number: int = 0,
 ) -> Dict[str, List[Element]]:
     """
     Perform some common tests on the generated svg file:
@@ -110,35 +110,35 @@ def _common_tests(
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
-        playbooks_file_names == playbook_paths
+            playbooks_file_names == playbook_paths
     ), "The playbook file names should be in the svg file"
 
     assert (
-        len(playbooks) == playbooks_number
+            len(playbooks) == playbooks_number
     ), f"The graph '{svg_path}' should contains {playbooks_number} play(s) but we found {len(playbooks)} play(s)"
 
     assert (
-        len(plays) == plays_number
+            len(plays) == plays_number
     ), f"The graph '{svg_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
     assert (
-        len(pre_tasks) == pre_tasks_number
+            len(pre_tasks) == pre_tasks_number
     ), f"The graph '{svg_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
     assert (
-        len(roles) == roles_number
+            len(roles) == roles_number
     ), f"The graph '{svg_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
-        len(tasks) == tasks_number
+            len(tasks) == tasks_number
     ), f"The graph '{svg_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
     assert (
-        len(post_tasks) == post_tasks_number
+            len(post_tasks) == post_tasks_number
     ), f"The graph '{svg_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
     assert (
-        len(blocks) == blocks_number
+            len(blocks) == blocks_number
     ), f"The graph '{svg_path}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
 
     return {
@@ -348,7 +348,7 @@ def test_import_playbook(request):
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
-    request, include_role_tasks_option, expected_tasks_number
+        request, include_role_tasks_option, expected_tasks_number
 ):
     """
     Test nested import playbook with an import_role and include_tasks
@@ -379,10 +379,10 @@ def test_relative_var_files(request):
 
     # check if the plays title contains the interpolated variables
     assert (
-        "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
+            "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
     ), "The title should contain player name"
     assert (
-        "Lionel Messi" in res["tasks"][1].find("g/a/text").text
+            "Lionel Messi" in res["tasks"][1].find("g/a/text").text
     ), "The title should contain player name"
 
 
@@ -521,7 +521,7 @@ def test_community_download_roles_and_collection(request):
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request, flag, roles_number, tasks_number, post_tasks_number
+        request, flag, roles_number, tasks_number, post_tasks_number
 ):
     """
     Test group roles by name
@@ -582,4 +582,23 @@ def test_hiding_plays_with_tags_filter(request):
 
     _common_tests(
         svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, roles_number=1
+    )
+
+
+def test_hiding_plays_with_tags_filter_all(request):
+    """
+    Test hiding_plays with the flag --hide-empty-plays.
+
+    This case is about hiding ALL the plays when filtering with tags
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["play-hiding.yml"],
+        output_filename=request.node.name,
+        additional_args=["--hide-empty-plays", "--tags", "fake-tag-that-does-not-exist"],
+    )
+
+    _common_tests(
+        svg_path=svg_path, playbook_paths=playbook_paths
     )
