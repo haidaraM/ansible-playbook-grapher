@@ -76,6 +76,7 @@ class PlaybookGrapherCLI(CLI):
                 output_filename=self.options.output_filename,
                 view=self.options.view,
                 save_dot_file=self.options.save_dot_file,
+                hide_empty_plays=self.options.hide_empty_plays,
             )
 
             return output_path
@@ -91,6 +92,7 @@ class PlaybookGrapherCLI(CLI):
                 view=self.options.view,
                 directive=self.options.renderer_mermaid_directive,
                 orientation=self.options.renderer_mermaid_orientation,
+                hide_empty_plays=self.options.hide_empty_plays,
             )
             return output_path
 

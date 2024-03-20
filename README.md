@@ -26,7 +26,7 @@ JavaScript:
   the files for the others nodes. The cursor will be at the task exact position in the file.  
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
-  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/12cee0fbd59ffbb706731460e301f0b886515357/ansibleplaybookgrapher/graphbuilder.py#L33-L42).
+  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/12cee0fbd59ffbb706731460e301f0b886515357/ansibleplaybookgrapher/graphbuilder.py#L33-L42)
 - Filer tasks based on tags
 - Export the dot file used to generate the graph with Graphviz.
 
@@ -311,8 +311,8 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--renderer {graphviz,mermaid-flowchart}]
                                 [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
                                 [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}]
-                                [--version] [-t TAGS] [--skip-tags SKIP_TAGS]
-                                [--vault-id VAULT_IDS]
+                                [--version] [--hide-empty-plays] [-t TAGS]
+                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
                                 [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
                                 [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
@@ -329,7 +329,10 @@ options:
                         When rendering the graph, only a single role will be
                         display for all roles having the same names. Default:
                         False
-  --include-role-tasks  Include the tasks of the role in the graph.
+  --hide-empty-plays    Hide the plays that end up with no tasks in the graph
+                        (after applying the tags filter).
+  --include-role-tasks  Include the tasks of the roles in the graph. Applied
+                        when parsing the playbooks.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the
                         graph. Required if --open-protocol-handler is set to
@@ -391,6 +394,7 @@ options:
                         plugins currently evaluate up to -vvvvvv. A reasonable
                         level to start is -vvv, connection debugging might
                         require -vvvv.
+
 
 ```
 

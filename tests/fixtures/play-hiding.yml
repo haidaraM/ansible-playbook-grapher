@@ -1,0 +1,19 @@
+---
+- hosts: host1
+  tags:
+    - play1
+  roles:
+    - role: with-dependencies
+
+
+- hosts: host2
+  tags:
+    - play2
+  tasks:
+    - name: debug
+      debug: msg="Post task 1"
+
+
+- hosts: host3 # This should not be displayed when --hide-empty-plays is set
+  tags:
+    - play3

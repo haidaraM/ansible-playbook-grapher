@@ -53,6 +53,7 @@ class GraphvizRenderer(Renderer):
         open_protocol_custom_formats: Dict[str, str],
         output_filename: str,
         view: bool,
+        hide_empty_plays: bool = False,
         **kwargs,
     ) -> str:
         """
@@ -76,7 +77,7 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
             )
-            builder.build_playbook()
+            builder.build_playbook(hide_empty_plays=hide_empty_plays)
             roles_built.update(builder.roles_built)
 
         display.display("Rendering the graph...")
@@ -274,7 +275,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     digraph=role_subgraph,
                 )
 
-    def build_playbook(self, **kwargs) -> str:
+    def build_playbook(self, hide_empty_plays: bool = False, **kwargs) -> str:
         """
         Convert the PlaybookNode to the graphviz dot format
         :return: The text representation of the graphviz dot format for the playbook
@@ -289,7 +290,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             URL=self.get_node_url(self.playbook_node, "file"),
         )
 
-        for play in self.playbook_node.plays:
+        for play in self.playbook_node.plays(exclude_empty=hide_empty_plays):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 self.build_play(play, digraph=play_subgraph, **kwargs)
 

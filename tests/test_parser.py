@@ -48,7 +48,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     """
     parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
-    assert len(playbook_node.plays) == 1
+    assert len(playbook_node.plays()) == 1
     assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert playbook_node.line == 1
     assert playbook_node.column == 1
@@ -56,7 +56,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
         playbook_node.index is None
     ), "The index of the playbook should be None (it has no parent)"
 
-    play_node = playbook_node.plays[0]
+    play_node = playbook_node.plays()[0]
     assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
     assert play_node.line == 2
     assert play_node.index == 1
@@ -90,8 +90,8 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     """
     parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
-    assert len(playbook_node.plays) == 1
-    play_node = playbook_node.plays[0]
+    assert len(playbook_node.plays()) == 1
+    play_node = playbook_node.plays()[0]
     assert play_node.index == 1
 
     assert len(play_node.roles) == 2
@@ -127,8 +127,8 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
         grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
-    assert len(playbook_node.plays) == 1
-    play_node = playbook_node.plays[0]
+    assert len(playbook_node.plays()) == 1
+    play_node = playbook_node.plays()[0]
     tasks = play_node.tasks
     assert len(tasks) == 6
 
@@ -194,9 +194,9 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
         grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
-    assert len(playbook_node.plays) == 1
+    assert len(playbook_node.plays()) == 1
 
-    play_node = playbook_node.plays[0]
+    play_node = playbook_node.plays()[0]
     pre_tasks = play_node.pre_tasks
     tasks = play_node.tasks
     post_tasks = play_node.post_tasks
@@ -360,7 +360,7 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI):
         grapher_cli.options.playbook_filenames[0], include_role_tasks=True
     )
     playbook_node = parser.parse()
-    roles = playbook_node.plays[0].roles
+    roles = playbook_node.plays()[0].roles
     assert len(roles) == 1, "Only one explicit role is called inside the playbook"
     role_with_dependencies = roles[0]
     tasks = role_with_dependencies.tasks

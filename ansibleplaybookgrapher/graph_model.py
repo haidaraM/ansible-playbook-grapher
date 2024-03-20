@@ -307,13 +307,18 @@ class PlaybookNode(CompositeNode):
         self.line = 1
         self.column = 1
 
-    @property
-    def plays(self) -> List["PlayNode"]:
+    def plays(self, exclude_empty: bool = False) -> List["PlayNode"]:
         """
         Return the list of plays
+        :param exclude_empty: Whether to exclude the empty plays from the result or not
         :return:
         """
-        return self.get_node("plays")
+        plays = self.get_node("plays")
+
+        if exclude_empty:
+            return [play for play in plays if not play.is_empty()]
+
+        return plays
 
     def roles_usage(self) -> Dict["RoleNode", Set["PlayNode"]]:
         """
