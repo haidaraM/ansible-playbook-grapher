@@ -207,15 +207,13 @@ class PlaybookGrapherCLI(CLI):
             version=f"{__prog__} {__version__} (with ansible {ansible_version})",
         )
 
-        """
         self.parser.add_argument(
             "--hide-plays-without-roles",
             action="store_true",
             default=False,
             help="Hide the plays that end up with no roles in the graph (after applying the tags filter). "
-            "Only roles at the play level and include_role are considered",
+            "Only roles at the play level and include_role as tasks are considered (no import_role).",
         )
-        """
 
         self.parser.add_argument(
             "--hide-empty-plays",

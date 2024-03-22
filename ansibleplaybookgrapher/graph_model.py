@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, Set, Type, Tuple, Optional
+from typing import Dict, List, Set, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -79,7 +79,7 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def get_first_parent_matching_type(self, node_type: Type) -> Type:
+    def get_first_parent_matching_type(self, node_type: type) -> type:
         """
         Get the first parent of this node matching the given type
         :param node_type: The type of the parent to get
@@ -223,7 +223,7 @@ class CompositeNode(Node):
 
     def is_empty(self) -> bool:
         """
-        Returns true if the composte node is empty
+        Returns true if the composite node is empty, false otherwise
         :return:
         """
         for _, nodes in self._compositions.items():
@@ -231,6 +231,22 @@ class CompositeNode(Node):
                 return False
 
         return True
+
+    def has_node_type(self, node_type: type) -> bool:
+        """
+        Returns true if the composite node has at least one node of the given type, false otherwise
+        :param node_type: The type of the node
+        :return:
+        """
+        for _, nodes in self._compositions.items():
+            for node in nodes:
+                if isinstance(node, node_type):
+                    return True
+
+                if isinstance(node, CompositeNode):
+                    return node.has_node_type(node_type)
+
+        return False
 
 
 class CompositeTasksNode(CompositeNode):
@@ -380,6 +396,10 @@ class PlayNode(CompositeNode):
 
     @property
     def roles(self) -> List["RoleNode"]:
+        """
+        Return the roles of the plays. Tasks using "include_role" are NOT returned.
+        :return:
+        """
         return self.get_nodes("roles")
 
     @property

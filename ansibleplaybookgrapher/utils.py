@@ -21,7 +21,7 @@ from operator import methodcaller
 from typing import Tuple, List, Dict, Any, Set
 
 from ansible.errors import AnsibleError
-from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import to_text
 from ansible.parsing.dataloader import DataLoader
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
