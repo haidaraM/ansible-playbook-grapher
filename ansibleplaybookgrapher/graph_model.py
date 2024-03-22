@@ -323,16 +323,22 @@ class PlaybookNode(CompositeNode):
         self.line = 1
         self.column = 1
 
-    def plays(self, exclude_empty: bool = False) -> List["PlayNode"]:
+    def plays(
+        self, exclude_empty: bool = False, exclude_without_roles: bool = False
+    ) -> List["PlayNode"]:
         """
         Return the list of plays
         :param exclude_empty: Whether to exclude the empty plays from the result or not
+        :param exclude_without_roles: Whether to exclude the plays that do not have roles
         :return:
         """
         plays = self.get_nodes("plays")
 
         if exclude_empty:
-            return [play for play in plays if not play.is_empty()]
+            plays = [play for play in plays if not play.is_empty()]
+
+        if exclude_without_roles:
+            plays = [play for play in plays if play.has_node_type(RoleNode)]
 
         return plays
 

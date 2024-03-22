@@ -54,9 +54,11 @@ class GraphvizRenderer(Renderer):
         output_filename: str,
         view: bool,
         hide_empty_plays: bool = False,
+        hide_plays_without_roles=False,
         **kwargs,
     ) -> str:
         """
+        :param hide_plays_without_roles:
         :return: The filename where the playbooks where rendered
         """
         save_dot_file = kwargs.get("save_dot_file", False)
@@ -77,7 +79,10 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
             )
-            builder.build_playbook(hide_empty_plays=hide_empty_plays)
+            builder.build_playbook(
+                hide_empty_plays=hide_empty_plays,
+                hide_plays_without_roles=hide_plays_without_roles,
+            )
             roles_built.update(builder.roles_built)
 
         display.display("Rendering the graph...")
@@ -275,9 +280,13 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     digraph=role_subgraph,
                 )
 
-    def build_playbook(self, hide_empty_plays: bool = False, **kwargs) -> str:
+    def build_playbook(
+        self, hide_empty_plays: bool = False, hide_plays_without_roles=False, **kwargs
+    ) -> str:
         """
         Convert the PlaybookNode to the graphviz dot format
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :return: The text representation of the graphviz dot format for the playbook
         """
         display.vvv(f"Converting the graph to the dot format for graphviz")
@@ -290,7 +299,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             URL=self.get_node_url(self.playbook_node, "file"),
         )
 
-        for play in self.playbook_node.plays(exclude_empty=hide_empty_plays):
+        for play in self.playbook_node.plays(
+            exclude_empty=hide_empty_plays,
+            exclude_without_roles=hide_plays_without_roles,
+        ):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 self.build_play(play, digraph=play_subgraph, **kwargs)
 

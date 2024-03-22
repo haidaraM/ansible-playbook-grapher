@@ -566,9 +566,9 @@ def test_hiding_plays(request):
     )
 
 
-def test_hiding_plays_with_tags_filter(request):
+def test_hiding_empty_plays_with_tags_filter(request):
     """
-    Test hiding_plays with the flag --hide-empty-plays.
+    Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding plays when filtering with tags
     :param request:
@@ -585,9 +585,9 @@ def test_hiding_plays_with_tags_filter(request):
     )
 
 
-def test_hiding_plays_with_tags_filter_all(request):
+def test_hiding_empty_plays_with_tags_filter_all(request):
     """
-    Test hiding_plays with the flag --hide-empty-plays.
+    Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding ALL the plays when filtering with tags
     :param request:
@@ -604,3 +604,31 @@ def test_hiding_plays_with_tags_filter_all(request):
     )
 
     _common_tests(svg_path=svg_path, playbook_paths=playbook_paths)
+
+
+def test_hiding_plays_without_roles(request):
+    """
+    Test hiding plays with the flag --hide-plays-without-roles
+
+    Also apply some tags filter
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["play-hiding.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "--hide-plays-without-roles",
+            "--tags",
+            "play1,include-role",
+            "--include-role-tasks",
+        ],
+    )
+
+    _common_tests(
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=2,
+        roles_number=2,
+        tasks_number=8,
+    )

@@ -50,19 +50,19 @@ class MermaidFlowChartRenderer(Renderer):
         output_filename: str,
         view: bool,
         hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
     ) -> str:
         """
 
+        :param hide_plays_without_roles:
         :param open_protocol_handler: Not supported for the moment
         :param open_protocol_custom_formats: Not supported for the moment
         :param output_filename: The output filename without any extension
         :param view: Not supported for the moment
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param directive: Mermaid directive
-        :param orientation: Mermaid orientation
         :param kwargs:
         :return:
         """
@@ -143,10 +143,17 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # The current depth level of the nodes. Used for indentation
         self._indentation_level = 1
 
-    def build_playbook(self, hide_empty_plays: bool = False, **kwargs) -> str:
+    def build_playbook(
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles=False,
+        **kwargs: bool,
+    ) -> str:
         """
         Build the playbook
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param hide_empty_plays: Whether to hide empty plays or not
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param kwargs:
         :return:
         """
@@ -159,7 +166,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_text(f'{self.playbook_node.id}("{self.playbook_node.name}")')
 
         self._indentation_level += 1
-        for play_node in self.playbook_node.plays(exclude_empty=hide_empty_plays):
+        for play_node in self.playbook_node.plays(
+            exclude_empty=hide_empty_plays,
+            exclude_without_roles=hide_plays_without_roles,
+        ):
             self.build_play(play_node)
         self._indentation_level -= 1
 
