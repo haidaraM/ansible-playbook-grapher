@@ -50,7 +50,7 @@ def run_grapher(
 
 def _common_tests(mermaid_path: str, playbook_paths: List[str], **kwargs):
     """
-
+    Some common tests for mermaid renderer
     :param mermaid_path:
     :param playbook_paths:
     :param kwargs:
