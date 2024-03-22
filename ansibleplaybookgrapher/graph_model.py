@@ -164,7 +164,7 @@ class CompositeNode(Node):
         node.index = self._node_counter + 1
         self._node_counter += 1
 
-    def get_node(self, target_composition: str) -> List:
+    def get_nodes(self, target_composition: str) -> List:
         """
         Get a node from the compositions
         :param target_composition:
@@ -272,7 +272,7 @@ class CompositeTasksNode(CompositeNode):
         The tasks attached to this block
         :return:
         """
-        return self.get_node("tasks")
+        return self.get_nodes("tasks")
 
 
 class PlaybookNode(CompositeNode):
@@ -313,7 +313,7 @@ class PlaybookNode(CompositeNode):
         :param exclude_empty: Whether to exclude the empty plays from the result or not
         :return:
         """
-        plays = self.get_node("plays")
+        plays = self.get_nodes("plays")
 
         if exclude_empty:
             return [play for play in plays if not play.is_empty()]
@@ -380,19 +380,19 @@ class PlayNode(CompositeNode):
 
     @property
     def roles(self) -> List["RoleNode"]:
-        return self.get_node("roles")
+        return self.get_nodes("roles")
 
     @property
     def pre_tasks(self) -> List["Node"]:
-        return self.get_node("pre_tasks")
+        return self.get_nodes("pre_tasks")
 
     @property
     def post_tasks(self) -> List["Node"]:
-        return self.get_node("post_tasks")
+        return self.get_nodes("post_tasks")
 
     @property
     def tasks(self) -> List["Node"]:
-        return self.get_node("tasks")
+        return self.get_nodes("tasks")
 
 
 class BlockNode(CompositeTasksNode):
