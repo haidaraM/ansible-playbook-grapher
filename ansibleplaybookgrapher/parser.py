@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ class PlaybookParser(BaseParser):
             add post_tasks
         :return:
         """
-
+        display.display(f"Parsing playbook {self.playbook_filename}")
         playbook = Playbook.load(
             self.playbook_filename,
             loader=self.data_loader,

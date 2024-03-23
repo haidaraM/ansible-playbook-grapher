@@ -18,7 +18,13 @@ from typing import Dict, Set, List
 
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher import BlockNode, RoleNode, TaskNode, PlayNode, PlaybookNode
+from ansibleplaybookgrapher.graph_model import (
+    BlockNode,
+    RoleNode,
+    TaskNode,
+    PlayNode,
+    PlaybookNode,
+)
 from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 
 display = Display()

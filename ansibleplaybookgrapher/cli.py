@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher import __prog__, __version__, Grapher
+from ansibleplaybookgrapher.grapher import Grapher
+from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
 from ansibleplaybookgrapher.renderer.mermaid import (
