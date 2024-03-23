@@ -4,7 +4,7 @@ from typing import List
 import pytest
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher import PlaybookParser
+from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph_model import (
     TaskNode,

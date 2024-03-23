@@ -23,7 +23,7 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher import Grapher
+from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.version import __prog__, __version__
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
