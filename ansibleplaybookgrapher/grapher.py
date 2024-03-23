@@ -32,11 +32,11 @@ class Grapher:
         self.playbook_filenames = playbook_filenames
 
     def parse(
-            self,
-            include_role_tasks: bool = False,
-            tags: List[str] = None,
-            skip_tags: List[str] = None,
-            group_roles_by_name: bool = False,
+        self,
+        include_role_tasks: bool = False,
+        tags: List[str] = None,
+        skip_tags: List[str] = None,
+        group_roles_by_name: bool = False,
     ) -> Tuple[List[PlaybookNode], Dict[RoleNode, Set[PlayNode]]]:
         """
         Parses all the provided playbooks
