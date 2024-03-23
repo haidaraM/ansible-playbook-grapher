@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,20 +15,15 @@
 
 from typing import Dict, List, Set, Tuple
 
-from ansible.utils.display import Display
-
-from ansibleplaybookgrapher.graph_model import (
+from .graph_model import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
+from .graph_model import (
     PlaybookNode,
     RoleNode,
     PlayNode,
 )
-from ansibleplaybookgrapher.parser import PlaybookParser
-from ansibleplaybookgrapher.utils import merge_dicts
-from .graph_model import PlaybookNode, PlayNode, TaskNode, RoleNode, BlockNode
 from .parser import PlaybookParser
-
-
-display = Display()
+from .parser import PlaybookParser
+from .utils import merge_dicts
 
 
 class Grapher:
@@ -58,7 +53,6 @@ class Grapher:
         roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
 
         for playbook_file in self.playbook_filenames:
-            display.display(f"Parsing playbook {playbook_file}")
             playbook_parser = PlaybookParser(
                 playbook_filename=playbook_file,
                 tags=tags,
