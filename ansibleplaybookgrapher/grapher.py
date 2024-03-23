@@ -15,13 +15,13 @@
 
 from typing import Dict, List, Set, Tuple
 
-from .graph_model import (
+from ansibleplaybookgrapher.graph_model import (
     PlaybookNode,
     RoleNode,
     PlayNode,
 )
-from .parser import PlaybookParser
-from .utils import merge_dicts
+from ansibleplaybookgrapher.parser import PlaybookParser
+from ansibleplaybookgrapher.utils import merge_dicts
 
 
 class Grapher:
