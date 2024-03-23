@@ -17,7 +17,7 @@ import sys
 
 from setuptools import setup, find_packages
 
-from ansibleplaybookgrapher import __version__, __prog__
+from ansibleplaybookgrapher.version import __version__, __prog__
 
 
 def read_requirements(path):
