@@ -48,8 +48,18 @@ for the supported Ansible version.
 
 ## Installation
 
-```shell script
+```shell
 pip install ansible-playbook-grapher
+```
+
+You can also install the unpublished version from GitHub direction. Examples: 
+
+```shell
+# Install the version from the main branch
+pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher"
+
+# Install the version from a specific branch
+pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher@specific-branch"
 ```
 
 ### Renderers
