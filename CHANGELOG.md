@@ -1,3 +1,14 @@
+# 2.2.0 (unreleased)
+
+## What's Changed
+
+* chore(deps): update black requirement from ~=24.1 to ~=24.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/175
+* chore(deps): bump pytest from 8.0.0 to 8.0.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/173
+* fix: make sure pip install from github works by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/178
+* chore(deps): update ansible-core requirement from <2.16.4,>=2.15 to >=2.15,<2.16.5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/174
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.1.2...v2.2.0
+
 # 2.1.2 (2024-02-25)
 
 ## What's Changed
