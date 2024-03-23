@@ -3,7 +3,7 @@ import os
 import pytest
 from ansible.plugins.loader import init_plugin_loader
 
-from ansibleplaybookgrapher.version import __prog__
+from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import INVENTORY_FILE, FIXTURES_DIR
 

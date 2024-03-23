@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 import pytest
 
-from ansibleplaybookgrapher.version import __prog__
+from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
 

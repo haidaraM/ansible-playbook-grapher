@@ -2,7 +2,7 @@ import pytest
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 
-from ansibleplaybookgrapher.version import __prog__, __version__
+from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
