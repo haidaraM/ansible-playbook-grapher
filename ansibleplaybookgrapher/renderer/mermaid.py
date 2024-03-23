@@ -98,7 +98,7 @@ class MermaidFlowChartRenderer(Renderer):
 
             mermaid_code += playbook_builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles
+                hide_plays_without_roles=hide_plays_without_roles,
             )
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
