@@ -353,6 +353,12 @@ class PlaybookParser(BaseParser):
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     display.v(f"An 'include_role' found: '{task_or_block.get_name()}'")
 
+                    if not task_or_block.evaluate_tags(
+                            only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars
+                    ):
+                        display.vv(f"The include_role '{task_or_block.get_name()}' is skipped due to the tags.")
+                        continue # Go to the next task
+
                     # Here we are using the role name instead of the task name to keep the same behavior  as a
                     #  traditional role
                     if self.group_roles_by_name:

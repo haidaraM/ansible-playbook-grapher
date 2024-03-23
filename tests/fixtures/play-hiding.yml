@@ -15,8 +15,6 @@
     - name: Include role
       include_role:
         name: fake_role
-        apply:
-          tags: include-role
 
 
 - hosts: host3 # This should not be displayed when --hide-empty-plays is set
