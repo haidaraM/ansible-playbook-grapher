@@ -58,8 +58,13 @@ class GraphvizRenderer(Renderer):
         **kwargs,
     ) -> str:
         """
-        :param hide_plays_without_roles:
-        :return: The filename where the playbooks where rendered
+        :param open_protocol_handler: The protocol handler name to use
+        :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
+        :param output_filename: The output filename without any extension
+        :param view: Whether to open the rendered file in the default viewer
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :return: The path of the rendered file
         """
         save_dot_file = kwargs.get("save_dot_file", False)
 

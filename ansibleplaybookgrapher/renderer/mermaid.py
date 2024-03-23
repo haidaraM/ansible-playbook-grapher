@@ -57,12 +57,14 @@ class MermaidFlowChartRenderer(Renderer):
     ) -> str:
         """
 
-        :param hide_plays_without_roles:
         :param open_protocol_handler: Not supported for the moment
         :param open_protocol_custom_formats: Not supported for the moment
         :param output_filename: The output filename without any extension
         :param view: Not supported for the moment
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param directive: Mermaid directive
+        :param orientation: Mermaid graph orientation
         :param kwargs:
         :return:
         """
@@ -95,7 +97,8 @@ class MermaidFlowChartRenderer(Renderer):
             )
 
             mermaid_code += playbook_builder.build_playbook(
-                hide_empty_plays=hide_empty_plays
+                hide_empty_plays=hide_empty_plays,
+                hide_plays_without_roles=hide_plays_without_roles
             )
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)

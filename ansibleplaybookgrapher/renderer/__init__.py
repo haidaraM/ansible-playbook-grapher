@@ -70,7 +70,7 @@ class Renderer(ABC):
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param kwargs:
-        :return: The filename of the rendered file
+        :return: The path of the rendered file
         """
         pass
 
