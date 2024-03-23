@@ -311,8 +311,8 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--renderer {graphviz,mermaid-flowchart}]
                                 [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
                                 [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}]
-                                [--version] [--hide-empty-plays] [-t TAGS]
-                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
+                                [--version] [-t TAGS] [--skip-tags SKIP_TAGS]
+                                [--vault-id VAULT_IDS]
                                 [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
                                 [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
@@ -329,10 +329,7 @@ options:
                         When rendering the graph, only a single role will be
                         display for all roles having the same names. Default:
                         False
-  --hide-empty-plays    Hide the plays that end up with no tasks in the graph
-                        (after applying the tags filter).
-  --include-role-tasks  Include the tasks of the roles in the graph. Applied
-                        when parsing the playbooks.
+  --include-role-tasks  Include the tasks of the role in the graph.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the
                         graph. Required if --open-protocol-handler is set to
@@ -394,7 +391,6 @@ options:
                         plugins currently evaluate up to -vvvvvv. A reasonable
                         level to start is -vvv, connection debugging might
                         require -vvvv.
-
 
 ```
 
