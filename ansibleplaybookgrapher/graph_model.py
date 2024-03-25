@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
-from typing import Dict, List, Set, Type, Tuple, Optional
+from typing import Dict, List, Set, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -79,7 +79,7 @@ class Node:
         if self.raw_object and self.raw_object.get_ds():
             self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
 
-    def get_first_parent_matching_type(self, node_type: Type) -> Type:
+    def get_first_parent_matching_type(self, node_type: type) -> type:
         """
         Get the first parent of this node matching the given type
         :param node_type: The type of the parent to get
@@ -164,7 +164,7 @@ class CompositeNode(Node):
         node.index = self._node_counter + 1
         self._node_counter += 1
 
-    def get_node(self, target_composition: str) -> List:
+    def get_nodes(self, target_composition: str) -> List:
         """
         Get a node from the compositions
         :param target_composition:
@@ -221,6 +221,33 @@ class CompositeNode(Node):
                     node._get_all_links(links)
                 links[self].append(node)
 
+    def is_empty(self) -> bool:
+        """
+        Returns true if the composite node is empty, false otherwise
+        :return:
+        """
+        for _, nodes in self._compositions.items():
+            if len(nodes) > 0:
+                return False
+
+        return True
+
+    def has_node_type(self, node_type: type) -> bool:
+        """
+        Returns true if the composite node has at least one node of the given type, false otherwise
+        :param node_type: The type of the node
+        :return:
+        """
+        for _, nodes in self._compositions.items():
+            for node in nodes:
+                if isinstance(node, node_type):
+                    return True
+
+                if isinstance(node, CompositeNode):
+                    return node.has_node_type(node_type)
+
+        return False
+
 
 class CompositeTasksNode(CompositeNode):
     """
@@ -261,7 +288,7 @@ class CompositeTasksNode(CompositeNode):
         The tasks attached to this block
         :return:
         """
-        return self.get_node("tasks")
+        return self.get_nodes("tasks")
 
 
 class PlaybookNode(CompositeNode):
@@ -296,13 +323,24 @@ class PlaybookNode(CompositeNode):
         self.line = 1
         self.column = 1
 
-    @property
-    def plays(self) -> List["PlayNode"]:
+    def plays(
+        self, exclude_empty: bool = False, exclude_without_roles: bool = False
+    ) -> List["PlayNode"]:
         """
         Return the list of plays
+        :param exclude_empty: Whether to exclude the empty plays from the result or not
+        :param exclude_without_roles: Whether to exclude the plays that do not have roles
         :return:
         """
-        return self.get_node("plays")
+        plays = self.get_nodes("plays")
+
+        if exclude_empty:
+            plays = [play for play in plays if not play.is_empty()]
+
+        if exclude_without_roles:
+            plays = [play for play in plays if play.has_node_type(RoleNode)]
+
+        return plays
 
     def roles_usage(self) -> Dict["RoleNode", Set["PlayNode"]]:
         """
@@ -364,19 +402,23 @@ class PlayNode(CompositeNode):
 
     @property
     def roles(self) -> List["RoleNode"]:
-        return self.get_node("roles")
+        """
+        Return the roles of the plays. Tasks using "include_role" are NOT returned.
+        :return:
+        """
+        return self.get_nodes("roles")
 
     @property
     def pre_tasks(self) -> List["Node"]:
-        return self.get_node("pre_tasks")
+        return self.get_nodes("pre_tasks")
 
     @property
     def post_tasks(self) -> List["Node"]:
-        return self.get_node("post_tasks")
+        return self.get_nodes("post_tasks")
 
     @property
     def tasks(self) -> List["Node"]:
-        return self.get_node("tasks")
+        return self.get_nodes("tasks")
 
 
 class BlockNode(CompositeTasksNode):

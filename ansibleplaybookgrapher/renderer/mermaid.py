@@ -49,25 +49,31 @@ class MermaidFlowChartRenderer(Renderer):
         open_protocol_custom_formats: Dict[str, str],
         output_filename: str,
         view: bool,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        directive: str = DEFAULT_DIRECTIVE,
+        orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
     ) -> str:
         """
 
-        :param open_protocol_handler:
-        :param open_protocol_custom_formats:
-        :param output_filename: without any extension
-        :param view:
+        :param open_protocol_handler: Not supported for the moment
+        :param open_protocol_custom_formats: Not supported for the moment
+        :param output_filename: The output filename without any extension
+        :param view: Not supported for the moment
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param directive: Mermaid directive
+        :param orientation: Mermaid graph orientation
         :param kwargs:
         :return:
         """
         # TODO: Add support for protocol handler
         # TODO: Add support for hover
+
         mermaid_code = "---\n"
         mermaid_code += "title: Ansible Playbook Grapher\n"
         mermaid_code += "---\n"
-
-        directive = kwargs.get("directive", DEFAULT_DIRECTIVE)
-        orientation = kwargs.get("orientation", DEFAULT_ORIENTATION)
 
         display.vvv(f"Using '{directive}' as directive for the mermaid chart")
         mermaid_code += f"{directive}\n"
@@ -90,7 +96,10 @@ class MermaidFlowChartRenderer(Renderer):
                 link_order=link_order,
             )
 
-            mermaid_code += playbook_builder.build_playbook()
+            mermaid_code += playbook_builder.build_playbook(
+                hide_empty_plays=hide_empty_plays,
+                hide_plays_without_roles=hide_plays_without_roles,
+            )
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
 
@@ -130,15 +139,24 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             roles_usage,
             roles_built,
         )
+
         self.mermaid_code = ""
         # Used as an identifier for the links
         self.link_order = link_order
         # The current depth level of the nodes. Used for indentation
-        self._identation_level = 1
+        self._indentation_level = 1
 
-    def build_playbook(self, **kwargs) -> str:
+    def build_playbook(
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles=False,
+        **kwargs: bool,
+    ) -> str:
         """
         Build the playbook
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param hide_empty_plays: Whether to hide empty plays or not
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param kwargs:
         :return:
         """
@@ -150,10 +168,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")
         self.add_text(f'{self.playbook_node.id}("{self.playbook_node.name}")')
 
-        self._identation_level += 1
-        for play_node in self.playbook_node.plays:
+        self._indentation_level += 1
+        for play_node in self.playbook_node.plays(
+            exclude_empty=hide_empty_plays,
+            exclude_without_roles=hide_plays_without_roles,
+        ):
             self.build_play(play_node)
-        self._identation_level -= 1
+        self._indentation_level -= 1
 
         self.add_comment(f"End of the playbook '{self.playbook_node.name}'\n")
 
@@ -182,9 +203,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # traverse the play
-        self._identation_level += 1
+        self._indentation_level += 1
         self.traverse_play(play_node)
-        self._identation_level -= 1
+        self._indentation_level -= 1
 
         self.add_comment(f"End of the play '{play_node.name}'")
 
@@ -249,14 +270,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # Role tasks
-        self._identation_level += 1
+        self._indentation_level += 1
         for role_task in role_node.tasks:
             self.build_node(
                 node=role_task,
                 color=node_color,
                 fontcolor=fontcolor,
             )
-        self._identation_level -= 1
+        self._indentation_level -= 1
 
         self.add_comment(f"End of the role '{role_node.name}'")
 
@@ -287,14 +308,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self.add_text(f'subgraph subgraph_{block_node.id}["{block_node.name} "]')
 
-        self._identation_level += 1
+        self._indentation_level += 1
         for task in block_node.tasks:
             self.build_node(
                 node=task,
                 color=color,
                 fontcolor=fontcolor,
             )
-        self._identation_level -= 1
+        self._indentation_level -= 1
 
         self.add_text("end")  # End of the subgraph
         self.add_comment(f"End of the block '{block_node.name}'")
@@ -347,4 +368,4 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         Return the current indentation level as tabulations
         :return:
         """
-        return "\t" * self._identation_level
+        return "\t" * self._indentation_level

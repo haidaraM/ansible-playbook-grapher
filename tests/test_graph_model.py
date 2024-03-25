@@ -66,3 +66,36 @@ def test_get_all_tasks_nodes():
     all_tasks = play.get_all_tasks()
     assert len(all_tasks) == 4, "There should be 4 tasks in all"
     assert [task_1, task_2, task_3, task_4] == all_tasks
+
+
+def test_empty_play():
+    """
+    Testing the emptiness of a play
+    :return:
+    """
+
+    play = PlayNode("play")
+    assert play.is_empty(), "The play should empty"
+
+    play.add_node("roles", RoleNode("my_role_1"))
+    assert not play.is_empty(), "The play should not be empty"
+
+
+def test_has_node_type():
+    """
+    Testing the method has_node_type
+    :return:
+    """
+    play = PlayNode("play")
+    block = BlockNode("block 1")
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+
+    block.add_node("tasks", role)
+    play.add_node("tasks", block)
+
+    assert play.has_node_type(BlockNode), "The play should have BlockNode"
+    assert play.has_node_type(RoleNode), "The play should have a RoleNode"
+    assert play.has_node_type(TaskNode), "The play should have a TaskNode"
+
+    assert not role.has_node_type(BlockNode), "The role doesn't have a BlockNode"

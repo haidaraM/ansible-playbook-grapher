@@ -57,16 +57,20 @@ class Renderer(ABC):
         open_protocol_custom_formats: Dict[str, str],
         output_filename: str,
         view: bool,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
         """
         Render the playbooks to a file.
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
-        :param output_filename: without any extension
+        :param output_filename: The output filename without any extension
         :param view: Whether to open the rendered file in the default viewer
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param kwargs:
-        :return: The filename of the rendered file
+        :return: The path of the rendered file
         """
         pass
 
@@ -128,9 +132,16 @@ class PlaybookBuilder(ABC):
             )
 
     @abstractmethod
-    def build_playbook(self, **kwargs) -> str:
+    def build_playbook(
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        **kwargs,
+    ) -> str:
         """
         Build the whole playbook
+        :param hide_empty_plays: Whether to hide empty plays or not
+        :param hide_plays_without_roles:
         :param kwargs:
         :return: The rendered playbook as a string
         """
