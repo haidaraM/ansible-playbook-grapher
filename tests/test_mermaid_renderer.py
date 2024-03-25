@@ -27,6 +27,9 @@ def run_grapher(
     # Explicitly add verbosity to the tests
     additional_args.insert(0, "-vvv")
 
+    if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
+        additional_args.insert(0, "--view")
+
     playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
     args = [__prog__]
 

@@ -14,6 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pathlib import Path
+import json
+import zlib
+from base64 import urlsafe_b64encode
+import webbrowser
 from typing import Dict, Set, List
 
 from ansible.utils.display import Display
@@ -113,13 +117,37 @@ class MermaidFlowChartRenderer(Renderer):
         )
 
         if view:
-            # TODO: implement the view option
-            #  https://github.com/mermaidjs/mermaid-live-editor/issues/41 and https://mermaid.ink/
-            display.warning(
-                "The --view option is not supported yet by the mermaid renderer"
-            )
+            MermaidFlowChartRenderer.view(mermaid_code)
 
         return str(final_output_path_file)
+
+    @staticmethod
+    def view(mermaid_code: str):
+        """
+        View the mermaid code in the browser using https://mermaid.live/
+
+        This is based on:
+          - https://github.com/mermaid-js/mermaid-live-editor/blob/b5978e6faf7635e39452855fb4d062d1452ab71b/src/lib/util/serde.ts#L19-L29
+          - https://github.com/mermaidjs/mermaid-live-editor/issues/41#issuecomment-1820242778
+
+        :param mermaid_code:
+        :return:
+        """
+        # TODO: check the other options we have
+        graph_state = {
+            "code": mermaid_code,
+            "mermaid": json.dumps({"theme": "default"}),
+            "autoSync": True,
+            "updateDiagram": True,
+        }
+
+        graph_state_str = json.dumps(graph_state)
+        data = graph_state_str.encode("utf-8")
+        compressed = zlib.compress(data, level=9)
+        url_path = f'pako:{urlsafe_b64encode(compressed).decode("utf-8")}'
+        url = f"https://mermaid.live/edit#{url_path}"
+
+        webbrowser.open(url, new=2)
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
