@@ -133,6 +133,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param mermaid_code:
         :return:
         """
+        # TODO: check the size of the mermaid code before viewing
         # TODO: check the other options we have
         graph_state = {
             "code": mermaid_code,
@@ -141,9 +142,8 @@ class MermaidFlowChartRenderer(Renderer):
             "updateDiagram": True,
         }
 
-        graph_state_str = json.dumps(graph_state)
-        data = graph_state_str.encode("utf-8")
-        compressed = zlib.compress(data, level=9)
+        compressed = zlib.compress(json.dumps(graph_state).encode("utf-8"), level=9)
+
         url_path = f'pako:{urlsafe_b64encode(compressed).decode("utf-8")}'
         url = f"https://mermaid.live/edit#{url_path}"
 
