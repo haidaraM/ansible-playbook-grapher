@@ -70,7 +70,9 @@ def _common_tests(mermaid_path: str, playbook_paths: List[str], **kwargs):
     with open(mermaid_path, "r") as mermaid_file:
         mermaid_data = mermaid_file.read()
         for playbook_path in playbook_paths:
-            assert playbook_path in mermaid_data, "The playbook path should be in the generated code"
+            assert (
+                playbook_path in mermaid_data
+            ), "The playbook path should be in the generated code"
 
 
 @pytest.mark.parametrize(
