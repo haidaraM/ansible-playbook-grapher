@@ -5,6 +5,7 @@
 * feat: Add support for hiding empty plays and plays without roles https://github.com/haidaraM/ansible-playbook-grapher/pull/177.
   * Add a new flag `--hide-empty-plays` to not show in the graph the plays that end up being empty after applying the filters.
   * Add a new flag `--hide-plays-without-roles` to not show in the graph the plays that end up with no roles. Only roles at the play level and include_role as tasks are considered (no import_role).
+* Add support for viewing mermaid graphs in the browse with `--view --renderer mermaid-flowchart` in https://github.com/haidaraM/ansible-playbook-grapher/pull/181
 * refactor(internal): `PlaybookNode.plays` is now a method instead of property.   
 * refactor(internal): Do not access the `_compositions` in the child classes: use method from the CompositeNode.   
 * chore(deps): update black requirement from ~=24.1 to ~=24.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/175
