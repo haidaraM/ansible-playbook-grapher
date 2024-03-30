@@ -133,11 +133,9 @@ class MermaidFlowChartRenderer(Renderer):
         :param mermaid_code:
         :return:
         """
-        # TODO: check the size of the mermaid code before viewing
-        # TODO: check the other options we have
         graph_state = {
             "code": mermaid_code,
-            "mermaid": json.dumps({"theme": "default"}),
+            "mermaid": {"theme": "default"},
             "autoSync": True,
             "updateDiagram": True,
         }
@@ -147,6 +145,9 @@ class MermaidFlowChartRenderer(Renderer):
         url_path = f'pako:{urlsafe_b64encode(compressed).decode("utf-8")}'
         url = f"https://mermaid.live/edit#{url_path}"
 
+        display.display(f"Mermaid live editor URL: {url}")
+
+        # Display url using the default browser in a new tag
         webbrowser.open(url, new=2)
 
 
