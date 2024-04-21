@@ -18,7 +18,7 @@ def test_cli_help(help_option, capfd):
 
     cli = PlaybookGrapherCLI(args)
 
-    with pytest.raises(SystemExit) as exception_info:
+    with pytest.raises(SystemExit):
         cli.parse()
 
     out, err = capfd.readouterr()
@@ -32,7 +32,7 @@ def test_cli_version(capfd):
     :return:
     """
     cli = PlaybookGrapherCLI([__prog__, "--version"])
-    with pytest.raises(SystemExit) as exception_info:
+    with pytest.raises(SystemExit):
         cli.parse()
 
     out, err = capfd.readouterr()
@@ -191,7 +191,7 @@ def test_cli_no_playbook():
 
     cli = PlaybookGrapherCLI(args)
 
-    with pytest.raises((AnsibleOptionsError, SystemExit)) as exception_info:
+    with pytest.raises((AnsibleOptionsError, SystemExit)):
         cli.parse()
 
 
@@ -289,7 +289,7 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
     ]
 
     cli = PlaybookGrapherCLI(args)
-    with pytest.raises(SystemExit) as exception_info:
+    with pytest.raises(SystemExit):
         cli.parse()
 
     error_msg = capsys.readouterr().err
