@@ -145,7 +145,7 @@ class MermaidFlowChartRenderer(Renderer):
         url_path = f'pako:{urlsafe_b64encode(compressed).decode("utf-8")}'
         url = f"https://mermaid.live/edit#{url_path}"
 
-        display.display(f"Mermaid live editor URL: {url}")
+        display.vvv(f"Mermaid live editor URL: {url}")
 
         # Display url using the default browser in a new tag
         webbrowser.open(url, new=2)
