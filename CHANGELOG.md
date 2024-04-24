@@ -1,6 +1,13 @@
 # 2.2.1 (2024-04-24)
 
-fix: Only display mermaid live editor URL with the flag -vv
+## What's Changed
+* fix: Only display mermaid live editor URL with the flag -vv
+* chore(deps): bump pytest from 8.0.2 to 8.1.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/185
+* chore(deps): bump pytest-cov from 4.1.0 to 5.0.0 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/182
+* chore(deps): update black requirement from ~=24.2 to ~=24.3 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/184
+* chore(deps): update ansible-core requirement from <2.16.5,>=2.15 to >=2.15,<2.16.6 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/183
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.2.0...v2.2.1
 
 # 2.2.0 (2024-04-21)
 
