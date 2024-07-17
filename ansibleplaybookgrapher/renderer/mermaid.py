@@ -40,7 +40,6 @@ DEFAULT_ORIENTATION = "LR"  # Left to right
 
 
 class MermaidFlowChartRenderer(Renderer):
-
     def render(
         self,
         open_protocol_handler: str,

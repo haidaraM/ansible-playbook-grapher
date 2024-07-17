@@ -99,7 +99,6 @@ class PlaybookGrapherCLI(CLI):
                 )
 
             case "json":
-
                 renderer = JSONRenderer(playbook_nodes, roles_usage)
                 return renderer.render(
                     open_protocol_handler=self.options.open_protocol_handler,

@@ -2,7 +2,8 @@ from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
     PlayNode,
-    BlockNode, PlaybookNode,
+    BlockNode,
+    PlaybookNode,
 )
 
 

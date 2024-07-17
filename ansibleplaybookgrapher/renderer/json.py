@@ -65,7 +65,6 @@ class JSONRenderer(Renderer):
 
 
 class JSONPlaybookBuilder(PlaybookBuilder):
-
     def __init__(self, playbook_node: PlaybookNode, open_protocol_handler: str):
         super().__init__(playbook_node, open_protocol_handler)
 
