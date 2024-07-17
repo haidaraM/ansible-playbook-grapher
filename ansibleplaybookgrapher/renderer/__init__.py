@@ -241,7 +241,7 @@ class PlaybookBuilder(ABC):
 
     def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
         """
-        Get the node url based on the chosen protocol
+        Get the node url based on the chosen open protocol.
         :param node_type: task or role
         :param node: the node to get the url for
         :return:

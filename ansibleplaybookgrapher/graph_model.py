@@ -267,20 +267,22 @@ class CompositeNode(Node):
 
         return False
 
-    def to_dict(self, **kwargs) -> Dict:
+    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
+        :param exclude_compositions: Whether to exclude the compositions from the dict or not
         :return:
         """
         node_dict: Dict = super().to_dict()
 
-        for composition, nodes in self._compositions.items():
-            nodes_dict_list = []
-            for node in nodes:
-                nodes_dict_list.append(node.to_dict())
+        if not exclude_compositions:
+            for composition, nodes in self._compositions.items():
+                nodes_dict_list = []
+                for node in nodes:
+                    nodes_dict_list.append(node.to_dict(**kwargs))
 
-            node_dict[composition] = nodes_dict_list
+                node_dict[composition] = nodes_dict_list
 
         return node_dict
 
@@ -401,25 +403,25 @@ class PlaybookNode(CompositeNode):
 
     def to_dict(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
+        exclude_empty_plays: bool = False,
+        exclude_plays_without_roles: bool = False,
         **kwargs,
     ) -> Dict:
         """
         Return a dictionary representation of this playbook
-        :param hide_empty_plays: Whether to exclude the empty plays from the result or not
-        :param hide_plays_without_roles: Whether to exclude the plays that do not have roles
+        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
+        :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
         :param kwargs:
         :return:
         """
-        playbook_dict = super().to_dict()
+        playbook_dict = super().to_dict(**kwargs)
         plays = []
 
         for play in self.plays(
-            exclude_empty=hide_empty_plays,
-            exclude_without_roles=hide_plays_without_roles,
+            exclude_empty=exclude_empty_plays,
+            exclude_without_roles=exclude_plays_without_roles,
         ):
-            plays.append(play.to_dict())
+            plays.append(play.to_dict(**kwargs))
 
         playbook_dict["plays"] = plays
         return playbook_dict
@@ -487,7 +489,7 @@ class PlayNode(CompositeNode):
         original object back.
         :return:
         """
-        data = super().to_dict()
+        data = super().to_dict(**kwargs)
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
 
         return data

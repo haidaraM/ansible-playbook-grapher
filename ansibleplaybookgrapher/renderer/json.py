@@ -1,9 +1,9 @@
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, Optional
-import sys
 
 from ansible.utils.display import Display
 
@@ -88,8 +88,8 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         )
 
         self.json_output = self.playbook_node.to_dict(
-            hide_empty_plays=hide_empty_plays,
-            hide_plays_without_roles=hide_plays_without_roles,
+            exclude_empty_plays=hide_empty_plays,
+            exclude_plays_without_roles=hide_plays_without_roles,
         )
 
         return json.dumps(self.json_output)
