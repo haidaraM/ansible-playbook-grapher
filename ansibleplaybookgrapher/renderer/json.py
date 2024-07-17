@@ -1,6 +1,9 @@
 import json
+import os
+import subprocess
 from pathlib import Path
 from typing import Dict, Optional
+import sys
 
 from ansible.utils.display import Display
 
@@ -46,8 +49,17 @@ class JSONRenderer(Renderer):
         final_output_path_file = Path(f"{output_filename}.json")
         # Make the sure the parents directories exist
         final_output_path_file.parent.mkdir(exist_ok=True, parents=True)
-        dump_str = json.dumps(output, indent=4, sort_keys=True)
+        dump_str = json.dumps(output, indent=2)
         final_output_path_file.write_text(dump_str)
+
+        display.display(f"JSON written to {final_output_path_file}", color="green")
+
+        if view:
+            if sys.platform == "win32":
+                os.startfile(str(final_output_path_file))
+            else:
+                opener = "open" if sys.platform == "darwin" else "xdg-open"
+                subprocess.call([opener, str(final_output_path_file)])
 
         return str(final_output_path_file)
 

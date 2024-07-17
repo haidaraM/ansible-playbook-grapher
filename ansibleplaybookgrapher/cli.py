@@ -157,7 +157,7 @@ class PlaybookGrapherCLI(CLI):
             "--output-file-name",
             dest="output_filename",
             help="Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. "
-                 "The extension will be added automatically.",
+            "The extension will be added automatically.",
         )
 
         self.parser.add_argument(
@@ -230,7 +230,7 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="Hide the plays that end up with no roles in the graph (after applying the tags filter). "
-                 "Only roles at the play level and include_role as tasks are considered (no import_role).",
+            "Only roles at the play level and include_role as tasks are considered (no import_role).",
         )
 
         self.parser.add_argument(
