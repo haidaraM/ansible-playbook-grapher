@@ -106,6 +106,25 @@ class Node:
     def __hash__(self):
         return hash(self.id)
 
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
+        :return:
+        """
+        return {
+            "type": type(self).__name__,
+            "id": self.id,
+            "position": {
+                "path": self.path,
+                "line": self.line,
+                "column": self.column,
+            },
+            "name": self.name,
+            "when": self.when,
+            "index": self.index,
+        }
+
 
 class CompositeNode(Node):
     """
@@ -143,7 +162,7 @@ class CompositeNode(Node):
             index=index,
         )
         self._supported_compositions = supported_compositions or []
-        # The dict will contain the different types of composition.
+        # The dict will contain the different types of composition: plays, tasks, roles...
         self._compositions = defaultdict(list)  # type: Dict[str, List]
         # Used to count the number of nodes in this composite node
         self._node_counter = 0
@@ -247,6 +266,23 @@ class CompositeNode(Node):
                     return node.has_node_type(node_type)
 
         return False
+
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :return:
+        """
+        node_dict: Dict = super().to_dict()
+
+        for composition, nodes in self._compositions.items():
+            nodes_dict_list = []
+            for node in nodes:
+                nodes_dict_list.append(node.to_dict())
+
+            node_dict[composition] = nodes_dict_list
+
+        return node_dict
 
 
 class CompositeTasksNode(CompositeNode):
@@ -363,6 +399,31 @@ class PlaybookNode(CompositeNode):
 
         return usages
 
+    def to_dict(
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        **kwargs,
+    ) -> Dict:
+        """
+        Return a dictionary representation of this playbook
+        :param hide_empty_plays: Whether to exclude the empty plays from the result or not
+        :param hide_plays_without_roles: Whether to exclude the plays that do not have roles
+        :param kwargs:
+        :return:
+        """
+        playbook_dict = super().to_dict()
+        plays = []
+
+        for play in self.plays(
+            exclude_empty=hide_empty_plays,
+            exclude_without_roles=hide_plays_without_roles,
+        ):
+            plays.append(play.to_dict())
+
+        playbook_dict["plays"] = plays
+        return playbook_dict
+
 
 class PlayNode(CompositeNode):
     """
@@ -419,6 +480,17 @@ class PlayNode(CompositeNode):
     @property
     def tasks(self) -> List["Node"]:
         return self.get_nodes("tasks")
+
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :return:
+        """
+        data = super().to_dict()
+        data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
+
+        return data
 
 
 class BlockNode(CompositeTasksNode):

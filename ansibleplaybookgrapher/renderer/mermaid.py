@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,12 +40,6 @@ DEFAULT_ORIENTATION = "LR"  # Left to right
 
 
 class MermaidFlowChartRenderer(Renderer):
-    def __init__(
-        self,
-        playbook_nodes: List[PlaybookNode],
-        roles_usage: Dict["RoleNode", Set[PlayNode]],
-    ):
-        super().__init__(playbook_nodes, roles_usage)
 
     def render(
         self,

@@ -2,7 +2,7 @@ from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
     PlayNode,
-    BlockNode,
+    BlockNode, PlaybookNode,
 )
 
 
@@ -99,3 +99,39 @@ def test_has_node_type():
     assert play.has_node_type(TaskNode), "The play should have a TaskNode"
 
     assert not role.has_node_type(BlockNode), "The role doesn't have a BlockNode"
+
+
+def test_to_dict():
+    """
+
+    :return:
+    """
+    playbook = PlaybookNode("my-fake-playbook.yml")
+    playbook.add_node("plays", PlayNode("empty"))
+
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+
+    block = BlockNode("block 1")
+    block.add_node("tasks", role)
+
+    play = PlayNode("play")
+    play.add_node("tasks", block)
+    play.add_node("post_tasks", TaskNode("task 2"))
+    playbook.add_node("plays", play)
+
+    dict_rep = playbook.to_dict(hide_empty_plays=True)
+
+    assert dict_rep["type"] == "PlaybookNode"
+    assert dict_rep["position"]["path"] is not None
+    assert dict_rep["position"]["line"] is not None
+    assert dict_rep["position"]["column"] is not None
+
+    assert len(dict_rep["plays"]) == 1
+    assert dict_rep["plays"][0]["type"] == "PlayNode"
+    assert dict_rep["plays"][0]["colors"]["font"] == "#ffffff"
+
+    assert dict_rep["plays"][0]["name"] == "play"
+    assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
+    assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
+    assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
