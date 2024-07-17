@@ -308,12 +308,13 @@ usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY]
                                 [--open-protocol-handler {default,vscode,custom}]
                                 [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
                                 [--group-roles-by-name]
-                                [--renderer {graphviz,mermaid-flowchart}]
+                                [--renderer {graphviz,mermaid-flowchart,json}]
                                 [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
                                 [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}]
-                                [--version] [-t TAGS] [--skip-tags SKIP_TAGS]
-                                [--vault-id VAULT_IDS]
-                                [--ask-vault-password | --vault-password-file VAULT_PASSWORD_FILES]
+                                [--version] [--hide-plays-without-roles]
+                                [--hide-empty-plays] [-t TAGS]
+                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
+                                [-J | --vault-password-file VAULT_PASSWORD_FILES]
                                 [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
 
@@ -323,13 +324,19 @@ positional arguments:
   playbooks             Playbook(s) to graph
 
 options:
-  --ask-vault-password, --ask-vault-pass
-                        ask for vault password
   --group-roles-by-name
                         When rendering the graph, only a single role will be
                         display for all roles having the same names. Default:
                         False
-  --include-role-tasks  Include the tasks of the role in the graph.
+  --hide-empty-plays    Hide the plays that end up with no tasks in the graph
+                        (after applying the tags filter).
+  --hide-plays-without-roles
+                        Hide the plays that end up with no roles in the graph
+                        (after applying the tags filter). Only roles at the
+                        play level and include_role as tasks are considered
+                        (no import_role).
+  --include-role-tasks  Include the tasks of the roles in the graph. Applied
+                        when parsing the playbooks.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the
                         graph. Required if --open-protocol-handler is set to
@@ -355,42 +362,50 @@ options:
                         will be open with VSCode. For 'custom', you need to
                         set a custom format with --open-protocol-custom-
                         formats.
-  --renderer {graphviz,mermaid-flowchart}
+  --renderer {graphviz,mermaid-flowchart,json}
                         The renderer to use to generate the graph. Default:
                         graphviz
   --renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE
                         The directive for the mermaid renderer. Can be used to
                         customize the output: fonts, theme, curve etc. More
                         info at https://mermaid.js.org/config/directives.html.
-                        Default: '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
+                        Default: '%%{ init: { "flowchart": { "curve": "bumpX"
+                        } } }%%'
   --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
                         The orientation of the flow chart. Default: 'LR'
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these
-                        values
-  --vault-id VAULT_IDS  the vault identity to use
+                        values. This argument may be specified multiple times.
+  --vault-id VAULT_IDS  the vault identity to use. This argument may be
+                        specified multiple times.
   --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
-  --version             show program's version number and exit
+  --version
   --view                Automatically open the resulting SVG file with your
                         system’s default viewer application for the file type
+  -J, --ask-vault-password, --ask-vault-pass
+                        ask for vault password
   -e EXTRA_VARS, --extra-vars EXTRA_VARS
                         set additional variables as key=value or YAML/JSON, if
-                        filename prepend with @
+                        filename prepend with @. This argument may be
+                        specified multiple times.
   -h, --help            show this help message and exit
   -i INVENTORY, --inventory INVENTORY
                         specify inventory host path or comma separated host
-                        list.
+                        list. This argument may be specified multiple times.
   -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
-                        Output filename without the '.svg' extension. Default:
-                        <playbook>.svg
+                        Output filename without the '.svg' extension (for
+                        graphviz), '.mmd' for Mermaid or `.json`. The
+                        extension will be added automatically.
   -s, --save-dot-file   Save the graphviz dot file used to generate the graph.
-  -t TAGS, --tags TAGS  only run plays and tasks tagged with these values
+  -t TAGS, --tags TAGS  only run plays and tasks tagged with these values.
+                        This argument may be specified multiple times.
   -v, --verbose         Causes Ansible to print more debug messages. Adding
                         multiple -v will increase the verbosity, the builtin
                         plugins currently evaluate up to -vvvvvv. A reasonable
                         level to start is -vvv, connection debugging might
-                        require -vvvv.
+                        require -vvvv. This argument may be specified multiple
+                        times.
 
 ```
 
