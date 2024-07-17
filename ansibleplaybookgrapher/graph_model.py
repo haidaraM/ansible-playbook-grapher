@@ -520,6 +520,7 @@ class PlayNode(CompositeNode):
         :return:
         """
         data = super().to_dict(exclude_compositions, **kwargs)
+        data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
 
         return data
