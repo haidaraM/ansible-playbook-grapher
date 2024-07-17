@@ -48,7 +48,7 @@ class NodeLocation:
     column: Optional[int] = None
 
     def __post_init__(self):
-        if self.type not in ["folder", "file", None]:
+        if self.type not in ["folder", "file"]:
             raise ValueError(
                 f"Type '{self.type}' not supported. Valid values: file, folder."
             )
@@ -295,10 +295,11 @@ class CompositeNode(Node):
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
-        :param exclude_compositions: Whether to exclude the compositions from the dict or not
+        :param exclude_compositions: Whether to exclude the compositions from the dict or not. Applied to the current
+        node only.
         :return:
         """
-        node_dict: Dict = super().to_dict()
+        node_dict: Dict = super().to_dict(**kwargs)
 
         if not exclude_compositions:
             for composition, nodes in self._compositions.items():
@@ -427,27 +428,32 @@ class PlaybookNode(CompositeNode):
 
     def to_dict(
         self,
+        exclude_compositions: bool = False,
         exclude_empty_plays: bool = False,
         exclude_plays_without_roles: bool = False,
         **kwargs,
     ) -> Dict:
         """
         Return a dictionary representation of this playbook
+        :param exclude_compositions: Whether to exclude the compositions from the dict or not
         :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
         :param kwargs:
         :return:
         """
-        playbook_dict = super().to_dict(**kwargs)
+        playbook_dict = super().to_dict(exclude_compositions, **kwargs)
         plays = []
 
-        for play in self.plays(
-            exclude_empty=exclude_empty_plays,
-            exclude_without_roles=exclude_plays_without_roles,
-        ):
-            plays.append(play.to_dict(**kwargs))
+        if not exclude_compositions:
+            # We need to explicitly get the plays here to exclude the ones we don't need
+            for play in self.plays(
+                exclude_empty=exclude_empty_plays,
+                exclude_without_roles=exclude_plays_without_roles,
+            ):
+                plays.append(play.to_dict(**kwargs))
 
-        playbook_dict["plays"] = plays
+            playbook_dict["plays"] = plays
+
         return playbook_dict
 
 
@@ -507,13 +513,13 @@ class PlayNode(CompositeNode):
     def tasks(self) -> List["Node"]:
         return self.get_nodes("tasks")
 
-    def to_dict(self, **kwargs) -> Dict:
+    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
         :return:
         """
-        data = super().to_dict(**kwargs)
+        data = super().to_dict(exclude_compositions, **kwargs)
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
 
         return data
