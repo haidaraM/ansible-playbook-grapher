@@ -299,7 +299,7 @@ class CompositeNode(Node):
         node only.
         :return:
         """
-        node_dict: Dict = super().to_dict(**kwargs)
+        node_dict = super().to_dict(**kwargs)
 
         if not exclude_compositions:
             for composition, nodes in self._compositions.items():
@@ -630,3 +630,17 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             return False
 
         return super().has_loop()
+
+    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :param exclude_compositions: Whether to exclude the compositions from the dict or not. Applied to the current
+        node only.
+        :param kwargs:
+        :return:
+        """
+        node_dict = super().to_dict(**kwargs)
+        node_dict["include_role"] = self.include_role
+
+        return node_dict
