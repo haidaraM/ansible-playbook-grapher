@@ -49,16 +49,16 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display):
     parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
-    assert playbook_node.path == os.path.join(FIXTURES_PATH, "example.yml")
-    assert playbook_node.line == 1
-    assert playbook_node.column == 1
+    assert playbook_node.location.path == os.path.join(FIXTURES_PATH, "example.yml")
+    assert playbook_node.location.line == 1
+    assert playbook_node.location.column == 1
     assert (
         playbook_node.index is None
     ), "The index of the playbook should be None (it has no parent)"
 
     play_node = playbook_node.plays()[0]
-    assert play_node.path == os.path.join(FIXTURES_PATH, "example.yml")
-    assert play_node.line == 2
+    assert play_node.location.path == os.path.join(FIXTURES_PATH, "example.yml")
+    assert play_node.location.line == 2
     assert play_node.index == 1
 
     pre_tasks = play_node.pre_tasks
@@ -99,9 +99,9 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI):
     fake_role = play_node.roles[0]
     assert isinstance(fake_role, RoleNode)
     assert not fake_role.include_role
-    assert fake_role.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
-    assert fake_role.line is None
-    assert fake_role.column is None
+    assert fake_role.location.path == os.path.join(FIXTURES_PATH, "roles", "fake_role")
+    assert fake_role.location.line is None
+    assert fake_role.location.column is None
     assert fake_role.index == 3
 
     for task_counter, task in enumerate(fake_role.tasks):
@@ -144,8 +144,8 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     include_role_1 = block_include_role.tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
-    assert include_role_1.path == os.path.join(FIXTURES_PATH, "include_role.yml")
-    assert include_role_1.line == 10, "The first include role should be at line 9"
+    assert include_role_1.location.path == os.path.join(FIXTURES_PATH, "include_role.yml")
+    assert include_role_1.location.line == 10, "The first include role should be at line 9"
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
@@ -223,8 +223,8 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI):
     assert isinstance(
         pre_task_block, BlockNode
     ), "The second edge should have a BlockNode as destination"
-    assert pre_task_block.path == os.path.join(FIXTURES_PATH, "with_block.yml")
-    assert pre_task_block.line == 7
+    assert pre_task_block.location.path == os.path.join(FIXTURES_PATH, "with_block.yml")
+    assert pre_task_block.location.line == 7
 
     # Check tasks
     task_1 = tasks[0]

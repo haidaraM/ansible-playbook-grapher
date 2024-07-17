@@ -1,3 +1,5 @@
+import json
+
 from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
@@ -124,9 +126,9 @@ def test_to_dict():
     dict_rep = playbook.to_dict(exclude_empty_plays=True)
 
     assert dict_rep["type"] == "PlaybookNode"
-    assert dict_rep["position"]["path"] is not None
-    assert dict_rep["position"]["line"] is not None
-    assert dict_rep["position"]["column"] is not None
+    assert dict_rep["location"]["path"] is not None
+    assert dict_rep["location"]["line"] is not None
+    assert dict_rep["location"]["column"] is not None
 
     assert len(dict_rep["plays"]) == 1
     assert dict_rep["plays"][0]["type"] == "PlayNode"
@@ -136,3 +138,5 @@ def test_to_dict():
     assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
     assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
+
+    print(json.dumps(dict_rep, indent=4))

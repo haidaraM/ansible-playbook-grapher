@@ -162,7 +162,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             id=task_node.id,
             tooltip=task_node.name,
             color=color,
-            URL=self.get_node_url(task_node, "file"),
+            URL=self.get_node_url(task_node),
         )
 
         # Edge from parent to task
@@ -212,7 +212,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 color=color,
                 fontcolor=fontcolor,
                 labeltooltip=block_node.name,
-                URL=self.get_node_url(block_node, "file"),
+                URL=self.get_node_url(block_node),
             )
 
             # The reverse here is a little hack due to how graphviz render nodes inside a cluster by reversing them.
@@ -253,9 +253,9 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         if role_node.include_role:  # For include_role, we point to a file
-            url = self.get_node_url(role_node, "file")
+            url = self.get_node_url(role_node)
         else:  # For normal role invocation, we point to the folder
-            url = self.get_node_url(role_node, "folder")
+            url = self.get_node_url(role_node)
 
         plays_using_this_role = self.roles_usage[role_node]
         if len(plays_using_this_role) > 1:
@@ -301,7 +301,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             label=self.playbook_node.name,
             style="dotted",
             id=self.playbook_node.id,
-            URL=self.get_node_url(self.playbook_node, "file"),
+            URL=self.get_node_url(self.playbook_node),
         )
 
         for play in self.playbook_node.plays(
@@ -337,7 +337,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             color=color,
             fontcolor=play_font_color,
             tooltip=play_tooltip,
-            URL=self.get_node_url(play_node, "file"),
+            URL=self.get_node_url(play_node),
         )
 
         # from playbook to play

@@ -239,19 +239,19 @@ class PlaybookBuilder(ABC):
         """
         pass
 
-    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
+    def get_node_url(self, node: Node) -> Optional[str]:
         """
         Get the node url based on the chosen open protocol.
-        :param node_type: task or role
+
         :param node: the node to get the url for
         :return:
         """
-        if node.path:
+        if node.location.path:
             remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
-            path = node.path.replace(remove_from_path, "")
+            path = node.location.path.replace(remove_from_path, "")
 
-            url = self.open_protocol_formats[node_type].format(
-                path=path, line=node.line, column=node.column
+            url = self.open_protocol_formats[node.location.type].format(
+                path=path, line=node.location.line, column=node.location.column
             )
             display.vvvv(f"Open protocol URL for node {node}: {url}")
             return url

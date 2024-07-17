@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
+from dataclasses import dataclass, asdict
 from typing import Dict, List, Set, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
@@ -33,6 +34,24 @@ class LoopMixin:
         if self.raw_object is None:
             return False
         return self.raw_object.loop is not None
+
+
+@dataclass
+class NodeLocation:
+    """
+    The node location on the disk. The location can be a folder (for roles) or a specific line and column inside a file
+    """
+
+    type: str  # file or folder
+    path: Optional[str] = None
+    line: Optional[int] = None
+    column: Optional[int] = None
+
+    def __post_init__(self):
+        if self.type not in ["folder", "file", None]:
+            raise ValueError(
+                f"Type '{self.type}' not supported. Valid values: file, folder."
+            )
 
 
 class Node:
@@ -64,20 +83,23 @@ class Node:
         self.when = when
         self.raw_object = raw_object
 
-        # Get the node position in the parsed files. Format: (path,line,column)
-        self.path = self.line = self.column = None
-        self.set_position()
+        self.location = None
+        self.set_location()
 
         # The index of this node in the parent node if it has one (starting from 1)
         self.index: Optional[int] = index
 
-    def set_position(self):
+    def set_location(self):
         """
-        Set the path of this based on the raw object. Not all objects have path
+        Set the location of this node based on the raw object. Not all objects have path
         :return:
         """
         if self.raw_object and self.raw_object.get_ds():
-            self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
+            path, line, column = self.raw_object.get_ds().ansible_pos
+            # By default, it's a file
+            self.location = NodeLocation(
+                type="file", path=path, line=line, column=column
+            )
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """
@@ -112,18 +134,20 @@ class Node:
         back.
         :return:
         """
-        return {
+        data = {
             "type": type(self).__name__,
             "id": self.id,
-            "position": {
-                "path": self.path,
-                "line": self.line,
-                "column": self.column,
-            },
             "name": self.name,
             "when": self.when,
             "index": self.index,
         }
+
+        if self.location is not None:
+            data["location"] = asdict(self.location)
+        else:
+            data["location"] = None
+
+        return data
 
 
 class CompositeNode(Node):
@@ -351,15 +375,15 @@ class PlaybookNode(CompositeNode):
             supported_compositions=["plays"],
         )
 
-    def set_position(self):
+    def set_location(self):
         """
         Playbooks only have path as position
         :return:
         """
         # Since the playbook is the whole file, the set the position as the beginning of the file
-        self.path = os.path.join(os.getcwd(), self.name)
-        self.line = 1
-        self.column = 1
+        self.location = NodeLocation(
+            type="file", path=os.path.join(os.getcwd(), self.name), line=1, column=1
+        )
 
     def plays(
         self, exclude_empty: bool = False, exclude_without_roles: bool = False
@@ -580,17 +604,18 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             index=index,
         )
 
-    def set_position(self):
+    def set_location(self):
         """
         Retrieve the position depending on whether it's an include_role or not
         :return:
         """
         if self.raw_object and not self.include_role:
-            # If it's not an include_role, we take the role path which the path to the folder where the role is located
-            # on the disk
-            self.path = self.raw_object._role_path
+            # If it's not an include_role, we take the role path which is the path to the folder where the role
+            # is located on the disk.
+            self.location = NodeLocation(type="folder", path=self.raw_object._role_path)
+
         else:
-            super().set_position()
+            super().set_location()
 
     def has_loop(self) -> bool:
         if not self.include_role:
