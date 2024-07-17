@@ -144,8 +144,12 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys):
     include_role_1 = block_include_role.tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
-    assert include_role_1.location.path == os.path.join(FIXTURES_PATH, "include_role.yml")
-    assert include_role_1.location.line == 10, "The first include role should be at line 9"
+    assert include_role_1.location.path == os.path.join(
+        FIXTURES_PATH, "include_role.yml"
+    )
+    assert (
+        include_role_1.location.line == 10
+    ), "The first include role should be at line 9"
     assert (
         len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
