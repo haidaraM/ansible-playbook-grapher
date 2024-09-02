@@ -73,21 +73,21 @@ def _common_tests(
     plays = jq.compile(".playbooks[].plays").input(output).first()
     pre_tasks = (
         jq.compile(
-            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))'
         )
         .input(output)
         .all()
     )
     tasks = (
         jq.compile(
-            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("task_")))'
         )
         .input(output)
         .all()
     )
     post_tasks = (
         jq.compile(
-            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("post_task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("post_task_")))'
         )
         .input(output)
         .all()
@@ -95,7 +95,7 @@ def _common_tests(
 
     roles = (
         jq.compile(
-            '.playbooks[].plays[] | .. | objects | select(.type == "RoleNode" and (.id | startswith("role_")))'
+            '.. | objects | select(.type == "RoleNode" and (.id | startswith("role_")))'
         )
         .input(output)
         .all()
@@ -103,7 +103,7 @@ def _common_tests(
 
     blocks = (
         jq.compile(
-            '.playbooks[].plays[] | .. | objects | select(.type == "BlockNode" and (.id | startswith("block_")))'
+            '.. | objects | select(.type == "BlockNode" and (.id | startswith("block_")))'
         )
         .input(output)
         .all()
