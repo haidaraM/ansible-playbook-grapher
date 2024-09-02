@@ -199,7 +199,7 @@ class PlaybookGrapherCLI(CLI):
             "--group-roles-by-name",
             action="store_true",
             default=False,
-            help="When rendering the graph, only a single role will be display for all roles having the same names. Default: %(default)s",
+            help="When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the same names. Default: %(default)s",
         )
 
         self.parser.add_argument(

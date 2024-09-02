@@ -73,34 +73,38 @@ def _common_tests(
     plays = jq.compile(".playbooks[].plays").input(output).first()
     pre_tasks = (
         jq.compile(
-            '.playbooks[].plays[].pre_tasks[] | .. | objects | select(.type == "TaskNode")'
+            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))'
         )
         .input(output)
         .all()
     )
     tasks = (
         jq.compile(
-            '.playbooks[].plays[].tasks[] | .. | objects | select(.type == "TaskNode")'
+            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("task_")))'
         )
         .input(output)
         .all()
     )
     post_tasks = (
         jq.compile(
-            '.playbooks[].plays[].post_tasks[] | .. | objects | select(.type == "TaskNode")'
+            '.playbooks[].plays[] | .. | objects | select(.type == "TaskNode" and (.id | startswith("post_task_")))'
         )
         .input(output)
         .all()
     )
 
     roles = (
-        jq.compile('.playbooks[].plays[] | .. | objects | select(.type == "RoleNode")')
+        jq.compile(
+            '.playbooks[].plays[] | .. | objects | select(.type == "RoleNode" and (.id | startswith("role_")))'
+        )
         .input(output)
         .all()
     )
 
     blocks = (
-        jq.compile('.playbooks[].plays[] | .. | objects | select(.type == "BlockNode")')
+        jq.compile(
+            '.playbooks[].plays[] | .. | objects | select(.type == "BlockNode" and (.id | startswith("block_")))'
+        )
         .input(output)
         .all()
     )
@@ -191,17 +195,17 @@ def test_with_block(request):
     )
 
 
-@pytest.mark.skip(reason="Will enabled this later")
 @pytest.mark.parametrize(
     ["flag", "roles_number", "tasks_number", "post_tasks_number"],
-    [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
+    [("--", 6, 9, 8), ("--group-roles-by-name", 6, 9, 8)],
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
     request, flag, roles_number, tasks_number, post_tasks_number
 ):
     """
-
+    Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
+    This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.
     :param request:
     :return:
     """
