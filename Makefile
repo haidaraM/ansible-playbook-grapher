@@ -21,6 +21,9 @@ deploy_test: clean build
 test_install: build
 	@./tests/test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_CORE_VERSION)
 
+fmt:
+	black .
+
 test:
 	cd tests && pytest test_cli.py test_utils.py test_parser.py test_graph_model.py test_graphviz_postprocessor.py test_graphviz_renderer.py test_mermaid_renderer.py
 

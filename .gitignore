@@ -108,6 +108,7 @@ venv.bak/
 .idea
 .vagrant
 Vagrantfile
-generated-svgs
-generated-mermaids
+tests/generated-svgs
+tests/generated-mermaids/
+tests/generated-jsons
 **/.DS_Store

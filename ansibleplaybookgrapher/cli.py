@@ -55,6 +55,7 @@ class PlaybookGrapherCLI(CLI):
         self.options = None
 
     def run(self):
+        # FIXME: run should not return anything.
         super().run()
 
         display.verbosity = self.options.verbosity
@@ -110,7 +111,10 @@ class PlaybookGrapherCLI(CLI):
                 )
 
             case _:
-                raise AnsibleOptionsError()
+                # Likely a bug if we are here
+                raise AnsibleOptionsError(
+                    f"Unknown renderer '{self.options.renderer}'. This is likely a bug that should be reported."
+                )
 
     def _add_my_options(self):
         """

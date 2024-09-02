@@ -115,7 +115,7 @@ def _common_tests(
 
     assert (
         len(playbooks) == playbooks_number
-    ), f"The graph '{svg_path}' should contains {playbooks_number} play(s) but we found {len(playbooks)} play(s)"
+    ), f"The graph '{svg_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
 
     assert (
         len(plays) == plays_number

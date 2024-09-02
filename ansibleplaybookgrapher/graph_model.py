@@ -39,7 +39,8 @@ class LoopMixin:
 @dataclass
 class NodeLocation:
     """
-    The node location on the disk. The location can be a folder (for roles) or a specific line and column inside a file
+    The node location on the filesystem.
+    The location can be a folder (for roles) or a specific line and column inside a file
     """
 
     type: str  # file or folder
@@ -301,13 +302,15 @@ class CompositeNode(Node):
         """
         node_dict = super().to_dict(**kwargs)
 
-        if not exclude_compositions:
-            for composition, nodes in self._compositions.items():
-                nodes_dict_list = []
-                for node in nodes:
-                    nodes_dict_list.append(node.to_dict(**kwargs))
+        if exclude_compositions:
+            return node_dict
 
-                node_dict[composition] = nodes_dict_list
+        for composition, nodes in self._compositions.items():
+            nodes_dict_list = []
+            for node in nodes:
+                nodes_dict_list.append(node.to_dict(**kwargs))
+
+            node_dict[composition] = nodes_dict_list
 
         return node_dict
 
@@ -444,15 +447,17 @@ class PlaybookNode(CompositeNode):
         playbook_dict = super().to_dict(exclude_compositions, **kwargs)
         plays = []
 
-        if not exclude_compositions:
-            # We need to explicitly get the plays here to exclude the ones we don't need
-            for play in self.plays(
-                exclude_empty=exclude_empty_plays,
-                exclude_without_roles=exclude_plays_without_roles,
-            ):
-                plays.append(play.to_dict(**kwargs))
+        if exclude_compositions:
+            return playbook_dict
 
-            playbook_dict["plays"] = plays
+        # We need to explicitly get the plays here to exclude the ones we don't need
+        for play in self.plays(
+            exclude_empty=exclude_empty_plays,
+            exclude_without_roles=exclude_plays_without_roles,
+        ):
+            plays.append(play.to_dict(**kwargs))
+
+        playbook_dict["plays"] = plays
 
         return playbook_dict
 

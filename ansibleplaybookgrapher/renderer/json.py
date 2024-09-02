@@ -20,6 +20,10 @@ display = Display()
 
 
 class JSONRenderer(Renderer):
+    """
+    A renderer that writes the graph to a JSON file
+    """
+
     def render(
         self,
         open_protocol_handler: Optional[str],
@@ -52,7 +56,7 @@ class JSONRenderer(Renderer):
         dump_str = json.dumps(output, indent=2)
         final_output_path_file.write_text(dump_str)
 
-        display.display(f"JSON written to {final_output_path_file}", color="green")
+        display.display(f"JSON file written to {final_output_path_file}", color="green")
 
         if view:
             if sys.platform == "win32":
