@@ -2,6 +2,9 @@ import json
 import os
 from typing import List, Tuple, Dict
 
+import jq
+import pytest
+
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
@@ -37,11 +40,8 @@ def run_grapher(
     # put the generated file in a dedicated folder
     args.extend(["-o", os.path.join(DIR_PATH, "generated-jsons", output_filename)])
 
-    args.extend(additional_args)
-
     args.extend(["--renderer", "json"])
-
-    args.extend(playbook_paths)
+    args.extend(additional_args + playbook_paths)
 
     cli = PlaybookGrapherCLI(args)
 
@@ -59,31 +59,55 @@ def _common_tests(
     blocks_number: int = 0,
 ) -> Dict:
     """
-    Do some checks on the generated json files
+    Do some checks on the generated json files.
+
+    We are using JQ to avoid traversing the JSON ourselves (much easier).
     :param json_path:
     :return:
     """
     with open(json_path, "r") as f:
         output = json.load(f)
 
-    playbooks = output["playbooks"]
+    playbooks = jq.compile(".playbooks[]").input(output).all()
+
+    plays = jq.compile(".playbooks[].plays").input(output).first()
+    pre_tasks = (
+        jq.compile(
+            '.playbooks[].plays[].pre_tasks[] | .. | objects | select(.type == "TaskNode")'
+        )
+        .input(output)
+        .all()
+    )
+    tasks = (
+        jq.compile(
+            '.playbooks[].plays[].tasks[] | .. | objects | select(.type == "TaskNode")'
+        )
+        .input(output)
+        .all()
+    )
+    post_tasks = (
+        jq.compile(
+            '.playbooks[].plays[].post_tasks[] | .. | objects | select(.type == "TaskNode")'
+        )
+        .input(output)
+        .all()
+    )
+
+    roles = (
+        jq.compile('.playbooks[].plays[] | .. | objects | select(.type == "RoleNode")')
+        .input(output)
+        .all()
+    )
+
+    blocks = (
+        jq.compile('.playbooks[].plays[] | .. | objects | select(.type == "BlockNode")')
+        .input(output)
+        .all()
+    )
+
     assert (
         len(playbooks) == playbooks_number
     ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
-
-    plays = []
-    tasks = []
-    post_tasks = []
-    pre_tasks = []
-    roles = []
-    for playbook in playbooks:
-        plays.extend(playbook["plays"])
-
-    for play in plays:
-        tasks.extend(play["tasks"])
-        post_tasks.extend(play["post_tasks"])
-        pre_tasks.extend(play["pre_tasks"])
-        roles.extend(play["roles"])
 
     assert (
         len(plays) == plays_number
@@ -105,7 +129,24 @@ def _common_tests(
         len(post_tasks) == post_tasks_number
     ), f"The file '{json_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
-    return output
+    assert (
+        len(blocks) == blocks_number
+    ), f"The file '{json_path}' should contains {blocks_number} block(s) but we found {len(blocks)} blocks"
+
+    # Check the play
+    for play in plays:
+        assert (
+            play.get("colors") is not None
+        ), f"The play '{play['name']}' is missing colors'"
+
+    return {
+        "tasks": tasks,
+        "plays": plays,
+        "post_tasks": post_tasks,
+        "pre_tasks": pre_tasks,
+        "roles": roles,
+        "blocks": blocks,
+    }
 
 
 def test_simple_playbook(request):
@@ -123,3 +164,58 @@ def test_simple_playbook(request):
         ],
     )
     _common_tests(json_path, plays_number=1, post_tasks_number=2)
+
+
+def test_with_block(request):
+    """
+
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["with_block.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "-i",
+            os.path.join(FIXTURES_DIR, "inventory"),
+            "--include-role-tasks",
+        ],
+    )
+    _common_tests(
+        json_path,
+        plays_number=1,
+        pre_tasks_number=4,
+        roles_number=1,
+        tasks_number=7,
+        blocks_number=4,
+        post_tasks_number=2,
+    )
+
+
+@pytest.mark.skip(reason="Will enabled this later")
+@pytest.mark.parametrize(
+    ["flag", "roles_number", "tasks_number", "post_tasks_number"],
+    [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
+    ids=["no_group", "group"],
+)
+def test_group_roles_by_name(
+    request, flag, roles_number, tasks_number, post_tasks_number
+):
+    """
+
+    :param request:
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["group-roles-by-name.yml"],
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks", flag],
+    )
+
+    _common_tests(
+        json_path,
+        plays_number=1,
+        roles_number=roles_number,
+        tasks_number=tasks_number,
+        post_tasks_number=post_tasks_number,
+        blocks_number=1,
+    )

@@ -61,9 +61,7 @@ def run_grapher(
     # put the generated file in a dedicated folder
     args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
 
-    args.extend(additional_args)
-
-    args.extend(playbook_paths)
+    args.extend(additional_args + playbook_paths)
 
     cli = PlaybookGrapherCLI(args)
 
@@ -147,6 +145,7 @@ def _common_tests(
         "post_tasks": post_tasks,
         "pre_tasks": pre_tasks,
         "roles": roles,
+        "blocks": blocks,
     }
 
 
