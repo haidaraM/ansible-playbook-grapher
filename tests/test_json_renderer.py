@@ -11,9 +11,9 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def run_grapher(
-        playbook_files: List[str],
-        output_filename: str = None,
-        additional_args: List[str] = None,
+    playbook_files: List[str],
+    output_filename: str = None,
+    additional_args: List[str] = None,
 ) -> Tuple[str, List[str]]:
     """
     Utility function to run the grapher
@@ -49,14 +49,14 @@ def run_grapher(
 
 
 def _common_tests(
-        json_path: str,
-        playbooks_number: int = 1,
-        plays_number: int = 0,
-        tasks_number: int = 0,
-        post_tasks_number: int = 0,
-        roles_number: int = 0,
-        pre_tasks_number: int = 0,
-        blocks_number: int = 0,
+    json_path: str,
+    playbooks_number: int = 1,
+    plays_number: int = 0,
+    tasks_number: int = 0,
+    post_tasks_number: int = 0,
+    roles_number: int = 0,
+    pre_tasks_number: int = 0,
+    blocks_number: int = 0,
 ) -> Dict:
     """
     Do some checks on the generated json files
@@ -68,7 +68,7 @@ def _common_tests(
 
     playbooks = output["playbooks"]
     assert (
-            len(playbooks) == playbooks_number
+        len(playbooks) == playbooks_number
     ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
 
     plays = []
@@ -86,23 +86,23 @@ def _common_tests(
         roles.extend(play["roles"])
 
     assert (
-            len(plays) == plays_number
+        len(plays) == plays_number
     ), f"The file '{json_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
     assert (
-            len(pre_tasks) == pre_tasks_number
+        len(pre_tasks) == pre_tasks_number
     ), f"The file '{json_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
     assert (
-            len(roles) == roles_number
+        len(roles) == roles_number
     ), f"The file '{json_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
-            len(tasks) == tasks_number
+        len(tasks) == tasks_number
     ), f"The file '{json_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
     assert (
-            len(post_tasks) == post_tasks_number
+        len(post_tasks) == post_tasks_number
     ), f"The file '{json_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
     return output
