@@ -19,7 +19,7 @@
             "pattern": "^PlaybookNode$"
           },
           "id": {
-            "format": "^playbook_.+$",
+            "pattern": "^playbook_.+$",
             "type": "string"
           },
           "name": {
@@ -43,7 +43,7 @@
               "type": "object",
               "properties": {
                 "type": {
-                  "format": "^PlayNode$",
+                  "pattern": "^PlayNode$",
                   "type": "string"
                 },
                 "id": {
@@ -173,6 +173,7 @@
           }
         },
         "include_role": {
+          "description": "Flag indicating if this role is an include role or not.",
           "type": "boolean"
         }
       },

@@ -4,6 +4,8 @@ from typing import List, Tuple, Dict
 
 import jq
 import pytest
+from jsonschema import validate
+from jsonschema.validators import Draft202012Validator
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -67,6 +69,17 @@ def _common_tests(
     """
     with open(json_path, "r") as f:
         output = json.load(f)
+
+    with open(os.path.join(FIXTURES_DIR, "json-schemas/v1.json")) as schema_file:
+        schema = json.load(schema_file)
+
+    # If no exception is raised by validate(), the instance is valid.
+    # I currently don't use format but added it here to not forget to add in case I use in the future.
+    validate(
+        instance=output,
+        schema=schema,
+        format_checker=Draft202012Validator.FORMAT_CHECKER,
+    )
 
     playbooks = jq.compile(".playbooks[]").input(output).all()
 
