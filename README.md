@@ -329,7 +329,7 @@ options:
                         line/column: the position of the plays/tasks/roles in the file. You can optionally add the attribute "remove_from_path" to remove some parts of the
                         path if you want relative paths.
   --open-protocol-handler {default,vscode,custom}
-                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer. Your SVG viewer must support double-click and Javascript. The
+                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your SVG viewer must support double-click and Javascript. The
                         supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the file or folders. When using a browser, it will
                         open or download them. For 'vscode', the folders and files will be open with VSCode. For 'custom', you need to set a custom format with --open-
                         protocol-custom-formats.

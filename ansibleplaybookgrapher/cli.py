@@ -169,7 +169,7 @@ class PlaybookGrapherCLI(CLI):
             choices=list(OPEN_PROTOCOL_HANDLERS.keys()),
             default="default",
             help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
-                                 viewer. Your SVG viewer must support double-click and Javascript. 
+                                 viewer (only for graphviz). Your SVG viewer must support double-click and Javascript. 
                                  The supported values are 'default', 'vscode' and 'custom'. 
                                  For 'default', the URL will be the path to the file or folders. When using a browser, 
                                  it will open or download them. 

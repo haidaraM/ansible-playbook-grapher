@@ -167,7 +167,7 @@ class PlaybookParser(BaseParser):
             add post_tasks
         :return:
         """
-        display.display(f"Parsing playbook {self.playbook_filename}")
+        display.display(f"Parsing the playbook '{self.playbook_filename}'")
         playbook = Playbook.load(
             self.playbook_filename,
             loader=self.data_loader,
