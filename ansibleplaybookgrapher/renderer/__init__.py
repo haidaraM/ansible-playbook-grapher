@@ -122,7 +122,7 @@ class PlaybookBuilder(ABC):
             )
         elif isinstance(node, RoleNode):
             self.build_role(role_node=node, color=color, fontcolor=fontcolor, **kwargs)
-        else:  # This is necessarily a TaskNode
+        elif isinstance(node, TaskNode):
             self.build_task(
                 task_node=node,
                 color=color,
@@ -130,6 +130,8 @@ class PlaybookBuilder(ABC):
                 node_label_prefix=kwargs.pop("node_label_prefix", ""),
                 **kwargs,
             )
+        else:
+            raise Exception(f"Unsupported node type: {type(node)}. This is likely a bug that should be reported")
 
     @abstractmethod
     def build_playbook(
@@ -246,7 +248,7 @@ class PlaybookBuilder(ABC):
         :param node: the node to get the url for
         :return:
         """
-        if node.location.path:
+        if node.location and node.location.path:
             remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
             path = node.location.path.replace(remove_from_path, "")
 

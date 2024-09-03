@@ -84,7 +84,7 @@ class Node:
         self.when = when
         self.raw_object = raw_object
 
-        self.location = None
+        self.location: Optional[NodeLocation] = None
         self.set_location()
 
         # The index of this node in the parent node if it has one (starting from 1)
