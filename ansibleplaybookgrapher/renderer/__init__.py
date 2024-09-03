@@ -131,7 +131,9 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
         else:
-            raise Exception(f"Unsupported node type: {type(node)}. This is likely a bug that should be reported")
+            raise Exception(
+                f"Unsupported node type: {type(node)}. This is likely a bug that should be reported"
+            )
 
     @abstractmethod
     def build_playbook(
