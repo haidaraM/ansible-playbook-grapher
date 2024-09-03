@@ -24,7 +24,7 @@ test_install: build
 fmt:
 	black .
 
-test:
+test: fmt
     # Due to some side effects with Ansible, we have to run the tests in a certain order
 	cd tests && pytest test_cli.py test_utils.py test_parser.py test_graph_model.py test_graphviz_postprocessor.py test_graphviz_renderer.py test_mermaid_renderer.py test_json_renderer.py
 
