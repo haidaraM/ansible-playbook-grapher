@@ -292,18 +292,13 @@ class CompositeNode(Node):
 
         return False
 
-    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
+    def to_dict(self, **kwargs) -> Dict:
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
-        :param exclude_compositions: Whether to exclude the compositions from the dict or not. Applied to the current
-        node only.
         :return:
         """
         node_dict = super().to_dict(**kwargs)
-
-        if exclude_compositions:
-            return node_dict
 
         for composition, nodes in self._compositions.items():
             nodes_dict_list = []
@@ -431,24 +426,19 @@ class PlaybookNode(CompositeNode):
 
     def to_dict(
         self,
-        exclude_compositions: bool = False,
         exclude_empty_plays: bool = False,
         exclude_plays_without_roles: bool = False,
         **kwargs,
     ) -> Dict:
         """
         Return a dictionary representation of this playbook
-        :param exclude_compositions: Whether to exclude the compositions from the dict or not
         :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
         :param kwargs:
         :return:
         """
-        playbook_dict = super().to_dict(exclude_compositions, **kwargs)
+        playbook_dict = super().to_dict(**kwargs)
         playbook_dict["plays"] = []
-
-        if exclude_compositions:
-            return playbook_dict
 
         # We need to explicitly get the plays here to exclude the ones we don't need
         for play in self.plays(
@@ -516,13 +506,13 @@ class PlayNode(CompositeNode):
     def tasks(self) -> List["Node"]:
         return self.get_nodes("tasks")
 
-    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
+    def to_dict(self, **kwargs) -> Dict:
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
         :return:
         """
-        data = super().to_dict(exclude_compositions, **kwargs)
+        data = super().to_dict(**kwargs)
         data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
 
@@ -634,12 +624,10 @@ class RoleNode(LoopMixin, CompositeTasksNode):
 
         return super().has_loop()
 
-    def to_dict(self, exclude_compositions: bool = False, **kwargs) -> Dict:
+    def to_dict(self, **kwargs) -> Dict:
         """
         Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
-        :param exclude_compositions: Whether to exclude the compositions from the dict or not. Applied to the current
-        node only.
         :param kwargs:
         :return:
         """
