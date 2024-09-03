@@ -54,6 +54,17 @@ def display():
     return display
 
 
+@pytest.fixture(scope="session", autouse=True)
+def init_ansible_plugin_loader():
+    """
+    Init the Ansible plugin loader responsible to find the collections and stuff
+    This init plugin is called in CLI.run but here we are not using that.
+    It was called automatically in ansible-core < 2.15 but changed in https://github.com/ansible/ansible/pull/78915
+    :return:
+    """
+    init_plugin_loader()
+
+
 @pytest.fixture
 def grapher_cli(request) -> PlaybookGrapherCLI:
     """
@@ -69,7 +80,4 @@ def grapher_cli(request) -> PlaybookGrapherCLI:
     args_params[-1] = os.path.join(FIXTURES_DIR, args_params[-1])
     cli = PlaybookGrapherCLI([__prog__] + args_params)
     cli.parse()
-    # This init plugin is called in CLI.run but here we are not using that.
-    # It was called automatically in ansible-core < 2.15 but changed in https://github.com/ansible/ansible/pull/78915
-    init_plugin_loader()
     return cli
