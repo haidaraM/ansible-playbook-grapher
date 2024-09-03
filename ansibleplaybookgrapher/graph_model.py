@@ -216,7 +216,7 @@ class CompositeNode(Node):
         """
         if target_composition not in self._supported_compositions:
             raise Exception(
-                f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
+                f"The target composition '{target_composition}' is unknown. Supported ones are: {self._supported_compositions}"
             )
 
         return self._compositions[target_composition]
@@ -445,7 +445,7 @@ class PlaybookNode(CompositeNode):
         :return:
         """
         playbook_dict = super().to_dict(exclude_compositions, **kwargs)
-        plays = []
+        playbook_dict["plays"] = []
 
         if exclude_compositions:
             return playbook_dict
@@ -455,9 +455,7 @@ class PlaybookNode(CompositeNode):
             exclude_empty=exclude_empty_plays,
             exclude_without_roles=exclude_plays_without_roles,
         ):
-            plays.append(play.to_dict(**kwargs))
-
-        playbook_dict["plays"] = plays
+            playbook_dict["plays"].append(play.to_dict(**kwargs))
 
         return playbook_dict
 
