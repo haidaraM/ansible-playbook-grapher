@@ -442,7 +442,7 @@ def test_multi_plays(request):
     )
 
 
-def test_multiple_playbooks(request):
+def test_multi_playbooks(request):
     """
     Test with multiple playbooks
     """

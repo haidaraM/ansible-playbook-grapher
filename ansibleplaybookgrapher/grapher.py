@@ -50,7 +50,7 @@ class Grapher:
         playbook_nodes = []
         roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
 
-        for playbook_file in self.playbook_filenames:
+        for counter, playbook_file in enumerate(self.playbook_filenames, 1):
             playbook_parser = PlaybookParser(
                 playbook_filename=playbook_file,
                 tags=tags,
@@ -59,6 +59,7 @@ class Grapher:
                 group_roles_by_name=group_roles_by_name,
             )
             playbook_node = playbook_parser.parse()
+            playbook_node.index = counter
             playbook_nodes.append(playbook_node)
 
             # Update the usage of the roles

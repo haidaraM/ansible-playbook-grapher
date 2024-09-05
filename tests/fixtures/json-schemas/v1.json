@@ -5,7 +5,7 @@
   "type": "object",
   "properties": {
     "version": {
-      "description": "The version of the output",
+      "description": "The version of the JSON output",
       "type": "integer"
     },
     "playbooks": {
@@ -14,7 +14,7 @@
         "type": "object",
         "properties": {
           "type": {
-            "description": "Type of the node. For playbooks, this PlaybookNode",
+            "description": "Type of the node.",
             "type": "string",
             "pattern": "^PlaybookNode$"
           },
@@ -29,10 +29,7 @@
             "type": "string"
           },
           "index": {
-            "type": [
-              "integer",
-              "null"
-            ]
+            "type": "integer"
           },
           "location": {
             "$ref": "#/$defs/location"
@@ -143,7 +140,7 @@
   ],
   "$defs": {
     "task": {
-      "description": "An Ansible task",
+      "description": "An Ansible task or role",
       "type": "object",
       "properties": {
         "type": {
@@ -155,12 +152,15 @@
           "type": "string"
         },
         "name": {
+          "description": "The name of the task or role",
           "type": "string"
         },
         "when": {
+          "description": "The condition on the task",
           "type": "string"
         },
         "index": {
+          "description": "The index of the task",
           "type": "integer"
         },
         "location": {
@@ -187,9 +187,11 @@
       ]
     },
     "location": {
+      "description": "The node location on the filesystem.",
       "type": "object",
       "properties": {
         "type": {
+          "description": "The type of the location",
           "type": "string",
           "enum": [
             "file",
@@ -197,6 +199,7 @@
           ]
         },
         "path": {
+          "description": "Filesystem path",
           "type": "string"
         },
         "line": {

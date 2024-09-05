@@ -83,7 +83,14 @@ def _common_tests(
 
     playbooks = jq.compile(".playbooks[]").input(output).all()
 
-    plays = jq.compile(".playbooks[].plays").input(output).first()
+    plays = (
+        jq.compile(
+            '.. | objects | select(.type == "PlayNode" and (.id | startswith("play_")))'
+        )
+        .input(output)
+        .all()
+    )
+
     pre_tasks = (
         jq.compile(
             '.. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))'
@@ -235,4 +242,27 @@ def test_group_roles_by_name(
         tasks_number=tasks_number,
         post_tasks_number=post_tasks_number,
         blocks_number=1,
+    )
+
+
+def test_multi_playbooks(request):
+    """
+
+    :param request:
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
+        output_filename=request.node.name,
+        additional_args=["--include-role-tasks"],
+    )
+
+    _common_tests(
+        json_path,
+        playbooks_number=3,
+        plays_number=5,
+        pre_tasks_number=4,
+        roles_number=10,
+        tasks_number=35,
+        post_tasks_number=4,
     )
