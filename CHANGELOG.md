@@ -1,3 +1,19 @@
+# 2.3.0 (Unreleased)
+
+## What's Changed
+
+* **feat: Add support for a JSON renderer** by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/193
+* chore(deps): update black requirement from ~=24.3 to ~=24.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/188
+* chore(deps): bump pytest from 8.1.1 to 8.2.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/189
+* chore(deps): bump pytest from 8.2.1 to 8.2.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/191
+* chore(deps): update ansible-core requirement from <2.16.6,>=2.15 to >=2.15,<2.17.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/190
+* chore(deps): bump pytest from 8.2.2 to 8.3.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/195
+* chore(deps): bump pyquery from 2.0.0 to 2.0.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/197
+* chore(deps): update black requirement from ~=24.4 to ~=24.8 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/196
+* chore(deps): update ansible-core requirement from <2.17.1,>=2.16 to >=2.16,<2.17.3 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/194
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.2.1...v2.3.0
+
 # 2.2.1 (2024-04-24)
 
 ## What's Changed
