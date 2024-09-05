@@ -17,7 +17,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Native support of Ansible filters based on tags.
 - Variables interpolation (when possible).
 - Support `import_*` and `include_*`.
-    - Multiple flags to hide empty plays, group roles by name etc...
+- Multiple flags to hide empty plays, group roles by name etc...
 
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
