@@ -23,10 +23,11 @@ from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
 from ansible.utils.display import Display
 
-from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher import __prog__, __version__
+from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
+from ansibleplaybookgrapher.renderer.json import JSONRenderer
 from ansibleplaybookgrapher.renderer.mermaid import (
     MermaidFlowChartRenderer,
     DEFAULT_DIRECTIVE as MERMAID_DEFAULT_DIRECTIVE,
@@ -54,6 +55,7 @@ class PlaybookGrapherCLI(CLI):
         self.options = None
 
     def run(self):
+        # FIXME: run should not return anything.
         super().run()
 
         display.verbosity = self.options.verbosity
@@ -65,38 +67,54 @@ class PlaybookGrapherCLI(CLI):
             group_roles_by_name=self.options.group_roles_by_name,
         )
 
-        if self.options.renderer == "graphviz":
-            renderer = GraphvizRenderer(
-                playbook_nodes=playbook_nodes,
-                roles_usage=roles_usage,
-            )
-            output_path = renderer.render(
-                open_protocol_handler=self.options.open_protocol_handler,
-                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-                output_filename=self.options.output_filename,
-                view=self.options.view,
-                save_dot_file=self.options.save_dot_file,
-                hide_empty_plays=self.options.hide_empty_plays,
-                hide_plays_without_roles=self.options.hide_plays_without_roles,
-            )
+        match self.options.renderer:
+            case "graphviz":
+                renderer = GraphvizRenderer(
+                    playbook_nodes=playbook_nodes,
+                    roles_usage=roles_usage,
+                )
+                return renderer.render(
+                    open_protocol_handler=self.options.open_protocol_handler,
+                    open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                    output_filename=self.options.output_filename,
+                    view=self.options.view,
+                    save_dot_file=self.options.save_dot_file,
+                    hide_empty_plays=self.options.hide_empty_plays,
+                    hide_plays_without_roles=self.options.hide_plays_without_roles,
+                )
 
-            return output_path
-        else:
-            renderer = MermaidFlowChartRenderer(
-                playbook_nodes=playbook_nodes,
-                roles_usage=roles_usage,
-            )
-            output_path = renderer.render(
-                open_protocol_handler=self.options.open_protocol_handler,
-                open_protocol_custom_formats=self.options.open_protocol_custom_formats,
-                output_filename=self.options.output_filename,
-                view=self.options.view,
-                directive=self.options.renderer_mermaid_directive,
-                orientation=self.options.renderer_mermaid_orientation,
-                hide_empty_plays=self.options.hide_empty_plays,
-                hide_plays_without_roles=self.options.hide_plays_without_roles,
-            )
-            return output_path
+            case "mermaid-flowchart":
+                renderer = MermaidFlowChartRenderer(
+                    playbook_nodes=playbook_nodes,
+                    roles_usage=roles_usage,
+                )
+                return renderer.render(
+                    open_protocol_handler=self.options.open_protocol_handler,
+                    open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                    output_filename=self.options.output_filename,
+                    view=self.options.view,
+                    directive=self.options.renderer_mermaid_directive,
+                    orientation=self.options.renderer_mermaid_orientation,
+                    hide_empty_plays=self.options.hide_empty_plays,
+                    hide_plays_without_roles=self.options.hide_plays_without_roles,
+                )
+
+            case "json":
+                renderer = JSONRenderer(playbook_nodes, roles_usage)
+                return renderer.render(
+                    open_protocol_handler=self.options.open_protocol_handler,
+                    open_protocol_custom_formats=self.options.open_protocol_custom_formats,
+                    output_filename=self.options.output_filename,
+                    view=self.options.view,
+                    hide_empty_plays=self.options.hide_empty_plays,
+                    hide_plays_without_roles=self.options.hide_plays_without_roles,
+                )
+
+            case _:
+                # Likely a bug if we are here
+                raise AnsibleOptionsError(
+                    f"Unknown renderer '{self.options.renderer}'. This is likely a bug that should be reported."
+                )
 
     def _add_my_options(self):
         """
@@ -141,7 +159,8 @@ class PlaybookGrapherCLI(CLI):
             "-o",
             "--output-file-name",
             dest="output_filename",
-            help="Output filename without the '.svg' extension. Default: <playbook>.svg",
+            help="Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. "
+            "The extension will be added automatically.",
         )
 
         self.parser.add_argument(
@@ -150,7 +169,7 @@ class PlaybookGrapherCLI(CLI):
             choices=list(OPEN_PROTOCOL_HANDLERS.keys()),
             default="default",
             help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
-                                 viewer. Your SVG viewer must support double-click and Javascript. 
+                                 viewer (only for graphviz). Your SVG viewer must support double-click and Javascript. 
                                  The supported values are 'default', 'vscode' and 'custom'. 
                                  For 'default', the URL will be the path to the file or folders. When using a browser, 
                                  it will open or download them. 
@@ -180,12 +199,12 @@ class PlaybookGrapherCLI(CLI):
             "--group-roles-by-name",
             action="store_true",
             default=False,
-            help="When rendering the graph, only a single role will be display for all roles having the same names. Default: %(default)s",
+            help="When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the same names. Default: %(default)s",
         )
 
         self.parser.add_argument(
             "--renderer",
-            choices=["graphviz", "mermaid-flowchart"],
+            choices=["graphviz", "mermaid-flowchart", "json"],
             default="graphviz",
             help="The renderer to use to generate the graph. Default: %(default)s",
         )

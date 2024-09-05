@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -122,13 +122,17 @@ class PlaybookBuilder(ABC):
             )
         elif isinstance(node, RoleNode):
             self.build_role(role_node=node, color=color, fontcolor=fontcolor, **kwargs)
-        else:  # This is necessarily a TaskNode
+        elif isinstance(node, TaskNode):
             self.build_task(
                 task_node=node,
                 color=color,
                 fontcolor=fontcolor,
                 node_label_prefix=kwargs.pop("node_label_prefix", ""),
                 **kwargs,
+            )
+        else:
+            raise Exception(
+                f"Unsupported node type: {type(node)}. This is likely a bug that should be reported"
             )
 
     @abstractmethod
@@ -239,19 +243,19 @@ class PlaybookBuilder(ABC):
         """
         pass
 
-    def get_node_url(self, node: Node, node_type: str) -> Optional[str]:
+    def get_node_url(self, node: Node) -> Optional[str]:
         """
-        Get the node url based on the chosen protocol
-        :param node_type: task or role
+        Get the node url based on the chosen open protocol.
+
         :param node: the node to get the url for
         :return:
         """
-        if node.path:
+        if node.location and node.location.path:
             remove_from_path = self.open_protocol_formats.get("remove_from_path", "")
-            path = node.path.replace(remove_from_path, "")
+            path = node.location.path.replace(remove_from_path, "")
 
-            url = self.open_protocol_formats[node_type].format(
-                path=path, line=node.line, column=node.column
+            url = self.open_protocol_formats[node.location.type].format(
+                path=path, line=node.location.line, column=node.location.column
             )
             display.vvvv(f"Open protocol URL for node {node}: {url}")
             return url

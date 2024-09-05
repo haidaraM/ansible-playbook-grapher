@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ansible Playbook Grapher JSON Output schema (v1)",
+  "description": "The schema definition of the version 1 of the json renderer",
+  "type": "object",
+  "properties": {
+    "version": {
+      "description": "The version of the JSON output",
+      "type": "integer"
+    },
+    "playbooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Type of the node.",
+            "type": "string",
+            "pattern": "^PlaybookNode$"
+          },
+          "id": {
+            "pattern": "^playbook_.+$",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "when": {
+            "type": "string"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "location": {
+            "$ref": "#/$defs/location"
+          },
+          "plays": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "pattern": "^PlayNode$",
+                  "type": "string"
+                },
+                "id": {
+                  "pattern": "^play_.+$",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "when": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "colors": {
+                  "type": "object",
+                  "properties": {
+                    "main": {
+                      "type": "string"
+                    },
+                    "font": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "main",
+                    "font"
+                  ]
+                },
+                "hosts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "location": {
+                  "$ref": "#/$defs/location"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/task"
+                  }
+                },
+                "tasks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/task"
+                  }
+                },
+                "pre_tasks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/task"
+                  }
+                },
+                "post_tasks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/task"
+                  }
+                }
+              },
+              "required": [
+                "type",
+                "id",
+                "name",
+                "when",
+                "index",
+                "location",
+                "colors",
+                "hosts",
+                "roles",
+                "tasks",
+                "pre_tasks",
+                "post_tasks"
+              ]
+            }
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "when",
+          "index",
+          "location",
+          "plays"
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "playbooks"
+  ],
+  "$defs": {
+    "task": {
+      "description": "An Ansible task or role",
+      "type": "object",
+      "properties": {
+        "type": {
+          "pattern": "^(TaskNode|BlockNode|RoleNode)$",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^(pre_task|task|post_task|role|block)_.+$",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of the task or role",
+          "type": "string"
+        },
+        "when": {
+          "description": "The condition on the task",
+          "type": "string"
+        },
+        "index": {
+          "description": "The index of the task",
+          "type": "integer"
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task"
+          }
+        },
+        "include_role": {
+          "description": "Flag indicating if this role is an include role or not.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "name",
+        "when",
+        "index",
+        "location"
+      ]
+    },
+    "location": {
+      "description": "The node location on the filesystem.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "The type of the location",
+          "type": "string",
+          "enum": [
+            "file",
+            "folder"
+          ]
+        },
+        "path": {
+          "description": "Filesystem path",
+          "type": "string"
+        },
+        "line": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "column": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "path",
+        "line",
+        "column"
+      ]
+    }
+  }
+}

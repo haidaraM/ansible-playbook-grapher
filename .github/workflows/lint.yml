@@ -27,7 +27,7 @@ jobs:
 
       - uses: psf/black@stable
         with:
-          version: "~= 23.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
+          version: "~= 24.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
           options: ""
 
       - uses: stefanzweifel/git-auto-commit-action@v5

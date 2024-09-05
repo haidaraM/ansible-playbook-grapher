@@ -61,9 +61,7 @@ def run_grapher(
     # put the generated file in a dedicated folder
     args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
 
-    args.extend(additional_args)
-
-    args.extend(playbook_paths)
+    args.extend(additional_args + playbook_paths)
 
     cli = PlaybookGrapherCLI(args)
 
@@ -115,7 +113,7 @@ def _common_tests(
 
     assert (
         len(playbooks) == playbooks_number
-    ), f"The graph '{svg_path}' should contains {playbooks_number} play(s) but we found {len(playbooks)} play(s)"
+    ), f"The graph '{svg_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
 
     assert (
         len(plays) == plays_number
@@ -147,6 +145,7 @@ def _common_tests(
         "post_tasks": post_tasks,
         "pre_tasks": pre_tasks,
         "roles": roles,
+        "blocks": blocks,
     }
 
 
@@ -443,7 +442,7 @@ def test_multi_plays(request):
     )
 
 
-def test_multiple_playbooks(request):
+def test_multi_playbooks(request):
     """
     Test with multiple playbooks
     """

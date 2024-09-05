@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 from collections import defaultdict
+from dataclasses import dataclass, asdict
 from typing import Dict, List, Set, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
@@ -33,6 +34,25 @@ class LoopMixin:
         if self.raw_object is None:
             return False
         return self.raw_object.loop is not None
+
+
+@dataclass
+class NodeLocation:
+    """
+    The node location on the filesystem.
+    The location can be a folder (for roles) or a specific line and column inside a file
+    """
+
+    type: str  # file or folder
+    path: Optional[str] = None
+    line: Optional[int] = None
+    column: Optional[int] = None
+
+    def __post_init__(self):
+        if self.type not in ["folder", "file"]:
+            raise ValueError(
+                f"Type '{self.type}' not supported. Valid values: file, folder."
+            )
 
 
 class Node:
@@ -64,20 +84,23 @@ class Node:
         self.when = when
         self.raw_object = raw_object
 
-        # Get the node position in the parsed files. Format: (path,line,column)
-        self.path = self.line = self.column = None
-        self.set_position()
+        self.location: Optional[NodeLocation] = None
+        self.set_location()
 
         # The index of this node in the parent node if it has one (starting from 1)
         self.index: Optional[int] = index
 
-    def set_position(self):
+    def set_location(self):
         """
-        Set the path of this based on the raw object. Not all objects have path
+        Set the location of this node based on the raw object. Not all objects have path
         :return:
         """
         if self.raw_object and self.raw_object.get_ds():
-            self.path, self.line, self.column = self.raw_object.get_ds().ansible_pos
+            path, line, column = self.raw_object.get_ds().ansible_pos
+            # By default, it's a file
+            self.location = NodeLocation(
+                type="file", path=path, line=line, column=column
+            )
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """
@@ -105,6 +128,27 @@ class Node:
 
     def __hash__(self):
         return hash(self.id)
+
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
+        :return:
+        """
+        data = {
+            "type": type(self).__name__,
+            "id": self.id,
+            "name": self.name,
+            "when": self.when,
+            "index": self.index,
+        }
+
+        if self.location is not None:
+            data["location"] = asdict(self.location)
+        else:
+            data["location"] = None
+
+        return data
 
 
 class CompositeNode(Node):
@@ -143,7 +187,7 @@ class CompositeNode(Node):
             index=index,
         )
         self._supported_compositions = supported_compositions or []
-        # The dict will contain the different types of composition.
+        # The dict will contain the different types of composition: plays, tasks, roles...
         self._compositions = defaultdict(list)  # type: Dict[str, List]
         # Used to count the number of nodes in this composite node
         self._node_counter = 0
@@ -172,7 +216,7 @@ class CompositeNode(Node):
         """
         if target_composition not in self._supported_compositions:
             raise Exception(
-                f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
+                f"The target composition '{target_composition}' is unknown. Supported ones are: {self._supported_compositions}"
             )
 
         return self._compositions[target_composition]
@@ -248,6 +292,23 @@ class CompositeNode(Node):
 
         return False
 
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :return:
+        """
+        node_dict = super().to_dict(**kwargs)
+
+        for composition, nodes in self._compositions.items():
+            nodes_dict_list = []
+            for node in nodes:
+                nodes_dict_list.append(node.to_dict(**kwargs))
+
+            node_dict[composition] = nodes_dict_list
+
+        return node_dict
+
 
 class CompositeTasksNode(CompositeNode):
     """
@@ -313,15 +374,15 @@ class PlaybookNode(CompositeNode):
             supported_compositions=["plays"],
         )
 
-    def set_position(self):
+    def set_location(self):
         """
         Playbooks only have path as position
         :return:
         """
         # Since the playbook is the whole file, the set the position as the beginning of the file
-        self.path = os.path.join(os.getcwd(), self.name)
-        self.line = 1
-        self.column = 1
+        self.location = NodeLocation(
+            type="file", path=os.path.join(os.getcwd(), self.name), line=1, column=1
+        )
 
     def plays(
         self, exclude_empty: bool = False, exclude_without_roles: bool = False
@@ -362,6 +423,31 @@ class PlaybookNode(CompositeNode):
                         )
 
         return usages
+
+    def to_dict(
+        self,
+        exclude_empty_plays: bool = False,
+        exclude_plays_without_roles: bool = False,
+        **kwargs,
+    ) -> Dict:
+        """
+        Return a dictionary representation of this playbook
+        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
+        :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
+        :param kwargs:
+        :return:
+        """
+        playbook_dict = super().to_dict(**kwargs)
+        playbook_dict["plays"] = []
+
+        # We need to explicitly get the plays here to exclude the ones we don't need
+        for play in self.plays(
+            exclude_empty=exclude_empty_plays,
+            exclude_without_roles=exclude_plays_without_roles,
+        ):
+            playbook_dict["plays"].append(play.to_dict(**kwargs))
+
+        return playbook_dict
 
 
 class PlayNode(CompositeNode):
@@ -419,6 +505,18 @@ class PlayNode(CompositeNode):
     @property
     def tasks(self) -> List["Node"]:
         return self.get_nodes("tasks")
+
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :return:
+        """
+        data = super().to_dict(**kwargs)
+        data["hosts"] = self.hosts
+        data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
+
+        return data
 
 
 class BlockNode(CompositeTasksNode):
@@ -506,17 +604,18 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             index=index,
         )
 
-    def set_position(self):
+    def set_location(self):
         """
         Retrieve the position depending on whether it's an include_role or not
         :return:
         """
         if self.raw_object and not self.include_role:
-            # If it's not an include_role, we take the role path which the path to the folder where the role is located
-            # on the disk
-            self.path = self.raw_object._role_path
+            # If it's not an include_role, we take the role path which is the path to the folder where the role
+            # is located on the disk.
+            self.location = NodeLocation(type="folder", path=self.raw_object._role_path)
+
         else:
-            super().set_position()
+            super().set_location()
 
     def has_loop(self) -> bool:
         if not self.include_role:
@@ -524,3 +623,15 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             return False
 
         return super().has_loop()
+
+    def to_dict(self, **kwargs) -> Dict:
+        """
+        Return a dictionary representation of this composite node. This representation is not meant to get the
+        original object back.
+        :param kwargs:
+        :return:
+        """
+        node_dict = super().to_dict(**kwargs)
+        node_dict["include_role"] = self.include_role
+
+        return node_dict
