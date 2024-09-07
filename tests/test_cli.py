@@ -1,13 +1,14 @@
 import pytest
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
+from pytest import CaptureFixture
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
-def test_cli_help(help_option: str, capfd) -> None:
+def test_cli_help(help_option: str, capfd: CaptureFixture) -> None:
     """Test for the help option : -h, --help
     :param help_option:
     :param capfd:
@@ -25,7 +26,7 @@ def test_cli_help(help_option: str, capfd) -> None:
     assert "Make graphs from your Ansible Playbooks." in out
 
 
-def test_cli_version(capfd) -> None:
+def test_cli_version(capfd: CaptureFixture) -> None:
     """Test version printing
     :return:
     """
@@ -202,7 +203,7 @@ def test_cli_multiple_playbooks() -> None:
     [("--", 0), ("-v", 1), ("-vv", 2), ("-vvv", 3)],
     ids=["no_verbose", "simple_verbose", "double_verbose", "triple_verbose"],
 )
-def test_cli_verbosity_options(verbosity, verbosity_number) -> None:
+def test_cli_verbosity_options(verbosity: str, verbosity_number: int) -> None:
     """Test verbosity options."""
     args = [__prog__, verbosity, "playbook1.yml"]
 
@@ -260,7 +261,7 @@ def test_cli_open_protocol_custom_formats_not_provided() -> None:
 def test_cli_open_protocol_custom_formats_invalid_inputs(
     protocol_format: str,
     expected_message: str,
-    capsys,
+    capsys: CaptureFixture,
 ) -> None:
     """The custom formats must be a valid json data
     :return:

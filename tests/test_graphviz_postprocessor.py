@@ -52,7 +52,7 @@ def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor) -> Non
     assert post_processor.root[0].get("id") == "toto"
 
 
-def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir) -> None:
+def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir) -> None:  # noqa: ANN001
     """Test method write of the PostProcessor
     :param post_processor:
     :return:
@@ -66,7 +66,7 @@ def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir) -> 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_without_graph_representation(
     post_processor: GraphvizPostProcessor,
-    tmpdir,
+    tmpdir,  # noqa: ANN001
 ) -> None:
     """Test the post processor without a graph representation
     :param post_processor:
@@ -91,7 +91,7 @@ def test_post_processor_without_graph_representation(
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_with_graph_representation(
     post_processor: GraphvizPostProcessor,
-    tmpdir,
+    tmpdir,  # noqa: ANN001
 ) -> None:
     """Test the post processor for a graph representation
     :param post_processor:

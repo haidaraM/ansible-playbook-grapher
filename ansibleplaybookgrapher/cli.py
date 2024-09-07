@@ -15,7 +15,9 @@
 import json
 import ntpath
 import sys
+from argparse import Namespace
 from pathlib import Path
+from typing import Callable
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
@@ -48,7 +50,7 @@ class PlaybookGrapherCLI(CLI):
 
     name = __prog__
 
-    def __init__(self, args: list[str], callback=None) -> None:
+    def __init__(self, args: list[str], callback: Callable | None = None) -> None:
         super().__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
@@ -268,7 +270,7 @@ class PlaybookGrapherCLI(CLI):
 
         self._add_my_options()
 
-    def post_process_args(self, options):
+    def post_process_args(self, options: Namespace):
         options = super().post_process_args(options)
 
         # init the options

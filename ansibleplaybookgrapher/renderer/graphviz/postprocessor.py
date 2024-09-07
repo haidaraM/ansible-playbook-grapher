@@ -151,7 +151,7 @@ class GraphvizPostProcessor:
 
                 element.append(root_subelement)
 
-    def _get_text_path_start_offset(self, path_element, text: str) -> str:
+    def _get_text_path_start_offset(self, path_element, text: str) -> str:  # noqa: ANN001
         """Get the start offset where the edge label should begin
         :param path_element:
         :param text:
