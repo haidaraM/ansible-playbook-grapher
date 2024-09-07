@@ -36,6 +36,7 @@ jobs:
         name: Setup Python ${{ matrix.python-version }}
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install prereqs
         run: |

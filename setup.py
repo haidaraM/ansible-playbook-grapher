@@ -64,8 +64,8 @@ setup(
     package_data={"ansible-playbook-grapher": ["data/*"]},
     include_package_data=True,
     download_url="https://github.com/haidaraM/ansible-playbook-grapher/archive/v"
-    + __version__
-    + ".tar.gz",
+                 + __version__
+                 + ".tar.gz",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
