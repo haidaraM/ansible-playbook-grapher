@@ -15,14 +15,13 @@
 
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-from ansibleplaybookgrapher import __version__, __prog__
+from ansibleplaybookgrapher import __prog__, __version__
 
 
 def read_requirements(path):
-    """
-    Read requirements file
+    """Read requirements file
     :param path:
     :type path:
     :return:

@@ -5,16 +5,15 @@ from lxml import etree
 
 from ansibleplaybookgrapher.graph_model import PlaybookNode, PlayNode, TaskNode
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
-    GraphvizPostProcessor,
     SVG_NAMESPACE,
+    GraphvizPostProcessor,
 )
 from tests import SIMPLE_PLAYBOOK_SVG
 
 
 @pytest.fixture(name="post_processor")
 def fixture_simple_postprocessor(request):
-    """
-    Return a post processor without a graph structure and with the simple_playbook_no_postproccess
+    """Return a post processor without a graph structure and with the simple_playbook_no_postproccess
     :return:
     """
     try:
@@ -23,17 +22,14 @@ def fixture_simple_postprocessor(request):
         # if the svg is not provided, we use the simple one
         svg_path = SIMPLE_PLAYBOOK_SVG
 
-    post_processor = GraphvizPostProcessor(svg_path=svg_path)
-    return post_processor
+    return GraphvizPostProcessor(svg_path=svg_path)
 
 
-def _assert_common_svg(svg_root: Element):
-    """
-    Assert some common structures of the generated svg
+def _assert_common_svg(svg_root: Element) -> None:
+    """Assert some common structures of the generated svg
     :param svg_root:
     :return:
     """
-
     assert svg_root.get("id") == "svg"
 
     # jquery must be the first element because the next script need jquery
@@ -42,9 +38,8 @@ def _assert_common_svg(svg_root: Element):
     assert svg_root[2].get("id") == "my_css"
 
 
-def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor):
-    """
-    Test method insert_tag of the PostProcessor
+def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor) -> None:
+    """Test method insert_tag of the PostProcessor
     :param post_processor:
     :return:
     """
@@ -54,9 +49,8 @@ def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor):
     assert post_processor.root[0].get("id") == "toto"
 
 
-def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir):
-    """
-    Test method write of the PostProcessor
+def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir) -> None:
+    """Test method write of the PostProcessor
     :param post_processor:
     :return:
     """
@@ -68,10 +62,10 @@ def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir):
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_without_graph_representation(
-    post_processor: GraphvizPostProcessor, tmpdir
-):
-    """
-    Test the post processor without a graph representation
+    post_processor: GraphvizPostProcessor,
+    tmpdir,
+) -> None:
+    """Test the post processor without a graph representation
     :param post_processor:
     :param tmpdir:
     :return:
@@ -93,10 +87,10 @@ def test_post_processor_without_graph_representation(
 
 @pytest.mark.parametrize("post_processor", [SIMPLE_PLAYBOOK_SVG], indirect=True)
 def test_post_processor_with_graph_representation(
-    post_processor: GraphvizPostProcessor, tmpdir
-):
-    """
-    Test the post processor for a graph representation
+    post_processor: GraphvizPostProcessor,
+    tmpdir,
+) -> None:
+    """Test the post processor for a graph representation
     :param post_processor:
     :param tmpdir:
     :return:
@@ -121,7 +115,8 @@ def test_post_processor_with_graph_representation(
 
     _assert_common_svg(root)
     elements_links = root.xpath(
-        f"ns:g/*[@id='{play.id}']//ns:link", namespaces={"ns": SVG_NAMESPACE}
+        f"ns:g/*[@id='{play.id}']//ns:link",
+        namespaces={"ns": SVG_NAMESPACE},
     )
     assert len(elements_links) == 2, "Play should have two links"
     assert [task_1.id, task_2.id] == [

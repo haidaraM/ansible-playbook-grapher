@@ -1,15 +1,13 @@
 import glob
 import os
-from typing import List
 
 from jinja2 import Template
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-def list_files(path_pattern: str) -> List[str]:
-    """
-    Return the list of files matching the pattern
+def list_files(path_pattern: str) -> list[str]:
+    """Return the list of files matching the pattern
     :param path_pattern:
     :return:
     """
@@ -25,5 +23,3 @@ if __name__ == "__main__":
     files = []
     for filename in mermaid_files:
         files.append({"name": filename, "content": open(filename).read()})
-
-    print(template.render(files=files, matrix_job_identifier=matrix_job_identifier))

@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Set, List
 
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
+    BlockNode,
+    Node,
     PlaybookNode,
     PlayNode,
     RoleNode,
-    Node,
-    BlockNode,
     TaskNode,
 )
 
@@ -44,9 +43,9 @@ OPEN_PROTOCOL_HANDLERS = {
 class Renderer(ABC):
     def __init__(
         self,
-        playbook_nodes: List[PlaybookNode],
-        roles_usage: Dict[RoleNode, Set[PlayNode]],
-    ):
+        playbook_nodes: list[PlaybookNode],
+        roles_usage: dict[RoleNode, set[PlayNode]],
+    ) -> None:
         self.playbook_nodes = playbook_nodes
         self.roles_usage = roles_usage
 
@@ -54,15 +53,14 @@ class Renderer(ABC):
     def render(
         self,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
+        open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         view: bool,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
-        """
-        Render the playbooks to a file.
+        """Render the playbooks to a file.
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
@@ -70,32 +68,29 @@ class Renderer(ABC):
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param kwargs:
-        :return: The path of the rendered file
+        :return: The path of the rendered file.
         """
-        pass
 
 
 class PlaybookBuilder(ABC):
-    """
-    This is the base class to inherit from by the renderer to build a single Playbook in the target format.
-    It provides some methods that need to be implemented
+    """This is the base class to inherit from by the renderer to build a single Playbook in the target format.
+    It provides some methods that need to be implemented.
     """
 
     def __init__(
         self,
         playbook_node: PlaybookNode,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str] = None,
-        roles_usage: Dict[RoleNode, Set[PlayNode]] = None,
-        roles_built: Set[Node] = None,
-    ):
-        """
-        The base class for all playbook builders.
+        open_protocol_custom_formats: dict[str, str] | None = None,
+        roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
+        roles_built: set[Node] | None = None,
+    ) -> None:
+        """The base class for all playbook builders.
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param roles_usage: The usage of the roles in the whole playbook
-        :param roles_built: The roles that have been "built" so far
+        :param roles_built: The roles that have been "built" so far.
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
@@ -104,21 +99,22 @@ class PlaybookBuilder(ABC):
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
-        formats = {**OPEN_PROTOCOL_HANDLERS, **{"custom": open_protocol_custom_formats}}
+        formats = {**OPEN_PROTOCOL_HANDLERS, "custom": open_protocol_custom_formats}
         self.open_protocol_formats = formats[self.open_protocol_handler]
 
-    def build_node(self, node: Node, color: str, fontcolor: str, **kwargs):
-        """
-        Build a generic node.
+    def build_node(self, node: Node, color: str, fontcolor: str, **kwargs) -> None:
+        """Build a generic node.
         :param node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
         :return:
         """
-
         if isinstance(node, BlockNode):
             self.build_block(
-                block_node=node, color=color, fontcolor=fontcolor, **kwargs
+                block_node=node,
+                color=color,
+                fontcolor=fontcolor,
+                **kwargs,
             )
         elif isinstance(node, RoleNode):
             self.build_role(role_node=node, color=color, fontcolor=fontcolor, **kwargs)
@@ -131,8 +127,9 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
         else:
+            msg = f"Unsupported node type: {type(node)}. This is likely a bug that should be reported"
             raise Exception(
-                f"Unsupported node type: {type(node)}. This is likely a bug that should be reported"
+                msg,
             )
 
     @abstractmethod
@@ -142,28 +139,23 @@ class PlaybookBuilder(ABC):
         hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
-        """
-        Build the whole playbook
+        """Build the whole playbook
         :param hide_empty_plays: Whether to hide empty plays or not
         :param hide_plays_without_roles:
         :param kwargs:
-        :return: The rendered playbook as a string
+        :return: The rendered playbook as a string.
         """
-        pass
 
     @abstractmethod
     def build_play(self, play_node: PlayNode, **kwargs):
-        """
-        Build a single play to be rendered
+        """Build a single play to be rendered
         :param play_node:
         :param kwargs:
         :return:
         """
-        pass
 
-    def traverse_play(self, play_node: PlayNode, **kwargs):
-        """
-        Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
+    def traverse_play(self, play_node: PlayNode, **kwargs) -> None:
+        """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
         :param play_node:
         :param kwargs:
         :return:
@@ -210,42 +202,35 @@ class PlaybookBuilder(ABC):
 
     @abstractmethod
     def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
-        """
-        Build a single task to be rendered
+        """Build a single task to be rendered
         :param task_node: The task
         :param fontcolor: The font color to apply
         :param color: Color from the play
         :param kwargs:
         :return:
         """
-        pass
 
     @abstractmethod
     def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
-        """
-        Render a role in the graph
+        """Render a role in the graph
         :param role_node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
         :return:
         """
-        pass
 
     @abstractmethod
     def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
-        """
-        Build a block to be rendered.
+        """Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
         :param block_node: The BlockNode to build
         :param color: The color from the play to apply
         :param fontcolor: The font color to apply
         :return:
         """
-        pass
 
-    def get_node_url(self, node: Node) -> Optional[str]:
-        """
-        Get the node url based on the chosen open protocol.
+    def get_node_url(self, node: Node) -> str | None:
+        """Get the node url based on the chosen open protocol.
 
         :param node: the node to get the url for
         :return:
@@ -255,7 +240,9 @@ class PlaybookBuilder(ABC):
             path = node.location.path.replace(remove_from_path, "")
 
             url = self.open_protocol_formats[node.location.type].format(
-                path=path, line=node.location.line, column=node.location.column
+                path=path,
+                line=node.location.line,
+                column=node.location.column,
             )
             display.vvvv(f"Open protocol URL for node {node}: {url}")
             return url

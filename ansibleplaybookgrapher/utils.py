@@ -18,7 +18,7 @@ import uuid
 from collections import defaultdict
 from itertools import chain
 from operator import methodcaller
-from typing import Tuple, List, Dict, Any, Set
+from typing import Any
 
 from ansible.errors import AnsibleError
 from ansible.module_utils.common.text.converters import to_text
@@ -33,9 +33,8 @@ from colour import Color
 display = Display()
 
 
-def convert_when_to_str(when: List) -> str:
-    """
-    Convert ansible conditional when to str
+def convert_when_to_str(when: list) -> str:
+    """Convert ansible conditional when to str
     :param when:
     :return:
     """
@@ -48,32 +47,28 @@ def convert_when_to_str(when: List) -> str:
 
 
 def hash_value(value: str) -> str:
-    """
-    Convert name to md5 to avoid issues with special chars,
+    """Convert name to md5 to avoid issues with special chars,
     The ID are not visible to end user in web/rendered graph so we do
     not have to care to make them look pretty.
     There are chances for hash collisions, but we do not care for that
     so much in here.
     :param value: string which represents id
-    :return: string representing a hex hash
+    :return: string representing a hex hash.
     """
-
     m = hashlib.md5()
     m.update(value.encode("utf-8"))
     return m.hexdigest()[:8]
 
 
 def generate_id(prefix: str = "") -> str:
-    """
-    Generate an uuid to be used as id
-    :param prefix: Prefix to add to the generated ID
+    """Generate an uuid to be used as id
+    :param prefix: Prefix to add to the generated ID.
     """
     return prefix + str(uuid.uuid4())[:8]
 
 
 def clean_name(name: str):
-    """
-    Clean a name for the node, edge...
+    """Clean a name for the node, edge...
     Because every name we use is double quoted,
     then we just have to convert double quotes to html special char
     See https://www.graphviz.org/doc/info/lang.html on the bottom.
@@ -84,11 +79,10 @@ def clean_name(name: str):
     return name.strip().replace('"', "&#34;")
 
 
-def get_play_colors(play_id: str) -> Tuple[str, str]:
-    """
-    Generate two colors (in hex) for a given play: the main color and the color to use as a font color
+def get_play_colors(play_id: str) -> tuple[str, str]:
+    """Generate two colors (in hex) for a given play: the main color and the color to use as a font color
     :param play_id
-    :return: The main color and the font color
+    :return: The main color and the font color.
     """
     picked_color = Color(pick_for=play_id, luminance=0.4)
     play_font_color = "#ffffff"
@@ -97,8 +91,7 @@ def get_play_colors(play_id: str) -> Tuple[str, str]:
 
 
 def has_role_parent(task_block: Task) -> bool:
-    """
-    Check if one of the parent of the task or block is a role
+    """Check if one of the parent of the task or block is a role
     :param task_block:
     :return:
     """
@@ -111,9 +104,8 @@ def has_role_parent(task_block: Task) -> bool:
     return False
 
 
-def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set]:
-    """
-    Merge two dicts by grouping keys and appending values in list
+def merge_dicts(dict_1: dict[Any, set], dict_2: dict[Any, set]) -> dict[Any, set]:
+    """Merge two dicts by grouping keys and appending values in list
     :param dict_1:
     :param dict_2:
     :return:
@@ -128,10 +120,11 @@ def merge_dicts(dict_1: Dict[Any, Set], dict_2: Dict[Any, Set]) -> Dict[Any, Set
 
 
 def handle_include_path(
-    original_task: TaskInclude, loader: DataLoader, templar: Templar
+    original_task: TaskInclude,
+    loader: DataLoader,
+    templar: Templar,
 ) -> str:
-    """
-    handle relative includes by walking up the list of parent include tasks
+    """Handle relative includes by walking up the list of parent include tasks.
 
     This function is widely inspired by the static method ansible uses when executing the playbook.
     See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results`
@@ -145,7 +138,8 @@ def handle_include_path(
     include_file = None
     # task path or role name
     include_param = original_task.args.get(
-        "_raw_params", original_task.args.get("name", None)
+        "_raw_params",
+        original_task.args.get("name", None),
     )
 
     cumulative_path = None
@@ -158,14 +152,14 @@ def handle_include_path(
         else:
             try:
                 parent_include_dir = os.path.dirname(
-                    templar.template(parent_include.args.get("_raw_params"))
+                    templar.template(parent_include.args.get("_raw_params")),
                 )
             except AnsibleError as e:
                 parent_include_dir = ""
                 display.warning(
-                    "Templating the path of the parent %s failed. The path to the "
+                    f"Templating the path of the parent {original_task.action} failed. The path to the "
                     "included file may not be found. "
-                    "The error was: %s." % (original_task.action, to_text(e))
+                    f"The error was: {to_text(e)}.",
                 )
 
         if cumulative_path is not None and not os.path.isabs(cumulative_path):
@@ -175,11 +169,15 @@ def handle_include_path(
         include_target = templar.template(include_param)
         if original_task._role:
             new_basedir = os.path.join(
-                original_task._role._role_path, "tasks", cumulative_path
+                original_task._role._role_path,
+                "tasks",
+                cumulative_path,
             )
             candidates = [
                 loader.path_dwim_relative(
-                    original_task._role._role_path, "tasks", include_target
+                    original_task._role._role_path,
+                    "tasks",
+                    include_target,
                 ),
                 loader.path_dwim_relative(new_basedir, "tasks", include_target),
             ]
@@ -193,7 +191,9 @@ def handle_include_path(
                     pass
         else:
             include_file = loader.path_dwim_relative(
-                loader.get_basedir(), cumulative_path, include_target
+                loader.get_basedir(),
+                cumulative_path,
+                include_target,
             )
 
         if os.path.exists(include_file):
@@ -205,7 +205,9 @@ def handle_include_path(
         if original_task._role:
             include_target = templar.template(include_param)
             include_file = loader.path_dwim_relative(
-                original_task._role._role_path, "tasks", include_target
+                original_task._role._role_path,
+                "tasks",
+                include_target,
             )
         else:
             include_file = loader.path_dwim(templar.template(include_param))

@@ -13,10 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from typing import Dict, Union, List
 
 from ansible.cli import CLI
-from ansible.errors import AnsibleParserError, AnsibleUndefinedVariable, AnsibleError
+from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
 from ansible.parsing.yaml.objects import AnsibleUnicode
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
@@ -29,19 +28,19 @@ from ansible.template import Templar
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
-    TaskNode,
-    PlaybookNode,
-    RoleNode,
-    PlayNode,
-    CompositeNode,
     BlockNode,
+    CompositeNode,
+    PlaybookNode,
+    PlayNode,
+    RoleNode,
+    TaskNode,
 )
 from ansibleplaybookgrapher.utils import (
     clean_name,
+    convert_when_to_str,
+    generate_id,
     handle_include_path,
     has_role_parent,
-    generate_id,
-    convert_when_to_str,
     hash_value,
 )
 
@@ -49,14 +48,12 @@ display = Display()
 
 
 class BaseParser(ABC):
-    """
-    Base Parser of a playbook
-    """
+    """Base Parser of a playbook."""
 
-    def __init__(self, tags: List[str] = None, skip_tags: List[str] = None):
-        """
-
-        :param tags: Only add plays and tasks tagged with these values
+    def __init__(
+        self, tags: list[str] | None = None, skip_tags: list[str] | None = None
+    ) -> None:
+        """:param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         """
         loader, inventory, variable_manager = CLI._play_prereqs()
@@ -72,10 +69,12 @@ class BaseParser(ABC):
         pass
 
     def template(
-        self, data: Union[str, AnsibleUnicode], variables: Dict, fail_on_undefined=False
-    ) -> Union[str, AnsibleUnicode]:
-        """
-        Template the data using Jinja. Return data if an error occurs during the templating
+        self,
+        data: str | AnsibleUnicode,
+        variables: dict,
+        fail_on_undefined=False,
+    ) -> str | AnsibleUnicode:
+        """Template the data using Jinja. Return data if an error occurs during the templating
         :param data:
         :param fail_on_undefined:
         :param variables:
@@ -92,19 +91,23 @@ class BaseParser(ABC):
             return data
 
     def _add_task(
-        self, task: Task, task_vars: Dict, node_type: str, parent_node: CompositeNode
+        self,
+        task: Task,
+        task_vars: dict,
+        node_type: str,
+        parent_node: CompositeNode,
     ) -> bool:
+        """Include the task in the graph.
+        :return: True if the task has been included, false otherwise.
         """
-        Include the task in the graph.
-        :return: True if the task has been included, false otherwise
-        """
-
         # Ansible-core 2.11 added an implicit meta tasks at the end of the role. So wee skip it here.
         if task.action == "meta" and task.implicit:
             return False
 
         if not task.evaluate_tags(
-            only_tags=self.tags, skip_tags=self.skip_tags, all_vars=task_vars
+            only_tags=self.tags,
+            skip_tags=self.skip_tags,
+            all_vars=task_vars,
         ):
             display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
@@ -127,34 +130,29 @@ class BaseParser(ABC):
 
 
 class PlaybookParser(BaseParser):
-    """
-    The playbook parser. This is the main entrypoint responsible to parser the playbook into a graph structure
-    """
+    """The playbook parser. This is the main entrypoint responsible to parser the playbook into a graph structure."""
 
     def __init__(
         self,
         playbook_filename: str,
         include_role_tasks=False,
-        tags: List[str] = None,
-        skip_tags: List[str] = None,
+        tags: list[str] | None = None,
+        skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
-    ):
-        """
-        :param playbook_filename: The filename of the playbook to parse
+    ) -> None:
+        """:param playbook_filename: The filename of the playbook to parse
         :param include_role_tasks: If true, the tasks of the role will be included in the graph
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
         """
-
         super().__init__(tags=tags, skip_tags=skip_tags)
         self.group_roles_by_name = group_roles_by_name
         self.include_role_tasks = include_role_tasks
         self.playbook_filename = playbook_filename
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
-        """
-        Loop through the playbook and generate the graph.
+        """Loop through the playbook and generate the graph.
 
         The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
@@ -187,7 +185,7 @@ class PlaybookParser(BaseParser):
             play_hosts = [
                 h.get_name()
                 for h in self.inventory_manager.get_hosts(
-                    self.template(play.hosts, play_vars)
+                    self.template(play.hosts, play_vars),
                 )
             ]
             play_name = f"Play: {clean_name(play.get_name())} ({len(play_hosts)})"
@@ -196,7 +194,10 @@ class PlaybookParser(BaseParser):
             display.v(f"Parsing {play_name}")
 
             play_node = PlayNode(
-                play_name, hosts=play_hosts, raw_object=play, parent=playbook_root_node
+                play_name,
+                hosts=play_hosts,
+                raw_object=play,
+                parent=playbook_root_node,
             )
             playbook_root_node.add_node("plays", play_node)
 
@@ -227,10 +228,12 @@ class PlaybookParser(BaseParser):
                 role._parent = None
 
                 if not role.evaluate_tags(
-                    only_tags=self.tags, skip_tags=self.skip_tags, all_vars=play_vars
+                    only_tags=self.tags,
+                    skip_tags=self.skip_tags,
+                    all_vars=play_vars,
                 ):
                     display.vv(
-                        f"The role '{role.get_name()}' is skipped due to the tags."
+                        f"The role '{role.get_name()}' is skipped due to the tags.",
                     )
                     # Go to the next role
                     continue
@@ -295,13 +298,12 @@ class PlaybookParser(BaseParser):
     def _include_tasks_in_blocks(
         self,
         current_play: Play,
-        parent_nodes: List[CompositeNode],
-        block: Union[Block, TaskInclude],
+        parent_nodes: list[CompositeNode],
+        block: Block | TaskInclude,
         node_type: str,
-        play_vars: Dict,
-    ):
-        """
-        Recursively read all the tasks of the block and add it to the graph
+        play_vars: dict,
+    ) -> None:
+        """Recursively read all the tasks of the block and add it to the graph
         :param parent_nodes: This a list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
         :param current_play:
@@ -310,7 +312,6 @@ class PlaybookParser(BaseParser):
         :param node_type:
         :return:
         """
-
         if not block._implicit and block._role is None:
             # Here we have an explicit block. Ansible internally converts all normal tasks to Block
             block_node = BlockNode(
@@ -326,7 +327,7 @@ class PlaybookParser(BaseParser):
         for task_or_block in block.block:
             if hasattr(task_or_block, "loop") and task_or_block.loop:
                 display.warning(
-                    "Looping on tasks or roles are not supported for the moment. Only the task having the loop argument will be added to the graph."
+                    "Looping on tasks or roles are not supported for the moment. Only the task having the loop argument will be added to the graph.",
                 )
 
             if isinstance(task_or_block, Block):
@@ -338,12 +339,14 @@ class PlaybookParser(BaseParser):
                     play_vars=play_vars,
                 )
             elif isinstance(
-                task_or_block, TaskInclude
+                task_or_block,
+                TaskInclude,
             ):  # include, include_tasks, include_role are dynamic
                 # So we need to process them explicitly because Ansible does it during the execution of the playbook
 
                 task_vars = self.variable_manager.get_vars(
-                    play=current_play, task=task_or_block
+                    play=current_play,
+                    task=task_or_block,
                 )
 
                 if isinstance(task_or_block, IncludeRole):
@@ -358,7 +361,7 @@ class PlaybookParser(BaseParser):
                         all_vars=task_vars,
                     ):
                         display.vv(
-                            f"The include_role '{task_or_block.get_name()}' is skipped due to the tags."
+                            f"The include_role '{task_or_block.get_name()}' is skipped due to the tags.",
                         )
                         continue  # Go to the next task
 
@@ -398,7 +401,7 @@ class PlaybookParser(BaseParser):
                         )
                 else:
                     display.v(
-                        f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'"
+                        f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'",
                     )
 
                     templar = Templar(loader=self.data_loader, variables=task_vars)
@@ -411,8 +414,8 @@ class PlaybookParser(BaseParser):
                     except AnsibleUndefinedVariable as e:
                         # TODO: mark this task with some special shape or color
                         display.warning(
-                            f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {str(e)}. "
-                            "Some variables are available only during the execution of the playbook."
+                            f"Unable to translate the include task '{task_or_block.get_name()}' due to an undefined variable: {e!s}. "
+                            "Some variables are available only during the execution of the playbook.",
                         )
                         self._add_task(
                             task=task_or_block,
@@ -425,12 +428,14 @@ class PlaybookParser(BaseParser):
                     data = self.data_loader.load_from_file(included_file_path)
                     if data is None:
                         display.warning(
-                            f"The file '{included_file_path}' is empty and has no tasks to include"
+                            f"The file '{included_file_path}' is empty and has no tasks to include",
                         )
                         continue
                     elif not isinstance(data, list):
+                        msg = "Included task files must contain a list of tasks"
                         raise AnsibleParserError(
-                            "Included task files must contain a list of tasks", obj=data
+                            msg,
+                            obj=data,
                         )
 
                     # get the blocks from the include_tasks
@@ -480,7 +485,7 @@ class PlaybookParser(BaseParser):
                     # skip role's task
                     display.vv(
                         f"The task '{task_or_block.get_name()}' has a role as parent and include_role_tasks is false. "
-                        "It will be skipped."
+                        "It will be skipped.",
                     )
                     # skipping
                     continue

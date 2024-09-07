@@ -1,7 +1,6 @@
 import json
 import os
 from _elementtree import Element
-from typing import Dict, List, Tuple
 
 import pytest
 from pyquery import PyQuery
@@ -15,16 +14,15 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def run_grapher(
-    playbook_files: List[str],
+    playbook_files: list[str],
     output_filename: str,
-    additional_args: List[str] = None,
-) -> Tuple[str, List[str]]:
-    """
-    Utility function to run the grapher
+    additional_args: list[str] | None = None,
+) -> tuple[str, list[str]]:
+    """Utility function to run the grapher
     :param output_filename:
     :param additional_args:
     :param playbook_files:
-    :return: SVG path and playbooks absolute paths
+    :return: SVG path and playbooks absolute paths.
     """
     additional_args = additional_args or []
     # Explicitly add verbosity to the tests
@@ -70,7 +68,7 @@ def run_grapher(
 
 def _common_tests(
     svg_path: str,
-    playbook_paths: List[str],
+    playbook_paths: list[str],
     playbooks_number: int = 1,
     plays_number: int = 0,
     tasks_number: int = 0,
@@ -78,9 +76,8 @@ def _common_tests(
     roles_number: int = 0,
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
-) -> Dict[str, List[Element]]:
-    """
-    Perform some common tests on the generated svg file:
+) -> dict[str, list[Element]]:
+    """Perform some common tests on the generated svg file:
      - Existence of svg file
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
@@ -89,9 +86,8 @@ def _common_tests(
     :param roles_number: Number of roles in the playbook
     :param tasks_number: Number of tasks in the playbook
     :param post_tasks_number: Number of post tasks in the playbook
-    :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values
+    :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
-
     # test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(svg_path), "The svg file should exist"
 
@@ -149,10 +145,8 @@ def _common_tests(
     }
 
 
-def test_simple_playbook(request):
-    """
-    Test simple_playbook.yml
-    """
+def test_simple_playbook(request) -> None:
+    """Test simple_playbook.yml."""
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
@@ -167,12 +161,11 @@ def test_simple_playbook(request):
     )
 
 
-def test_example(request):
-    """
-    Test example.yml
-    """
+def test_example(request) -> None:
+    """Test example.yml."""
     svg_path, playbook_paths = run_grapher(
-        ["example.yml"], output_filename=request.node.name
+        ["example.yml"],
+        output_filename=request.node.name,
     )
 
     _common_tests(
@@ -185,42 +178,43 @@ def test_example(request):
     )
 
 
-def test_include_tasks(request):
-    """
-    Test include_tasks.yml, an example with some included tasks
-    """
+def test_include_tasks(request) -> None:
+    """Test include_tasks.yml, an example with some included tasks."""
     svg_path, playbook_paths = run_grapher(
-        ["include_tasks.yml"], output_filename=request.node.name
+        ["include_tasks.yml"],
+        output_filename=request.node.name,
     )
 
     _common_tests(
-        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=7
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        tasks_number=7,
     )
 
 
-def test_import_tasks(request):
-    """
-    Test import_tasks.yml, an example with some imported tasks
-    """
+def test_import_tasks(request) -> None:
+    """Test import_tasks.yml, an example with some imported tasks."""
     svg_path, playbook_paths = run_grapher(
-        ["import_tasks.yml"], output_filename=request.node.name
+        ["import_tasks.yml"],
+        output_filename=request.node.name,
     )
 
     _common_tests(
-        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=5
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        tasks_number=5,
     )
 
 
 @pytest.mark.parametrize(
-    ["include_role_tasks_option", "expected_tasks_number"],
+    ("include_role_tasks_option", "expected_tasks_number"),
     [("--", 2), ("--include-role-tasks", 8)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
-def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
-    """
-    Test with_roles.yml, an example with roles
-    """
-
+def test_with_roles(request, include_role_tasks_option, expected_tasks_number) -> None:
+    """Test with_roles.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
         ["with_roles.yml"],
         output_filename=request.node.name,
@@ -239,14 +233,14 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number):
 
 
 @pytest.mark.parametrize(
-    ["include_role_tasks_option", "expected_tasks_number"],
+    ("include_role_tasks_option", "expected_tasks_number"),
     [("--", 2), ("--include-role-tasks", 14)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
-def test_include_role(request, include_role_tasks_option, expected_tasks_number):
-    """
-    Test include_role.yml, an example with include_role
-    """
+def test_include_role(
+    request, include_role_tasks_option, expected_tasks_number
+) -> None:
+    """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
         ["include_role.yml"],
         output_filename=request.node.name,
@@ -263,10 +257,8 @@ def test_include_role(request, include_role_tasks_option, expected_tasks_number)
     )
 
 
-def test_with_block(request):
-    """
-    Test with_block.yml, an example with roles
-    """
+def test_with_block(request) -> None:
+    """Test with_block.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
@@ -285,27 +277,28 @@ def test_with_block(request):
     )
 
 
-def test_nested_include_tasks(request):
-    """
-    Test nested_include.yml, an example with an include_tasks that include another tasks
-    """
+def test_nested_include_tasks(request) -> None:
+    """Test nested_include.yml, an example with an include_tasks that include another tasks."""
     svg_path, playbook_paths = run_grapher(
-        ["nested_include_tasks.yml"], output_filename=request.node.name
+        ["nested_include_tasks.yml"],
+        output_filename=request.node.name,
     )
 
     _common_tests(
-        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=3
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        tasks_number=3,
     )
 
 
 @pytest.mark.parametrize(
-    ["include_role_tasks_option", "expected_tasks_number"],
+    ("include_role_tasks_option", "expected_tasks_number"),
     [("--", 1), ("--include-role-tasks", 7)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
-def test_import_role(request, include_role_tasks_option, expected_tasks_number):
-    """
-    Test import_role.yml, an example with import role.
+def test_import_role(request, include_role_tasks_option, expected_tasks_number) -> None:
+    """Test import_role.yml, an example with import role.
     Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is parsed.
     """
     svg_path, playbook_paths = run_grapher(
@@ -323,13 +316,11 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number):
     )
 
 
-def test_import_playbook(request):
-    """
-    Test import_playbook
-    """
-
+def test_import_playbook(request) -> None:
+    """Test import_playbook."""
     svg_path, playbook_paths = run_grapher(
-        ["import_playbook.yml"], output_filename=request.node.name
+        ["import_playbook.yml"],
+        output_filename=request.node.name,
     )
     _common_tests(
         svg_path=svg_path,
@@ -342,16 +333,16 @@ def test_import_playbook(request):
 
 
 @pytest.mark.parametrize(
-    ["include_role_tasks_option", "expected_tasks_number"],
+    ("include_role_tasks_option", "expected_tasks_number"),
     [("--", 4), ("--include-role-tasks", 7)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
-    request, include_role_tasks_option, expected_tasks_number
-):
-    """
-    Test nested import playbook with an import_role and include_tasks
-    """
+    request,
+    include_role_tasks_option,
+    expected_tasks_number,
+) -> None:
+    """Test nested import playbook with an import_role and include_tasks."""
     svg_path, playbook_paths = run_grapher(
         ["nested_import_playbook.yml"],
         output_filename=request.node.name,
@@ -365,15 +356,17 @@ def test_nested_import_playbook(
     )
 
 
-def test_relative_var_files(request):
-    """
-    Test a playbook with a relative var file
-    """
+def test_relative_var_files(request) -> None:
+    """Test a playbook with a relative var file."""
     svg_path, playbook_paths = run_grapher(
-        ["relative_var_files.yml"], output_filename=request.node.name
+        ["relative_var_files.yml"],
+        output_filename=request.node.name,
     )
     res = _common_tests(
-        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, tasks_number=2
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        tasks_number=2,
     )
 
     # check if the plays title contains the interpolated variables
@@ -385,10 +378,8 @@ def test_relative_var_files(request):
     ), "The title should contain player name"
 
 
-def test_tags(request):
-    """
-    Test a playbook by only graphing a specific tasks based on the given tags
-    """
+def test_tags(request) -> None:
+    """Test a playbook by only graphing a specific tasks based on the given tags."""
     svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
         output_filename=request.node.name,
@@ -402,10 +393,8 @@ def test_tags(request):
     )
 
 
-def test_skip_tags(request):
-    """
-    Test a playbook by only graphing a specific tasks based on the given tags
-    """
+def test_skip_tags(request) -> None:
+    """Test a playbook by only graphing a specific tasks based on the given tags."""
     svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
         output_filename=request.node.name,
@@ -421,11 +410,8 @@ def test_skip_tags(request):
     )
 
 
-def test_multi_plays(request):
-    """
-    Test with multiple plays, include_role and roles
-    """
-
+def test_multi_plays(request) -> None:
+    """Test with multiple plays, include_role and roles."""
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml"],
         output_filename=request.node.name,
@@ -442,11 +428,8 @@ def test_multi_plays(request):
     )
 
 
-def test_multi_playbooks(request):
-    """
-    Test with multiple playbooks
-    """
-
+def test_multi_playbooks(request) -> None:
+    """Test with multiple playbooks."""
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
@@ -464,10 +447,8 @@ def test_multi_playbooks(request):
     )
 
 
-def test_with_roles_with_custom_protocol_handlers(request):
-    """
-    Test with_roles.yml with a custom protocol handlers
-    """
+def test_with_roles_with_custom_protocol_handlers(request) -> None:
+    """Test with_roles.yml with a custom protocol handlers."""
     formats_str = '{"file": "vscode://file/{path}:{line}", "folder": "{path}"}'
     svg_path, playbook_paths = run_grapher(
         ["with_roles.yml"],
@@ -502,9 +483,8 @@ def test_with_roles_with_custom_protocol_handlers(request):
         assert r.find("g/a").get(xlink_ref_selector).startswith(DIR_PATH)
 
 
-def test_community_download_roles_and_collection(request):
-    """
-    Test if the grapher is able to find some downloaded roles and collections when graphing the playbook
+def test_community_download_roles_and_collection(request) -> None:
+    """Test if the grapher is able to find some downloaded roles and collections when graphing the playbook
     :return:
     """
     run_grapher(
@@ -515,15 +495,18 @@ def test_community_download_roles_and_collection(request):
 
 
 @pytest.mark.parametrize(
-    ["flag", "roles_number", "tasks_number", "post_tasks_number"],
+    ("flag", "roles_number", "tasks_number", "post_tasks_number"),
     [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request, flag, roles_number, tasks_number, post_tasks_number
-):
-    """
-    Test group roles by name
+    request,
+    flag,
+    roles_number,
+    tasks_number,
+    post_tasks_number,
+) -> None:
+    """Test group roles by name
     :return:
     """
     svg_path, playbook_paths = run_grapher(
@@ -542,9 +525,8 @@ def test_group_roles_by_name(
     )
 
 
-def test_hiding_plays(request):
-    """
-    Test hiding_plays with the flag --hide-empty-plays.
+def test_hiding_plays(request) -> None:
+    """Test hiding_plays with the flag --hide-empty-plays.
 
     This case is about hiding plays with 0 zero task (no filtering)
     :param request:
@@ -565,9 +547,8 @@ def test_hiding_plays(request):
     )
 
 
-def test_hiding_empty_plays_with_tags_filter(request):
-    """
-    Test hiding plays with the flag --hide-empty-plays.
+def test_hiding_empty_plays_with_tags_filter(request) -> None:
+    """Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding plays when filtering with tags
     :param request:
@@ -580,13 +561,15 @@ def test_hiding_empty_plays_with_tags_filter(request):
     )
 
     _common_tests(
-        svg_path=svg_path, playbook_paths=playbook_paths, plays_number=1, roles_number=1
+        svg_path=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        roles_number=1,
     )
 
 
-def test_hiding_empty_plays_with_tags_filter_all(request):
-    """
-    Test hiding plays with the flag --hide-empty-plays.
+def test_hiding_empty_plays_with_tags_filter_all(request) -> None:
+    """Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding ALL the plays when filtering with tags
     :param request:
@@ -605,9 +588,8 @@ def test_hiding_empty_plays_with_tags_filter_all(request):
     _common_tests(svg_path=svg_path, playbook_paths=playbook_paths)
 
 
-def test_hiding_plays_without_roles(request):
-    """
-    Test hiding plays with the flag --hide-plays-without-roles
+def test_hiding_plays_without_roles(request) -> None:
+    """Test hiding plays with the flag --hide-plays-without-roles.
 
     :param request:
     :return:
@@ -629,9 +611,8 @@ def test_hiding_plays_without_roles(request):
     )
 
 
-def test_hiding_plays_without_roles_with_tags_filtering(request):
-    """
-    Test hiding plays with the flag --hide-plays-without-roles
+def test_hiding_plays_without_roles_with_tags_filtering(request) -> None:
+    """Test hiding plays with the flag --hide-plays-without-roles.
 
     Also apply some tags filter
     :param request:

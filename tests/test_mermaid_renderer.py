@@ -1,5 +1,4 @@
 import os
-from typing import List, Tuple
 
 import pytest
 
@@ -12,16 +11,15 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def run_grapher(
-    playbook_files: List[str],
-    output_filename: str = None,
-    additional_args: List[str] = None,
-) -> Tuple[str, List[str]]:
-    """
-    Utility function to run the grapher
+    playbook_files: list[str],
+    output_filename: str | None = None,
+    additional_args: list[str] | None = None,
+) -> tuple[str, list[str]]:
+    """Utility function to run the grapher
     :param output_filename:
     :param additional_args:
     :param playbook_files:
-    :return: Mermaid file path and playbooks absolute paths
+    :return: Mermaid file path and playbooks absolute paths.
     """
     additional_args = additional_args or []
     # Explicitly add verbosity to the tests
@@ -51,23 +49,21 @@ def run_grapher(
     return cli.run(), playbook_paths
 
 
-def _common_tests(mermaid_path: str, playbook_paths: List[str], **kwargs):
-    """
-    Some common tests for mermaid renderer
+def _common_tests(mermaid_path: str, playbook_paths: list[str], **kwargs) -> None:
+    """Some common tests for mermaid renderer
     :param mermaid_path:
     :param playbook_paths:
     :param kwargs:
     :return:
     """
-
     # TODO: add proper tests on the mermaid code.
     #  Need a parser to make sure the outputs contain all the playbooks, plays, tasks and roles
     # Test if the file exist. It will exist only if we write in it.
     assert os.path.isfile(
-        mermaid_path
+        mermaid_path,
     ), f"The mermaid file should exist at '{mermaid_path}'"
 
-    with open(mermaid_path, "r") as mermaid_file:
+    with open(mermaid_path) as mermaid_file:
         mermaid_data = mermaid_file.read()
         for playbook_path in playbook_paths:
             assert (
@@ -98,10 +94,8 @@ def _common_tests(mermaid_path: str, playbook_paths: List[str], **kwargs):
         "with_roles.yml",
     ],
 )
-def test_playbook(request, playbook_file: str):
-    """
-    Test the renderer with a single playbook
-    """
+def test_playbook(request, playbook_file: str) -> None:
+    """Test the renderer with a single playbook."""
     mermaid_path, playbook_paths = run_grapher(
         [playbook_file],
         output_filename=request.node.name,
@@ -114,10 +108,8 @@ def test_playbook(request, playbook_file: str):
     _common_tests(mermaid_path, playbook_paths)
 
 
-def test_multiple_playbooks(request):
-    """
-    Test the renderer with multiple playbooks in a single graph
-    """
+def test_multiple_playbooks(request) -> None:
+    """Test the renderer with multiple playbooks in a single graph."""
     mermaid_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
