@@ -41,7 +41,7 @@ jobs:
       - name: Install prereqs
         run: |
           pip install -q ansible-core=='${{ matrix.ansible-core-version }}' virtualenv setuptools wheel coveralls
-          pip install -r requirements.txt -r tests/requirements_tests.txt
+          pip install -q -r requirements.txt -r tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
           ansible-galaxy install -r tests/fixtures/requirements.yml
