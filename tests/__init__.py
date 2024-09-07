@@ -1,3 +1,3 @@
 from pathlib import Path
 
-FIXTURES_DIR = Path("fixtures/")
+FIXTURES_DIR_PATH = Path("fixtures/").resolve()

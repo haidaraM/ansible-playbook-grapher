@@ -9,7 +9,7 @@ from jsonschema.validators import Draft202012Validator
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH
 
 # This file directory abspath
 DIR_PATH = Path(__file__).parent.resolve()
@@ -33,7 +33,7 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
@@ -68,7 +68,7 @@ def _common_tests(
     with Path(json_path).open() as f:
         output = json.load(f)
 
-    with (FIXTURES_DIR / "json-schemas/v1.json").open() as schema_file:
+    with (FIXTURES_DIR_PATH / "json-schemas/v1.json").open() as schema_file:
         schema = json.load(schema_file)
 
     # If no exception is raised by validate(), the instance is valid.
@@ -178,7 +178,7 @@ def test_simple_playbook(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            str(FIXTURES_DIR / "inventory"),
+            str(FIXTURES_DIR_PATH / "inventory"),
             "--include-role-tasks",
         ],
     )
@@ -192,7 +192,7 @@ def test_with_block(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            str(FIXTURES_DIR / "inventory"),
+            str(FIXTURES_DIR_PATH / "inventory"),
             "--include-role-tasks",
         ],
     )

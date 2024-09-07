@@ -1,4 +1,3 @@
-from pathlib import Path
 
 import pytest
 from ansible.utils.display import Display
@@ -12,10 +11,7 @@ from ansibleplaybookgrapher.graph_model import (
     TaskNode,
 )
 from ansibleplaybookgrapher.parser import PlaybookParser
-from tests import FIXTURES_DIR
-
-# Fixtures abspath: current file path + fixtures dir
-FIXTURES_PATH = Path(__file__).parent.resolve() / FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH
 
 
 def get_all_tasks(nodes: list[Node]) -> list[TaskNode]:
@@ -44,7 +40,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
-    assert playbook_node.location.path == str(FIXTURES_PATH / "example.yml")
+    assert playbook_node.location.path == str(FIXTURES_DIR_PATH / "example.yml")
     assert playbook_node.location.line == 1
     assert playbook_node.location.column == 1
     assert (
@@ -52,7 +48,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     ), "The index of the playbook should be None (it has no parent)"
 
     play_node = playbook_node.plays()[0]
-    assert play_node.location.path == str(FIXTURES_PATH / "example.yml")
+    assert play_node.location.path == str(FIXTURES_DIR_PATH / "example.yml")
     assert play_node.location.line == 2
     assert play_node.index == 1
 
@@ -93,7 +89,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     fake_role = play_node.roles[0]
     assert isinstance(fake_role, RoleNode)
     assert not fake_role.include_role
-    assert fake_role.location.path == str(FIXTURES_PATH / "roles" / "fake_role")
+    assert fake_role.location.path == str(FIXTURES_DIR_PATH / "roles" / "fake_role")
     assert fake_role.location.line is None
     assert fake_role.location.column is None
     assert fake_role.index == 3
@@ -138,7 +134,7 @@ def test_include_role_parsing(grapher_cli: PlaybookGrapherCLI, capsys) -> None:
     include_role_1 = block_include_role.tasks[0]
     assert isinstance(include_role_1, RoleNode)
     assert include_role_1.include_role
-    assert include_role_1.location.path == str(FIXTURES_PATH / "include_role.yml")
+    assert include_role_1.location.path == str(FIXTURES_DIR_PATH / "include_role.yml")
     assert (
         include_role_1.location.line == 10
     ), "The first include role should be at line 9"
@@ -221,7 +217,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
         pre_task_block,
         BlockNode,
     ), "The second edge should have a BlockNode as destination"
-    assert pre_task_block.location.path == str(FIXTURES_PATH / "with_block.yml")
+    assert pre_task_block.location.path == str(FIXTURES_DIR_PATH / "with_block.yml")
     assert pre_task_block.location.line == 7
 
     # Check tasks

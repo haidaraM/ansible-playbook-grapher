@@ -8,9 +8,9 @@ from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
     SVG_NAMESPACE,
     GraphvizPostProcessor,
 )
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH
 
-SIMPLE_PLAYBOOK_SVG = FIXTURES_DIR / "simple_playbook_no_postproccess.svg"
+SIMPLE_PLAYBOOK_SVG = FIXTURES_DIR_PATH / "simple_playbook_no_postproccess.svg"
 
 
 @pytest.fixture(name="post_processor")

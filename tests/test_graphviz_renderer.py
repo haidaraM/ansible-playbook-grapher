@@ -8,7 +8,7 @@ from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH
 
 # This file directory abspath
 DIR_PATH = Path(__file__).parent.resolve()
@@ -52,7 +52,7 @@ def run_grapher(
         additional_args.insert(0, "--open-protocol-handler")
         additional_args.insert(1, "vscode")
 
-    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
@@ -151,7 +151,7 @@ def test_simple_playbook(request) -> None:
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
-        additional_args=["-i", str(FIXTURES_DIR / "inventory")],
+        additional_args=["-i", str(FIXTURES_DIR_PATH / "inventory")],
     )
 
     _common_tests(

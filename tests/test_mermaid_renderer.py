@@ -5,7 +5,7 @@ import pytest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH
 
 # This file directory abspath
 DIR_PATH = Path(__file__).parent.resolve()
@@ -29,7 +29,7 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
