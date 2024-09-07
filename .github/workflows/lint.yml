@@ -1,4 +1,4 @@
-name: Lint and format
+name: Format and lint
 
 on:
   push:
@@ -22,7 +22,6 @@ permissions:
 jobs:
   ruff:
     runs-on: ubuntu-latest
-    name: Format and lint
     steps:
       - uses: actions/checkout@v4
 
