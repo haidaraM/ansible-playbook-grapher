@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
+from pathlib import Path
 
 from ansible.utils.display import Display
 from lxml import etree
@@ -31,10 +31,11 @@ def _read_data(filename: str) -> str:
     :param filename:
     :return:
     """
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, "../../data", filename)
 
-    with open(javascript_path) as javascript:
+    current_dir = Path(__file__).parent.resolve()
+    javascript_path = current_dir / "../../data" / filename
+
+    with javascript_path.open() as javascript:
         return javascript.read()
 
 
@@ -70,7 +71,10 @@ class GraphvizPostProcessor:
         self.root.insert(index, element)
 
     def post_process(
-        self, playbook_nodes: list[PlaybookNode] | None = None, *args, **kwargs
+        self,
+        playbook_nodes: list[PlaybookNode] | None = None,
+        *args,
+        **kwargs,
     ) -> None:
         """:param playbook_nodes:
         :param args:

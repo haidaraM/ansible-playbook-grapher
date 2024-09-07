@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 
@@ -7,7 +8,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
 
 # This file directory abspath
-DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
@@ -28,7 +29,7 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
@@ -36,7 +37,7 @@ def run_grapher(
         output_filename.replace("[", "-").replace("]", "").replace(".yml", "")
     )
     # put the generated file in a dedicated folder
-    args.extend(["-o", os.path.join(DIR_PATH, "generated-mermaids", output_filename)])
+    args.extend(["-o", str(DIR_PATH / "generated-mermaids" / output_filename)])
 
     args.extend(additional_args)
 
@@ -49,9 +50,9 @@ def run_grapher(
     return cli.run(), playbook_paths
 
 
-def _common_tests(mermaid_path: str, playbook_paths: list[str], **kwargs) -> None:
+def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -> None:
     """Some common tests for mermaid renderer
-    :param mermaid_path:
+    :param mermaid_file_path:
     :param playbook_paths:
     :param kwargs:
     :return:
@@ -59,11 +60,12 @@ def _common_tests(mermaid_path: str, playbook_paths: list[str], **kwargs) -> Non
     # TODO: add proper tests on the mermaid code.
     #  Need a parser to make sure the outputs contain all the playbooks, plays, tasks and roles
     # Test if the file exist. It will exist only if we write in it.
-    assert os.path.isfile(
-        mermaid_path,
-    ), f"The mermaid file should exist at '{mermaid_path}'"
+    mermaid_path_obj = Path(mermaid_file_path)
+    assert (
+        mermaid_path_obj.is_file()
+    ), f"The mermaid file should exist at '{mermaid_file_path}'"
 
-    with open(mermaid_path) as mermaid_file:
+    with mermaid_path_obj.open() as mermaid_file:
         mermaid_data = mermaid_file.read()
         for playbook_path in playbook_paths:
             assert (
@@ -100,8 +102,6 @@ def test_playbook(request, playbook_file: str) -> None:
         [playbook_file],
         output_filename=request.node.name,
         additional_args=[
-            "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
             "--include-role-tasks",
         ],
     )
@@ -114,8 +114,6 @@ def test_multiple_playbooks(request) -> None:
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
         additional_args=[
-            "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
             "--include-role-tasks",
         ],
     )

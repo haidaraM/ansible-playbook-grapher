@@ -116,7 +116,11 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         """
 
     def build_task(
-        self, task_node: TaskNode, color: str, fontcolor: str, **kwargs
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Not needed
         :param task_node:
@@ -127,7 +131,11 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         """
 
     def build_role(
-        self, role_node: RoleNode, color: str, fontcolor: str, **kwargs
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Not needed
         :param role_node:
@@ -138,7 +146,11 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         """
 
     def build_block(
-        self, block_node: BlockNode, color: str, fontcolor: str, **kwargs
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Not needed
         :param block_node:

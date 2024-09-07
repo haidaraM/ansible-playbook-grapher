@@ -226,7 +226,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the play '{play_node.name}'")
 
     def build_task(
-        self, task_node: TaskNode, color: str, fontcolor: str, **kwargs
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """:param task_node:
         :param color:
@@ -249,7 +253,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
     def build_role(
-        self, role_node: RoleNode, color: str, fontcolor: str, **kwargs
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """:param role_node:
         :param color:
@@ -298,7 +306,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(
-        self, block_node: BlockNode, color: str, fontcolor: str, **kwargs
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """:param block_node:
         :param color:

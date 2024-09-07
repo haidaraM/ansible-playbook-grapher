@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 import jq
 import pytest
@@ -11,7 +12,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
 
 # This file directory abspath
-DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
@@ -32,13 +33,13 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
     output_filename = output_filename.replace("[", "-").replace("]", "")
     # put the generated file in a dedicated folder
-    args.extend(["-o", os.path.join(DIR_PATH, "generated-jsons", output_filename)])
+    args.extend(["-o", str(DIR_PATH / "generated-jsons" / output_filename)])
 
     args.extend(["--renderer", "json"])
     args.extend(additional_args + playbook_paths)
@@ -64,10 +65,10 @@ def _common_tests(
     :param json_path:
     :return:
     """
-    with open(json_path) as f:
+    with Path(json_path).open() as f:
         output = json.load(f)
 
-    with open(os.path.join(FIXTURES_DIR, "json-schemas/v1.json")) as schema_file:
+    with (FIXTURES_DIR / "json-schemas/v1.json").open() as schema_file:
         schema = json.load(schema_file)
 
     # If no exception is raised by validate(), the instance is valid.
@@ -177,7 +178,7 @@ def test_simple_playbook(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
+            str(FIXTURES_DIR / "inventory"),
             "--include-role-tasks",
         ],
     )
@@ -191,7 +192,7 @@ def test_with_block(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
+            str(FIXTURES_DIR / "inventory"),
             "--include-role-tasks",
         ],
     )

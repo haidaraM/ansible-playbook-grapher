@@ -51,7 +51,9 @@ class BaseParser(ABC):
     """Base Parser of a playbook."""
 
     def __init__(
-        self, tags: list[str] | None = None, skip_tags: list[str] | None = None
+        self,
+        tags: list[str] | None = None,
+        skip_tags: list[str] | None = None,
     ) -> None:
         """:param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values

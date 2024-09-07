@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
+from pathlib import Path
 
 from ansible.utils.display import Display
 from graphviz import Digraph
@@ -105,7 +105,7 @@ class GraphvizRenderer(Renderer):
         if save_dot_file:
             # add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
+            Path(output_filename).rename(final_name)
             display.display(f"Graphviz dot file has been exported to {final_name}")
 
         return svg_path
@@ -135,7 +135,11 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         self.digraph = digraph
 
     def build_task(
-        self, task_node: TaskNode, color: str, fontcolor: str, **kwargs
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Build a task
         :param task_node:
@@ -172,7 +176,11 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
     def build_block(
-        self, block_node: BlockNode, color: str, fontcolor: str, **kwargs
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """:return:"""
         edge_label = f"{block_node.index}"
@@ -219,7 +227,11 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 )
 
     def build_role(
-        self, role_node: RoleNode, color: str, fontcolor: str, **kwargs
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Render a role in the graph
         :return:

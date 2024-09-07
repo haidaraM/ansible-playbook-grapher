@@ -1,6 +1,7 @@
 import json
 import os
 from _elementtree import Element
+from pathlib import Path
 
 import pytest
 from pyquery import PyQuery
@@ -10,7 +11,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from tests import FIXTURES_DIR
 
 # This file directory abspath
-DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
@@ -51,13 +52,13 @@ def run_grapher(
         additional_args.insert(0, "--open-protocol-handler")
         additional_args.insert(1, "vscode")
 
-    playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
     output_filename = output_filename.replace("[", "-").replace("]", "")
     # put the generated file in a dedicated folder
-    args.extend(["-o", os.path.join(DIR_PATH, "generated-svgs", output_filename)])
+    args.extend(["-o", str(DIR_PATH / "generated-svgs" / output_filename)])
 
     args.extend(additional_args + playbook_paths)
 
@@ -67,7 +68,7 @@ def run_grapher(
 
 
 def _common_tests(
-    svg_path: str,
+    svg_filename: str,
     playbook_paths: list[str],
     playbooks_number: int = 1,
     plays_number: int = 0,
@@ -89,9 +90,9 @@ def _common_tests(
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
     # test if the file exist. It will exist only if we write in it.
-    assert os.path.isfile(svg_path), "The svg file should exist"
+    assert Path(svg_filename).is_file(), "The svg file should exist"
 
-    pq = PyQuery(filename=svg_path)
+    pq = PyQuery(filename=svg_filename)
     pq.remove_namespaces()
 
     playbooks = pq("g[id^='playbook_']")
@@ -109,31 +110,31 @@ def _common_tests(
 
     assert (
         len(playbooks) == playbooks_number
-    ), f"The graph '{svg_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
+    ), f"The graph '{svg_filename}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
 
     assert (
         len(plays) == plays_number
-    ), f"The graph '{svg_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
+    ), f"The graph '{svg_filename}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
     assert (
         len(pre_tasks) == pre_tasks_number
-    ), f"The graph '{svg_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
+    ), f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
     assert (
         len(roles) == roles_number
-    ), f"The graph '{svg_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    ), f"The graph '{svg_filename}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
         len(tasks) == tasks_number
-    ), f"The graph '{svg_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
+    ), f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
     assert (
         len(post_tasks) == post_tasks_number
-    ), f"The graph '{svg_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
+    ), f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
     assert (
         len(blocks) == blocks_number
-    ), f"The graph '{svg_path}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
+    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
 
     return {
         "tasks": tasks,
@@ -150,15 +151,26 @@ def test_simple_playbook(request) -> None:
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
-        additional_args=["-i", os.path.join(FIXTURES_DIR, "inventory")],
+        additional_args=["-i", str(FIXTURES_DIR / "inventory")],
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         post_tasks_number=2,
     )
+
+
+def test_if_dot_file_is_saved(request) -> None:
+    """Test if the dot file is saved at the expected path."""
+    svg_path, playbook_paths = run_grapher(
+        ["simple_playbook.yml"],
+        output_filename=request.node.name,
+        additional_args=["--save-dot-file"],
+    )
+    expected_dot_path = Path(svg_path).with_suffix(".dot")
+    assert expected_dot_path.is_file()
 
 
 def test_example(request) -> None:
@@ -169,7 +181,7 @@ def test_example(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=4,
@@ -186,7 +198,7 @@ def test_include_tasks(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=7,
@@ -201,7 +213,7 @@ def test_import_tasks(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=5,
@@ -222,7 +234,7 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number) -
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=expected_tasks_number,
@@ -238,7 +250,9 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number) -
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_include_role(
-    request, include_role_tasks_option, expected_tasks_number
+    request,
+    include_role_tasks_option,
+    expected_tasks_number,
 ) -> None:
     """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
@@ -248,7 +262,7 @@ def test_include_role(
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         blocks_number=1,
@@ -262,11 +276,11 @@ def test_with_block(request) -> None:
     svg_path, playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
-        additional_args=["--include-role-tasks", "--save-dot-file"],
+        additional_args=["--include-role-tasks"],
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=7,
@@ -285,7 +299,7 @@ def test_nested_include_tasks(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=3,
@@ -308,7 +322,7 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number) 
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=expected_tasks_number,
@@ -323,7 +337,7 @@ def test_import_playbook(request) -> None:
         output_filename=request.node.name,
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=4,
@@ -349,7 +363,7 @@ def test_nested_import_playbook(
         additional_args=[include_role_tasks_option],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=2,
         tasks_number=expected_tasks_number,
@@ -363,7 +377,7 @@ def test_relative_var_files(request) -> None:
         output_filename=request.node.name,
     )
     res = _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=2,
@@ -386,7 +400,7 @@ def test_tags(request) -> None:
         additional_args=["-t", "pre_task_tag_1"],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         pre_tasks_number=1,
@@ -401,7 +415,7 @@ def test_skip_tags(request) -> None:
         additional_args=["--skip-tags", "pre_task_tag_1", "--include-role-tasks"],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=3,
@@ -418,7 +432,7 @@ def test_multi_plays(request) -> None:
         additional_args=["--include-role-tasks"],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=3,
         tasks_number=25,
@@ -433,10 +447,10 @@ def test_multi_playbooks(request) -> None:
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
-        additional_args=["--include-role-tasks", "--save-dot-file"],
+        additional_args=["--include-role-tasks"],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         playbooks_number=3,
         plays_number=5,
@@ -462,7 +476,7 @@ def test_with_roles_with_custom_protocol_handlers(request) -> None:
     )
 
     res = _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         tasks_number=2,
@@ -480,7 +494,7 @@ def test_with_roles_with_custom_protocol_handlers(request) -> None:
         ), "Tasks should be open with vscode"
 
     for r in res["roles"]:
-        assert r.find("g/a").get(xlink_ref_selector).startswith(DIR_PATH)
+        assert r.find("g/a").get(xlink_ref_selector).startswith(str(DIR_PATH))
 
 
 def test_community_download_roles_and_collection(request) -> None:
@@ -515,7 +529,7 @@ def test_group_roles_by_name(
         additional_args=["--include-role-tasks", flag],
     )
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         roles_number=roles_number,
@@ -539,7 +553,7 @@ def test_hiding_plays(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=2,
         roles_number=2,
@@ -561,7 +575,7 @@ def test_hiding_empty_plays_with_tags_filter(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         roles_number=1,
@@ -585,7 +599,7 @@ def test_hiding_empty_plays_with_tags_filter_all(request) -> None:
         ],
     )
 
-    _common_tests(svg_path=svg_path, playbook_paths=playbook_paths)
+    _common_tests(svg_filename=svg_path, playbook_paths=playbook_paths)
 
 
 def test_hiding_plays_without_roles(request) -> None:
@@ -603,7 +617,7 @@ def test_hiding_plays_without_roles(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=2,
         roles_number=2,
@@ -630,7 +644,7 @@ def test_hiding_plays_without_roles_with_tags_filtering(request) -> None:
     )
 
     _common_tests(
-        svg_path=svg_path,
+        svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
         roles_number=1,

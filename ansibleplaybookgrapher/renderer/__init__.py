@@ -147,7 +147,7 @@ class PlaybookBuilder(ABC):
         """
 
     @abstractmethod
-    def build_play(self, play_node: PlayNode, **kwargs):
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """Build a single play to be rendered
         :param play_node:
         :param kwargs:
@@ -201,7 +201,13 @@ class PlaybookBuilder(ABC):
             )
 
     @abstractmethod
-    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
+    def build_task(
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
         """Build a single task to be rendered
         :param task_node: The task
         :param fontcolor: The font color to apply
@@ -211,7 +217,13 @@ class PlaybookBuilder(ABC):
         """
 
     @abstractmethod
-    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
+    def build_role(
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
         """Render a role in the graph
         :param role_node: The RoleNode to render
         :param color: The color to apply
@@ -220,7 +232,13 @@ class PlaybookBuilder(ABC):
         """
 
     @abstractmethod
-    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
+    def build_block(
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
         """Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
         :param block_node: The BlockNode to build

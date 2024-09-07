@@ -14,8 +14,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import ntpath
-import os
 import sys
+from pathlib import Path
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
@@ -120,7 +120,7 @@ class PlaybookGrapherCLI(CLI):
                 )
 
     def _add_my_options(self) -> None:
-        """Add some of my options to the parser
+        """Add some of my options to the parser.
         :return:
         """
         self.parser.prog = __prog__
@@ -275,7 +275,7 @@ class PlaybookGrapherCLI(CLI):
         if self.options.output_filename is None:
             basenames = map(ntpath.basename, self.options.playbook_filenames)
             basenames_without_ext = "-".join(
-                [os.path.splitext(basename)[0] for basename in basenames],
+                [Path(basename).stem for basename in basenames],
             )
             self.options.output_filename = basenames_without_ext
 
@@ -285,7 +285,7 @@ class PlaybookGrapherCLI(CLI):
         return options
 
     def validate_open_protocol_custom_formats(self) -> None:
-        """Validate the provided open protocol format
+        """Validate the provided open protocol format.
         :return:
         """
         error_msg = 'Make sure to provide valid formats. Example: {"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'

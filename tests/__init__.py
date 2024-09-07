@@ -1,4 +1,3 @@
-FIXTURES_DIR = "fixtures/"
-INVENTORY_FILE = FIXTURES_DIR + "inventory"
+from pathlib import Path
 
-SIMPLE_PLAYBOOK_SVG = FIXTURES_DIR + "simple_playbook_no_postproccess.svg"
+FIXTURES_DIR = Path("fixtures/")

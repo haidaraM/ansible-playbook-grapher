@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ruff: noqa: PTH118,PTH120,PTH117,PTH110,PTH116
 import hashlib
 import os
 import uuid

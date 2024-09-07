@@ -14,13 +14,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
 from ansibleplaybookgrapher import __prog__, __version__
 
 
-def read_requirements(path):
+def read_requirements(path: str):
     """Read requirements file
     :param path:
     :type path:
@@ -28,7 +29,7 @@ def read_requirements(path):
     :rtype:
     """
     requirements = []
-    with open(path) as f_r:
+    with Path(path).open() as f_r:
         for line in f_r:
             requirements.append(line.strip())
     return requirements
@@ -37,7 +38,7 @@ def read_requirements(path):
 install_requires = read_requirements("requirements.txt")
 test_require = read_requirements("tests/requirements_tests.txt")[1:]
 
-with open("README.md") as f:
+with Path("README.md").open() as f:
     long_description = f.read()
 
 # add `pytest-runner` distutils plugin for test;

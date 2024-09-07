@@ -1,11 +1,9 @@
-import os
-
 import pytest
 from ansible.plugins.loader import init_plugin_loader
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR, INVENTORY_FILE
+from tests import FIXTURES_DIR
 
 
 @pytest.fixture(name="data_loader")
@@ -25,7 +23,7 @@ def fixture_inventory_manager(data_loader):
     """
     from ansible.inventory.manager import InventoryManager
 
-    return InventoryManager(loader=data_loader, sources=INVENTORY_FILE)
+    return InventoryManager(loader=data_loader, sources=str(FIXTURES_DIR / "inventory"))
 
 
 @pytest.fixture(name="variable_manager")
@@ -71,7 +69,7 @@ def grapher_cli(request) -> PlaybookGrapherCLI:
     # The request param should be the path to the playbook
     args_params = request.param.copy()
     # The last item of the args should be the name of the playbook file in the fixtures.
-    args_params[-1] = os.path.join(FIXTURES_DIR, args_params[-1])
+    args_params[-1] = str(FIXTURES_DIR / args_params[-1])
     cli = PlaybookGrapherCLI([__prog__, *args_params])
     cli.parse()
     return cli

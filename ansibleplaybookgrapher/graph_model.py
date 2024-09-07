@@ -12,9 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -354,7 +354,7 @@ class PlaybookNode(CompositeNode):
         # Since the playbook is the whole file, the set the position as the beginning of the file
         self.location = NodeLocation(
             type="file",
-            path=os.path.join(os.getcwd(), self.name),
+            path=str(Path(Path.cwd()) / self.name),
             line=1,
             column=1,
         )
