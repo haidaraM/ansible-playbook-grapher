@@ -221,8 +221,7 @@ def test_with_block(request):
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request, flag,
-        roles_number, tasks_number, post_tasks_number
+    request, flag, roles_number, tasks_number, post_tasks_number
 ):
     """
     Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.

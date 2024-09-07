@@ -15,7 +15,7 @@
 import os
 from collections import defaultdict
 from dataclasses import dataclass, asdict
-from typing import Dict, List, Set, Tuple, Optional, TypedDict
+from typing import Dict, List, Set, Tuple, Optional
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
