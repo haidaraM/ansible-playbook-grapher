@@ -30,8 +30,8 @@ def read_requirements(path):
     """
     requirements = []
     with open(path) as f_r:
-        for l in f_r:
-            requirements.append(l.strip())
+        for line in f_r:
+            requirements.append(line.strip())
     return requirements
 
 

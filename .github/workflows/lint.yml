@@ -1,4 +1,4 @@
-name: Lint
+name: Lint and format
 
 on:
   push:
@@ -20,16 +20,14 @@ permissions:
   contents: write
 
 jobs:
-  black:
+  ruff:
     runs-on: ubuntu-latest
+    name: Format and lint
     steps:
       - uses: actions/checkout@v4
 
-      - uses: psf/black@stable
-        with:
-          version: "~= 24.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
-          options: ""
+      - uses: chartboost/ruff-action@v1
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Autoformat code using black
+          commit_message: Auto lint and format using ruff

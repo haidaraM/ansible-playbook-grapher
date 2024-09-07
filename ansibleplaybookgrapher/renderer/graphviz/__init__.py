@@ -294,7 +294,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :return: The text representation of the graphviz dot format for the playbook
         """
-        display.vvv(f"Converting the graph to the dot format for graphviz")
+        display.vvv("Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(
             self.playbook_node.id,

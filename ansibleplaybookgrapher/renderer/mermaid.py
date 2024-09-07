@@ -18,7 +18,7 @@ import json
 import zlib
 from base64 import urlsafe_b64encode
 import webbrowser
-from typing import Dict, Set, List
+from typing import Dict, Set
 
 from ansible.utils.display import Display
 

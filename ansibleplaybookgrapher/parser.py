@@ -22,7 +22,6 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
-from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -444,9 +443,7 @@ class PlaybookParser(BaseParser):
                         parent_block=task_or_block,
                     )
 
-                for (
-                    b
-                ) in (
+                for b in (
                     block_list
                 ):  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(
