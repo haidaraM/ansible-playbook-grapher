@@ -22,7 +22,7 @@ test_install: build
 	@./tests/test_install.sh $(VIRTUALENV_DIR) $(ANSIBLE_CORE_VERSION)
 
 fmt:
-	black .
+	ruff format
 
 test: fmt
     # Due to some side effects with Ansible, we have to run the tests in a certain order
