@@ -53,7 +53,7 @@ class GraphvizRenderer(Renderer):
         output_filename: str,
         view: bool,
         hide_empty_plays: bool = False,
-        hide_plays_without_roles=False,
+        hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
         """:param open_protocol_handler: The protocol handler name to use
@@ -293,7 +293,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
     def build_playbook(
         self,
         hide_empty_plays: bool = False,
-        hide_plays_without_roles=False,
+        hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format

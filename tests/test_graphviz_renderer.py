@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from pyquery import PyQuery
+from pytest import FixtureRequest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -146,7 +147,7 @@ def _common_tests(
     }
 
 
-def test_simple_playbook(request) -> None:
+def test_simple_playbook(request: FixtureRequest) -> None:
     """Test simple_playbook.yml."""
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
@@ -162,7 +163,7 @@ def test_simple_playbook(request) -> None:
     )
 
 
-def test_if_dot_file_is_saved(request) -> None:
+def test_if_dot_file_is_saved(request: FixtureRequest) -> None:
     """Test if the dot file is saved at the expected path."""
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
@@ -173,7 +174,7 @@ def test_if_dot_file_is_saved(request) -> None:
     assert expected_dot_path.is_file()
 
 
-def test_example(request) -> None:
+def test_example(request: FixtureRequest) -> None:
     """Test example.yml."""
     svg_path, playbook_paths = run_grapher(
         ["example.yml"],
@@ -190,7 +191,7 @@ def test_example(request) -> None:
     )
 
 
-def test_include_tasks(request) -> None:
+def test_include_tasks(request: FixtureRequest) -> None:
     """Test include_tasks.yml, an example with some included tasks."""
     svg_path, playbook_paths = run_grapher(
         ["include_tasks.yml"],
@@ -205,7 +206,7 @@ def test_include_tasks(request) -> None:
     )
 
 
-def test_import_tasks(request) -> None:
+def test_import_tasks(request: FixtureRequest) -> None:
     """Test import_tasks.yml, an example with some imported tasks."""
     svg_path, playbook_paths = run_grapher(
         ["import_tasks.yml"],
@@ -225,7 +226,9 @@ def test_import_tasks(request) -> None:
     [("--", 2), ("--include-role-tasks", 8)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
-def test_with_roles(request, include_role_tasks_option, expected_tasks_number) -> None:
+def test_with_roles(
+    request: FixtureRequest, include_role_tasks_option: str, expected_tasks_number: int
+) -> None:
     """Test with_roles.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
         ["with_roles.yml"],
@@ -250,9 +253,9 @@ def test_with_roles(request, include_role_tasks_option, expected_tasks_number) -
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_include_role(
-    request,
-    include_role_tasks_option,
-    expected_tasks_number,
+    request: FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: str,
 ) -> None:
     """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
@@ -271,7 +274,7 @@ def test_include_role(
     )
 
 
-def test_with_block(request) -> None:
+def test_with_block(request: FixtureRequest) -> None:
     """Test with_block.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
         ["with_block.yml"],
@@ -291,7 +294,7 @@ def test_with_block(request) -> None:
     )
 
 
-def test_nested_include_tasks(request) -> None:
+def test_nested_include_tasks(request: FixtureRequest) -> None:
     """Test nested_include.yml, an example with an include_tasks that include another tasks."""
     svg_path, playbook_paths = run_grapher(
         ["nested_include_tasks.yml"],
@@ -311,7 +314,9 @@ def test_nested_include_tasks(request) -> None:
     [("--", 1), ("--include-role-tasks", 7)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
-def test_import_role(request, include_role_tasks_option, expected_tasks_number) -> None:
+def test_import_role(
+    request: FixtureRequest, include_role_tasks_option: str, expected_tasks_number: int
+) -> None:
     """Test import_role.yml, an example with import role.
     Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is parsed.
     """
@@ -330,7 +335,7 @@ def test_import_role(request, include_role_tasks_option, expected_tasks_number) 
     )
 
 
-def test_import_playbook(request) -> None:
+def test_import_playbook(request: FixtureRequest) -> None:
     """Test import_playbook."""
     svg_path, playbook_paths = run_grapher(
         ["import_playbook.yml"],
@@ -352,9 +357,9 @@ def test_import_playbook(request) -> None:
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
-    request,
-    include_role_tasks_option,
-    expected_tasks_number,
+    request: FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test nested import playbook with an import_role and include_tasks."""
     svg_path, playbook_paths = run_grapher(
@@ -370,7 +375,7 @@ def test_nested_import_playbook(
     )
 
 
-def test_relative_var_files(request) -> None:
+def test_relative_var_files(request: FixtureRequest) -> None:
     """Test a playbook with a relative var file."""
     svg_path, playbook_paths = run_grapher(
         ["relative_var_files.yml"],
@@ -392,7 +397,7 @@ def test_relative_var_files(request) -> None:
     ), "The title should contain player name"
 
 
-def test_tags(request) -> None:
+def test_tags(request: FixtureRequest) -> None:
     """Test a playbook by only graphing a specific tasks based on the given tags."""
     svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
@@ -407,7 +412,7 @@ def test_tags(request) -> None:
     )
 
 
-def test_skip_tags(request) -> None:
+def test_skip_tags(request: FixtureRequest) -> None:
     """Test a playbook by only graphing a specific tasks based on the given tags."""
     svg_path, playbook_paths = run_grapher(
         ["tags.yml"],
@@ -424,7 +429,7 @@ def test_skip_tags(request) -> None:
     )
 
 
-def test_multi_plays(request) -> None:
+def test_multi_plays(request: FixtureRequest) -> None:
     """Test with multiple plays, include_role and roles."""
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml"],
@@ -442,7 +447,7 @@ def test_multi_plays(request) -> None:
     )
 
 
-def test_multi_playbooks(request) -> None:
+def test_multi_playbooks(request: FixtureRequest) -> None:
     """Test with multiple playbooks."""
     svg_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
@@ -461,7 +466,7 @@ def test_multi_playbooks(request) -> None:
     )
 
 
-def test_with_roles_with_custom_protocol_handlers(request) -> None:
+def test_with_roles_with_custom_protocol_handlers(request: FixtureRequest) -> None:
     """Test with_roles.yml with a custom protocol handlers."""
     formats_str = '{"file": "vscode://file/{path}:{line}", "folder": "{path}"}'
     svg_path, playbook_paths = run_grapher(
@@ -497,7 +502,7 @@ def test_with_roles_with_custom_protocol_handlers(request) -> None:
         assert r.find("g/a").get(xlink_ref_selector).startswith(str(DIR_PATH))
 
 
-def test_community_download_roles_and_collection(request) -> None:
+def test_community_download_roles_and_collection(request: FixtureRequest) -> None:
     """Test if the grapher is able to find some downloaded roles and collections when graphing the playbook
     :return:
     """
@@ -514,11 +519,11 @@ def test_community_download_roles_and_collection(request) -> None:
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request,
-    flag,
-    roles_number,
-    tasks_number,
-    post_tasks_number,
+    request: FixtureRequest,
+    flag: str,
+    roles_number: int,
+    tasks_number: int,
+    post_tasks_number: int,
 ) -> None:
     """Test group roles by name
     :return:
@@ -539,7 +544,7 @@ def test_group_roles_by_name(
     )
 
 
-def test_hiding_plays(request) -> None:
+def test_hiding_plays(request: FixtureRequest) -> None:
     """Test hiding_plays with the flag --hide-empty-plays.
 
     This case is about hiding plays with 0 zero task (no filtering)
@@ -561,7 +566,7 @@ def test_hiding_plays(request) -> None:
     )
 
 
-def test_hiding_empty_plays_with_tags_filter(request) -> None:
+def test_hiding_empty_plays_with_tags_filter(request: FixtureRequest) -> None:
     """Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding plays when filtering with tags
@@ -582,7 +587,7 @@ def test_hiding_empty_plays_with_tags_filter(request) -> None:
     )
 
 
-def test_hiding_empty_plays_with_tags_filter_all(request) -> None:
+def test_hiding_empty_plays_with_tags_filter_all(request: FixtureRequest) -> None:
     """Test hiding plays with the flag --hide-empty-plays.
 
     This case is about hiding ALL the plays when filtering with tags
@@ -602,7 +607,7 @@ def test_hiding_empty_plays_with_tags_filter_all(request) -> None:
     _common_tests(svg_filename=svg_path, playbook_paths=playbook_paths)
 
 
-def test_hiding_plays_without_roles(request) -> None:
+def test_hiding_plays_without_roles(request: FixtureRequest) -> None:
     """Test hiding plays with the flag --hide-plays-without-roles.
 
     :param request:
@@ -625,7 +630,9 @@ def test_hiding_plays_without_roles(request) -> None:
     )
 
 
-def test_hiding_plays_without_roles_with_tags_filtering(request) -> None:
+def test_hiding_plays_without_roles_with_tags_filtering(
+    request: FixtureRequest,
+) -> None:
     """Test hiding plays with the flag --hide-plays-without-roles.
 
     Also apply some tags filter

@@ -31,7 +31,6 @@ def _read_data(filename: str) -> str:
     :param filename:
     :return:
     """
-
     current_dir = Path(__file__).parent.resolve()
     javascript_path = current_dir / "../../data" / filename
 

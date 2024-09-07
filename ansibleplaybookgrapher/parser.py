@@ -74,7 +74,7 @@ class BaseParser(ABC):
         self,
         data: str | AnsibleUnicode,
         variables: dict,
-        fail_on_undefined=False,
+        fail_on_undefined: bool = False,
     ) -> str | AnsibleUnicode:
         """Template the data using Jinja. Return data if an error occurs during the templating
         :param data:
@@ -137,7 +137,7 @@ class PlaybookParser(BaseParser):
     def __init__(
         self,
         playbook_filename: str,
-        include_role_tasks=False,
+        include_role_tasks: bool = False,
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,

@@ -7,7 +7,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
-def test_cli_help(help_option, capfd) -> None:
+def test_cli_help(help_option: str, capfd) -> None:
     """Test for the help option : -h, --help
     :param help_option:
     :param capfd:
@@ -42,7 +42,7 @@ def test_cli_version(capfd) -> None:
     [(["--"], False), (["-s"], True), (["--save-dot-file"], True)],
     ids=["default", "save-dot-file-short-option", "save-dot-file-long-option"],
 )
-def test_cli_save_dot_file(save_dot_file_option, expected) -> None:
+def test_cli_save_dot_file(save_dot_file_option: list[str], expected: bool) -> None:
     """Test for the save dot file option: -s, --save-dot-file
     :param save_dot_file_option:
     :param expected:
@@ -66,7 +66,7 @@ def test_cli_save_dot_file(save_dot_file_option, expected) -> None:
     ],
     ids=["default", "output-filename-short-option", "output-filename-long-option"],
 )
-def test_cli_output_filename(output_filename_option, expected) -> None:
+def test_cli_output_filename(output_filename_option: list[str], expected: str) -> None:
     """Test for the output filename option: -o, --output-file-name
     :param output_filename_option:
     :param expected:
@@ -99,7 +99,9 @@ def test_cli_output_filename_multiple_playbooks() -> None:
     [(["--"], False), (["--include-role-tasks"], True)],
     ids=["default", "include"],
 )
-def test_cli_include_role_tasks(include_role_tasks_option, expected) -> None:
+def test_cli_include_role_tasks(
+    include_role_tasks_option: list[str], expected: bool
+) -> None:
     """Test for the include role tasks option: --include-role-tasks
     :param include_role_tasks_option:
     :param expected:
@@ -124,7 +126,7 @@ def test_cli_include_role_tasks(include_role_tasks_option, expected) -> None:
     ],
     ids=["no_tags_provided", "one-tag", "multiple-tags", "multiple-tags2"],
 )
-def test_cli_tags(tags_option, expected) -> None:
+def test_cli_tags(tags_option: list[str], expected: list[str]) -> None:
     """:param tags_option:
     :param expected:
     :return:
@@ -155,7 +157,7 @@ def test_cli_tags(tags_option, expected) -> None:
         "multiple-skip-tags2",
     ],
 )
-def test_skip_tags(skip_tags_option, expected) -> None:
+def test_skip_tags(skip_tags_option: list[str], expected: list[str]) -> None:
     """:param skip_tags_option:
     :param expected:
     :return:
@@ -249,15 +251,15 @@ def test_cli_open_protocol_custom_formats_not_provided() -> None:
 
 
 @pytest.mark.parametrize(
-    ("formats", "expected_message"),
+    ("protocol_format", "expected_message"),
     [
         ("invalid_json", "JSONDecodeError"),
         ("{}", "The field 'file' or 'folder' is missing"),
     ],
 )
 def test_cli_open_protocol_custom_formats_invalid_inputs(
-    formats,
-    expected_message,
+    protocol_format: str,
+    expected_message: str,
     capsys,
 ) -> None:
     """The custom formats must be a valid json data
@@ -268,7 +270,7 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
         "--open-protocol-handler",
         "custom",
         "--open-protocol-custom-formats",
-        formats,
+        protocol_format,
         "playbook1.yml",
     ]
 

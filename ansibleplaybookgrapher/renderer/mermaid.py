@@ -168,7 +168,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     def build_playbook(
         self,
         hide_empty_plays: bool = False,
-        hide_plays_without_roles=False,
+        hide_plays_without_roles: bool = False,
         **kwargs: bool,
     ) -> str:
         """Build the playbook

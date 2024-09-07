@@ -1,5 +1,8 @@
 import pytest
+from ansible.inventory.manager import InventoryManager
+from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
+from pytest import FixtureRequest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -17,7 +20,7 @@ def fixture_data_loader():
 
 
 @pytest.fixture(name="inventory_manager")
-def fixture_inventory_manager(data_loader):
+def fixture_inventory_manager(data_loader: DataLoader):
     """Return an Ansible  InventoryManager
     :return:
     """
@@ -27,7 +30,9 @@ def fixture_inventory_manager(data_loader):
 
 
 @pytest.fixture(name="variable_manager")
-def fixture_variable_manager(data_loader, inventory_manager):
+def fixture_variable_manager(
+    data_loader: DataLoader, inventory_manager: InventoryManager
+):
     """Return an Ansible  VariableManager
     :return:
     """
@@ -59,7 +64,7 @@ def init_ansible_plugin_loader() -> None:
 
 
 @pytest.fixture()
-def grapher_cli(request) -> PlaybookGrapherCLI:
+def grapher_cli(request: FixtureRequest) -> PlaybookGrapherCLI:
     """Because Ansible is not designed to be used as a library, we need the CLI everywhere. The CLI is the main entrypoint
     of Ansible, and it sets some global variables that are needed by some classes and methods.
     See this commit: https://github.com/ansible/ansible/commit/afdbb0d9d5bebb91f632f0d4a1364de5393ba17a

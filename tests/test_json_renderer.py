@@ -6,6 +6,7 @@ import jq
 import pytest
 from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
+from pytest import FixtureRequest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -171,7 +172,7 @@ def _common_tests(
     }
 
 
-def test_simple_playbook(request) -> None:
+def test_simple_playbook(request: FixtureRequest) -> None:
     """:return:"""
     json_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
@@ -185,7 +186,7 @@ def test_simple_playbook(request) -> None:
     _common_tests(json_path, plays_number=1, post_tasks_number=2)
 
 
-def test_with_block(request) -> None:
+def test_with_block(request: FixtureRequest) -> None:
     """:return:"""
     json_path, playbook_paths = run_grapher(
         ["with_block.yml"],
@@ -213,11 +214,11 @@ def test_with_block(request) -> None:
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request,
-    flag,
-    roles_number,
-    tasks_number,
-    post_tasks_number,
+    request: FixtureRequest,
+    flag: str,
+    roles_number: int,
+    tasks_number: int,
+    post_tasks_number: int,
 ) -> None:
     """Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
     This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.
@@ -240,7 +241,7 @@ def test_group_roles_by_name(
     )
 
 
-def test_multi_playbooks(request) -> None:
+def test_multi_playbooks(request: FixtureRequest) -> None:
     """:param request:
     :return:
     """

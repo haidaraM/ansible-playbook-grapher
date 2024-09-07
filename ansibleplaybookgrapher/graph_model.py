@@ -15,6 +15,7 @@
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -59,7 +60,7 @@ class Node:
         node_name: str,
         node_id: str,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
@@ -114,10 +115,10 @@ class Node:
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name='{self.name}', id='{self.id}')"
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Node") -> bool:
         return self.id == other.id
 
-    def __ne__(self, other):
+    def __ne__(self, other: "Node") -> bool:
         return not (self == other)
 
     def __hash__(self):
@@ -157,7 +158,7 @@ class CompositeNode(Node):
         node_name: str,
         node_id: str,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
         supported_compositions: list[str] | None = None,
@@ -297,7 +298,7 @@ class CompositeTasksNode(CompositeNode):
         node_name: str,
         node_id: str,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
@@ -335,7 +336,7 @@ class PlaybookNode(CompositeNode):
         node_name: str,
         node_id: str | None = None,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         index: int | None = None,
     ) -> None:
         super().__init__(
@@ -436,7 +437,7 @@ class PlayNode(CompositeNode):
         node_name: str,
         node_id: str | None = None,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
         hosts: list[str] | None = None,
@@ -496,7 +497,7 @@ class BlockNode(CompositeTasksNode):
         node_name: str,
         node_id: str | None = None,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
@@ -518,7 +519,7 @@ class TaskNode(LoopMixin, Node):
         node_name: str,
         node_id: str | None = None,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
@@ -544,7 +545,7 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         node_name: str,
         node_id: str | None = None,
         when: str = "",
-        raw_object=None,
+        raw_object: Any = None,
         parent: "Node" = None,
         index: int | None = None,
         include_role: bool = False,

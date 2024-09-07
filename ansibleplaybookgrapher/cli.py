@@ -48,7 +48,7 @@ class PlaybookGrapherCLI(CLI):
 
     name = __prog__
 
-    def __init__(self, args, callback=None) -> None:
+    def __init__(self, args: list[str], callback=None) -> None:
         super().__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
@@ -257,7 +257,9 @@ class PlaybookGrapherCLI(CLI):
         option_helpers.add_vault_options(self.parser)
         option_helpers.add_runtask_options(self.parser)
 
-    def init_parser(self, usage="", desc=None, epilog=None) -> None:
+    def init_parser(
+        self, usage: str | None = "", desc: str | None = None, epilog: str | None = None
+    ) -> None:
         super().init_parser(
             usage=f"{__prog__} [options] playbook.yml",
             desc="Make graphs from your Ansible Playbooks.",
@@ -318,7 +320,7 @@ class PlaybookGrapherCLI(CLI):
         self.options.open_protocol_custom_formats = format_dict
 
 
-def main(args=None) -> None:
+def main(args: list[str] | None = None) -> None:
     args = args or sys.argv
     cli = PlaybookGrapherCLI(args)
 
