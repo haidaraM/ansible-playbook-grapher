@@ -3,7 +3,7 @@ from ansible.plugins.loader import init_plugin_loader
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR_PATH
+from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 
 @pytest.fixture(name="data_loader")
@@ -23,9 +23,7 @@ def fixture_inventory_manager(data_loader):
     """
     from ansible.inventory.manager import InventoryManager
 
-    return InventoryManager(
-        loader=data_loader, sources=str(FIXTURES_DIR_PATH / "inventory")
-    )
+    return InventoryManager(loader=data_loader, sources=str(INVENTORY_PATH))
 
 
 @pytest.fixture(name="variable_manager")

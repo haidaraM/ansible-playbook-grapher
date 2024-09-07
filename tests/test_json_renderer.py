@@ -9,7 +9,7 @@ from jsonschema.validators import Draft202012Validator
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR_PATH
+from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 # This file directory abspath
 DIR_PATH = Path(__file__).parent.resolve()
@@ -178,7 +178,7 @@ def test_simple_playbook(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            str(FIXTURES_DIR_PATH / "inventory"),
+            str(INVENTORY_PATH),
             "--include-role-tasks",
         ],
     )
@@ -192,7 +192,7 @@ def test_with_block(request) -> None:
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            str(FIXTURES_DIR_PATH / "inventory"),
+            str(INVENTORY_PATH),
             "--include-role-tasks",
         ],
     )

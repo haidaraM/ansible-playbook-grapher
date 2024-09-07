@@ -8,7 +8,7 @@ from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR_PATH
+from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 # This file directory abspath
 DIR_PATH = Path(__file__).parent.resolve()
@@ -151,7 +151,7 @@ def test_simple_playbook(request) -> None:
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
-        additional_args=["-i", str(FIXTURES_DIR_PATH / "inventory")],
+        additional_args=["-i", str(INVENTORY_PATH)],
     )
 
     _common_tests(
