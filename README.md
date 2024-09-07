@@ -76,7 +76,8 @@ At the time of writing, two renderers are supported:
 2. `mermaid-flowchart`: Generate the graph in [Mermaid](https://mermaid.js.org/syntax/flowchart.html) format. You can
    directly embed the graph in your markdown and GitHub (
    and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
-3. `json`: Generate a JSON representation of the graph to be used by other tools.
+3. `json`: Generate a JSON representation of the graph to be used by other tools. The corresponding JSON schema
+   is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas)
 
 If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
 renderers.
