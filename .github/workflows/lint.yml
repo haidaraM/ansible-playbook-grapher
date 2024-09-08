@@ -31,7 +31,9 @@ jobs:
           python-version: 3.11
           cache: pip
           cache-dependency-path: tests/requirements_tests.txt
+
       - run: pip install -q -r tests/requirements_tests.txt
+
       - run: make lint
 
       - uses: stefanzweifel/git-auto-commit-action@v5
