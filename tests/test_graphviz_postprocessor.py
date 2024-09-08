@@ -1,5 +1,6 @@
-import pytest
 from _elementtree import Element
+
+import pytest
 from lxml import etree
 
 from ansibleplaybookgrapher.graph_model import PlaybookNode, PlayNode, TaskNode
