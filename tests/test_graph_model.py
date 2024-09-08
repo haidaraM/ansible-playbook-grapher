@@ -1,17 +1,14 @@
-import json
-
 from ansibleplaybookgrapher.graph_model import (
-    RoleNode,
-    TaskNode,
-    PlayNode,
     BlockNode,
     PlaybookNode,
+    PlayNode,
+    RoleNode,
+    TaskNode,
 )
 
 
-def test_links_structure():
-    """
-    Test links structure of a graph
+def test_links_structure() -> None:
+    """Test links structure of a graph
     :return:
     """
     play = PlayNode("composite_node")
@@ -40,9 +37,8 @@ def test_links_structure():
         assert e in all_links[role], f"The role should be linked to the edge {e}"
 
 
-def test_get_all_tasks_nodes():
-    """
-    Test the function get_all_tasks_nodes
+def test_get_all_tasks_nodes() -> None:
+    """Test the function get_all_tasks_nodes
     :return:
     """
     play = PlayNode("play")
@@ -71,12 +67,10 @@ def test_get_all_tasks_nodes():
     assert [task_1, task_2, task_3, task_4] == all_tasks
 
 
-def test_empty_play():
-    """
-    Testing the emptiness of a play
+def test_empty_play() -> None:
+    """Testing the emptiness of a play
     :return:
     """
-
     play = PlayNode("play")
     assert play.is_empty(), "The play should empty"
 
@@ -84,9 +78,8 @@ def test_empty_play():
     assert not play.is_empty(), "The play should not be empty"
 
 
-def test_has_node_type():
-    """
-    Testing the method has_node_type
+def test_has_node_type() -> None:
+    """Testing the method has_node_type
     :return:
     """
     play = PlayNode("play")
@@ -104,11 +97,8 @@ def test_has_node_type():
     assert not role.has_node_type(BlockNode), "The role doesn't have a BlockNode"
 
 
-def test_to_dict():
-    """
-
-    :return:
-    """
+def test_to_dict() -> None:
+    """:return:"""
     playbook = PlaybookNode("my-fake-playbook.yml")
     playbook.add_node("plays", PlayNode("empty"))
 
@@ -138,5 +128,3 @@ def test_to_dict():
     assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
     assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
-
-    print(json.dumps(dict_rep, indent=4))

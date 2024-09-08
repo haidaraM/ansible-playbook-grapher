@@ -14,8 +14,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import ntpath
-import os
 import sys
+from argparse import Namespace
+from collections.abc import Callable
+from pathlib import Path
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
@@ -29,9 +31,13 @@ from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
 from ansibleplaybookgrapher.renderer.json import JSONRenderer
 from ansibleplaybookgrapher.renderer.mermaid import (
-    MermaidFlowChartRenderer,
     DEFAULT_DIRECTIVE as MERMAID_DEFAULT_DIRECTIVE,
+)
+from ansibleplaybookgrapher.renderer.mermaid import (
     DEFAULT_ORIENTATION as MERMAID_DEFAULT_ORIENTATION,
+)
+from ansibleplaybookgrapher.renderer.mermaid import (
+    MermaidFlowChartRenderer,
 )
 
 # The display is a singleton. This instruction will NOT return a new instance.
@@ -40,13 +46,11 @@ display = Display()
 
 
 class PlaybookGrapherCLI(CLI):
-    """
-    The dedicated playbook grapher CLI
-    """
+    """The dedicated playbook grapher CLI."""
 
     name = __prog__
 
-    def __init__(self, args, callback=None):
+    def __init__(self, args: list[str], callback: Callable | None = None) -> None:
         super().__init__(args=args, callback=callback)
         # We keep the old options as instance attribute for backward compatibility for the grapher CLI.
         # From Ansible 2.8, they remove this instance attribute 'options' and use a global context instead.
@@ -55,7 +59,7 @@ class PlaybookGrapherCLI(CLI):
         self.options = None
 
     def run(self):
-        # FIXME: run should not return anything.
+        # TODO(haidaraM): run should not return anything.
         super().run()
 
         display.verbosity = self.options.verbosity
@@ -112,13 +116,13 @@ class PlaybookGrapherCLI(CLI):
 
             case _:
                 # Likely a bug if we are here
+                msg = f"Unknown renderer '{self.options.renderer}'. This is likely a bug that should be reported."
                 raise AnsibleOptionsError(
-                    f"Unknown renderer '{self.options.renderer}'. This is likely a bug that should be reported."
+                    msg,
                 )
 
-    def _add_my_options(self):
-        """
-        Add some of my options to the parser
+    def _add_my_options(self) -> None:
+        """Add some of my options to the parser.
         :return:
         """
         self.parser.prog = __prog__
@@ -152,7 +156,7 @@ class PlaybookGrapherCLI(CLI):
             "--view",
             action="store_true",
             default=False,
-            help="Automatically open the resulting SVG file with your system’s default viewer application for the file type",
+            help="Automatically open the resulting SVG file with your system's default viewer application for the file type",
         )
 
         self.parser.add_argument(
@@ -168,11 +172,11 @@ class PlaybookGrapherCLI(CLI):
             dest="open_protocol_handler",
             choices=list(OPEN_PROTOCOL_HANDLERS.keys()),
             default="default",
-            help="""The protocol to use to open the nodes when double-clicking on them in your SVG 
-                                 viewer (only for graphviz). Your SVG viewer must support double-click and Javascript. 
-                                 The supported values are 'default', 'vscode' and 'custom'. 
-                                 For 'default', the URL will be the path to the file or folders. When using a browser, 
-                                 it will open or download them. 
+            help="""The protocol to use to open the nodes when double-clicking on them in your SVG
+                                 viewer (only for graphviz). Your SVG viewer must support double-click and Javascript.
+                                 The supported values are 'default', 'vscode' and 'custom'.
+                                 For 'default', the URL will be the path to the file or folders. When using a browser,
+                                 it will open or download them.
                                  For 'vscode', the folders and files will be open with VSCode.
                                  For 'custom', you need to set a custom format with --open-protocol-custom-formats.
                                  """,
@@ -186,12 +190,12 @@ class PlaybookGrapherCLI(CLI):
                                  --open-protocol-handler is set to custom.
                                  You should provide a JSON formatted string like: {"file": "", "folder": ""}.
                                  Example: If you want to open folders (roles) inside the browser and files (tasks) in
-                                 vscode, set it to: 
+                                 vscode, set it to:
                                  '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'.
                                   path: the absolute path to the file containing the the plays/tasks/roles.
-                                  line/column: the position of the plays/tasks/roles in the file.  
-                                  You can optionally add the attribute "remove_from_path" to remove some parts of the 
-                                  path if you want relative paths. 
+                                  line/column: the position of the plays/tasks/roles in the file.
+                                  You can optionally add the attribute "remove_from_path" to remove some parts of the
+                                  path if you want relative paths.
                                  """,
         )
 
@@ -255,7 +259,19 @@ class PlaybookGrapherCLI(CLI):
         option_helpers.add_vault_options(self.parser)
         option_helpers.add_runtask_options(self.parser)
 
-    def init_parser(self, usage="", desc=None, epilog=None):
+    def init_parser(
+        self,
+        usage: str | None = "",
+        desc: str | None = None,
+        epilog: str | None = None,
+    ) -> None:
+        """Create an options parser for the grapher.
+
+        :param usage:
+        :param desc:
+        :param epilog:
+        :return:
+        """
         super().init_parser(
             usage=f"{__prog__} [options] playbook.yml",
             desc="Make graphs from your Ansible Playbooks.",
@@ -264,7 +280,7 @@ class PlaybookGrapherCLI(CLI):
 
         self._add_my_options()
 
-    def post_process_args(self, options):
+    def post_process_args(self, options: Namespace) -> Namespace:
         options = super().post_process_args(options)
 
         # init the options
@@ -273,7 +289,7 @@ class PlaybookGrapherCLI(CLI):
         if self.options.output_filename is None:
             basenames = map(ntpath.basename, self.options.playbook_filenames)
             basenames_without_ext = "-".join(
-                [os.path.splitext(basename)[0] for basename in basenames]
+                [Path(basename).stem for basename in basenames],
             )
             self.options.output_filename = basenames_without_ext
 
@@ -282,30 +298,32 @@ class PlaybookGrapherCLI(CLI):
 
         return options
 
-    def validate_open_protocol_custom_formats(self):
-        """
-        Validate the provided open protocol format
+    def validate_open_protocol_custom_formats(self) -> None:
+        """Validate the provided open protocol format.
         :return:
         """
         error_msg = 'Make sure to provide valid formats. Example: {"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'
         format_str = self.options.open_protocol_custom_formats
         if not format_str:
-            raise AnsibleOptionsError(
+            msg = (
                 "When the protocol handler is to set to custom, you must provide the formats to "
                 "use with --open-protocol-custom-formats."
+            )
+            raise AnsibleOptionsError(
+                msg,
             )
         try:
             format_dict = json.loads(format_str)
         except Exception as e:
             display.error(
-                f"{type(e).__name__} when reading the provided formats '{format_str}': {e}"
+                f"{type(e).__name__} when reading the provided formats '{format_str}': {e}",
             )
             display.error(error_msg)
             sys.exit(1)
 
         if "file" not in format_dict or "folder" not in format_dict:
             display.error(
-                f"The field 'file' or 'folder' is missing from the provided format '{format_str}'"
+                f"The field 'file' or 'folder' is missing from the provided format '{format_str}'",
             )
             display.error(error_msg)
             sys.exit(1)
@@ -314,7 +332,7 @@ class PlaybookGrapherCLI(CLI):
         self.options.open_protocol_custom_formats = format_dict
 
 
-def main(args=None):
+def main(args: list[str] | None = None) -> None:
     args = args or sys.argv
     cli = PlaybookGrapherCLI(args)
 

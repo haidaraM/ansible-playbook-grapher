@@ -12,17 +12,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
-from typing import Dict, List, Set
+from pathlib import Path
 
 from ansible.utils.display import Display
 from graphviz import Digraph
 
 from ansibleplaybookgrapher.graph_model import (
+    BlockNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
-    BlockNode,
     TaskNode,
 )
 from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
@@ -42,23 +41,22 @@ DEFAULT_GRAPH_ATTR = {
 class GraphvizRenderer(Renderer):
     def __init__(
         self,
-        playbook_nodes: List[PlaybookNode],
-        roles_usage: Dict["RoleNode", Set[PlayNode]],
-    ):
+        playbook_nodes: list[PlaybookNode],
+        roles_usage: dict["RoleNode", set[PlayNode]],
+    ) -> None:
         super().__init__(playbook_nodes, roles_usage)
 
     def render(
         self,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
+        open_protocol_custom_formats: dict[str, str],
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
-        hide_plays_without_roles=False,
+        hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
-        """
-        :param open_protocol_handler: The protocol handler name to use
+        """:param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
         :param view: Whether to open the rendered file in the default viewer
@@ -107,30 +105,25 @@ class GraphvizRenderer(Renderer):
         if save_dot_file:
             # add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
-            os.rename(output_filename, final_name)
+            Path(output_filename).rename(final_name)
             display.display(f"Graphviz dot file has been exported to {final_name}")
 
         return svg_path
 
 
 class GraphvizPlaybookBuilder(PlaybookBuilder):
-    """
-    Build the graphviz graph
-    """
+    """Build the graphviz graph."""
 
     def __init__(
         self,
         playbook_node: PlaybookNode,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
-        roles_usage: Dict[RoleNode, Set[PlayNode]],
-        roles_built: Set[RoleNode],
+        open_protocol_custom_formats: dict[str, str],
+        roles_usage: dict[RoleNode, set[PlayNode]],
+        roles_built: set[RoleNode],
         digraph: Digraph,
-    ):
-        """
-
-        :param digraph: Graphviz graph into which build the graph
-        """
+    ) -> None:
+        """:param digraph: Graphviz graph into which build the graph"""
         super().__init__(
             playbook_node,
             open_protocol_handler,
@@ -141,9 +134,14 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         self.digraph = digraph
 
-    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
-        """
-        Build a task
+    def build_task(
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Build a task
         :param task_node:
         :param color:
         :param fontcolor:
@@ -177,11 +175,14 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             labeltooltip=edge_label,
         )
 
-    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
-        """
-
-        :return:
-        """
+    def build_block(
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """:return:"""
         edge_label = f"{block_node.index}"
         digraph = kwargs["digraph"]
 
@@ -199,7 +200,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         # BlockNode is a special node: a cluster is created instead of a normal node
         with digraph.subgraph(
-            name=f"cluster_{block_node.id}"
+            name=f"cluster_{block_node.id}",
         ) as cluster_block_subgraph:
             # block node
             cluster_block_subgraph.node(
@@ -225,12 +226,16 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     digraph=cluster_block_subgraph,
                 )
 
-    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
-        """
-        Render a role in the graph
+    def build_role(
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Render a role in the graph
         :return:
         """
-
         digraph = kwargs["digraph"]
 
         role_edge_label = f"{role_node.index} {role_node.when}"
@@ -263,7 +268,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             role_color = "black"
             fontcolor = "#ffffff"
         else:
-            role_color, fontcolor = list(plays_using_this_role)[0].colors
+            role_color, fontcolor = next(iter(plays_using_this_role)).colors
 
         with digraph.subgraph(name=role_node.name, node_attr={}) as role_subgraph:
             role_subgraph.node(
@@ -286,15 +291,17 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 )
 
     def build_playbook(
-        self, hide_empty_plays: bool = False, hide_plays_without_roles=False, **kwargs
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        **kwargs,
     ) -> str:
-        """
-        Convert the PlaybookNode to the graphviz dot format
+        """Convert the PlaybookNode to the graphviz dot format
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :return: The text representation of the graphviz dot format for the playbook
+        :return: The text representation of the graphviz dot format for the playbook.
         """
-        display.vvv(f"Converting the graph to the dot format for graphviz")
+        display.vvv("Converting the graph to the dot format for graphviz")
         # root node
         self.digraph.node(
             self.playbook_node.id,
@@ -313,10 +320,8 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         return self.digraph.source
 
-    def build_play(self, play_node: PlayNode, **kwargs):
-        """
-
-        :param play_node:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+        """:param play_node:
         :param kwargs:
         :return:
         """

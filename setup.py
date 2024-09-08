@@ -14,31 +14,31 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+from pathlib import Path
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-from ansibleplaybookgrapher import __version__, __prog__
+from ansibleplaybookgrapher import __prog__, __version__
 
 
-def read_requirements(path):
-    """
-    Read requirements file
+def read_requirements(path: str):
+    """Read requirements file
     :param path:
     :type path:
     :return:
     :rtype:
     """
     requirements = []
-    with open(path) as f_r:
-        for l in f_r:
-            requirements.append(l.strip())
+    with Path(path).open() as f_r:
+        for line in f_r:
+            requirements.append(line.strip())
     return requirements
 
 
 install_requires = read_requirements("requirements.txt")
 test_require = read_requirements("tests/requirements_tests.txt")[1:]
 
-with open("README.md") as f:
+with Path("README.md").open() as f:
     long_description = f.read()
 
 # add `pytest-runner` distutils plugin for test;
@@ -50,7 +50,7 @@ if {"pytest", "test", "ptr"}.intersection(sys.argv[1:]):
 setup(
     name=__prog__,
     version=__version__,
-    description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
+    description="A command line tool to create a graph representing your Ansible playbook tasks and roles.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/haidaraM/ansible-playbook-grapher",

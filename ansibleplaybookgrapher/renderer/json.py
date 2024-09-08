@@ -18,16 +18,15 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Optional
 
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    PlaybookNode,
+    PlayNode,
     RoleNode,
     TaskNode,
-    PlayNode,
-    PlaybookNode,
 )
 from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 
@@ -35,16 +34,14 @@ display = Display()
 
 
 class JSONRenderer(Renderer):
-    """
-    A renderer that writes the graph to a JSON file
-    """
+    """A renderer that writes the graph to a JSON file."""
 
     def render(
         self,
-        open_protocol_handler: Optional[str],
-        open_protocol_custom_formats: Optional[Dict[str, str]],
+        open_protocol_handler: str | None,
+        open_protocol_custom_formats: dict[str, str] | None,
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         **kwargs,
@@ -84,7 +81,7 @@ class JSONRenderer(Renderer):
 
 
 class JSONPlaybookBuilder(PlaybookBuilder):
-    def __init__(self, playbook_node: PlaybookNode, open_protocol_handler: str):
+    def __init__(self, playbook_node: PlaybookNode, open_protocol_handler: str) -> None:
         super().__init__(playbook_node, open_protocol_handler)
 
         self.json_output = {}
@@ -95,7 +92,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
-        """
+        """Build a playbook.
 
         :param hide_empty_plays:
         :param hide_plays_without_roles:
@@ -103,7 +100,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         display.vvv(
-            f"Converting the playbook '{self.playbook_node.name}' to JSON format"
+            f"Converting the playbook '{self.playbook_node.name}' to JSON format",
         )
 
         self.json_output = self.playbook_node.to_dict(
@@ -113,44 +110,58 @@ class JSONPlaybookBuilder(PlaybookBuilder):
 
         return json.dumps(self.json_output)
 
-    def build_play(self, play_node: PlayNode, **kwargs):
-        """
-        Not needed
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+        """Not needed.
+
         :param play_node:
         :param kwargs:
         :return:
         """
-        pass
 
-    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
-        """
-        Not needed
+    def build_task(
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Not needed.
+
         :param task_node:
         :param color:
         :param fontcolor:
         :param kwargs:
         :return:
         """
-        pass
 
-    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
-        """
-        Not needed
+    def build_role(
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Not needed.
+
         :param role_node:
         :param color:
         :param fontcolor:
         :param kwargs:
         :return:
         """
-        pass
 
-    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
-        """
-        Not needed
+    def build_block(
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Not needed.
+
         :param block_node:
         :param color:
         :param fontcolor:
         :param kwargs:
         :return:
         """
-        pass

@@ -36,11 +36,12 @@ jobs:
         name: Setup Python ${{ matrix.python-version }}
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install prereqs
         run: |
           pip install -q ansible-core=='${{ matrix.ansible-core-version }}' virtualenv setuptools wheel coveralls
-          pip install -qr tests/requirements_tests.txt
+          pip install -q -r requirements.txt -r tests/requirements_tests.txt
           pip freeze
           sudo apt-get install -yq graphviz
           ansible-galaxy install -r tests/fixtures/requirements.yml
@@ -89,7 +90,7 @@ jobs:
           COVERALLS_PARALLEL: true
 
   coveralls:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Finish coverage
     needs: pytest
     container: python:3-slim # just need a simple python container to finish the coverage

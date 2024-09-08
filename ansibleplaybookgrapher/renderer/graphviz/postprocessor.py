@@ -12,8 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
-from typing import Dict, List
+from pathlib import Path
 
 from ansible.utils.display import Display
 from lxml import etree
@@ -28,35 +27,28 @@ SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
 def _read_data(filename: str) -> str:
-    """
-    Read the script and return is as string
+    """Read the script and return is as string
     :param filename:
     :return:
     """
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    javascript_path = os.path.join(current_dir, "../../data", filename)
+    current_dir = Path(__file__).parent.resolve()
+    javascript_path = current_dir / "../../data" / filename
 
-    with open(javascript_path) as javascript:
+    with javascript_path.open() as javascript:
         return javascript.read()
 
 
 class GraphvizPostProcessor:
-    """
-    Post process the svg by adding some javascript, css and hover effects
-    """
+    """Post process the svg by adding some javascript, css and hover effects."""
 
-    def __init__(self, svg_path: str):
-        """
-        :param svg_path:
-        """
+    def __init__(self, svg_path: str) -> None:
+        """:param svg_path:"""
         self.svg_path = svg_path
         self.tree = etree.parse(svg_path)
         self.root = self.tree.getroot()
 
-    def insert_script_tag(self, index: int, attrib: Dict):
-        """
-
-        :param index:
+    def insert_script_tag(self, index: int, attrib: dict) -> None:
+        """:param index:
         :param attrib:
         :return:
         """
@@ -64,9 +56,8 @@ class GraphvizPostProcessor:
 
         self.root.insert(index, element_script_tag)
 
-    def insert_cdata(self, index: int, tag: str, attrib: Dict, cdata_text: str):
-        """
-        Insert cdata in the SVG
+    def insert_cdata(self, index: int, tag: str, attrib: dict, cdata_text: str) -> None:
+        """Insert cdata in the SVG
         :param index:
         :param tag:
         :param attrib:
@@ -78,10 +69,13 @@ class GraphvizPostProcessor:
 
         self.root.insert(index, element)
 
-    def post_process(self, playbook_nodes: List[PlaybookNode] = None, *args, **kwargs):
-        """
-
-        :param playbook_nodes:
+    def post_process(
+        self,
+        playbook_nodes: list[PlaybookNode] | None = None,
+        *args,
+        **kwargs,
+    ) -> None:
+        """:param playbook_nodes:
         :param args:
         :param kwargs:
         :return:
@@ -90,7 +84,8 @@ class GraphvizPostProcessor:
 
         # insert jquery
         self.insert_script_tag(
-            0, attrib={"type": "text/javascript", "href": JQUERY, "id": "jquery"}
+            0,
+            attrib={"type": "text/javascript", "href": JQUERY, "id": "jquery"},
         )
 
         # insert my javascript
@@ -117,9 +112,8 @@ class GraphvizPostProcessor:
             # Insert the graph representation for the links between the nodes
             self._insert_links(p_node)
 
-    def write(self, output_filename: str = None):
-        """
-        Write the svg in the given filename
+    def write(self, output_filename: str | None = None) -> None:
+        """Write the svg in the given filename
         :param output_filename:
         :return:
         """
@@ -128,10 +122,9 @@ class GraphvizPostProcessor:
 
         self.tree.write(output_filename, xml_declaration=True, encoding="UTF-8")
 
-    def _insert_links(self, playbook_node: PlaybookNode):
-        """
-        Insert the links between nodes in the SVG file.
-        :param playbook_node: one of the playbook in the svg
+    def _insert_links(self, playbook_node: PlaybookNode) -> None:
+        """Insert the links between nodes in the SVG file.
+        :param playbook_node: one of the playbook in the svg.
         """
         display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
         links_structure = playbook_node.links_structure()
@@ -139,7 +132,8 @@ class GraphvizPostProcessor:
         for node, node_links in links_structure.items():
             # Find the group g with the specified id
             xpath_result = self.root.xpath(
-                f"ns:g/*[@id='{node.id}']", namespaces={"ns": SVG_NAMESPACE}
+                f"ns:g/*[@id='{node.id}']",
+                namespaces={"ns": SVG_NAMESPACE},
             )
             if xpath_result:
                 element = xpath_result[0]
@@ -152,14 +146,13 @@ class GraphvizPostProcessor:
                                 "target": link.id,
                                 "edge": f"edge_{counter}_{node.id}_{link.id}",
                             },
-                        )
+                        ),
                     )
 
                 element.append(root_subelement)
 
-    def _get_text_path_start_offset(self, path_element, text: str) -> str:
-        """
-        Get the start offset where the edge label should begin
+    def _get_text_path_start_offset(self, path_element, text: str) -> str:  # noqa: ANN001
+        """Get the start offset where the edge label should begin
         :param path_element:
         :param text:
         :return:
@@ -179,14 +172,14 @@ class GraphvizPostProcessor:
         display.vvvvv(msg)
         return str(start_offset)
 
-    def _curve_text_on_edges(self):
-        """
-        Update the text on each edge to curve it based on the edge
+    def _curve_text_on_edges(self) -> None:
+        """Update the text on each edge to curve it based on the edge
         :return:
         """
         # Fetch all edges
         edge_elements = self.root.xpath(
-            "ns:g/*[starts-with(@id,'edge_')]", namespaces={"ns": SVG_NAMESPACE}
+            "ns:g/*[starts-with(@id,'edge_')]",
+            namespaces={"ns": SVG_NAMESPACE},
         )
 
         for edge in edge_elements:

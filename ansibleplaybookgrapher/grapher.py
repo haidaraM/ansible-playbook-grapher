@@ -13,33 +13,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, List, Set, Tuple
 
 from ansibleplaybookgrapher.graph_model import (
     PlaybookNode,
-    RoleNode,
     PlayNode,
+    RoleNode,
 )
 from ansibleplaybookgrapher.parser import PlaybookParser
 from ansibleplaybookgrapher.utils import merge_dicts
 
 
 class Grapher:
-    def __init__(self, playbook_filenames: List[str]):
-        """
-        :param playbook_filenames: List of playbooks to graph
-        """
+    def __init__(self, playbook_filenames: list[str]) -> None:
+        """:param playbook_filenames: List of playbooks to graph"""
         self.playbook_filenames = playbook_filenames
 
     def parse(
         self,
         include_role_tasks: bool = False,
-        tags: List[str] = None,
-        skip_tags: List[str] = None,
+        tags: list[str] | None = None,
+        skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
-    ) -> Tuple[List[PlaybookNode], Dict[RoleNode, Set[PlayNode]]]:
-        """
-        Parses all the provided playbooks
+    ) -> tuple[list[PlaybookNode], dict[RoleNode, set[PlayNode]]]:
+        """Parses all the provided playbooks
         :param include_role_tasks: Should we include the role tasks
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
@@ -48,7 +44,7 @@ class Grapher:
         value is the set of plays that use the role.
         """
         playbook_nodes = []
-        roles_usage: Dict[RoleNode, Set[PlayNode]] = {}
+        roles_usage: dict[RoleNode, set[PlayNode]] = {}
 
         for counter, playbook_file in enumerate(self.playbook_filenames, 1):
             playbook_parser = PlaybookParser(

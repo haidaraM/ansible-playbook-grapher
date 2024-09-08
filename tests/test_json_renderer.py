@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Tuple, Dict
+from pathlib import Path
 
 import jq
 import pytest
@@ -9,19 +9,18 @@ from jsonschema.validators import Draft202012Validator
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
-from tests import FIXTURES_DIR
+from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 # This file directory abspath
-DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-    playbook_files: List[str],
-    output_filename: str = None,
-    additional_args: List[str] = None,
-) -> Tuple[str, List[str]]:
-    """
-    Utility function to run the grapher
+    playbook_files: list[str],
+    output_filename: str | None = None,
+    additional_args: list[str] | None = None,
+) -> tuple[str, list[str]]:
+    """Utility function to run the grapher
     :param playbook_files:
     :param output_filename:
     :param additional_args:
@@ -34,13 +33,13 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [os.path.join(FIXTURES_DIR, p_file) for p_file in playbook_files]
+    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
     args = [__prog__]
 
     # Clean the name a little bit
     output_filename = output_filename.replace("[", "-").replace("]", "")
     # put the generated file in a dedicated folder
-    args.extend(["-o", os.path.join(DIR_PATH, "generated-jsons", output_filename)])
+    args.extend(["-o", str(DIR_PATH / "generated-jsons" / output_filename)])
 
     args.extend(["--renderer", "json"])
     args.extend(additional_args + playbook_paths)
@@ -59,18 +58,17 @@ def _common_tests(
     roles_number: int = 0,
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
-) -> Dict:
-    """
-    Do some checks on the generated json files.
+) -> dict:
+    """Do some checks on the generated json files.
 
     We are using JQ to avoid traversing the JSON ourselves (much easier).
     :param json_path:
     :return:
     """
-    with open(json_path, "r") as f:
+    with Path(json_path).open() as f:
         output = json.load(f)
 
-    with open(os.path.join(FIXTURES_DIR, "json-schemas/v1.json")) as schema_file:
+    with (FIXTURES_DIR_PATH / "json-schemas/v1.json").open() as schema_file:
         schema = json.load(schema_file)
 
     # If no exception is raised by validate(), the instance is valid.
@@ -85,7 +83,7 @@ def _common_tests(
 
     plays = (
         jq.compile(
-            '.. | objects | select(.type == "PlayNode" and (.id | startswith("play_")))'
+            '.. | objects | select(.type == "PlayNode" and (.id | startswith("play_")))',
         )
         .input(output)
         .all()
@@ -93,21 +91,21 @@ def _common_tests(
 
     pre_tasks = (
         jq.compile(
-            '.. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("pre_task_")))',
         )
         .input(output)
         .all()
     )
     tasks = (
         jq.compile(
-            '.. | objects | select(.type == "TaskNode" and (.id | startswith("task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("task_")))',
         )
         .input(output)
         .all()
     )
     post_tasks = (
         jq.compile(
-            '.. | objects | select(.type == "TaskNode" and (.id | startswith("post_task_")))'
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("post_task_")))',
         )
         .input(output)
         .all()
@@ -115,7 +113,7 @@ def _common_tests(
 
     roles = (
         jq.compile(
-            '.. | objects | select(.type == "RoleNode" and (.id | startswith("role_")))'
+            '.. | objects | select(.type == "RoleNode" and (.id | startswith("role_")))',
         )
         .input(output)
         .all()
@@ -123,7 +121,7 @@ def _common_tests(
 
     blocks = (
         jq.compile(
-            '.. | objects | select(.type == "BlockNode" and (.id | startswith("block_")))'
+            '.. | objects | select(.type == "BlockNode" and (.id | startswith("block_")))',
         )
         .input(output)
         .all()
@@ -173,34 +171,28 @@ def _common_tests(
     }
 
 
-def test_simple_playbook(request):
-    """
-
-    :return:
-    """
+def test_simple_playbook(request: pytest.FixtureRequest) -> None:
+    """:return:"""
     json_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
+            str(INVENTORY_PATH),
             "--include-role-tasks",
         ],
     )
     _common_tests(json_path, plays_number=1, post_tasks_number=2)
 
 
-def test_with_block(request):
-    """
-
-    :return:
-    """
+def test_with_block(request: pytest.FixtureRequest) -> None:
+    """:return:"""
     json_path, playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
         additional_args=[
             "-i",
-            os.path.join(FIXTURES_DIR, "inventory"),
+            str(INVENTORY_PATH),
             "--include-role-tasks",
         ],
     )
@@ -216,15 +208,18 @@ def test_with_block(request):
 
 
 @pytest.mark.parametrize(
-    ["flag", "roles_number", "tasks_number", "post_tasks_number"],
+    ("flag", "roles_number", "tasks_number", "post_tasks_number"),
     [("--", 6, 9, 8), ("--group-roles-by-name", 6, 9, 8)],
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request, flag, roles_number, tasks_number, post_tasks_number
-):
-    """
-    Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
+    request: pytest.FixtureRequest,
+    flag: str,
+    roles_number: int,
+    tasks_number: int,
+    post_tasks_number: int,
+) -> None:
+    """Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
     This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.
     :param request:
     :return:
@@ -245,10 +240,8 @@ def test_group_roles_by_name(
     )
 
 
-def test_multi_playbooks(request):
-    """
-
-    :param request:
+def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
+    """:param request:
     :return:
     """
     json_path, playbook_paths = run_grapher(

@@ -1,4 +1,4 @@
-name: Lint
+name: Format and lint
 
 on:
   push:
@@ -6,11 +6,15 @@ on:
       - main
     paths:
       - '**.py'
+      - ruff.toml
+      - tests/requirements_tests.txt
   pull_request:
     branches:
       - main
     paths:
       - '**.py'
+      - ruff.toml
+      - tests/requirements_tests.txt
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,16 +24,22 @@ permissions:
   contents: write
 
 jobs:
-  black:
+  ruff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: psf/black@stable
+      - uses: actions/setup-python@v5
+        name: Setup Python 3.11
         with:
-          version: "~= 24.0" # https://black.readthedocs.io/en/stable/integrations/github_actions.html
-          options: ""
+          python-version: 3.11
+          cache: pip
+          cache-dependency-path: tests/requirements_tests.txt
+
+      - run: pip install -q -r tests/requirements_tests.txt
+
+      - run: make lint
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Autoformat code using black
+          commit_message: Auto lint and format using ruff

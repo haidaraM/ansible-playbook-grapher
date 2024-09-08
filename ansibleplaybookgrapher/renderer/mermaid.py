@@ -13,21 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from pathlib import Path
 import json
+import webbrowser
 import zlib
 from base64 import urlsafe_b64encode
-import webbrowser
-from typing import Dict, Set, List
+from pathlib import Path
 
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    PlaybookNode,
+    PlayNode,
     RoleNode,
     TaskNode,
-    PlayNode,
-    PlaybookNode,
 )
 from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
 
@@ -43,16 +42,16 @@ class MermaidFlowChartRenderer(Renderer):
     def render(
         self,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
+        open_protocol_custom_formats: dict[str, str],
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
     ) -> str:
-        """
+        """Render the graph to a Mermaid flow chart format.
 
         :param open_protocol_handler: Not supported for the moment
         :param open_protocol_custom_formats: Not supported for the moment
@@ -106,7 +105,8 @@ class MermaidFlowChartRenderer(Renderer):
         final_output_path_file.write_text(mermaid_code)
 
         display.display(
-            f"Mermaid code written to {final_output_path_file}", color="green"
+            f"Mermaid code written to {final_output_path_file}",
+            color="green",
         )
 
         if view:
@@ -115,9 +115,8 @@ class MermaidFlowChartRenderer(Renderer):
         return str(final_output_path_file)
 
     @staticmethod
-    def view(mermaid_code: str):
-        """
-        View the mermaid code in the browser using https://mermaid.live/
+    def view(mermaid_code: str) -> None:
+        """View the mermaid code in the browser using https://mermaid.live/.
 
         This is based on:
           - https://github.com/mermaid-js/mermaid-live-editor/blob/b5978e6faf7635e39452855fb4d062d1452ab71b/src/lib/util/serde.ts#L19-L29
@@ -140,20 +139,22 @@ class MermaidFlowChartRenderer(Renderer):
 
         display.vvv(f"Mermaid live editor URL: {url}")
 
-        # Display url using the default browser in a new tag
+        # Open the url using the default browser in a new tab.
         webbrowser.open(url, new=2)
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
+    """ """
+
     def __init__(
         self,
         playbook_node: PlaybookNode,
         open_protocol_handler: str,
-        open_protocol_custom_formats: Dict[str, str],
-        roles_usage: Dict[RoleNode, Set[PlayNode]],
-        roles_built: Set[RoleNode],
+        open_protocol_custom_formats: dict[str, str],
+        roles_usage: dict[RoleNode, set[PlayNode]],
+        roles_built: set[RoleNode],
         link_order: int = 0,
-    ):
+    ) -> None:
         super().__init__(
             playbook_node,
             open_protocol_handler,
@@ -171,11 +172,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     def build_playbook(
         self,
         hide_empty_plays: bool = False,
-        hide_plays_without_roles=False,
-        **kwargs: bool,
+        hide_plays_without_roles: bool = False,
+        **kwargs,
     ) -> str:
-        """
-        Build the playbook
+        """Build a playbook.
+
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param hide_empty_plays: Whether to hide empty plays or not
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
@@ -183,7 +184,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         display.vvv(
-            f"Converting the playbook '{self.playbook_node.name}' to mermaid format"
+            f"Converting the playbook '{self.playbook_node.name}' to mermaid format",
         )
 
         # Playbook node
@@ -202,8 +203,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         return self.mermaid_code
 
-    def build_play(self, play_node: PlayNode, **kwargs):
-        """
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+        """Build a play.
 
         :param play_node:
         :param kwargs:
@@ -231,8 +232,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self.add_comment(f"End of the play '{play_node.name}'")
 
-    def build_task(self, task_node: TaskNode, color: str, fontcolor: str, **kwargs):
-        """
+    def build_task(
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Build a task.
 
         :param task_node:
         :param color:
@@ -254,8 +261,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=f"stroke:{color},color:{color}",
         )
 
-    def build_role(self, role_node: RoleNode, color: str, fontcolor: str, **kwargs):
-        """
+    def build_role(
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Build a role.
 
         :param role_node:
         :param color:
@@ -288,7 +301,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         # Role node
         self.add_text(f'{role_node.id}("[role] {role_node.name}")')
         self.add_text(
-            f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}"
+            f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )
 
         # Role tasks
@@ -303,8 +316,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self.add_comment(f"End of the role '{role_node.name}'")
 
-    def build_block(self, block_node: BlockNode, color: str, fontcolor: str, **kwargs):
-        """
+    def build_block(
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
+    ) -> None:
+        """Build a block.
 
         :param block_node:
         :param color:
@@ -312,12 +331,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-
         # Block node
         self.add_comment(f"Start of the block '{block_node.name}'")
         self.add_text(f'{block_node.id}["[block] {block_node.name}"]')
         self.add_text(
-            f"style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}"
+            f"style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}",
         )
 
         # from parent to block
@@ -349,9 +367,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         dest_id: str,
         style: str = "",
         link_type: str = "--",
-    ):
-        """
-        Add link between two nodes
+    ) -> None:
+        """Add link between two nodes.
+
         :param source_id: The link source
         :param text: The text on the link
         :param dest_id: The link destination
@@ -368,17 +386,17 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self.link_order += 1
 
-    def add_comment(self, text: str):
-        """
-        Add a comment to the mermaid code
+    def add_comment(self, text: str) -> None:
+        """Add a comment to the mermaid code.
+
         :param text: The text used as a comment
         :return:
         """
         self.mermaid_code += f"{self.indentation}%% {text}\n"
 
-    def add_text(self, text: str):
-        """
-        Add a text to the mermaid diagram
+    def add_text(self, text: str) -> None:
+        """Add a text to the mermaid diagram.
+
         :param text:
         :return:
         """
@@ -386,8 +404,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     @property
     def indentation(self) -> str:
-        """
-        Return the current indentation level as tabulations
+        """Return the current indentation level as tabulations.
+
         :return:
         """
         return "\t" * self._indentation_level

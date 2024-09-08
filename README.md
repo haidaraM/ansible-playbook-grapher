@@ -472,12 +472,12 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley:
 
-### Dev environment
+### Local development
 
-To setup a new development environment :
+To setup a new local development environment :
 
 - Install graphviz (see above)
-- (cd tests && pip install -r requirements_tests.txt)
+- pip install -r requirements.txt -r tests/requirements_tests.txt
 
 Run the tests and open the generated files in your system’s default viewer application:
 
