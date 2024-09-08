@@ -2,7 +2,6 @@ from _elementtree import Element
 
 import pytest
 from lxml import etree
-from pytest import FixtureRequest
 
 from ansibleplaybookgrapher.graph_model import PlaybookNode, PlayNode, TaskNode
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import (
@@ -15,7 +14,9 @@ SIMPLE_PLAYBOOK_SVG = FIXTURES_DIR_PATH / "simple_playbook_no_postproccess.svg"
 
 
 @pytest.fixture(name="post_processor")
-def fixture_simple_postprocessor(request: FixtureRequest) -> GraphvizPostProcessor:
+def fixture_simple_postprocessor(
+    request: pytest.FixtureRequest,
+) -> GraphvizPostProcessor:
     """Return a post processor without a graph structure and with the simple_playbook_no_postproccess
     :return:
     """

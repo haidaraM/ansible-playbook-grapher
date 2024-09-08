@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import pytest
-from pytest import FixtureRequest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -97,7 +96,7 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
         "with_roles.yml",
     ],
 )
-def test_playbooks(request: FixtureRequest, playbook_file: str) -> None:
+def test_playbooks(request: pytest.FixtureRequest, playbook_file: str) -> None:
     """Test the renderer with a single playbook."""
     mermaid_path, playbook_paths = run_grapher(
         [playbook_file],
@@ -109,7 +108,7 @@ def test_playbooks(request: FixtureRequest, playbook_file: str) -> None:
     _common_tests(mermaid_path, playbook_paths)
 
 
-def test_multiple_playbooks(request: FixtureRequest) -> None:
+def test_multiple_playbooks(request: pytest.FixtureRequest) -> None:
     """Test the renderer with multiple playbooks in a single graph."""
     mermaid_path, playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],

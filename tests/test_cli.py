@@ -1,14 +1,13 @@
 import pytest
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
-from pytest import CaptureFixture
 
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
-def test_cli_help(help_option: str, capfd: CaptureFixture) -> None:
+def test_cli_help(help_option: str, capfd: pytest.CaptureFixture) -> None:
     """Test for the help option : -h, --help
     :param help_option:
     :param capfd:
@@ -26,7 +25,7 @@ def test_cli_help(help_option: str, capfd: CaptureFixture) -> None:
     assert "Make graphs from your Ansible Playbooks." in out
 
 
-def test_cli_version(capfd: CaptureFixture) -> None:
+def test_cli_version(capfd: pytest.CaptureFixture) -> None:
     """Test version printing
     :return:
     """
@@ -101,7 +100,8 @@ def test_cli_output_filename_multiple_playbooks() -> None:
     ids=["default", "include"],
 )
 def test_cli_include_role_tasks(
-    include_role_tasks_option: list[str], expected: bool
+    include_role_tasks_option: list[str],
+    expected: bool,
 ) -> None:
     """Test for the include role tasks option: --include-role-tasks
     :param include_role_tasks_option:
@@ -261,7 +261,7 @@ def test_cli_open_protocol_custom_formats_not_provided() -> None:
 def test_cli_open_protocol_custom_formats_invalid_inputs(
     protocol_format: str,
     expected_message: str,
-    capsys: CaptureFixture,
+    capsys: pytest.CaptureFixture,
 ) -> None:
     """The custom formats must be a valid json data
     :return:

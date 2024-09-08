@@ -1,6 +1,5 @@
 import pytest
 from ansible.utils.display import Display
-from pytest import CaptureFixture
 
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph_model import (
@@ -108,7 +107,8 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
 def test_include_role_parsing(
-    grapher_cli: PlaybookGrapherCLI, capsys: CaptureFixture
+    grapher_cli: PlaybookGrapherCLI,
+    capsys: pytest.CaptureFixture,
 ) -> None:
     """Test parsing of include_role
     :param grapher_cli:

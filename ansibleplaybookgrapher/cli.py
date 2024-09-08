@@ -16,8 +16,8 @@ import json
 import ntpath
 import sys
 from argparse import Namespace
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
@@ -260,7 +260,10 @@ class PlaybookGrapherCLI(CLI):
         option_helpers.add_runtask_options(self.parser)
 
     def init_parser(
-        self, usage: str | None = "", desc: str | None = None, epilog: str | None = None
+        self,
+        usage: str | None = "",
+        desc: str | None = None,
+        epilog: str | None = None,
     ) -> None:
         super().init_parser(
             usage=f"{__prog__} [options] playbook.yml",

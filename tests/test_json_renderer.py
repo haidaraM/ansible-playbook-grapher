@@ -6,7 +6,6 @@ import jq
 import pytest
 from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
-from pytest import FixtureRequest
 
 from ansibleplaybookgrapher import __prog__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
@@ -172,7 +171,7 @@ def _common_tests(
     }
 
 
-def test_simple_playbook(request: FixtureRequest) -> None:
+def test_simple_playbook(request: pytest.FixtureRequest) -> None:
     """:return:"""
     json_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
@@ -186,7 +185,7 @@ def test_simple_playbook(request: FixtureRequest) -> None:
     _common_tests(json_path, plays_number=1, post_tasks_number=2)
 
 
-def test_with_block(request: FixtureRequest) -> None:
+def test_with_block(request: pytest.FixtureRequest) -> None:
     """:return:"""
     json_path, playbook_paths = run_grapher(
         ["with_block.yml"],
@@ -214,7 +213,7 @@ def test_with_block(request: FixtureRequest) -> None:
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request: FixtureRequest,
+    request: pytest.FixtureRequest,
     flag: str,
     roles_number: int,
     tasks_number: int,
@@ -241,7 +240,7 @@ def test_group_roles_by_name(
     )
 
 
-def test_multi_playbooks(request: FixtureRequest) -> None:
+def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
     """:param request:
     :return:
     """
