@@ -35,7 +35,8 @@ display = Display()
 
 
 def convert_when_to_str(when: list) -> str:
-    """Convert ansible conditional when to str
+    """Convert ansible conditional when to str.
+
     :param when:
     :return:
     """
@@ -48,11 +49,11 @@ def convert_when_to_str(when: list) -> str:
 
 
 def hash_value(value: str) -> str:
-    """Convert name to md5 to avoid issues with special chars,
+    """Convert name to md5 to avoid issues with special chars.
+
     The ID are not visible to end user in web/rendered graph so we do
     not have to care to make them look pretty.
-    There are chances for hash collisions, but we do not care for that
-    so much in here.
+    There are chances for hash collisions, but we do not care for that so much in here.
     :param value: string which represents id
     :return: string representing a hex hash.
     """
@@ -62,18 +63,18 @@ def hash_value(value: str) -> str:
 
 
 def generate_id(prefix: str = "") -> str:
-    """Generate an uuid to be used as id
+    """Generate an uuid to be used as id.
+
     :param prefix: Prefix to add to the generated ID.
     """
     return prefix + str(uuid.uuid4())[:8]
 
 
 def clean_name(name: str):
-    """Clean a name for the node, edge...
-    Because every name we use is double quoted,
-    then we just have to convert double quotes to html special char
-    See https://www.graphviz.org/doc/info/lang.html on the bottom.
+    """Clean a name for the node, edge.
 
+    Because every name we use is double-quoted, we just have to convert the double quotes to html special char.
+    See https://www.graphviz.org/doc/info/lang.html at the bottom of the page.
     :param name: pretty name of the object
     :return: string with double quotes converted to html special char
     """
@@ -81,7 +82,8 @@ def clean_name(name: str):
 
 
 def get_play_colors(play_id: str) -> tuple[str, str]:
-    """Generate two colors (in hex) for a given play: the main color and the color to use as a font color
+    """Generate two colors (in hex) for a given play: the main color and the color to use as a font color.
+
     :param play_id
     :return: The main color and the font color.
     """
