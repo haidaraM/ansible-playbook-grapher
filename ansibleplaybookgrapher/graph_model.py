@@ -64,9 +64,7 @@ class Node:
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
-        """
-
-        :param node_name: The name of the node
+        """:param node_name: The name of the node
         :param node_id: An identifier for this node
         :param when: The conditional attached to the node
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
@@ -548,9 +546,7 @@ class TaskNode(LoopMixin, Node):
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
-        """
-
-        :param node_name:
+        """:param node_name:
         :param node_id:
         :param raw_object:
         """

@@ -1,9 +1,9 @@
 import json
 import os
-from _elementtree import Element
 from pathlib import Path
 
 import pytest
+from _elementtree import Element
 from pyquery import PyQuery
 
 from ansibleplaybookgrapher import __prog__

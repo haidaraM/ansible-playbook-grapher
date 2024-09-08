@@ -51,7 +51,9 @@ class MermaidFlowChartRenderer(Renderer):
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
     ) -> str:
-        """:param open_protocol_handler: Not supported for the moment
+        """Render the graph to a Mermaid flow chart format.
+
+        :param open_protocol_handler: Not supported for the moment
         :param open_protocol_custom_formats: Not supported for the moment
         :param output_filename: The output filename without any extension
         :param view: Not supported for the moment

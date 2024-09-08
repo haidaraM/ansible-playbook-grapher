@@ -65,7 +65,7 @@ def _init_ansible_plugin_loader() -> None:
     init_plugin_loader()
 
 
-@pytest.fixture
+@pytest.fixture()
 def grapher_cli(request: pytest.FixtureRequest) -> PlaybookGrapherCLI:
     """Because Ansible is not designed to be used as a library, we need the CLI everywhere.
 
