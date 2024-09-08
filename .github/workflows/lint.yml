@@ -6,11 +6,15 @@ on:
       - main
     paths:
       - '**.py'
+      - ruff.toml
+      - tests/requirements_tests.txt
   pull_request:
     branches:
       - main
     paths:
       - '**.py'
+      - ruff.toml
+      - tests/requirements_tests.txt
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
