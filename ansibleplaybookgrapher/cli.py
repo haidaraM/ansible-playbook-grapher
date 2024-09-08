@@ -265,6 +265,13 @@ class PlaybookGrapherCLI(CLI):
         desc: str | None = None,
         epilog: str | None = None,
     ) -> None:
+        """Create an options parser for the grapher.
+
+        :param usage:
+        :param desc:
+        :param epilog:
+        :return:
+        """
         super().init_parser(
             usage=f"{__prog__} [options] playbook.yml",
             desc="Make graphs from your Ansible Playbooks.",
@@ -273,7 +280,7 @@ class PlaybookGrapherCLI(CLI):
 
         self._add_my_options()
 
-    def post_process_args(self, options: Namespace):
+    def post_process_args(self, options: Namespace) -> Namespace:
         options = super().post_process_args(options)
 
         # init the options

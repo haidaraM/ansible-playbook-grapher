@@ -346,7 +346,7 @@ def test_roles_usage_single_play(
 
 @pytest.mark.parametrize("grapher_cli", [["roles_dependencies.yml"]], indirect=True)
 def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
-    """Test if the role dependencies in meta/main.yml are included in the graph
+    """Test if the role dependencies in meta/main.yml are included in the graph.
     :return:
     """
     parser = PlaybookParser(

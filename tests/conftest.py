@@ -11,7 +11,7 @@ from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 @pytest.fixture(name="data_loader")
 def fixture_data_loader() -> DataLoader:
-    """Return an Ansible  DataLoader
+    """Return an Ansible  DataLoader.
     :return:
     """
     from ansible.parsing.dataloader import DataLoader
@@ -21,7 +21,7 @@ def fixture_data_loader() -> DataLoader:
 
 @pytest.fixture(name="inventory_manager")
 def fixture_inventory_manager(data_loader: DataLoader) -> InventoryManager:
-    """Return an Ansible  InventoryManager
+    """Return an Ansible  InventoryManager.
     :return:
     """
     from ansible.inventory.manager import InventoryManager
@@ -34,7 +34,7 @@ def fixture_variable_manager(
     data_loader: DataLoader,
     inventory_manager: InventoryManager,
 ) -> VariableManager:
-    """Return an Ansible  VariableManager
+    """Return an Ansible  VariableManager.
     :return:
     """
     from ansible.vars.manager import VariableManager
@@ -44,7 +44,7 @@ def fixture_variable_manager(
 
 @pytest.fixture(scope="session", autouse=True)
 def display():
-    """Return a display
+    """Return a display.
     :return:
     """
     from ansible.utils.display import Display
@@ -56,7 +56,8 @@ def display():
 
 @pytest.fixture(scope="session", autouse=True)
 def _init_ansible_plugin_loader() -> None:
-    """Init the Ansible plugin loader responsible to find the collections and stuff
+    """Init the Ansible plugin loader responsible to find the collections and stuff.
+
     This init plugin is called in CLI.run but here we are not using that.
     It was called automatically in ansible-core < 2.15 but changed in https://github.com/ansible/ansible/pull/78915
     :return:
@@ -66,8 +67,9 @@ def _init_ansible_plugin_loader() -> None:
 
 @pytest.fixture
 def grapher_cli(request: pytest.FixtureRequest) -> PlaybookGrapherCLI:
-    """Because Ansible is not designed to be used as a library, we need the CLI everywhere. The CLI is the main entrypoint
-    of Ansible, and it sets some global variables that are needed by some classes and methods.
+    """Because Ansible is not designed to be used as a library, we need the CLI everywhere.
+
+    The CLI is the main entrypoint of Ansible, and it sets some global variables that are needed by some classes and methods.
     See this commit: https://github.com/ansible/ansible/commit/afdbb0d9d5bebb91f632f0d4a1364de5393ba17a
     As such, this fixture is just used to init this global context
     :return:

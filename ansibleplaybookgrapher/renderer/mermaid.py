@@ -44,7 +44,7 @@ class MermaidFlowChartRenderer(Renderer):
         open_protocol_handler: str,
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
@@ -137,11 +137,13 @@ class MermaidFlowChartRenderer(Renderer):
 
         display.vvv(f"Mermaid live editor URL: {url}")
 
-        # Display url using the default browser in a new tag
+        # Open the url using the default browser in a new tab.
         webbrowser.open(url, new=2)
 
 
 class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
+    """ """
+
     def __init__(
         self,
         playbook_node: PlaybookNode,
@@ -169,9 +171,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
-        **kwargs: bool,
+        **kwargs,
     ) -> str:
-        """Build the playbook
+        """Build a playbook.
+
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param hide_empty_plays: Whether to hide empty plays or not
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
@@ -199,7 +202,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         return self.mermaid_code
 
     def build_play(self, play_node: PlayNode, **kwargs) -> None:
-        """:param play_node:
+        """Build a play.
+
+        :param play_node:
         :param kwargs:
         :return:
         """
@@ -232,7 +237,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """:param task_node:
+        """Build a task.
+
+        :param task_node:
         :param color:
         :param fontcolor:
         :param kwargs:
@@ -259,7 +266,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """:param role_node:
+        """Build a role.
+
+        :param role_node:
         :param color:
         :param fontcolor:
         :param kwargs:
@@ -312,7 +321,9 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """:param block_node:
+        """Build a block.
+
+        :param block_node:
         :param color:
         :param fontcolor:
         :param kwargs:
@@ -355,7 +366,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         style: str = "",
         link_type: str = "--",
     ) -> None:
-        """Add link between two nodes
+        """Add link between two nodes.
+
         :param source_id: The link source
         :param text: The text on the link
         :param dest_id: The link destination
@@ -373,14 +385,16 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.link_order += 1
 
     def add_comment(self, text: str) -> None:
-        """Add a comment to the mermaid code
+        """Add a comment to the mermaid code.
+
         :param text: The text used as a comment
         :return:
         """
         self.mermaid_code += f"{self.indentation}%% {text}\n"
 
     def add_text(self, text: str) -> None:
-        """Add a text to the mermaid diagram
+        """Add a text to the mermaid diagram.
+
         :param text:
         :return:
         """
@@ -388,7 +402,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     @property
     def indentation(self) -> str:
-        """Return the current indentation level as tabulations
+        """Return the current indentation level as tabulations.
+
         :return:
         """
         return "\t" * self._indentation_level

@@ -51,7 +51,7 @@ class GraphvizRenderer(Renderer):
         open_protocol_handler: str,
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         **kwargs,

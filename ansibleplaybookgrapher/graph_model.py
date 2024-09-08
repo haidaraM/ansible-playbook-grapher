@@ -64,7 +64,9 @@ class Node:
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
-        """:param node_name: The name of the node
+        """
+
+        :param node_name: The name of the node
         :param node_id: An identifier for this node
         :param when: The conditional attached to the node
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
@@ -84,7 +86,8 @@ class Node:
         self.index: int | None = index
 
     def set_location(self) -> None:
-        """Set the location of this node based on the raw object. Not all objects have path
+        """Set the location of this node based on the raw object. Not all objects have path.
+
         :return:
         """
         if self.raw_object and self.raw_object.get_ds():
@@ -98,7 +101,8 @@ class Node:
             )
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
-        """Get the first parent of this node matching the given type
+        """Get the first parent of this node matching the given type.
+
         :param node_type: The type of the parent to get
         :return:
         """
@@ -127,6 +131,7 @@ class Node:
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this node. This representation is not meant to get the original object
         back.
+
         :return:
         """
         data = {
@@ -163,7 +168,9 @@ class CompositeNode(Node):
         index: int | None = None,
         supported_compositions: list[str] | None = None,
     ) -> None:
-        """:param node_name:
+        """Init a composite node.
+
+        :param node_name:
         :param node_id:
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
@@ -184,14 +191,15 @@ class CompositeNode(Node):
         self._node_counter = 0
 
     def add_node(self, target_composition: str, node: Node) -> None:
-        """Add a node in the target composition
+        """Add a node in the target composition.
+
         :param target_composition: The name of the target composition
         :param node: The node to add in the given composition
         :return:
         """
         if target_composition not in self._supported_compositions:
             msg = f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
-            raise Exception(
+            raise ValueError(
                 msg,
             )
         self._compositions[target_composition].append(node)
@@ -200,7 +208,8 @@ class CompositeNode(Node):
         self._node_counter += 1
 
     def get_nodes(self, target_composition: str) -> list:
-        """Get a node from the compositions
+        """Get a node from the compositions.
+
         :param target_composition:
         :return: A list of the nodes.
         """
@@ -213,7 +222,8 @@ class CompositeNode(Node):
         return self._compositions[target_composition]
 
     def get_all_tasks(self) -> list["TaskNode"]:
-        """Return all the TaskNode inside this composite node
+        """Return all the TaskNode inside this composite node.
+
         :return:
         """
         tasks: list[TaskNode] = []
@@ -221,7 +231,8 @@ class CompositeNode(Node):
         return tasks
 
     def _get_all_tasks_nodes(self, task_acc: list["Node"]) -> None:
-        """Recursively get all tasks
+        """Recursively get all tasks.
+
         :param task_acc:
         :return:
         """
@@ -235,7 +246,8 @@ class CompositeNode(Node):
 
     def links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
-         value is the list of the linked nodes
+         value is the list of the linked nodes.
+
         :return:
         """
         links: dict[Node, list[Node]] = defaultdict(list)
@@ -243,7 +255,8 @@ class CompositeNode(Node):
         return links
 
     def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
-        """Recursively get the node links
+        """Recursively get the node links.
+
         :return:
         """
         for nodes in self._compositions.values():
@@ -253,13 +266,15 @@ class CompositeNode(Node):
                 links[self].append(node)
 
     def is_empty(self) -> bool:
-        """Returns true if the composite node is empty, false otherwise
+        """Return true if the composite node is empty, false otherwise.
+
         :return:
         """
         return all(len(nodes) <= 0 for _, nodes in self._compositions.items())
 
     def has_node_type(self, node_type: type) -> bool:
-        """Returns true if the composite node has at least one node of the given type, false otherwise
+        """Return true if the composite node has at least one node of the given type, false otherwise.
+
         :param node_type: The type of the node
         :return:
         """
@@ -276,6 +291,7 @@ class CompositeNode(Node):
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
+
         :return:
         """
         node_dict = super().to_dict(**kwargs)
@@ -313,7 +329,8 @@ class CompositeTasksNode(CompositeNode):
         self._supported_compositions = ["tasks"]
 
     def add_node(self, target_composition: str, node: Node) -> None:
-        """Override the add_node because block only contains "tasks" regardless of the context (pre_tasks or post_tasks)
+        """Override the add_node because block only contains "tasks" regardless of the context (pre_tasks or post_tasks).
+
         :param target_composition: This is ignored. It's always "tasks" for block
         :param node:
         :return:
@@ -322,7 +339,8 @@ class CompositeTasksNode(CompositeNode):
 
     @property
     def tasks(self) -> list[Node]:
-        """The tasks attached to this block
+        """The tasks attached to this block.
+
         :return:
         """
         return self.get_nodes("tasks")
@@ -365,7 +383,8 @@ class PlaybookNode(CompositeNode):
         exclude_empty: bool = False,
         exclude_without_roles: bool = False,
     ) -> list["PlayNode"]:
-        """Return the list of plays
+        """Return the list of plays.
+
         :param exclude_empty: Whether to exclude the empty plays from the result or not
         :param exclude_without_roles: Whether to exclude the plays that do not have roles
         :return:
@@ -381,7 +400,8 @@ class PlaybookNode(CompositeNode):
         return plays
 
     def roles_usage(self) -> dict["RoleNode", set["PlayNode"]]:
-        """For each role in the playbook, get the uniq plays that reference the role
+        """For each role in the playbook, get the uniq plays that reference the role.
+
         :return: A dict with key as role node and value the list of uniq plays that use it.
         """
         usages = defaultdict(set)
@@ -405,7 +425,8 @@ class PlaybookNode(CompositeNode):
         exclude_plays_without_roles: bool = False,
         **kwargs,
     ) -> dict:
-        """Return a dictionary representation of this playbook
+        """Return a dictionary representation of this playbook.
+
         :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
         :param kwargs:
@@ -442,7 +463,9 @@ class PlayNode(CompositeNode):
         index: int | None = None,
         hosts: list[str] | None = None,
     ) -> None:
-        """:param node_name:
+        """
+
+        :param node_name:
         :param node_id:
         :param hosts: List of hosts attached to the play
         """
@@ -461,6 +484,7 @@ class PlayNode(CompositeNode):
     @property
     def roles(self) -> list["RoleNode"]:
         """Return the roles of the plays. Tasks using "include_role" are NOT returned.
+
         :return:
         """
         return self.get_nodes("roles")
@@ -480,6 +504,7 @@ class PlayNode(CompositeNode):
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
+
         :return:
         """
         data = super().to_dict(**kwargs)
@@ -523,7 +548,9 @@ class TaskNode(LoopMixin, Node):
         parent: "Node" = None,
         index: int | None = None,
     ) -> None:
-        """:param node_name:
+        """
+
+        :param node_name:
         :param node_id:
         :param raw_object:
         """
@@ -550,7 +577,9 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         index: int | None = None,
         include_role: bool = False,
     ) -> None:
-        """:param node_name:
+        """
+
+        :param node_name:
         :param node_id:
         :param raw_object:
         """
@@ -565,7 +594,8 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         )
 
     def set_location(self) -> None:
-        """Retrieve the position depending on whether it's an include_role or not
+        """Retrieve the position depending on whether it's an include_role or not.
+
         :return:
         """
         if self.raw_object and not self.include_role:
@@ -586,6 +616,7 @@ class RoleNode(LoopMixin, CompositeTasksNode):
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
+
         :param kwargs:
         :return:
         """

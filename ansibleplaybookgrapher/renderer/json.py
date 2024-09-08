@@ -41,7 +41,7 @@ class JSONRenderer(Renderer):
         open_protocol_handler: str | None,
         open_protocol_custom_formats: dict[str, str] | None,
         output_filename: str,
-        view: bool,
+        view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         **kwargs,
@@ -92,7 +92,9 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         hide_plays_without_roles: bool = False,
         **kwargs,
     ) -> str:
-        """:param hide_empty_plays:
+        """Build a playbook.
+
+        :param hide_empty_plays:
         :param hide_plays_without_roles:
         :param kwargs:
         :return:
@@ -109,7 +111,8 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         return json.dumps(self.json_output)
 
     def build_play(self, play_node: PlayNode, **kwargs) -> None:
-        """Not needed
+        """Not needed.
+
         :param play_node:
         :param kwargs:
         :return:
@@ -122,7 +125,8 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """Not needed
+        """Not needed.
+
         :param task_node:
         :param color:
         :param fontcolor:
@@ -137,7 +141,8 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """Not needed
+        """Not needed.
+
         :param role_node:
         :param color:
         :param fontcolor:
@@ -152,7 +157,8 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """Not needed
+        """Not needed.
+
         :param block_node:
         :param color:
         :param fontcolor:

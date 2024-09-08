@@ -50,7 +50,7 @@ if {"pytest", "test", "ptr"}.intersection(sys.argv[1:]):
 setup(
     name=__prog__,
     version=__version__,
-    description="A command line tool to create a graph representing your Ansible playbook tasks and roles",
+    description="A command line tool to create a graph representing your Ansible playbook tasks and roles.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/haidaraM/ansible-playbook-grapher",
