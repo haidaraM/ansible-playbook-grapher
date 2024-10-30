@@ -1,0 +1,8 @@
+---
+- name: ansible_architecture
+  debug:
+    var: ansible_architecture
+
+- name: ansible_date_time
+  debug:
+    var: ansible_date_time

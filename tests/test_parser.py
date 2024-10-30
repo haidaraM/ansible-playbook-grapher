@@ -369,3 +369,29 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
         assert (
             dependant_role_name in task_from_dependency.name
         ), f"The task name should include the dependant role name '{dependant_role_name}'"
+
+
+@pytest.mark.parametrize(
+    "grapher_cli", [["roles_argument_validation.yml"]], indirect=True
+)
+def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test if task automatically added by ansible when setting the argument validation is parsed
+
+    More info at https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html#role-argument-validation
+
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbook_filenames[0],
+        include_role_tasks=True,
+    )
+    playbook_node = parser.parse()
+    roles = playbook_node.plays()[0].roles
+    assert len(roles) == 1, "Only one explicit role is called inside the playbook"
+    role_with_dependencies = roles[0]
+    tasks = role_with_dependencies.tasks
+
+    expected_tasks = 1 + 2  # 1 validation task added by ansible and 2 tasks in the role
+    assert (
+        len(tasks) == expected_tasks
+    ), f"There should be {expected_tasks} tasks in the graph"

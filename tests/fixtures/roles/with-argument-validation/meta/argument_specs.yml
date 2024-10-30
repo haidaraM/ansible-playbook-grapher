@@ -1,0 +1,6 @@
+argument_specs:
+  # tests/fixtures/roles/with-argument-validation/tasks/main.yml
+  main:
+    short_description: Entry point for my role
+    author:
+      - Mohamed El Mouctar HAIDARA
