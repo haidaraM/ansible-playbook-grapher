@@ -88,15 +88,20 @@ class Node:
 
         :return:
         """
+
         if self.raw_object and self.raw_object.get_ds():
-            path, line, column = self.raw_object.get_ds().ansible_pos
-            # By default, it's a file
-            self.location = NodeLocation(
-                type="file",
-                path=path,
-                line=line,
-                column=column,
-            )
+            if hasattr(self.raw_object.get_ds(), "ansible_pos"):
+                path, line, column = self.raw_object.get_ds().ansible_pos
+                # By default, it's a file
+                self.location = NodeLocation(
+                    type="file",
+                    path=path,
+                    line=line,
+                    column=column,
+                )
+            else:
+                # Here we likely have a task a validate argument spec task inserted by Ansible
+                pass
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """Get the first parent of this node matching the given type.
