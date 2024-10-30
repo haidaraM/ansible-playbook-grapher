@@ -1,3 +1,15 @@
+# 2.4.0 (2024-10-31)
+
+## What's Changed
+
+* ci: Use ruff for linting and format by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/199
+* chore(deps): bump ruff from 0.6.4 to 0.6.8 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/202
+* chore(deps): bump pytest from 8.3.2 to 8.3.3 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/200
+* fix: 'dict' object has no attribute 'ansible_pos' when validating arguments by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/204
+
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.3.0...v2.4.0
+
 # 2.3.0 (2024-09-07)
 
 ## What's Changed
