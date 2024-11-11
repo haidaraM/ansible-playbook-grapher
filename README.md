@@ -492,7 +492,7 @@ submitting PRs.
 
 ### Lint and format
 
-The project uses black to format the code. Run `black .` to format.
+The project uses ruff to format and lint the code. Run `make lint` to format and lint.
 
 ## License
 
