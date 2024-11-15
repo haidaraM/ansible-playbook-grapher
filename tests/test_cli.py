@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
@@ -281,3 +283,23 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
 
     error_msg = capsys.readouterr().err
     assert expected_message in error_msg
+
+
+def test_cli_playbook_from_collection():
+    """Test reading a playbook from a collection
+    :return:
+    """
+    args = [__prog__, "haidaram.test_collection.test", "second-playbook.yml"]
+
+    # Since I'm not overriding the paths where the collection are installed, they should in this folder:
+    expected_collection_path = Path(
+        "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
+    ).expanduser()
+
+    cli = PlaybookGrapherCLI(args)
+    cli.parse()
+
+    assert cli.options.playbook_filenames == [
+        f"{expected_collection_path}",
+        "second-playbook.yml",
+    ]

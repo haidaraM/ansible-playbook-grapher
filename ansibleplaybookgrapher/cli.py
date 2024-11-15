@@ -23,6 +23,9 @@ from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
+from ansible.utils.collection_loader._collection_finder import (
+    _get_collection_playbook_path,
+)
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
@@ -132,7 +135,7 @@ class PlaybookGrapherCLI(CLI):
             "--inventory",
             dest="inventory",
             action="append",
-            help="specify inventory host path or comma separated host list.",
+            help="Specify inventory host path or comma separated host list.",
         )
 
         self.parser.add_argument(
@@ -285,6 +288,12 @@ class PlaybookGrapherCLI(CLI):
 
         # init the options
         self.options = options
+
+        # Analyze the filenames to check if there are some collections in them.
+        # Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection
+        for idx, filename in enumerate(self.options.playbook_filenames):
+            if resource := _get_collection_playbook_path(filename):  # type: tuple[str, str,str]
+                self.options.playbook_filenames[idx] = resource[1]
 
         if self.options.output_filename is None:
             basenames = map(ntpath.basename, self.options.playbook_filenames)

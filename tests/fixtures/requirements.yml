@@ -2,6 +2,8 @@
 collections:
   - name: community.general
   - name: community.mysql
+  - source: ./collections/test_collection
+    type: dir
 roles:
   - name: geerlingguy.docker
     version: 4.2.4
