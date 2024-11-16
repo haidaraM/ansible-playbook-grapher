@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import Any
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
@@ -371,16 +370,18 @@ class PlaybookNode(CompositeNode):
         )
 
     def set_location(self) -> None:
-        """Playbooks only have path as position
+        """Playbooks only have the path as position.
+
         :return:
         """
         # Since the playbook is the whole file, the set the position as the beginning of the file
-        self.location = NodeLocation(
-            type="file",
-            path=str(Path(Path.cwd()) / self.name),
-            line=1,
-            column=1,
-        )
+        if self.raw_object:
+            self.location = NodeLocation(
+                type="file",
+                path=self.raw_object._file_name,
+                line=1,
+                column=1,
+            )
 
     def plays(
         self,

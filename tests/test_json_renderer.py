@@ -16,12 +16,12 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-    playbook_files: list[str],
-    output_filename: str | None = None,
-    additional_args: list[str] | None = None,
+        playbooks: list[str],
+        output_filename: str | None = None,
+        additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
-    :param playbook_files:
+    :param playbooks:
     :param output_filename:
     :param additional_args:
     :return:
@@ -33,7 +33,10 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
+    for idx, p_file in enumerate(playbooks):
+        if ".yml" in p_file:
+            playbooks[idx] = str(FIXTURES_DIR_PATH / p_file)
+
     args = [__prog__]
 
     # Clean the name a little bit
@@ -42,22 +45,22 @@ def run_grapher(
     args.extend(["-o", str(DIR_PATH / "generated-jsons" / output_filename)])
 
     args.extend(["--renderer", "json"])
-    args.extend(additional_args + playbook_paths)
+    args.extend(additional_args + playbooks)
 
     cli = PlaybookGrapherCLI(args)
 
-    return cli.run(), playbook_paths
+    return cli.run(), playbooks
 
 
 def _common_tests(
-    json_path: str,
-    playbooks_number: int = 1,
-    plays_number: int = 0,
-    tasks_number: int = 0,
-    post_tasks_number: int = 0,
-    roles_number: int = 0,
-    pre_tasks_number: int = 0,
-    blocks_number: int = 0,
+        json_path: str,
+        playbooks_number: int = 1,
+        plays_number: int = 0,
+        tasks_number: int = 0,
+        post_tasks_number: int = 0,
+        roles_number: int = 0,
+        pre_tasks_number: int = 0,
+        blocks_number: int = 0,
 ) -> dict:
     """Do some checks on the generated json files.
 
@@ -128,37 +131,37 @@ def _common_tests(
     )
 
     assert (
-        len(playbooks) == playbooks_number
+            len(playbooks) == playbooks_number
     ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
 
     assert (
-        len(plays) == plays_number
+            len(plays) == plays_number
     ), f"The file '{json_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
     assert (
-        len(pre_tasks) == pre_tasks_number
+            len(pre_tasks) == pre_tasks_number
     ), f"The file '{json_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
     assert (
-        len(roles) == roles_number
+            len(roles) == roles_number
     ), f"The file '{json_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
-        len(tasks) == tasks_number
+            len(tasks) == tasks_number
     ), f"The file '{json_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
     assert (
-        len(post_tasks) == post_tasks_number
+            len(post_tasks) == post_tasks_number
     ), f"The file '{json_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
     assert (
-        len(blocks) == blocks_number
+            len(blocks) == blocks_number
     ), f"The file '{json_path}' should contains {blocks_number} block(s) but we found {len(blocks)} blocks"
 
     # Check the play
     for play in plays:
         assert (
-            play.get("colors") is not None
+                play.get("colors") is not None
         ), f"The play '{play['name']}' is missing colors'"
 
     return {
@@ -213,11 +216,11 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-    request: pytest.FixtureRequest,
-    flag: str,
-    roles_number: int,
-    tasks_number: int,
-    post_tasks_number: int,
+        request: pytest.FixtureRequest,
+        flag: str,
+        roles_number: int,
+        tasks_number: int,
+        post_tasks_number: int,
 ) -> None:
     """Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
     This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.

@@ -116,9 +116,7 @@ def test_to_dict() -> None:
     dict_rep = playbook.to_dict(exclude_empty_plays=True)
 
     assert dict_rep["type"] == "PlaybookNode"
-    assert dict_rep["location"]["path"] is not None
-    assert dict_rep["location"]["line"] is not None
-    assert dict_rep["location"]["column"] is not None
+    assert dict_rep["location"] is None, "A fake playbook does not have a location"
 
     assert len(dict_rep["plays"]) == 1
     assert dict_rep["plays"][0]["type"] == "PlayNode"

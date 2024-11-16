@@ -12,14 +12,14 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-    playbook_files: list[str],
-    output_filename: str | None = None,
-    additional_args: list[str] | None = None,
+        playbooks: list[str],
+        output_filename: str | None = None,
+        additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
     :param output_filename:
     :param additional_args:
-    :param playbook_files:
+    :param playbooks:
     :return: Mermaid file path and playbooks absolute paths.
     """
     additional_args = additional_args or []
@@ -29,7 +29,10 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
+    for idx, p_file in enumerate(playbooks):
+        if ".yml" in p_file:
+            playbooks[idx] = str(FIXTURES_DIR_PATH / p_file)
+
     args = [__prog__]
 
     # Clean the name a little bit
@@ -37,17 +40,18 @@ def run_grapher(
         output_filename.replace("[", "-").replace("]", "").replace(".yml", "")
     )
     # put the generated file in a dedicated folder
+
     args.extend(["-o", str(DIR_PATH / "generated-mermaids" / output_filename)])
 
     args.extend(additional_args)
 
     args.extend(["--renderer", "mermaid-flowchart"])
 
-    args.extend(playbook_paths)
+    args.extend(playbooks)
 
     cli = PlaybookGrapherCLI(args)
 
-    return cli.run(), playbook_paths
+    return cli.run(), playbooks
 
 
 def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -> None:
@@ -74,7 +78,7 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
 
 
 @pytest.mark.parametrize(
-    "playbook_file",
+    "playbook",
     [
         # FIXME: Once we have proper tests, we need to split the parameters similar to what we do with graphviz
         "docker-mysql-galaxy.yml",
@@ -94,12 +98,13 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
         "tags.yml",
         "with_block.yml",
         "with_roles.yml",
+        "haidaram.test_collection.test"
     ],
 )
-def test_playbooks(request: pytest.FixtureRequest, playbook_file: str) -> None:
+def test_playbooks(request: pytest.FixtureRequest, playbook: str) -> None:
     """Test the renderer with a single playbook."""
     mermaid_path, playbook_paths = run_grapher(
-        [playbook_file],
+        [playbook],
         output_filename=request.node.name,
         additional_args=[
             "--include-role-tasks",

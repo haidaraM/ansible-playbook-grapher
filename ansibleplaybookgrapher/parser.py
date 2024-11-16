@@ -102,7 +102,7 @@ class BaseParser(ABC):
         """Include the task in the graph.
         :return: True if the task has been included, false otherwise.
         """
-        # Ansible-core 2.11 added an implicit meta tasks at the end of the role. So wee skip it here.
+        # Ansible-core 2.11 added an implicit meta-task at the end of the role. So wee skip it here.
         if task.action == "meta" and task.implicit:
             return False
 
@@ -136,22 +136,28 @@ class PlaybookParser(BaseParser):
 
     def __init__(
         self,
-        playbook_filename: str,
+        playbook_path: str,
         include_role_tasks: bool = False,
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
+        playbook_name: str | None = None,
     ) -> None:
-        """:param playbook_filename: The filename of the playbook to parse
-        :param include_role_tasks: If true, the tasks of the role will be included in the graph
-        :param tags: Only add plays and tasks tagged with these values
-        :param skip_tags: Only add plays and tasks whose tags do not match these values
-        :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
+        """
+
+        :param playbook_path: The path of the playbook to parse.
+        :param include_role_tasks: If true, the tasks of the role will be included in the graph.
+        :param tags: Only add plays and tasks tagged with these values.
+        :param skip_tags: Only add plays and tasks whose tags do not match these values.
+        :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs.
+        :param playbook_name: On optional name of the playbook to parse.
+        It will be used as the node name if provided in replacement of the file name.
         """
         super().__init__(tags=tags, skip_tags=skip_tags)
         self.group_roles_by_name = group_roles_by_name
         self.include_role_tasks = include_role_tasks
-        self.playbook_filename = playbook_filename
+        self.playbook_path = playbook_path
+        self.playbook_name = playbook_name
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
@@ -160,20 +166,23 @@ class PlaybookParser(BaseParser):
         for each play:
             add pre_tasks
             add roles
-                if  include_role_tasks
+                if include_role_tasks
                     add role_tasks
             add tasks
             add post_tasks
         :return:
         """
-        display.display(f"Parsing the playbook '{self.playbook_filename}'")
+        display.display(f"Parsing the playbook '{self.playbook_path}'")
         playbook = Playbook.load(
-            self.playbook_filename,
+            self.playbook_path,
             loader=self.data_loader,
             variable_manager=self.variable_manager,
         )
         # the root node
-        playbook_root_node = PlaybookNode(self.playbook_filename, raw_object=playbook)
+        playbook_node_name = (
+            self.playbook_name if self.playbook_name else self.playbook_path
+        )
+        playbook_root_node = PlaybookNode(playbook_node_name, raw_object=playbook)
         # loop through the plays
         for play in playbook.get_plays():
             # the load basedir is relative to the playbook path
@@ -265,7 +274,7 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                    # end of roles loop
+                    # end of the roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -473,7 +482,7 @@ class PlaybookParser(BaseParser):
                     and not has_role_parent(task_or_block)  # 2
                     and parent_nodes[-1].raw_object != task_or_block._parent  # 3
                 ):
-                    # We remove a parent node :
+                    # We remove a parent node:
                     # 1. When have at least two parents. Every node (except the playbook) should have a parent node
                     #   AND
                     # 2. The current node doesn't have a role as parent

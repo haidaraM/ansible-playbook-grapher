@@ -10,7 +10,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
 def test_cli_help(help_option: str, capfd: pytest.CaptureFixture) -> None:
-    """Test for the help option : -h, --help
+    """Test for the help option: -h, --help
     :param help_option:
     :param capfd:
     :return:
@@ -197,7 +197,7 @@ def test_cli_multiple_playbooks() -> None:
     cli = PlaybookGrapherCLI(args)
     cli.parse()
 
-    assert cli.options.playbook_filenames == ["playbook1.yml", "playbook2.yml"]
+    assert cli.options.playbooks == ["playbook1.yml", "playbook2.yml"]
 
 
 @pytest.mark.parametrize(
@@ -287,9 +287,11 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
 
 def test_cli_playbook_from_collection():
     """Test reading a playbook from a collection
+
     :return:
     """
-    args = [__prog__, "haidaram.test_collection.test", "second-playbook.yml"]
+    pb_in_collection = "haidaram.test_collection.test"
+    args = [__prog__, pb_in_collection, "second-playbook.yml"]
 
     # Since I'm not overriding the paths where the collections are installed, they should in this folder:
     expected_collection_path = Path(
@@ -300,7 +302,5 @@ def test_cli_playbook_from_collection():
     cli.parse()
     cli.resolve_playbooks_paths()
 
-    assert cli.options.playbook_filenames == [
-        f"{expected_collection_path}",
-        "second-playbook.yml",
-    ]
+    assert cli.get_playbook_path(pb_in_collection) == f"{expected_collection_path}"
+    assert cli.get_playbook_path("second-playbook.yml") == "second-playbook.yml"

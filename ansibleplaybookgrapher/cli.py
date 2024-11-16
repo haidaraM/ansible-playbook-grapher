@@ -63,13 +63,17 @@ class PlaybookGrapherCLI(CLI):
         # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
         self.options = None
 
+        # A mapping of playbooks used as args to their actual path on the filesystem.
+        # This is primarily useful when passing collections as args.
+        self._playbook_paths_mapping: dict[str, str] = {}
+
     def run(self):
         super().run()
 
         display.verbosity = self.options.verbosity
 
         self.resolve_playbooks_paths()
-        grapher = Grapher(self.options.playbook_filenames)
+        grapher = Grapher(self._playbook_paths_mapping)
         playbook_nodes, roles_usage = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
@@ -127,25 +131,35 @@ class PlaybookGrapherCLI(CLI):
                     msg,
                 )
 
-    def resolve_playbooks_paths(self):
-        """Resolve the filenames to translate collections to filenames.
+    def get_playbook_path(self, playbook_arg: str) -> str:
+        """Returns the path of the playbook passed as args.
 
-        Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection
+        # This is primarily useful when passing collections as args.
+        :param playbook_arg:
         :return:
         """
-        for idx, filename in enumerate(self.options.playbook_filenames):
-            if resource := _get_collection_playbook_path(filename):  # type: tuple[str, str,str]
+        return self._playbook_paths_mapping[playbook_arg]
+
+    def resolve_playbooks_paths(self):
+        """Resolve the playbooks to paths when needed.
+
+        Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection.
+        As such, we need their path on the filesystem to parse them.
+        :return:
+        """
+        for counter, pb_name in enumerate(self.options.playbooks):
+            if resource := _get_collection_playbook_path(pb_name):  # type: tuple[str, str,str]
                 _, abspath, col_name = resource
                 display.vv(f"Reading from the collection '{col_name}': '{abspath}'")
-                self.options.playbook_filenames[idx] = (
-                    abspath  # absolute path to the playbook
-                )
-                # Make sure the loader(s) can find roles in the collection
+
                 collection = col_name  # collection name: <namespace>.<name>
+                self._playbook_paths_mapping[pb_name] = abspath
             else:
-                collection = _get_collection_name_from_path(filename)
+                self._playbook_paths_mapping[pb_name] = pb_name
+                collection = _get_collection_name_from_path(pb_name)
 
             if collection:
+                # Make sure the loader(s) can find roles in the collection
                 AnsibleCollectionConfig.default_collection = collection
 
     def _add_my_options(self) -> None:
@@ -275,8 +289,8 @@ class PlaybookGrapherCLI(CLI):
         )
 
         self.parser.add_argument(
-            "playbook_filenames",
-            help="Playbook(s) to graph",
+            "playbooks",
+            help="Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in collections.",
             metavar="playbooks",
             nargs="+",
         )
@@ -292,7 +306,7 @@ class PlaybookGrapherCLI(CLI):
         desc: str | None = None,
         epilog: str | None = None,
     ) -> None:
-        """Create an options parser for the grapher.
+        """Create an option parser for the grapher.
 
         :param usage:
         :param desc:
@@ -319,7 +333,7 @@ class PlaybookGrapherCLI(CLI):
         self.options = options
 
         if self.options.output_filename is None:
-            basenames = map(ntpath.basename, self.options.playbook_filenames)
+            basenames = map(ntpath.basename, self.options.playbooks)
             basenames_without_ext = "-".join(
                 [Path(basename).stem for basename in basenames],
             )

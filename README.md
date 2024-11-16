@@ -385,17 +385,17 @@ regarding the blocks.
 The available options:
 
 ```
-usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY] [--include-role-tasks] [-s] [--view] [-o OUTPUT_FILENAME] [--open-protocol-handler {default,vscode,custom}]
-                                [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--group-roles-by-name] [--renderer {graphviz,mermaid-flowchart,json}]
-                                [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE] [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version]
-                                [--hide-plays-without-roles] [--hide-empty-plays] [-t TAGS] [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS]
-                                [-J | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
+usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY] [--include-role-tasks] [-s] [--view] [-o OUTPUT_FILENAME]
+                                [--open-protocol-handler {default,vscode,custom}] [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
+                                [--group-roles-by-name] [--renderer {graphviz,mermaid-flowchart,json}] [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
+                                [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version] [--hide-plays-without-roles] [--hide-empty-plays] [-t TAGS]
+                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS] [-J | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
 
 Make graphs from your Ansible Playbooks.
 
 positional arguments:
-  playbooks             Playbook(s) to graph
+  playbooks             Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in collections.
 
 options:
   --group-roles-by-name
@@ -406,16 +406,16 @@ options:
                         considered (no import_role).
   --include-role-tasks  Include the tasks of the roles in the graph. Applied when parsing the playbooks.
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
-                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a JSON formatted
-                        string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser and files (tasks) in vscode, set it to:
-                        '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'. path: the absolute path to the file containing the the plays/tasks/roles.
-                        line/column: the position of the plays/tasks/roles in the file. You can optionally add the attribute "remove_from_path" to remove some parts of the
-                        path if you want relative paths.
+                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a
+                        JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser and files
+                        (tasks) in vscode, set it to: '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'. path: the absolute path to the
+                        file containing the the plays/tasks/roles. line/column: the position of the plays/tasks/roles in the file. You can optionally add the
+                        attribute "remove_from_path" to remove some parts of the path if you want relative paths.
   --open-protocol-handler {default,vscode,custom}
-                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your SVG viewer must support double-click and Javascript. The
-                        supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the file or folders. When using a browser, it will
-                        open or download them. For 'vscode', the folders and files will be open with VSCode. For 'custom', you need to set a custom format with --open-
-                        protocol-custom-formats.
+                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your SVG viewer must support
+                        double-click and Javascript. The supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the
+                        file or folders. When using a browser, it will open or download them. For 'vscode', the folders and files will be open with VSCode. For
+                        'custom', you need to set a custom format with --open-protocol-custom-formats.
   --renderer {graphviz,mermaid-flowchart,json}
                         The renderer to use to generate the graph. Default: graphviz
   --renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE
@@ -429,21 +429,21 @@ options:
   --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
   --version
-  --view                Automatically open the resulting SVG file with your system’s default viewer application for the file type
+  --view                Automatically open the resulting SVG file with your system's default viewer application for the file type
   -J, --ask-vault-password, --ask-vault-pass
                         ask for vault password
   -e EXTRA_VARS, --extra-vars EXTRA_VARS
                         set additional variables as key=value or YAML/JSON, if filename prepend with @. This argument may be specified multiple times.
   -h, --help            show this help message and exit
   -i INVENTORY, --inventory INVENTORY
-                        specify inventory host path or comma separated host list. This argument may be specified multiple times.
+                        Specify inventory host path or comma separated host list. This argument may be specified multiple times.
   -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
                         Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. The extension will be added automatically.
   -s, --save-dot-file   Save the graphviz dot file used to generate the graph.
   -t TAGS, --tags TAGS  only run plays and tasks tagged with these values. This argument may be specified multiple times.
-  -v, --verbose         Causes Ansible to print more debug messages. Adding multiple -v will increase the verbosity, the builtin plugins currently evaluate up to -vvvvvv. A
-                        reasonable level to start is -vvv, connection debugging might require -vvvv. This argument may be specified multiple times.
-
+  -v, --verbose         Causes Ansible to print more debug messages. Adding multiple -v will increase the verbosity, the builtin plugins currently evaluate up
+                        to -vvvvvv. A reasonable level to start is -vvv, connection debugging might require -vvvv. This argument may be specified multiple
+                        times.
 ```
 
 ## Configuration: ansible.cfg
@@ -464,7 +464,7 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   ansible_os_family, ansible_system, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
   arguments may not appear in the graph.
 - The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
-  Always check the edge label to know the tasks order.
+  Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
   the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
 
@@ -474,7 +474,7 @@ Contributions are welcome. Feel free to contribute by creating an issue or submi
 
 ### Local development
 
-To setup a new local development environment :
+To set up a new local development environment:
 
 - Install graphviz (see above)
 - pip install -r requirements.txt -r tests/requirements_tests.txt

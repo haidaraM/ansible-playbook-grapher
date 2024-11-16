@@ -38,7 +38,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     assert playbook_node.location.path == str(FIXTURES_DIR_PATH / "example.yml")
@@ -79,7 +79,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     play_node = playbook_node.plays()[0]
@@ -117,7 +117,7 @@ def test_include_role_parsing(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -186,7 +186,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -291,7 +291,7 @@ def test_roles_usage_multi_plays(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
@@ -336,7 +336,7 @@ def test_roles_usage_single_play(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
@@ -352,7 +352,7 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -384,7 +384,7 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -404,11 +404,7 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     [
         ["haidaram.test_collection.test"],
         [
-            str(
-                Path(
-                    "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
-                ).expanduser()
-            )
+            f"{Path('~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml').expanduser()}"
         ],
     ],
     indirect=True,
@@ -416,17 +412,23 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
 def test_parsing_playbook_in_collection(
     grapher_cli: PlaybookGrapherCLI,
 ) -> None:
-    """Test the parsing of a playbook in a collection from a collection name.
+    """Test the parsing of a playbook in a collection from a collection name and from its absolute path.
 
     :param grapher_cli:
     :return:
     """
+    playbook_path = grapher_cli.get_playbook_path(grapher_cli.options.playbooks[0])
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        playbook_path,
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
+
+    assert playbook_node.location.path == playbook_path
+    assert playbook_node.location.line == 1
+    assert playbook_node.location.column == 1
     assert len(playbook_node.plays()) == 1
+
     play = playbook_node.plays()[0]
     roles = play.roles
     assert len(roles) == 2, "Two roles should be in the play"
