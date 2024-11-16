@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from ansible.utils.display import Display
 
@@ -398,7 +400,16 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
 
 
 @pytest.mark.parametrize(
-    "grapher_cli", [["haidaram.test_collection.test"]], indirect=True
+    "grapher_cli",
+    [
+        ["haidaram.test_collection.test"],
+        [
+            str(Path(
+                "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
+            ).expanduser())
+        ],
+    ],
+    indirect=True,
 )
 def test_parsing_playbook_in_collection(
     grapher_cli: PlaybookGrapherCLI,
