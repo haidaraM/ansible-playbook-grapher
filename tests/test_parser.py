@@ -404,9 +404,11 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     [
         ["haidaram.test_collection.test"],
         [
-            str(Path(
-                "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
-            ).expanduser())
+            str(
+                Path(
+                    "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
+                ).expanduser()
+            )
         ],
     ],
     indirect=True,
