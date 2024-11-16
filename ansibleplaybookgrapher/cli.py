@@ -23,7 +23,9 @@ from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
+from ansible.utils.collection_loader import AnsibleCollectionConfig
 from ansible.utils.collection_loader._collection_finder import (
+    _get_collection_name_from_path,
     _get_collection_playbook_path,
 )
 from ansible.utils.display import Display
@@ -133,7 +135,18 @@ class PlaybookGrapherCLI(CLI):
         """
         for idx, filename in enumerate(self.options.playbook_filenames):
             if resource := _get_collection_playbook_path(filename):  # type: tuple[str, str,str]
-                self.options.playbook_filenames[idx] = resource[1]
+                _, abspath, col_name = resource
+                display.vv(f"Reading from the collection '{col_name}': '{abspath}'")
+                self.options.playbook_filenames[idx] = (
+                    abspath  # absolute path to the playbook
+                )
+                # Make sure the loader(s) can find roles in the collection
+                collection = col_name  # collection name: <namespace>.<name>
+            else:
+                collection = _get_collection_name_from_path(filename)
+
+            if collection:
+                AnsibleCollectionConfig.default_collection = collection
 
     def _add_my_options(self) -> None:
         """Add some of my options to the parser.

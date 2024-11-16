@@ -256,7 +256,7 @@ def test_with_roles(
 def test_include_role(
     request: pytest.FixtureRequest,
     include_role_tasks_option: str,
-    expected_tasks_number: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
