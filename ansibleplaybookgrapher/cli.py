@@ -62,10 +62,11 @@ class PlaybookGrapherCLI(CLI):
         self.options = None
 
     def run(self):
-        # TODO(haidaraM): run should not return anything.
         super().run()
 
         display.verbosity = self.options.verbosity
+
+        self.resolve_playbooks_paths()
         grapher = Grapher(self.options.playbook_filenames)
         playbook_nodes, roles_usage = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
@@ -123,6 +124,16 @@ class PlaybookGrapherCLI(CLI):
                 raise AnsibleOptionsError(
                     msg,
                 )
+
+    def resolve_playbooks_paths(self):
+        """Resolve the filenames to translate collections to filenames.
+
+        Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection
+        :return:
+        """
+        for idx, filename in enumerate(self.options.playbook_filenames):
+            if resource := _get_collection_playbook_path(filename):  # type: tuple[str, str,str]
+                self.options.playbook_filenames[idx] = resource[1]
 
     def _add_my_options(self) -> None:
         """Add some of my options to the parser.
@@ -284,16 +295,15 @@ class PlaybookGrapherCLI(CLI):
         self._add_my_options()
 
     def post_process_args(self, options: Namespace) -> Namespace:
+        """Post-processing of the options. This is triggered before .run() is called.
+
+        :param options:
+        :return:
+        """
         options = super().post_process_args(options)
 
         # init the options
         self.options = options
-
-        # Analyze the filenames to check if there are some collections in them.
-        # Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection
-        for idx, filename in enumerate(self.options.playbook_filenames):
-            if resource := _get_collection_playbook_path(filename):  # type: tuple[str, str,str]
-                self.options.playbook_filenames[idx] = resource[1]
 
         if self.options.output_filename is None:
             basenames = map(ntpath.basename, self.options.playbook_filenames)

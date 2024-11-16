@@ -291,13 +291,14 @@ def test_cli_playbook_from_collection():
     """
     args = [__prog__, "haidaram.test_collection.test", "second-playbook.yml"]
 
-    # Since I'm not overriding the paths where the collection are installed, they should in this folder:
+    # Since I'm not overriding the paths where the collections are installed, they should in this folder:
     expected_collection_path = Path(
         "~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml"
     ).expanduser()
 
     cli = PlaybookGrapherCLI(args)
     cli.parse()
+    cli.resolve_playbooks_paths()
 
     assert cli.options.playbook_filenames == [
         f"{expected_collection_path}",
