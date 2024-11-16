@@ -12,9 +12,9 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-        playbooks: list[str],
-        output_filename: str | None = None,
-        additional_args: list[str] | None = None,
+    playbooks: list[str],
+    output_filename: str | None = None,
+    additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
     :param output_filename:
@@ -98,7 +98,7 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
         "tags.yml",
         "with_block.yml",
         "with_roles.yml",
-        "haidaram.test_collection.test"
+        "haidaram.test_collection.test",
     ],
 )
 def test_playbooks(request: pytest.FixtureRequest, playbook: str) -> None:
