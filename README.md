@@ -5,8 +5,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=main)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=main)
 
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a
-graph representing your Ansible playbook, plays, tasks and roles. The aim of this project is to have an overview of your
-playbooks that you can use as documentation.
+graph representing your Ansible playbooks, plays, tasks and roles. The aim of this project is to have an overview of
+your playbooks that you can use as documentation.
 
 Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-inventory-grapher).
 
@@ -14,10 +14,11 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 
 - Multiple [rendering formats](#renderers): graphviz, mermaid and JSON.
 - Automatically find all your installed roles and collection.
-- Native support of Ansible filters based on tags.
+- Native support for Ansible filters based on tags.
 - Variables interpolation (when possible).
-- Support `import_*` and `include_*`.
-- Multiple flags to hide empty plays, group roles by name etc...
+- Support for `import_*` and `include_*`.
+- Multiple flags to hide empty plays, group roles by name, etc...
+- Support for playbooks in collections.
 
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
@@ -30,7 +31,7 @@ JavaScript:
   Optionally, you can
   set [the open protocol to use VSCode](https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls)
   with `--open-protocol-handler vscode`: it will open the folders when double-clicking on roles (not `include_role`) and
-  the files for the others nodes. The cursor will be at the task exact position in the file.  
+  the files for the other nodes. The cursor will be at the task exact position in the file.  
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
   and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
@@ -38,7 +39,7 @@ JavaScript:
 
 ## Prerequisites
 
-- Python 3.10 at least. Might work with some previous versions but the code is NOT tested against them.
+- Python 3.10 at least. Might work with some previous versions, but the code is NOT tested against them.
   See [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix).
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
   some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
@@ -74,7 +75,7 @@ At the time of writing, two renderers are supported:
 
 1. `graphviz` (default): Generate the graph in SVG. Has more features than the other renderers.
 2. `mermaid-flowchart`: Generate the graph in [Mermaid](https://mermaid.js.org/syntax/flowchart.html) format. You can
-   directly embed the graph in your markdown and GitHub (
+   directly embed the graph in your Markdown and GitHub (
    and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
 3. `json`: Generate a JSON representation of the graph to be used by other tools. The corresponding JSON schema
    is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas)
@@ -376,8 +377,7 @@ ansible-playbook-grapher --renderer json tests/fixtures/simple_playbook.yml
 ```
 
 Note on block: Since a `block` is a logical group of tasks, the conditional `when` is not displayed on the edges
-pointing
-to them but on the tasks inside the block. This
+pointing to them but on the tasks inside the block. This
 mimics [Ansible behavior](https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html#grouping-tasks-with-blocks)
 regarding the blocks.
 
@@ -461,10 +461,8 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 
 - Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
   statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
-  only available when running your playbook (
-  `ansible_os_family`, `ansible_system`, etc.). The tasks inside any `import_*` or `include_*` with some variables in
-  their
-  arguments may not appear in the graph.
+  only available when running your playbook ( `ansible_os_family`, `ansible_system`, etc.). The tasks inside any
+  `import_*` or `include_*` with some variables in their arguments may not appear in the graph.
 - The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
   Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
@@ -492,9 +490,9 @@ export TEST_VIEW_GENERATED_FILE=1
 make test # run all tests
 ```
 
-The graphs are generated in the folder `tests/generated-svgs`. They are also generated as artefacts
-in [GitHub Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions). Feel free to look at them when
-submitting PRs.
+The graphs are generated in the folders `tests/generated-svgs`, `tests/generated-mermaids` and `tests/generated-jsons`.
+They are also generated as artifacts in [GitHub Actions](https://github.com/haidaraM/ansible-playbook-grapher/actions).
+Feel free to look at them when submitting PRs.
 
 ### Lint and format
 
