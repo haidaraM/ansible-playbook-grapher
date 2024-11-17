@@ -671,8 +671,15 @@ def test_hiding_plays_without_roles_with_tags_filtering(
     )
 
 
-def test_graphing_a_collection(
-    request: pytest.FixtureRequest,
+@pytest.mark.parametrize(
+    "playbook",
+    [
+        "haidaram.test_collection.test",
+        f"{Path('~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml').expanduser()}",
+    ],
+)
+def test_graphing_a_playbook_in_a_collection(
+    request: pytest.FixtureRequest, playbook: str
 ) -> None:
     """Test graphing a playbook in a collection
 
@@ -680,7 +687,7 @@ def test_graphing_a_collection(
     :return:
     """
     svg_path, playbook_paths = run_grapher(
-        ["haidaram.test_collection.test"],
+        [playbook],
         output_filename=request.node.name,
         additional_args=[
             "--include-role-tasks",
@@ -692,5 +699,5 @@ def test_graphing_a_collection(
         playbook_paths=playbook_paths,
         plays_number=1,
         roles_number=2,
-        tasks_number=3,
+        tasks_number=4,
     )

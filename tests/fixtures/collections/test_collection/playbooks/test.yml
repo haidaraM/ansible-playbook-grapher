@@ -7,3 +7,9 @@
     - name: Test task
       debug:
         msg: "Test"
+
+    - name: Set authorized key taken from file
+      ansible.posix.authorized_key:
+        user: charlie
+        state: present
+        key: "{{ lookup('file', '/home/charlie/.ssh/id_rsa.pub') }}"

@@ -435,5 +435,5 @@ def test_parsing_playbook_in_collection(
 
     all_tasks = get_all_tasks([playbook_node])
     assert (
-        len(all_tasks) == 2 + 1
-    ), "There should be 3 tasks in the playbook: 2 from the roles and 1 from the tasks at the playbook level"
+        len(all_tasks) == 2 + 2
+    ), "There should be 4 tasks in the playbook: 2 from the roles and 2 from the tasks at the playbook level"

@@ -43,7 +43,7 @@ def _assert_common_svg(svg_root: Element) -> None:
 
 
 def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor) -> None:
-    """Test method insert_tag of the PostProcessor
+    """Test the insert_tag playbook of the PostProcessor
     :param post_processor:
     :return:
     """
@@ -54,7 +54,7 @@ def test_post_processor_insert_tag(post_processor: GraphvizPostProcessor) -> Non
 
 
 def test_post_processor_write(post_processor: GraphvizPostProcessor, tmpdir) -> None:  # noqa: ANN001
-    """Test method write of the PostProcessor
+    """Test the write method of the PostProcessor
     :param post_processor:
     :return:
     """
@@ -69,7 +69,7 @@ def test_post_processor_without_graph_representation(
     post_processor: GraphvizPostProcessor,
     tmpdir,  # noqa: ANN001
 ) -> None:
-    """Test the post processor without a graph representation
+    """Test the post processor without a graph representation.
     :param post_processor:
     :param tmpdir:
     :return:

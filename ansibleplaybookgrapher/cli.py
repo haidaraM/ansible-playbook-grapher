@@ -158,9 +158,8 @@ class PlaybookGrapherCLI(CLI):
                 self._playbook_paths_mapping[pb_name] = pb_name
                 collection = _get_collection_name_from_path(pb_name)
 
-            if collection:
-                # Make sure the loader(s) can find roles in the collection
-                AnsibleCollectionConfig.default_collection = collection
+            # Make sure the loader(s) can find roles in the collection
+            AnsibleCollectionConfig.default_collection = collection
 
     def _add_my_options(self) -> None:
         """Add some of my options to the parser.

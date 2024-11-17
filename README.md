@@ -461,7 +461,7 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 - Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
   statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
   only available when running your playbook (
-  ansible_os_family, ansible_system, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
+  `ansible_os_family`, `ansible_system`, etc.). The tasks inside any `import_*` or `include_*` with some variables in their
   arguments may not appear in the graph.
 - The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
   Always check the edge label to know the task order.
@@ -478,6 +478,7 @@ To set up a new local development environment:
 
 - Install graphviz (see above)
 - pip install -r requirements.txt -r tests/requirements_tests.txt
+- (cd tests/fixtures && ansible-galaxy install -r requirements.yml)
 
 Run the tests and open the generated files in your system’s default viewer application:
 
