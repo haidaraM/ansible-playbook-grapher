@@ -12,4 +12,4 @@
       ansible.posix.authorized_key:
         user: charlie
         state: present
-        key: "{{ lookup('file', '/home/charlie/.ssh/id_rsa.pub') }}"
+        key: "{{ lookup('file', '/fake-random-key.pub') }}"
