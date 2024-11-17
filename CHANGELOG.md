@@ -1,3 +1,15 @@
+# 2.5.0 (Unreleased)
+
+## What's Changed
+
+* **feat: Adding support for reading playbooks from collections by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/208**
+* chore(deps): bump ruff from 0.7.1 to 0.7.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/209
+* chore(deps): update ansible-core requirement from <2.17.3,>=2.16 to >=2.16,<2.17.5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/201
+* chore(deps): bump pytest-cov from 5.0.0 to 6.0.0 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/206
+* chore(deps): bump ruff from 0.6.8 to 0.7.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/205
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.4.0...v2.5.0
+
 # 2.4.0 (2024-10-31)
 
 ## What's Changed
