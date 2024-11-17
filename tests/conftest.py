@@ -76,8 +76,11 @@ def grapher_cli(request: pytest.FixtureRequest) -> PlaybookGrapherCLI:
     """
     # The request param should be the path to the playbook
     args_params = request.param.copy()
-    # The last item of the args should be the name of the playbook file in the fixtures.
-    args_params[-1] = str(FIXTURES_DIR_PATH / args_params[-1])
+    if ".yml" in args_params[-1]:
+        # The last item of the args should be the name of the playbook file in the fixtures.
+        args_params[-1] = str(FIXTURES_DIR_PATH / args_params[-1])
+
     cli = PlaybookGrapherCLI([__prog__, *args_params])
     cli.parse()
+    cli.resolve_playbooks_paths()
     return cli

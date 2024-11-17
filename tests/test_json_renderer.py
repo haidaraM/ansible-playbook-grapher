@@ -16,12 +16,12 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-    playbook_files: list[str],
+    playbooks: list[str],
     output_filename: str | None = None,
     additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
-    :param playbook_files:
+    :param playbooks:
     :param output_filename:
     :param additional_args:
     :return:
@@ -33,7 +33,10 @@ def run_grapher(
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
 
-    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
+    for idx, p_file in enumerate(playbooks):
+        if ".yml" in p_file:
+            playbooks[idx] = str(FIXTURES_DIR_PATH / p_file)
+
     args = [__prog__]
 
     # Clean the name a little bit
@@ -42,11 +45,11 @@ def run_grapher(
     args.extend(["-o", str(DIR_PATH / "generated-jsons" / output_filename)])
 
     args.extend(["--renderer", "json"])
-    args.extend(additional_args + playbook_paths)
+    args.extend(additional_args + playbooks)
 
     cli = PlaybookGrapherCLI(args)
 
-    return cli.run(), playbook_paths
+    return cli.run(), playbooks
 
 
 def _common_tests(

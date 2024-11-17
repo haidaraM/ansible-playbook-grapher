@@ -1,0 +1,10 @@
+---
+- name: My test A task
+  debug:
+    msg: "This is the test A task"
+
+- name: Include some tasks
+  include_tasks: include.yml
+
+- name: Import some tasks
+  import_tasks: import.yml

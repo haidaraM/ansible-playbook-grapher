@@ -23,6 +23,11 @@ from ansible.cli import CLI
 from ansible.cli.arguments import option_helpers
 from ansible.errors import AnsibleOptionsError
 from ansible.release import __version__ as ansible_version
+from ansible.utils.collection_loader import AnsibleCollectionConfig
+from ansible.utils.collection_loader._collection_finder import (
+    _get_collection_name_from_path,
+    _get_collection_playbook_path,
+)
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
@@ -58,12 +63,17 @@ class PlaybookGrapherCLI(CLI):
         # https://github.com/ansible/ansible/blob/bcb64054edaa7cf636bd38b8ab0259f6fb93f3f9/lib/ansible/context.py#L8
         self.options = None
 
+        # A mapping of playbooks used as args to their actual path on the filesystem.
+        # This is primarily useful when passing collections as args.
+        self._playbook_paths_mapping: dict[str, str] = {}
+
     def run(self):
-        # TODO(haidaraM): run should not return anything.
         super().run()
 
         display.verbosity = self.options.verbosity
-        grapher = Grapher(self.options.playbook_filenames)
+
+        self.resolve_playbooks_paths()
+        grapher = Grapher(self._playbook_paths_mapping)
         playbook_nodes, roles_usage = grapher.parse(
             include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
@@ -121,6 +131,36 @@ class PlaybookGrapherCLI(CLI):
                     msg,
                 )
 
+    def get_playbook_path(self, playbook_arg: str) -> str:
+        """Returns the path of the playbook passed as args.
+
+        # This is primarily useful when passing collections as args.
+        :param playbook_arg:
+        :return:
+        """
+        return self._playbook_paths_mapping[playbook_arg]
+
+    def resolve_playbooks_paths(self):
+        """Resolve the playbooks to paths when needed.
+
+        Playbooks can be run from collection: https://docs.ansible.com/ansible/latest/collections_guide/collections_using_playbooks.html#using-a-playbook-from-a-collection.
+        As such, we need their path on the filesystem to parse them.
+        :return:
+        """
+        for counter, pb_name in enumerate(self.options.playbooks):
+            if resource := _get_collection_playbook_path(pb_name):  # type: tuple[str, str,str]
+                _, abspath, col_name = resource
+                display.vv(f"Reading from the collection '{col_name}': '{abspath}'")
+
+                collection = col_name  # collection name: <namespace>.<name>
+                self._playbook_paths_mapping[pb_name] = abspath
+            else:
+                self._playbook_paths_mapping[pb_name] = pb_name
+                collection = _get_collection_name_from_path(pb_name)
+
+            # Make sure the loader(s) can find roles in the collection
+            AnsibleCollectionConfig.default_collection = collection
+
     def _add_my_options(self) -> None:
         """Add some of my options to the parser.
         :return:
@@ -132,7 +172,7 @@ class PlaybookGrapherCLI(CLI):
             "--inventory",
             dest="inventory",
             action="append",
-            help="specify inventory host path or comma separated host list.",
+            help="Specify inventory host path or comma separated host list.",
         )
 
         self.parser.add_argument(
@@ -248,8 +288,8 @@ class PlaybookGrapherCLI(CLI):
         )
 
         self.parser.add_argument(
-            "playbook_filenames",
-            help="Playbook(s) to graph",
+            "playbooks",
+            help="Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in collections.",
             metavar="playbooks",
             nargs="+",
         )
@@ -265,7 +305,7 @@ class PlaybookGrapherCLI(CLI):
         desc: str | None = None,
         epilog: str | None = None,
     ) -> None:
-        """Create an options parser for the grapher.
+        """Create an option parser for the grapher.
 
         :param usage:
         :param desc:
@@ -281,13 +321,18 @@ class PlaybookGrapherCLI(CLI):
         self._add_my_options()
 
     def post_process_args(self, options: Namespace) -> Namespace:
+        """Post-processing of the options. This is triggered before .run() is called.
+
+        :param options:
+        :return:
+        """
         options = super().post_process_args(options)
 
         # init the options
         self.options = options
 
         if self.options.output_filename is None:
-            basenames = map(ntpath.basename, self.options.playbook_filenames)
+            basenames = map(ntpath.basename, self.options.playbooks)
             basenames_without_ext = "-".join(
                 [Path(basename).stem for basename in basenames],
             )

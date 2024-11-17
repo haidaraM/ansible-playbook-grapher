@@ -2,6 +2,9 @@
 collections:
   - name: community.general
   - name: community.mysql
+  - name: ansible.posix
+  - source: ./collections/test_collection
+    type: dir
 roles:
   - name: geerlingguy.docker
     version: 4.2.4

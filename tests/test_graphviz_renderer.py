@@ -15,14 +15,14 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-    playbook_files: list[str],
+    playbooks: list[str],
     output_filename: str,
     additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
     :param output_filename:
     :param additional_args:
-    :param playbook_files:
+    :param playbooks:
     :return: SVG path and playbooks absolute paths.
     """
     additional_args = additional_args or []
@@ -52,7 +52,10 @@ def run_grapher(
         additional_args.insert(0, "--open-protocol-handler")
         additional_args.insert(1, "vscode")
 
-    playbook_paths = [str(FIXTURES_DIR_PATH / p_file) for p_file in playbook_files]
+    for idx, p_file in enumerate(playbooks):
+        if ".yml" in p_file:
+            playbooks[idx] = str(FIXTURES_DIR_PATH / p_file)
+
     args = [__prog__]
 
     # Clean the name a little bit
@@ -60,11 +63,11 @@ def run_grapher(
     # put the generated file in a dedicated folder
     args.extend(["-o", str(DIR_PATH / "generated-svgs" / output_filename)])
 
-    args.extend(additional_args + playbook_paths)
+    args.extend(additional_args + playbooks)
 
     cli = PlaybookGrapherCLI(args)
 
-    return cli.run(), playbook_paths
+    return cli.run(), playbooks
 
 
 def _common_tests(
@@ -82,6 +85,7 @@ def _common_tests(
      - Existence of svg file
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
+
     :param plays_number: Number of plays in the playbook
     :param pre_tasks_number: Number of pre tasks in the playbook
     :param roles_number: Number of roles in the playbook
@@ -89,7 +93,7 @@ def _common_tests(
     :param post_tasks_number: Number of post tasks in the playbook
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
-    # test if the file exist. It will exist only if we write in it.
+    # test if the file exists. It will exist only if we write in it.
     assert Path(svg_filename).is_file(), "The svg file should exist"
 
     pq = PyQuery(filename=svg_filename)
@@ -256,7 +260,7 @@ def test_with_roles(
 def test_include_role(
     request: pytest.FixtureRequest,
     include_role_tasks_option: str,
-    expected_tasks_number: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
@@ -644,7 +648,7 @@ def test_hiding_plays_without_roles_with_tags_filtering(
 ) -> None:
     """Test hiding plays with the flag --hide-plays-without-roles.
 
-    Also apply some tags filter
+    Also apply some tag filters
     :param request:
     :return:
     """
@@ -665,4 +669,36 @@ def test_hiding_plays_without_roles_with_tags_filtering(
         plays_number=1,
         roles_number=1,
         tasks_number=5,
+    )
+
+
+@pytest.mark.parametrize(
+    "playbook",
+    [
+        "haidaram.test_collection.test",
+        f"{Path('~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml').expanduser()}",
+    ],
+)
+def test_graphing_a_playbook_in_a_collection(
+    request: pytest.FixtureRequest, playbook: str
+) -> None:
+    """Test graphing a playbook in a collection
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        [playbook],
+        output_filename=request.node.name,
+        additional_args=[
+            "--include-role-tasks",
+        ],
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        roles_number=2,
+        tasks_number=6,
     )

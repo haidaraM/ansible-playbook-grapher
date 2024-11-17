@@ -1,0 +1,15 @@
+- name: Test playbook
+  hosts: localhost
+  roles:
+    - test_a
+    - test_b
+  tasks:
+    - name: Test task
+      debug:
+        msg: "Test"
+
+    - name: Set authorized key taken from file
+      ansible.posix.authorized_key:
+        user: charlie
+        state: present
+        key: "{{ lookup('file', '/fake-random-key.pub') }}"

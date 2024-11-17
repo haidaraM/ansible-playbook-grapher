@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from ansible.utils.display import Display
 
@@ -36,7 +38,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     :param display:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     assert playbook_node.location.path == str(FIXTURES_DIR_PATH / "example.yml")
@@ -77,7 +79,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbook_filenames[0])
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     play_node = playbook_node.plays()[0]
@@ -115,7 +117,7 @@ def test_include_role_parsing(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -184,7 +186,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -254,7 +256,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
             task.index == task_counter + 1
         ), "The index of the task in the block should start at 1"
 
-    # Check the post task
+    # Check the post_tasks
     assert post_tasks[0].name == "Debug"
     assert post_tasks[0].index == 6
 
@@ -289,7 +291,7 @@ def test_roles_usage_multi_plays(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
@@ -334,7 +336,7 @@ def test_roles_usage_single_play(
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
@@ -350,7 +352,7 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -375,14 +377,14 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
     "grapher_cli", [["roles_argument_validation.yml"]], indirect=True
 )
 def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None:
-    """Test if task automatically added by ansible when setting the argument validation is parsed
+    """Test if the task automatically added by ansible when setting the argument validation is parsed
 
     More info at https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html#role-argument-validation
 
     :return:
     """
     parser = PlaybookParser(
-        grapher_cli.options.playbook_filenames[0],
+        grapher_cli.options.playbooks[0],
         include_role_tasks=True,
     )
     playbook_node = parser.parse()
@@ -395,3 +397,43 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     assert (
         len(tasks) == expected_tasks
     ), f"There should be {expected_tasks} tasks in the graph"
+
+
+@pytest.mark.parametrize(
+    "grapher_cli",
+    [
+        ["haidaram.test_collection.test"],
+        [
+            f"{Path('~/.ansible/collections/ansible_collections/haidaram/test_collection/playbooks/test.yml').expanduser()}"
+        ],
+    ],
+    indirect=True,
+)
+def test_parsing_playbook_in_collection(
+    grapher_cli: PlaybookGrapherCLI,
+) -> None:
+    """Test the parsing of a playbook in a collection from a collection name and from its absolute path.
+
+    :param grapher_cli:
+    :return:
+    """
+    playbook_path = grapher_cli.get_playbook_path(grapher_cli.options.playbooks[0])
+    parser = PlaybookParser(
+        playbook_path,
+        include_role_tasks=True,
+    )
+    playbook_node = parser.parse()
+
+    assert playbook_node.location.path == playbook_path
+    assert playbook_node.location.line == 1
+    assert playbook_node.location.column == 1
+    assert len(playbook_node.plays()) == 1
+
+    play = playbook_node.plays()[0]
+    roles = play.roles
+    assert len(roles) == 2, "Two roles should be in the play"
+
+    all_tasks = get_all_tasks([playbook_node])
+    assert (
+        len(all_tasks) == 4 + 2
+    ), "There should be 6 tasks in the playbook: 4 from the roles and 2 from the tasks at the playbook level"

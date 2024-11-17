@@ -1,0 +1,4 @@
+---
+- name: Import task
+  debug: msg="From import"
+

@@ -24,9 +24,12 @@ from ansibleplaybookgrapher.utils import merge_dicts
 
 
 class Grapher:
-    def __init__(self, playbook_filenames: list[str]) -> None:
-        """:param playbook_filenames: List of playbooks to graph"""
-        self.playbook_filenames = playbook_filenames
+    def __init__(self, playbooks_mapping: dict[str, str]) -> None:
+        """
+
+        :param playbooks_mapping: Mapping of playbook args to their paths.
+        """
+        self.playbooks_mapping = playbooks_mapping
 
     def parse(
         self,
@@ -36,6 +39,7 @@ class Grapher:
         group_roles_by_name: bool = False,
     ) -> tuple[list[PlaybookNode], dict[RoleNode, set[PlayNode]]]:
         """Parses all the provided playbooks
+
         :param include_role_tasks: Should we include the role tasks
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
@@ -46,13 +50,15 @@ class Grapher:
         playbook_nodes = []
         roles_usage: dict[RoleNode, set[PlayNode]] = {}
 
-        for counter, playbook_file in enumerate(self.playbook_filenames, 1):
+        counter = 1
+        for playbook_arg in self.playbooks_mapping:
             playbook_parser = PlaybookParser(
-                playbook_filename=playbook_file,
+                playbook_path=self.playbooks_mapping[playbook_arg],
                 tags=tags,
                 skip_tags=skip_tags,
                 include_role_tasks=include_role_tasks,
                 group_roles_by_name=group_roles_by_name,
+                playbook_name=playbook_arg,
             )
             playbook_node = playbook_parser.parse()
             playbook_node.index = counter
@@ -60,5 +66,6 @@ class Grapher:
 
             # Update the usage of the roles
             roles_usage = merge_dicts(roles_usage, playbook_node.roles_usage())
+            counter += 1
 
         return playbook_nodes, roles_usage
