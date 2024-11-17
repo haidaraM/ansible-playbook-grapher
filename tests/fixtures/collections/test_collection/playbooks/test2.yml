@@ -1,0 +1,8 @@
+- name: Test playbook 2
+  hosts: localhost
+  roles:
+    - test_a
+  tasks:
+    - name: Test task
+      debug:
+        msg: "Test"

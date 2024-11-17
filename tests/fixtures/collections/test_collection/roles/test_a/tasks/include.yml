@@ -1,0 +1,4 @@
+---
+- name: Include task
+  debug: msg="From include"
+

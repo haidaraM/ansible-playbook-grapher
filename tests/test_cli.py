@@ -102,8 +102,8 @@ def test_cli_output_filename_multiple_playbooks() -> None:
     ids=["default", "include"],
 )
 def test_cli_include_role_tasks(
-    include_role_tasks_option: list[str],
-    expected: bool,
+        include_role_tasks_option: list[str],
+        expected: bool,
 ) -> None:
     """Test for the include role tasks option: --include-role-tasks
     :param include_role_tasks_option:
@@ -248,8 +248,8 @@ def test_cli_open_protocol_custom_formats_not_provided() -> None:
         cli.parse()
 
     assert (
-        "you must provide the formats to use with --open-protocol-custom-formats"
-        in exception_info.value.message
+            "you must provide the formats to use with --open-protocol-custom-formats"
+            in exception_info.value.message
     )
 
 
@@ -261,9 +261,9 @@ def test_cli_open_protocol_custom_formats_not_provided() -> None:
     ],
 )
 def test_cli_open_protocol_custom_formats_invalid_inputs(
-    protocol_format: str,
-    expected_message: str,
-    capsys: pytest.CaptureFixture,
+        protocol_format: str,
+        expected_message: str,
+        capsys: pytest.CaptureFixture,
 ) -> None:
     """The custom formats must be a valid json data
     :return:
@@ -285,13 +285,14 @@ def test_cli_open_protocol_custom_formats_invalid_inputs(
     assert expected_message in error_msg
 
 
-def test_cli_playbook_from_collection():
-    """Test reading a playbook from a collection
+def test_cli_resolve_playbook_path_from_collection():
+    """Test resolving the playbook path from a collection
 
     :return:
     """
-    pb_in_collection = "haidaram.test_collection.test"
-    args = [__prog__, pb_in_collection, "second-playbook.yml"]
+
+    playbooks = ["haidaram.test_collection.test", "second-playbook.yml"]
+    args = [__prog__] + playbooks
 
     # Since I'm not overriding the paths where the collections are installed, they should in this folder:
     expected_collection_path = Path(
@@ -302,5 +303,5 @@ def test_cli_playbook_from_collection():
     cli.parse()
     cli.resolve_playbooks_paths()
 
-    assert cli.get_playbook_path(pb_in_collection) == f"{expected_collection_path}"
-    assert cli.get_playbook_path("second-playbook.yml") == "second-playbook.yml"
+    assert cli.get_playbook_path(playbooks[0]) == f"{expected_collection_path}"
+    assert cli.get_playbook_path(playbooks[1]) == "second-playbook.yml"

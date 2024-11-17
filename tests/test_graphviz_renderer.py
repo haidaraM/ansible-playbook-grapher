@@ -699,5 +699,5 @@ def test_graphing_a_playbook_in_a_collection(
         playbook_paths=playbook_paths,
         plays_number=1,
         roles_number=2,
-        tasks_number=4,
+        tasks_number=6,
     )
