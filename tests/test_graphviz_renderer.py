@@ -85,6 +85,7 @@ def _common_tests(
      - Existence of svg file
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
+
     :param plays_number: Number of plays in the playbook
     :param pre_tasks_number: Number of pre tasks in the playbook
     :param roles_number: Number of roles in the playbook

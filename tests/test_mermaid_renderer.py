@@ -101,7 +101,7 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
         "haidaram.test_collection.test",
     ],
 )
-def test_playbooks(request: pytest.FixtureRequest, playbook: str) -> None:
+def test_single_playbook(request: pytest.FixtureRequest, playbook: str) -> None:
     """Test the renderer with a single playbook."""
     mermaid_path, playbook_paths = run_grapher(
         [playbook],
