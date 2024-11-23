@@ -1,4 +1,4 @@
-# 2.5.0 (Unreleased)
+# 2.5.0 (2024-11-23)
 
 ## What's Changed
 
