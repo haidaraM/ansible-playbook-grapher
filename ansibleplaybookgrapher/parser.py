@@ -231,6 +231,8 @@ class PlaybookParser(BaseParser):
                 if role.from_include:
                     continue
 
+                #TODO: check if role should be ignored ... something like if role.get_name in exclude_roles
+
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 

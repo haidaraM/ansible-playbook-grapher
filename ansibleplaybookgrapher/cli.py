@@ -79,6 +79,7 @@ class PlaybookGrapherCLI(CLI):
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
+            #TODO: add option to exclude certain roles
         )
 
         match self.options.renderer:
