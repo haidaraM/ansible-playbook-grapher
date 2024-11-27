@@ -21,6 +21,7 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
+from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -372,6 +373,11 @@ class PlaybookParser(BaseParser):
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     display.v(f"An 'include_role' found: '{task_or_block.get_name()}'")
+
+                    # don't show roles, which are set in --exclude-roles option
+                    if self.exclude_roles:
+                        if task_or_block._role_name in self.exclude_roles:
+                            continue
 
                     if not task_or_block.evaluate_tags(
                         only_tags=self.tags,
