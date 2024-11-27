@@ -142,6 +142,7 @@ class PlaybookParser(BaseParser):
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
         playbook_name: str | None = None,
+        exclude_roles: list[str] | None = None,
     ) -> None:
         """
 
@@ -158,6 +159,7 @@ class PlaybookParser(BaseParser):
         self.include_role_tasks = include_role_tasks
         self.playbook_path = playbook_path
         self.playbook_name = playbook_name
+        self.exclude_roles = exclude_roles
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
@@ -231,7 +233,10 @@ class PlaybookParser(BaseParser):
                 if role.from_include:
                     continue
 
-                #TODO: check if role should be ignored ... something like if role.get_name in exclude_roles
+                # Don't show roles, which are set in --exclude-roles option
+                if self.exclude_roles:
+                    if role.get_name() in self.exclude_roles:
+                        continue
 
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags

@@ -68,6 +68,7 @@ class PlaybookGrapherCLI(CLI):
         self._playbook_paths_mapping: dict[str, str] = {}
 
     def run(self):
+        # print(self.options.exclude_roles)
         super().run()
 
         display.verbosity = self.options.verbosity
@@ -80,6 +81,7 @@ class PlaybookGrapherCLI(CLI):
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
             #TODO: add option to exclude certain roles
+            exclude_roles=self.options.exclude_roles,
         )
 
         match self.options.renderer:
@@ -167,6 +169,12 @@ class PlaybookGrapherCLI(CLI):
         :return:
         """
         self.parser.prog = __prog__
+
+        self.parser.add_argument(
+            "--exclude-roles",
+            dest="exclude_roles",
+            action="append",
+        )
 
         self.parser.add_argument(
             "-i",

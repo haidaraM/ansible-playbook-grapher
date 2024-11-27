@@ -37,6 +37,7 @@ class Grapher:
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
+        exclude_roles: list[str] | None = None,
     ) -> tuple[list[PlaybookNode], dict[RoleNode, set[PlayNode]]]:
         """Parses all the provided playbooks
 
@@ -60,6 +61,7 @@ class Grapher:
                 group_roles_by_name=group_roles_by_name,
                 playbook_name=playbook_arg,
                 #TODO: pass list of roles to exclude
+                exclude_roles=exclude_roles,
             )
             playbook_node = playbook_parser.parse()
             playbook_node.index = counter
