@@ -1,8 +1,10 @@
 ---
 title: Ansible Playbook Grapher
 ---
+```mermaid
+
 %%{ init: { "flowchart": { "curve": "bumpX" } } }%%
-flowchart LR
+flowchart TD
 	%% Start of the playbook '../playground/site.yml'
 	playbook_e8bd12b6("../playground/site.yml")
 		%% Start of the play 'Play: webserver (1)'
@@ -56,4 +58,4 @@ flowchart LR
 		linkStyle 9 stroke:#3b9176,color:#3b9176
 		%% End of the play 'Play: loadbalancer (1)'
 	%% End of the playbook '../playground/site.yml'
-
+```
