@@ -142,6 +142,7 @@ class PlaybookParser(BaseParser):
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
         playbook_name: str | None = None,
+        only_roles: bool = False,
     ) -> None:
         """
 
@@ -158,6 +159,7 @@ class PlaybookParser(BaseParser):
         self.include_role_tasks = include_role_tasks
         self.playbook_path = playbook_path
         self.playbook_name = playbook_name
+        self.only_roles = only_roles
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
@@ -477,6 +479,9 @@ class PlaybookParser(BaseParser):
                     # We remove the parent node we have added if we included some tasks from a role
                     parent_nodes.pop()
             else:  # It's here that we add the task in the graph
+                if self.only_roles:
+                    continue
+
                 if (
                     len(parent_nodes) > 1  # 1
                     and not has_role_parent(task_or_block)  # 2
