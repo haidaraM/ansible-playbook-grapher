@@ -68,7 +68,6 @@ class PlaybookGrapherCLI(CLI):
         self._playbook_paths_mapping: dict[str, str] = {}
 
     def run(self):
-        # print(self.options.exclude_roles)
         super().run()
 
         display.verbosity = self.options.verbosity
@@ -80,7 +79,6 @@ class PlaybookGrapherCLI(CLI):
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
-            #TODO: add option to exclude certain roles
             exclude_roles=self.options.exclude_roles,
         )
 
@@ -349,6 +347,13 @@ class PlaybookGrapherCLI(CLI):
 
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
+
+        # roles to exclude
+        exclude_roles = set()
+        for role_set in options.exclude_roles:
+            for role in role_set.split(u','):
+                exclude_roles.add(role.strip())
+        options.exclude_roles = list(exclude_roles)
 
         return options
 
