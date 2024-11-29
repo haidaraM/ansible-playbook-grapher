@@ -172,6 +172,7 @@ class PlaybookGrapherCLI(CLI):
             "--exclude-roles",
             dest="exclude_roles",
             action="append",
+            help="Specifiy comma separated list of roles, which should be excluded"
         )
 
         self.parser.add_argument(
@@ -348,12 +349,13 @@ class PlaybookGrapherCLI(CLI):
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
 
-        # roles to exclude
-        exclude_roles = set()
-        for role_set in options.exclude_roles:
-            for role in role_set.split(u','):
-                exclude_roles.add(role.strip())
-        options.exclude_roles = list(exclude_roles)
+        # create list of roles to exclude
+        if options.exclude_roles:
+            exclude_roles = set()
+            for role_set in options.exclude_roles:
+                for role in role_set.split(u','):
+                    exclude_roles.add(role.strip())
+            options.exclude_roles = list(exclude_roles)
 
         return options
 
