@@ -353,11 +353,16 @@ class PlaybookGrapherCLI(CLI):
         if options.exclude_roles:
             exclude_roles = set()
             for arg in options.exclude_roles:
-                if Path(arg).is_file():
-                    with Path(arg).open("r") as exclude_roles_file:
-                        exclude_roles.update(
-                            [line.strip() for line in exclude_roles_file]
-                        )
+                path = Path(arg)
+                if path.exists():
+                    if path.is_dir():
+                        raise IsADirectoryError(f"{path} is a directory")
+
+                    if path.is_file():
+                        with path.open("r") as exclude_roles_file:
+                            exclude_roles.update(
+                                [line.strip() for line in exclude_roles_file]
+                            )
                 else:
                     for role in arg.split(","):
                         exclude_roles.add(role.strip())
