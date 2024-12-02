@@ -1,0 +1,55 @@
+---
+title: Ansible Playbook Grapher
+---
+%%{ init: { "flowchart": { "curve": "bumpX" } } }%%
+flowchart LR
+	%% Start of the playbook '../playground/site.yml'
+	playbook_cd793e87("../playground/site.yml")
+		%% Start of the play 'Play: webserver (1)'
+		play_486b244a["Play: webserver (1)"]
+		style play_486b244a fill:#077bc5,color:#ffffff
+		playbook_cd793e87 --> |"1"| play_486b244a
+		linkStyle 0 stroke:#077bc5,color:#077bc5
+			%% Start of the block 'Block'
+			block_b6c71d9a["[block] Block"]
+			style block_b6c71d9a fill:#077bc5,color:#ffffff,stroke:#077bc5
+			play_486b244a --> |"1"| block_b6c71d9a
+			linkStyle 1 stroke:#077bc5,color:#077bc5
+			subgraph subgraph_block_b6c71d9a["Block "]
+				task_78f86912[" Debug var"]
+				style task_78f86912 stroke:#077bc5,fill:#ffffff
+				block_b6c71d9a --> |"1"| task_78f86912
+				linkStyle 2 stroke:#077bc5,color:#077bc5
+				%% Start of the role 'loadbalancer'
+				block_b6c71d9a --> |"2"| role_2e324a8f
+				linkStyle 3 stroke:#077bc5,color:#000000
+				role_2e324a8f("[role] loadbalancer")
+				style role_2e324a8f fill:#000000,color:#ffffff,stroke:#000000
+					task_f4e4b500[" loadbalancer : Debug vars"]
+					style task_f4e4b500 stroke:#000000,fill:#ffffff
+					role_2e324a8f --> |"1"| task_f4e4b500
+					linkStyle 4 stroke:#000000,color:#000000
+				%% End of the role 'loadbalancer'
+			end
+			%% End of the block 'Block'
+		%% End of the play 'Play: webserver (1)'
+		%% Start of the play 'Play: database (2)'
+		play_834aae23["Play: database (2)"]
+		style play_834aae23 fill:#1cb034,color:#ffffff
+		playbook_cd793e87 --> |"2"| play_834aae23
+		linkStyle 5 stroke:#1cb034,color:#1cb034
+			%% Start of the role 'loadbalancer'
+			play_834aae23 --> |"1"| role_2e324a8f
+			linkStyle 6 stroke:#1cb034,color:#000000
+		%% End of the play 'Play: database (2)'
+		%% Start of the play 'Play: loadbalancer (1)'
+		play_af3e58a5["Play: loadbalancer (1)"]
+		style play_af3e58a5 fill:#4c8349,color:#ffffff
+		playbook_cd793e87 --> |"3"| play_af3e58a5
+		linkStyle 7 stroke:#4c8349,color:#4c8349
+			%% Start of the role 'loadbalancer'
+			play_af3e58a5 --> |"1"| role_2e324a8f
+			linkStyle 8 stroke:#4c8349,color:#000000
+		%% End of the play 'Play: loadbalancer (1)'
+	%% End of the playbook '../playground/site.yml'
+
