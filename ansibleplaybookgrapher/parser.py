@@ -152,6 +152,7 @@ class PlaybookParser(BaseParser):
         :param skip_tags: Only add plays and tasks whose tags do not match these values.
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs.
         :param playbook_name: On optional name of the playbook to parse.
+        :param only_roles: Ignore all task nodes when rendering graph
         It will be used as the node name if provided in replacement of the file name.
         """
         super().__init__(tags=tags, skip_tags=skip_tags)
