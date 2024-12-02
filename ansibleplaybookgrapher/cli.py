@@ -79,7 +79,7 @@ class PlaybookGrapherCLI(CLI):
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
-            only_roles=self.options.only_roles
+            only_roles=self.options.only_roles,
         )
 
         match self.options.renderer:

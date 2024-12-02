@@ -61,7 +61,7 @@ class Grapher:
                 include_role_tasks=include_role_tasks,
                 group_roles_by_name=group_roles_by_name,
                 playbook_name=playbook_arg,
-                only_roles=only_roles
+                only_roles=only_roles,
             )
             playbook_node = playbook_parser.parse()
             playbook_node.index = counter
