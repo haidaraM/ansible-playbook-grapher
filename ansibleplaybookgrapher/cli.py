@@ -14,7 +14,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import ntpath
-import os.path
 import sys
 from argparse import Namespace
 from collections.abc import Callable
@@ -173,7 +172,7 @@ class PlaybookGrapherCLI(CLI):
             "--exclude-roles",
             dest="exclude_roles",
             action="append",
-            help="Specifiy file path or comma separated list of roles, which should be excluded"
+            help="Specifiy file path or comma separated list of roles, which should be excluded",
         )
 
         self.parser.add_argument(
@@ -354,11 +353,13 @@ class PlaybookGrapherCLI(CLI):
         if options.exclude_roles:
             exclude_roles = set()
             for arg in options.exclude_roles:
-                if os.path.isfile(arg):
-                    with open(arg, 'r') as exclude_roles_file:
-                        exclude_roles.update([line.strip() for line in exclude_roles_file])
+                if Path(arg).is_file():
+                    with Path(arg).open("r") as exclude_roles_file:
+                        exclude_roles.update(
+                            [line.strip() for line in exclude_roles_file]
+                        )
                 else:
-                    for role in arg.split(u','):
+                    for role in arg.split(","):
                         exclude_roles.add(role.strip())
 
             options.exclude_roles = list(exclude_roles)
