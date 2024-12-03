@@ -1,6 +1,6 @@
 pytest==8.3.3
 pytest-cov==6.0.0
 pyquery==2.0.1
-ruff==0.7.4
+ruff==0.8.1
 jq==1.8.0
 jsonschema[format]==4.23.0
