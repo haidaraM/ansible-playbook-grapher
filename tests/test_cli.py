@@ -7,6 +7,7 @@ from ansible.release import __version__ as ansible_version
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
+
 @pytest.mark.parametrize(
     ("only_roles_option", "expected"),
     [(["--"], False), (["--only-roles"], True)],

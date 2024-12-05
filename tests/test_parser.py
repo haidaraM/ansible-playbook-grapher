@@ -106,6 +106,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
             task.index == task_counter + 1
         ), "The index of the task in the role the should start at 1"
 
+
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
 @pytest.mark.parametrize(
     "only_roles",
@@ -135,7 +136,9 @@ def test_include_role_parsing(
     # If only roles option is set then there should be no Task Nodes
     if only_roles:
         all_tasks = get_all_tasks([playbook_node])
-        assert len(all_tasks) == 0, "There should be no TaskNodes when running with only roles option"
+        assert (
+            len(all_tasks) == 0
+        ), "There should be no TaskNodes when running with only roles option"
         return
 
     assert len(tasks) == 6
