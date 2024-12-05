@@ -7,19 +7,37 @@ from ansible.release import __version__ as ansible_version
 from ansibleplaybookgrapher import __prog__, __version__
 from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
+
 @pytest.mark.parametrize(
-        ("exclude_roles_option", "expected"),
-        [
-            (["--"], None),
-            (["--exclude-roles", "fake_role"], ["fake_role"]),
-            (["--exclude-roles", "fake_role,display_some_facts"], ["fake_role", "display_some_facts"]),
-            (["--exclude-roles", "exclude_roles.txt"], ["fake_role", "display_some_facts"]),
-            #TODO: add test case for failing when filepath argument is a directory
-            pytest.param(["--exclude-roles", "example_dir"], ["fake_role", "display_some_facts"], marks=pytest.mark.xfail(raises=IsADirectoryError)),
-        ],
-        ids=["default", "exclude_roles_single_role", "exclude_roles_multiple_roles", "exclude_roles_with_file", "exclude_roles_with_dir"],
+    ("exclude_roles_option", "expected"),
+    [
+        (["--"], None),
+        (["--exclude-roles", "fake_role"], ["fake_role"]),
+        (
+            ["--exclude-roles", "fake_role,display_some_facts"],
+            ["fake_role", "display_some_facts"],
+        ),
+        (["--exclude-roles", "exclude_roles.txt"], ["fake_role", "display_some_facts"]),
+        pytest.param(
+            ["--exclude-roles", "example_dir"],
+            ["fake_role", "display_some_facts"],
+            marks=pytest.mark.xfail(raises=IsADirectoryError),
+        ),
+    ],
+    ids=[
+        "default",
+        "exclude_roles_single_role",
+        "exclude_roles_multiple_roles",
+        "exclude_roles_with_file",
+        "exclude_roles_with_dir",
+    ],
 )
-def test_cli_exclude_roles(exclude_roles_option: list[str], expected: list[str], request: pytest.FixtureRequest, tmp_path: Path) -> None:
+def test_cli_exclude_roles(
+    exclude_roles_option: list[str],
+    expected: list[str],
+    request: pytest.FixtureRequest,
+    tmp_path: Path,
+) -> None:
     """Test for the exclude roles option: --exclude-roles
     :param exclude_roles_option:
     :param expected:
@@ -46,6 +64,7 @@ def test_cli_exclude_roles(exclude_roles_option: list[str], expected: list[str],
     cli.parse()
 
     assert sorted(cli.options.exclude_roles or []) == sorted(expected or [])
+
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
 def test_cli_help(help_option: str, capfd: pytest.CaptureFixture) -> None:

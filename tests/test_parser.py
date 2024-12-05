@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 from ansible.utils.display import Display
@@ -30,6 +29,7 @@ def get_all_tasks(nodes: list[Node]) -> list[TaskNode]:
             tasks.append(n)
 
     return tasks
+
 
 def get_all_roles(nodes: list[Node]) -> list[RoleNode]:
     """Recursively get all roles from a list of nodes
@@ -158,7 +158,7 @@ def test_include_role_parsing(
     if exclude_roles is not None:
         all_roles = get_all_roles([playbook_node])
         role_names = list(map(lambda role_node: role_node.name, all_roles))
-        assert not exclude_roles in role_names
+        assert exclude_roles not in role_names
         return
 
     assert len(tasks) == 6
