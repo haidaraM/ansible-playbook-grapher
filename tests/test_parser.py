@@ -106,24 +106,38 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
             task.index == task_counter + 1
         ), "The index of the task in the role the should start at 1"
 
-
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
+@pytest.mark.parametrize(
+    "only_roles",
+    [(False,), (True,)],
+    ids=["default", "only_roles"],
+)
 def test_include_role_parsing(
     grapher_cli: PlaybookGrapherCLI,
+    only_roles: bool,
     capsys: pytest.CaptureFixture,
 ) -> None:
     """Test parsing of include_role
     :param grapher_cli:
+    :param only_roles: flag to enable displaying only roles or not
     :return:
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
         include_role_tasks=True,
+        only_roles=only_roles,
     )
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     play_node = playbook_node.plays()[0]
     tasks = play_node.tasks
+
+    # If only roles option is set then there should be no Task Nodes
+    if only_roles:
+        all_tasks = get_all_tasks([playbook_node])
+        assert len(all_tasks) == 0, "There should be no TaskNodes when running with only roles option"
+        return
+
     assert len(tasks) == 6
 
     # Since we use some loops inside the playbook, a warning should be displayed
