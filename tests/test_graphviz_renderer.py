@@ -80,6 +80,7 @@ def _common_tests(
     roles_number: int = 0,
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
+    handlers_number: int = 0,
 ) -> dict[str, list[Element]]:
     """Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -91,6 +92,7 @@ def _common_tests(
     :param roles_number: Number of roles in the playbook
     :param tasks_number: Number of tasks in the playbook
     :param post_tasks_number: Number of post tasks in the playbook
+    :param handlers_number: Number of handlers in the playbook
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
     # test if the file exists. It will exist only if we write in it.
@@ -106,6 +108,7 @@ def _common_tests(
     pre_tasks = pq("g[id^='pre_task_']")
     blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
+    handlers = pq("g[id^='handler_']")
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
@@ -138,7 +141,11 @@ def _common_tests(
 
     assert (
         len(blocks) == blocks_number
-    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
+    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks"
+
+    assert (
+        len(handlers) == handlers_number
+    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(handlers)} blocks "
 
     return {
         "tasks": tasks,

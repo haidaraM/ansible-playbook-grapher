@@ -188,7 +188,7 @@ class CompositeNode(Node):
         )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
-        self._compositions = defaultdict(list)  # type: Dict[str, List]
+        self._compositions = defaultdict(list)  # type: dict[str, list]
         # Used to count the number of nodes in this composite node
         self._node_counter = 0
 
@@ -455,7 +455,8 @@ class PlayNode(CompositeNode):
     - pre_tasks
     - roles
     - tasks
-    - post_tasks.
+    - post_tasks
+    - handlers
     """
 
     def __init__(
@@ -481,7 +482,13 @@ class PlayNode(CompositeNode):
             raw_object=raw_object,
             parent=parent,
             index=index,
-            supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
+            supported_compositions=[
+                "pre_tasks",
+                "roles",
+                "tasks",
+                "post_tasks",
+                "handlers",
+            ],
         )
         self.hosts = hosts or []
         self.colors: tuple[str, str] = get_play_colors(self.id)
@@ -505,6 +512,10 @@ class PlayNode(CompositeNode):
     @property
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
+
+    @property
+    def handlers(self) -> list["Node"]:
+        return self.get_nodes("handlers")
 
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
@@ -611,7 +622,7 @@ class RoleNode(LoopMixin, CompositeTasksNode):
 
     def has_loop(self) -> bool:
         if not self.include_role:
-            # Only include_role supports loop
+            # Only the include_role supports loop
             return False
 
         return super().has_loop()

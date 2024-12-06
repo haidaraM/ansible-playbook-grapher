@@ -170,6 +170,7 @@ class PlaybookParser(BaseParser):
                     add role_tasks
             add tasks
             add post_tasks
+            add handlers
         :return:
         """
         display.display(f"Parsing the playbook '{self.playbook_path}'")
@@ -297,6 +298,9 @@ class PlaybookParser(BaseParser):
                     play_vars=play_vars,
                     node_type="post_task",
                 )
+
+            add_play_handlers(play, play_node)
+
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
@@ -508,3 +512,22 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
+
+
+def add_play_handlers(play: Play, play_node: PlayNode):
+    """Add handlers to the play node.
+
+    :param play: The raw play object.
+    :param play_node: The play node.
+    :return:
+    """
+    handlers = play.get_handlers()
+    for handler_block in handlers:
+        for h in handler_block.block:
+            task_node = TaskNode(
+                clean_name(h.get_name()),
+                node_id=generate_id("handler_"),
+                raw_object=h,
+                parent=play_node,
+            )
+            play_node.add_node("handlers", task_node)

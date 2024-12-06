@@ -1,7 +1,6 @@
 - name: play 1 - handlers
   hosts: localhost
-  gather_facts: False
-
+  gather_facts: false
   tasks:
     - name: foo
       assert: { that: true }
@@ -22,8 +21,7 @@
 
 - name: play 2 - handlers
   hosts: localhost
-  gather_facts: False
-
+  gather_facts: false
   tasks:
     - name: foo
       assert: { that: true }
@@ -38,11 +36,14 @@
 
     - name: bar
       assert: { that: true }
-      notify:
+      notify: my second handler play 2
 
   handlers:
     - name: my handler play 2
       assert: { that: true }
 
     - name: my second handler play 2
+      assert: { that: true }
+
+    - name: my third handler play 3
       assert: { that: true }

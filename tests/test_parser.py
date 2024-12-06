@@ -451,10 +451,10 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(plays) == 2
     play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
 
-    assert (
-        len(play_1.tasks) == 4
-    ), "The first play should have 4 tasks: 2 normal tasks + 2 handlers"
+    assert len(play_1.tasks) == 2, "The first play should have 2 tasks"
 
-    assert (
-        len(play_2.tasks) == 6
-    ), "The first play should have 6 tasks: 4 normal tasks + 2 handlers"
+    assert len(play_1.handlers) == 2, "The first play should have 2 handlers"
+
+    assert len(play_2.tasks) == 4, "The first play should have 4 tasks"
+
+    assert len(play_2.handlers) == 3, "The first play should have 3 handlers"
