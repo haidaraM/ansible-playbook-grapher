@@ -1,0 +1,5 @@
+---
+- name: Debug 1
+  debug: msg="My role with a handler"
+  notify: restart postgres from the role
+  changed_when: true
