@@ -21,6 +21,7 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
+from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -99,7 +100,12 @@ class BaseParser(ABC):
         node_type: str,
         parent_node: CompositeNode,
     ) -> bool:
-        """Include the task in the graph.
+        """Add the task in the graph.
+
+        :param task: The task to include.
+        :param task_vars: The variables of the task.
+        :param node_type: The type of the node.
+        :param parent_node: The parent node.
         :return: True if the task has been included, false otherwise.
         """
         # Ansible-core 2.11 added an implicit meta-task at the end of the role. So wee skip it here.
@@ -168,14 +174,16 @@ class PlaybookParser(BaseParser):
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
 
-        The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
+        The graph is parsed following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
             add pre_tasks
             add roles
                 if include_role_tasks
-                    add role_tasks
+                    add role tasks
+                    add role handlers
             add tasks
             add post_tasks
+            add handlers
         :return:
         """
         display.display(f"Parsing the playbook '{self.playbook_path}'")
@@ -241,7 +249,7 @@ class PlaybookParser(BaseParser):
                 if role.get_name() in self.exclude_roles:
                     continue
 
-                # the role object doesn't inherit the tags from the play. So we add it manually.
+                # The role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 
                 # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
@@ -275,7 +283,7 @@ class PlaybookParser(BaseParser):
                 play_node.add_node("roles", role_node)
 
                 if self.include_role_tasks:
-                    # loop through the tasks of the roles
+                    # loop through the tasks
                     for block in role.compile(play):
                         self._include_tasks_in_blocks(
                             current_play=play,
@@ -284,7 +292,17 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                    # end of the roles loop
+
+                    # loop through handlers of the roles
+                    for block in role.get_handler_blocks(play):
+                        self._include_tasks_in_blocks(
+                            current_play=play,
+                            parent_nodes=[role_node],
+                            block=block,
+                            play_vars=play_vars,
+                            node_type="handler",
+                        )
+            # end of the roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -307,12 +325,24 @@ class PlaybookParser(BaseParser):
                     play_vars=play_vars,
                     node_type="post_task",
                 )
+
+            # loop through the handlers of the play
+            for handler_block in play.get_handlers():
+                self._include_tasks_in_blocks(
+                    current_play=play,
+                    parent_nodes=[play_node],
+                    block=handler_block,
+                    play_vars=play_vars,
+                    node_type="handler",
+                )
+
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
             display.v(f"{len(play_node.tasks)} task(s) added to the play")
             display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
-            # moving to the next play
+
+        # moving to the next play
 
         return playbook_root_node
 
@@ -326,7 +356,7 @@ class PlaybookParser(BaseParser):
     ) -> None:
         """Recursively read all the tasks of the block and add it to the graph.
 
-        :param parent_nodes: This is a list of parent nodes. Each time, we see an include_role, the corresponding node is
+        :param parent_nodes: This is the list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
         :param current_play:
         :param block:
