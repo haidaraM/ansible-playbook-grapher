@@ -302,7 +302,9 @@ class PlaybookParser(BaseParser):
             display.v(f"{len(play_node.roles)} role(s) added to the play")
             display.v(f"{len(play_node.tasks)} task(s) added to the play")
             display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
-            # moving to the next play
+
+
+        # moving to the next play
 
         return playbook_root_node
 

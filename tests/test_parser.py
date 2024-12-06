@@ -45,7 +45,7 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     assert playbook_node.location.line == 1
     assert playbook_node.location.column == 1
     assert (
-        playbook_node.index is None
+            playbook_node.index is None
     ), "The index of the playbook should be None (it has no parent)"
 
     play_node = playbook_node.plays()[0]
@@ -62,14 +62,14 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     assert len(tasks) == 4
     for task_counter, task in enumerate(tasks):
         assert (
-            task.index == task_counter + len(pre_tasks) + 1
+                task.index == task_counter + len(pre_tasks) + 1
         ), "The index of the task should start after the pre_tasks"
 
     post_tasks = play_node.post_tasks
     assert len(post_tasks) == 2
     for post_task_counter, task in enumerate(post_tasks):
         assert (
-            task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1
+                task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1
         ), "The index of the post task should start after the pre_tasks and tasks"
 
 
@@ -97,20 +97,20 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 
     for task_counter, task in enumerate(fake_role.tasks):
         assert (
-            task.index == task_counter + 1
+                task.index == task_counter + 1
         ), "The index of the task in the role should start at 1"
 
     display_some_facts = play_node.roles[1]
     for task_counter, task in enumerate(display_some_facts.tasks):
         assert (
-            task.index == task_counter + 1
+                task.index == task_counter + 1
         ), "The index of the task in the role the should start at 1"
 
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
 def test_include_role_parsing(
-    grapher_cli: PlaybookGrapherCLI,
-    capsys: pytest.CaptureFixture,
+        grapher_cli: PlaybookGrapherCLI,
+        capsys: pytest.CaptureFixture,
 ) -> None:
     """Test parsing of include_role
     :param grapher_cli:
@@ -128,8 +128,8 @@ def test_include_role_parsing(
 
     # Since we use some loops inside the playbook, a warning should be displayed
     assert (
-        "Looping on tasks or roles are not supported for the moment"
-        in capsys.readouterr().err
+            "Looping on tasks or roles are not supported for the moment"
+            in capsys.readouterr().err
     ), "A warning should be displayed regarding loop being not supported"
 
     # first include_role using a block
@@ -140,10 +140,10 @@ def test_include_role_parsing(
     assert include_role_1.include_role
     assert include_role_1.location.path == str(FIXTURES_DIR_PATH / "include_role.yml")
     assert (
-        include_role_1.location.line == 10
+            include_role_1.location.line == 10
     ), "The first include role should be at line 9"
     assert (
-        len(include_role_1.tasks) == 0
+            len(include_role_1.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
     assert include_role_1.has_loop(), "The first include role has a loop"
 
@@ -174,7 +174,7 @@ def test_include_role_parsing(
     assert isinstance(include_role_4, RoleNode)
     assert include_role_4.include_role
     assert (
-        len(include_role_4.tasks) == 0
+            len(include_role_4.tasks) == 0
     ), "We don't support adding tasks from include_role with loop"
     assert include_role_4.has_loop(), "The third include role has a loop"
 
@@ -202,13 +202,13 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     total_post_tasks = get_all_tasks(post_tasks)
 
     assert (
-        len(total_pre_tasks) == 4
+            len(total_pre_tasks) == 4
     ), f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
     assert (
-        len(total_tasks) == 7
+            len(total_tasks) == 7
     ), f"The play should contain 3 tasks but we found {len(total_tasks)} task(s)"
     assert (
-        len(total_post_tasks) == 2
+            len(total_post_tasks) == 2
     ), f"The play should contain 2 post tasks but we found {len(total_post_tasks)} post task(s)"
 
     # Check pre tasks
@@ -237,7 +237,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     assert first_block.index == 4
     for task_counter, task in enumerate(first_block.tasks):
         assert (
-            task.index == task_counter + 1
+                task.index == task_counter + 1
         ), "The index of the task in the block should start at 1"
 
     assert first_block.tasks[0].name == "Install some packages"
@@ -253,7 +253,7 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 
     for task_counter, task in enumerate(nested_block.tasks):
         assert (
-            task.index == task_counter + 1
+                task.index == task_counter + 1
         ), "The index of the task in the block should start at 1"
 
     # Check the post_tasks
@@ -264,22 +264,22 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
 @pytest.mark.parametrize(
     (
-        "group_roles_by_name",
-        "roles_number",
-        "nb_fake_role",
-        "nb_display_some_facts",
-        "nb_nested_include_role",
+            "group_roles_by_name",
+            "roles_number",
+            "nb_fake_role",
+            "nb_display_some_facts",
+            "nb_nested_include_role",
     ),
     [(False, 8, 1, 1, 1), (True, 3, 3, 3, 1)],
     ids=["no_group", "group"],
 )
 def test_roles_usage_multi_plays(
-    grapher_cli: PlaybookGrapherCLI,
-    roles_number: int,
-    group_roles_by_name: bool,
-    nb_fake_role: int,
-    nb_display_some_facts: int,
-    nb_nested_include_role: int,
+        grapher_cli: PlaybookGrapherCLI,
+        roles_number: int,
+        group_roles_by_name: bool,
+        nb_fake_role: int,
+        nb_display_some_facts: int,
+        nb_nested_include_role: int,
 ) -> None:
     """Test the role_usages method for multiple plays referencing the same roles
     :param grapher_cli:
@@ -316,7 +316,7 @@ def test_roles_usage_multi_plays(
         nb_plays_for_the_role = len(plays)
 
         assert (
-            expectation.get(role.name) == nb_plays_for_the_role
+                expectation.get(role.name) == nb_plays_for_the_role
         ), f"The role '{role.name}' is used {nb_plays_for_the_role} times but we expect {expectation.get(role.name)}"
 
 
@@ -327,8 +327,8 @@ def test_roles_usage_multi_plays(
     ids=["no_group", "group"],
 )
 def test_roles_usage_single_play(
-    grapher_cli: PlaybookGrapherCLI,
-    group_roles_by_name: bool,
+        grapher_cli: PlaybookGrapherCLI,
+        group_roles_by_name: bool,
 ) -> None:
     """Test the role_usages method for a single play using the same roles multiple times.
 
@@ -364,12 +364,12 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
     expected_tasks = 5
     dependant_role_name = "fake_role"
     assert (
-        len(tasks) == expected_tasks
+            len(tasks) == expected_tasks
     ), f"There should be {expected_tasks} tasks in the graph"
     # The first 3 tasks are coming from the dependency
     for task_from_dependency in tasks[:3]:
         assert (
-            dependant_role_name in task_from_dependency.name
+                dependant_role_name in task_from_dependency.name
         ), f"The task name should include the dependant role name '{dependant_role_name}'"
 
 
@@ -395,7 +395,7 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
 
     expected_tasks = 1 + 2  # 1 validation task added by ansible and 2 tasks in the role
     assert (
-        len(tasks) == expected_tasks
+            len(tasks) == expected_tasks
     ), f"There should be {expected_tasks} tasks in the graph"
 
 
@@ -410,7 +410,7 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     indirect=True,
 )
 def test_parsing_playbook_in_collection(
-    grapher_cli: PlaybookGrapherCLI,
+        grapher_cli: PlaybookGrapherCLI,
 ) -> None:
     """Test the parsing of a playbook in a collection from a collection name and from its absolute path.
 
@@ -435,5 +435,26 @@ def test_parsing_playbook_in_collection(
 
     all_tasks = get_all_tasks([playbook_node])
     assert (
-        len(all_tasks) == 4 + 2
+            len(all_tasks) == 4 + 2
     ), "There should be 6 tasks in the playbook: 4 from the roles and 2 from the tasks at the playbook level"
+
+
+@pytest.mark.parametrize("grapher_cli", [["handlers.yml"]], indirect=True)
+def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test if we are able to get the handlers in each play and add them in the graph
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
+    playbook_node = parser.parse()
+    plays = playbook_node.plays()
+
+    assert len(plays) == 2
+    play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
+
+    assert (
+            len(play_1.tasks) == 4
+    ), "The first play should have 4 tasks: 2 normal tasks + 2 handlers"
+
+    assert (
+            len(play_2.tasks) == 6
+    ), "The first play should have 6 tasks: 4 normal tasks + 2 handlers"

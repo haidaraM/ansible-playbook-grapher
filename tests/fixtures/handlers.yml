@@ -1,0 +1,48 @@
+- name: play 1 - handlers
+  hosts: localhost
+  gather_facts: False
+
+  tasks:
+    - name: foo
+      assert: { that: true }
+      changed_when: true
+      notify: my second handler
+
+    - name: bar
+      assert: { that: true }
+      changed_when: true
+      notify: my handler
+
+  handlers:
+    - name: my handler
+      assert: { that: true }
+
+    - name: my second handler
+      assert: { that: true }
+
+- name: play 2 - handlers
+  hosts: localhost
+  gather_facts: False
+
+  tasks:
+    - name: foo
+      assert: { that: true }
+      changed_when: true
+      notify: my handler play 2
+
+    - name: Debug
+      debug: msg="debug"
+
+    - name: Flush handlers (meta)
+      meta: flush_handlers
+
+    - name: bar
+      assert: { that: true }
+      notify:
+
+  handlers:
+    - name: my handler play 2
+      assert: { that: true }
+
+    - name: my second handler play 2
+      assert: { that: true }
