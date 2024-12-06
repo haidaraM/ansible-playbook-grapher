@@ -1,0 +1,58 @@
+- name: play 1 - handlers
+  hosts: localhost
+  gather_facts: false
+  pre_tasks:
+    - name: pre task
+      debug: msg="pre task"
+      changed_when: true
+      # TODO: this handler should be included in the graph at the end of pre_tasks
+      notify: restart mysql in the pre_tasks
+  tasks:
+    - name: foo
+      assert: { that: true }
+      changed_when: true
+      notify: restart mysql
+
+    - name: bar
+      assert: { that: true }
+      changed_when: true
+      notify: restart nginx
+
+  handlers:
+    - name: restart nginx
+      assert: { that: true }
+
+    - name: restart mysql
+      assert: { that: true }
+
+    - name: restart mysql in the pre_tasks
+      assert: { that: true }
+
+- name: play 2 - handlers with meta
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: foo
+      assert: { that: true }
+      changed_when: true
+      notify: restart postgres
+
+    - name: Debug
+      debug: msg="debug"
+
+    - name: Flush handlers (meta)
+      meta: flush_handlers
+
+    - name: bar
+      assert: { that: true }
+      notify: stop traefik
+
+  handlers:
+    - name: restart postgres
+      assert: { that: true }
+
+    - name: stop traefik
+      assert: { that: true }
+
+    - name: restart apache
+      assert: { that: true }

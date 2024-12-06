@@ -153,10 +153,17 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         node_label_prefix = kwargs["node_label_prefix"]
         edge_label = f"{task_node.index} {task_node.when}"
 
+        edge_style = "solid"
+        node_shape = "rectangle"
+
+        if task_node.is_handler():
+            edge_style = "dotted"
+            node_shape = "octagon"
+
         digraph.node(
             task_node.id,
             label=node_label_prefix + task_node.name,
-            shape="octagon",
+            shape=node_shape,
             id=task_node.id,
             tooltip=task_node.name,
             color=color,
@@ -173,6 +180,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             id=f"edge_{task_node.index}_{task_node.parent.id}_{task_node.id}",
             tooltip=edge_label,
             labeltooltip=edge_label,
+            style=edge_style,
         )
 
     def build_block(

@@ -180,6 +180,15 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
+            for r_handler in role.handlers:
+                self.build_node(
+                    node=r_handler,
+                    color=color,
+                    fontcolor=play_font_color,
+                    node_label_prefix="[handler] ",
+                    **kwargs,
+                )
+
         # tasks
         for task in play_node.tasks:
             self.build_node(
@@ -197,6 +206,16 @@ class PlaybookBuilder(ABC):
                 color=color,
                 fontcolor=play_font_color,
                 node_label_prefix="[post_task] ",
+                **kwargs,
+            )
+
+        # play handlers
+        for p_handler in play_node.handlers:
+            self.build_node(
+                node=p_handler,
+                color=color,
+                fontcolor=play_font_color,
+                node_label_prefix="[handler] ",
                 **kwargs,
             )
 

@@ -16,6 +16,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any, Type, TypeVar
 
+from ansible.playbook.handler import Handler
+
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
@@ -99,13 +101,13 @@ class Node:
                     column=column,
                 )
             else:
-                # Here we likely have a task a validate argument spec task inserted by Ansible
+                # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """Get the first parent of this node matching the given type.
 
-        :param node_type: The type of the parent to get
+        :param node_type: The type of the parent node to get.
         :return:
         """
         current_parent = self.parent
@@ -192,7 +194,7 @@ class CompositeNode(Node):
         )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
-        self._compositions = defaultdict(list)  # type: Dict[str, List]
+        self._compositions = defaultdict(list)  # type: dict[str, list]
         # Used to count the number of nodes in this composite node
         self._node_counter = 0
 
@@ -321,47 +323,6 @@ class CompositeNode(Node):
         return node_dict
 
 
-class CompositeTasksNode(CompositeNode):
-    """A special composite node which only support adding "tasks". Useful for block and role."""
-
-    def __init__(
-        self,
-        node_name: str,
-        node_id: str,
-        when: str = "",
-        raw_object: Any = None,
-        parent: "Node" = None,
-        index: int | None = None,
-    ) -> None:
-        super().__init__(
-            node_name=node_name,
-            node_id=node_id,
-            when=when,
-            raw_object=raw_object,
-            parent=parent,
-            index=index,
-        )
-        self._supported_compositions = ["tasks"]
-
-    def add_node(self, target_composition: str, node: Node) -> None:
-        """Override the add_node because the composite tasks only contains "tasks" regardless of the context
-         (pre_tasks or post_tasks).
-
-        :param target_composition: This is ignored.
-        :param node:
-        :return:
-        """
-        super().add_node("tasks", node)
-
-    @property
-    def tasks(self) -> list[Node]:
-        """The tasks attached to this block.
-
-        :return:
-        """
-        return self.get_nodes("tasks")
-
-
 class PlaybookNode(CompositeNode):
     """A playbook is a list of play."""
 
@@ -468,7 +429,8 @@ class PlayNode(CompositeNode):
     - pre_tasks
     - roles
     - tasks
-    - post_tasks.
+    - post_tasks
+    - handlers
     """
 
     def __init__(
@@ -494,7 +456,13 @@ class PlayNode(CompositeNode):
             raw_object=raw_object,
             parent=parent,
             index=index,
-            supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
+            supported_compositions=[
+                "pre_tasks",
+                "roles",
+                "tasks",
+                "post_tasks",
+                "handlers",
+            ],
         )
         self.hosts = hosts or []
         self.colors: tuple[str, str] = get_play_colors(self.id)
@@ -519,6 +487,15 @@ class PlayNode(CompositeNode):
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
 
+    @property
+    def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined at the play level.
+
+        The handlers defined in roles are not included here.
+        :return:
+        """
+        return self.get_nodes("handlers")
+
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
@@ -532,7 +509,7 @@ class PlayNode(CompositeNode):
         return data
 
 
-class BlockNode(CompositeTasksNode):
+class BlockNode(CompositeNode):
     """A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html."""
 
     def __init__(
@@ -550,8 +527,26 @@ class BlockNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            supported_compositions=["tasks"],
             index=index,
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Block only supports adding tasks regardless of the context
+
+        :param target_composition: This is ignored.
+        :param node:
+        :return:
+        """
+        super().add_node("tasks", node)
+
+    @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
 
 
 class TaskNode(LoopMixin, Node):
@@ -579,8 +574,15 @@ class TaskNode(LoopMixin, Node):
             index=index,
         )
 
+    def is_handler(self) -> bool:
+        """Return true if this task is a handler, false otherwise.
 
-class RoleNode(LoopMixin, CompositeTasksNode):
+        :return:
+        """
+        return isinstance(self.raw_object, Handler)
+
+
+class RoleNode(LoopMixin, CompositeNode):
     """A role node. A role is a composition of tasks."""
 
     def __init__(
@@ -606,8 +608,22 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            supported_compositions=["tasks", "handlers"],
             index=index,
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Add a node in the target composition.
+
+        :param target_composition: The name of the target composition
+        :param node: The node to add in the given composition
+        :return:
+        """
+        if target_composition != "handlers":
+            # If we are not adding a handler, we always add the node to the tasks composition
+            super().add_node("tasks", node)
+        else:
+            super().add_node("handlers", node)
 
     def set_location(self) -> None:
         """Retrieve the position depending on whether it's an include_role or not.
@@ -624,7 +640,7 @@ class RoleNode(LoopMixin, CompositeTasksNode):
 
     def has_loop(self) -> bool:
         if not self.include_role:
-            # Only include_role supports loop
+            # Only the include_role supports loop
             return False
 
         return super().has_loop()
@@ -640,3 +656,21 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         node_dict["include_role"] = self.include_role
 
         return node_dict
+
+    @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
+
+    @property
+    def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined in the role.
+
+        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
+        of a role.
+        :return:
+        """
+        return self.get_nodes("handlers")
