@@ -53,14 +53,14 @@ class MermaidFlowChartRenderer(Renderer):
     ) -> str:
         """Render the graph to a Mermaid flow chart format.
 
-        :param open_protocol_handler: Not supported for the moment
-        :param open_protocol_custom_formats: Not supported for the moment
-        :param output_filename: The output filename without any extension
-        :param view: Not supported for the moment
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :param directive: Mermaid directive
-        :param orientation: Mermaid graph orientation
+        :param open_protocol_handler: Not supported for the moment.
+        :param open_protocol_custom_formats: Not supported for the moment.
+        :param output_filename: The output filename without any extension.
+        :param view: Not supported for the moment.
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
+        :param directive: Mermaid directive.
+        :param orientation: Mermaid graph orientation.
         :param kwargs:
         :return:
         """
@@ -249,6 +249,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
+        if task_node.is_handler():
+            # dotted style for handlers
+            link_type = "-.-"
+        else:
+            link_type = "--"
+
         # Task node
         self.add_text(f'{task_node.id}["{node_label_prefix} {task_node.name}"]')
         self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
@@ -259,6 +265,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             text=f"{task_node.index} {task_node.when}",
             dest_id=task_node.id,
             style=f"stroke:{color},color:{color}",
+            link_type=link_type,
         )
 
     def build_role(
@@ -368,13 +375,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         style: str = "",
         link_type: str = "--",
     ) -> None:
-        """Add link between two nodes.
+        """Add the link between two nodes.
 
-        :param source_id: The link source
-        :param text: The text on the link
-        :param dest_id: The link destination
-        :param style: The style to apply to the link
-        :param link_type: Type of link to create. https://mermaid.js.org/syntax/flowchart.html#links-between-nodes
+        :param source_id: The link source.
+        :param text: The text on the link.
+        :param dest_id: The link destination.
+        :param style: The style to apply to the link.
+        :param link_type: Type of link to create. https://mermaid.js.org/syntax/flowchart.html#links-between-nodes.
         :return:
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes

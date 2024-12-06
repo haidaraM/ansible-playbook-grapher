@@ -452,9 +452,23 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
 
     assert len(play_1.tasks) == 2, "The first play should have 2 tasks"
-
     assert len(play_1.handlers) == 2, "The first play should have 2 handlers"
+    expected_names = ["my handler", "my second handler"]
+    for idx, h in enumerate(play_1.handlers):
+        assert (
+            h.name == expected_names[idx]
+        ), f"The handler should be '{expected_names[idx]}'"
+        assert h.is_handler()
 
     assert len(play_2.tasks) == 4, "The first play should have 4 tasks"
-
     assert len(play_2.handlers) == 3, "The first play should have 3 handlers"
+    expected_names = [
+        "my handler play 2",
+        "my second handler play 2",
+        "my third handler play 3",
+    ]
+    for idx, h in enumerate(play_2.handlers):
+        assert (
+            h.name == expected_names[idx]
+        ), f"The handler should be '{expected_names[idx]}'"
+        assert h.is_handler()

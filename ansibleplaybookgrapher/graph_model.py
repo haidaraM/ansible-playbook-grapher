@@ -16,6 +16,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from ansible.playbook.handler import Handler
+
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
@@ -514,7 +516,7 @@ class PlayNode(CompositeNode):
         return self.get_nodes("tasks")
 
     @property
-    def handlers(self) -> list["Node"]:
+    def handlers(self) -> list["TaskNode"]:
         return self.get_nodes("handlers")
 
     def to_dict(self, **kwargs) -> dict:
@@ -576,6 +578,13 @@ class TaskNode(LoopMixin, Node):
             parent=parent,
             index=index,
         )
+
+    def is_handler(self) -> bool:
+        """Return true if this task is a handler, false otherwise.
+
+        :return:
+        """
+        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
 
 
 class RoleNode(LoopMixin, CompositeTasksNode):
