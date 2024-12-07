@@ -500,6 +500,8 @@ def test_parsing_of_handlers_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(role.tasks) == 2, "The role should have 2 task: 1 task and 1 handler"
     assert len(role.handlers) == 1, "The role should have 1 handler"
 
-    assert role.tasks[1] == role.handlers[0], "The second task of the role should be the handler"
+    assert (
+        role.tasks[1] == role.handlers[0]
+    ), "The second task of the role should be the handler"
     assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
     assert role.handlers[0].location is not None
