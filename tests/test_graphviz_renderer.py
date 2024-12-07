@@ -709,3 +709,24 @@ def test_graphing_a_playbook_in_a_collection(
         roles_number=2,
         tasks_number=6,
     )
+
+
+def test_handlers(
+    request: pytest.FixtureRequest,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["handlers.yml"], output_filename=request.node.name
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=2,
+        tasks_number=6,
+        handlers_number=5,
+    )
