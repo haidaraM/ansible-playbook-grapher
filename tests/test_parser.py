@@ -481,7 +481,7 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
 
 
 @pytest.mark.parametrize("grapher_cli", [["handlers-in-role.yml"]], indirect=True)
-def test_parsing_of_handlers_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
+def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     """Test if we are able to get the handlers defined in a role and add them in the graph
     :return:
     """
@@ -497,11 +497,12 @@ def test_parsing_of_handlers_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
 
     assert len(play.roles) == 1, "The play should have 1 role"
     role = play.roles[0]
-    assert len(role.tasks) == 2, "The role should have 2 task: 1 task and 1 handler"
+    assert len(role.tasks) == 1, "The role should have 1 task"
     assert len(role.handlers) == 1, "The role should have 1 handler"
 
-    assert (
-        role.tasks[1] == role.handlers[0]
-    ), "The second task of the role should be the handler"
     assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
     assert role.handlers[0].location is not None
+
+    assert (
+        len(set(play.handlers + role.handlers)) == 2
+    ), "The total number of handlers should be 2"

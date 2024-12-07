@@ -100,6 +100,7 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
         "with_roles.yml",
         "haidaram.test_collection.test",
         "handlers.yml",
+        "handlers-in-role.yml",
     ],
 )
 def test_single_playbook(request: pytest.FixtureRequest, playbook: str) -> None:

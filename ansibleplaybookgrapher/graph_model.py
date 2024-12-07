@@ -310,47 +310,6 @@ class CompositeNode(Node):
         return node_dict
 
 
-class CompositeTasksNode(CompositeNode):
-    """A special composite node that only supports adding "tasks". Useful for block and role."""
-
-    def __init__(
-        self,
-        node_name: str,
-        node_id: str,
-        when: str = "",
-        raw_object: Any = None,
-        parent: "Node" = None,
-        index: int | None = None,
-    ) -> None:
-        super().__init__(
-            node_name=node_name,
-            node_id=node_id,
-            when=when,
-            raw_object=raw_object,
-            parent=parent,
-            index=index,
-        )
-        self._supported_compositions = ["tasks"]
-
-    def add_node(self, target_composition: str, node: Node) -> None:
-        """Override the add_node because the composite tasks only contain "tasks" regardless of the context
-         (pre_tasks or post_tasks).
-
-        :param target_composition: This is ignored.
-        :param node:
-        :return:
-        """
-        super().add_node("tasks", node)
-
-    @property
-    def tasks(self) -> list[Node]:
-        """The tasks attached to this block.
-
-        :return:
-        """
-        return self.get_nodes("tasks")
-
-
 class PlaybookNode(CompositeNode):
     """A playbook is a list of play."""
 
@@ -537,7 +496,7 @@ class PlayNode(CompositeNode):
         return data
 
 
-class BlockNode(CompositeTasksNode):
+class BlockNode(CompositeNode):
     """A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html."""
 
     def __init__(
@@ -555,8 +514,26 @@ class BlockNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            supported_compositions=["tasks"],
             index=index,
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Block only supports adding tasks regardless of the context
+
+        :param target_composition: This is ignored.
+        :param node:
+        :return:
+        """
+        super().add_node("tasks", node)
+
+    @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
 
 
 class TaskNode(LoopMixin, Node):
@@ -589,10 +566,10 @@ class TaskNode(LoopMixin, Node):
 
         :return:
         """
-        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
+        return isinstance(self.raw_object, Handler)
 
 
-class RoleNode(LoopMixin, CompositeTasksNode):
+class RoleNode(LoopMixin, CompositeNode):
     """A role node. A role is a composition of tasks."""
 
     def __init__(
@@ -618,8 +595,22 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
+            supported_compositions=["tasks", "handlers"],
             index=index,
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Add a node in the target composition.
+
+        :param target_composition: The name of the target composition
+        :param node: The node to add in the given composition
+        :return:
+        """
+        if target_composition != "handlers":
+            # If we are not adding a handler, we always add the node to the tasks composition
+            super().add_node("tasks", node)
+        else:
+            super().add_node("handlers", node)
 
     def set_location(self) -> None:
         """Retrieve the position depending on whether it's an include_role or not.
@@ -654,6 +645,14 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         return node_dict
 
     @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
+
+    @property
     def handlers(self) -> list["TaskNode"]:
         """Return the handlers defined in the role.
 
@@ -661,4 +660,4 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         of a role.
         :return:
         """
-        return [t for t in self.get_all_tasks() if t.is_handler()]
+        return self.get_nodes("handlers")

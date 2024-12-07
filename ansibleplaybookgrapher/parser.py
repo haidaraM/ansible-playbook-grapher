@@ -272,14 +272,24 @@ class PlaybookParser(BaseParser):
                 play_node.add_node("roles", role_node)
 
                 if self.include_role_tasks:
-                    # loop through the tasks and handlers of the roles
-                    for block in role.compile(play) + role.get_handler_blocks(play):
+                    # loop through the tasks
+                    for block in role.compile(play):
                         self._include_tasks_in_blocks(
                             current_play=play,
                             parent_nodes=[role_node],
                             block=block,
                             play_vars=play_vars,
                             node_type="task",
+                        )
+
+                    # loop through handlers of the roles
+                    for block in role.get_handler_blocks(play):
+                        self._include_tasks_in_blocks(
+                            current_play=play,
+                            parent_nodes=[role_node],
+                            block=block,
+                            play_vars=play_vars,
+                            node_type="handler",
                         )
             # end of the roles loop
 

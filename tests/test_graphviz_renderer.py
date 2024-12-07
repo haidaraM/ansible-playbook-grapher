@@ -732,3 +732,29 @@ def test_handlers(
         tasks_number=6,
         handlers_number=6,
     )
+
+def test_handlers_in_role(
+        request: pytest.FixtureRequest,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["handlers-in-role.yml"], output_filename=request.node.name,
+        additional_args=[
+            "--include-role-tasks",
+        ],
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        pre_tasks_number=1,
+        plays_number=1,
+        tasks_number=1,
+        post_tasks_number=1,
+        roles_number=1,
+        handlers_number=2,
+    )
