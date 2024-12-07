@@ -258,17 +258,17 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
         link_type = "--"
-        shape = "rect"
+        node_shape = "rect"
 
         if task_node.is_handler():
             # dotted style for handlers
             link_type = "-.-"
-            shape = "hexagon"
+            node_shape = "hexagon"
 
         # Task node
         self.add_node(
             node_id=task_node.id,
-            shape=shape,
+            shape=node_shape,
             label=f"{node_label_prefix} {task_node.name}",
             style=f"stroke:{color},fill:{fontcolor}",
         )

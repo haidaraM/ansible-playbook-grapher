@@ -5,28 +5,28 @@
     - name: foo
       assert: { that: true }
       changed_when: true
-      notify: my second handler
+      notify: restart mysql
 
     - name: bar
       assert: { that: true }
       changed_when: true
-      notify: my handler
+      notify: restart nginx
 
   handlers:
-    - name: my handler
+    - name: restart nginx
       assert: { that: true }
 
-    - name: my second handler
+    - name: restart mysql
       assert: { that: true }
 
-- name: play 2 - handlers
+- name: play 2 - handlers with meta
   hosts: localhost
   gather_facts: false
   tasks:
     - name: foo
       assert: { that: true }
       changed_when: true
-      notify: my handler play 2
+      notify: restart postgres
 
     - name: Debug
       debug: msg="debug"
@@ -36,14 +36,14 @@
 
     - name: bar
       assert: { that: true }
-      notify: my second handler play 2
+      notify: stop traefik
 
   handlers:
-    - name: my handler play 2
+    - name: restart postgres
       assert: { that: true }
 
-    - name: my second handler play 2
+    - name: stop traefik
       assert: { that: true }
 
-    - name: my third handler play 3
+    - name: restart apache
       assert: { that: true }

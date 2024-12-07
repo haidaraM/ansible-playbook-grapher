@@ -101,13 +101,13 @@ class Node:
                     column=column,
                 )
             else:
-                # Here we likely have a task a validate argument spec task inserted by Ansible
+                # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """Get the first parent of this node matching the given type.
 
-        :param node_type: The type of the parent to get
+        :param node_type: The type of the parent node to get.
         :return:
         """
         current_parent = self.parent
