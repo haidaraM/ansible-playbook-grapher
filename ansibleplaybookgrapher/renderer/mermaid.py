@@ -40,16 +40,16 @@ DEFAULT_ORIENTATION = "LR"  # Left to right
 
 class MermaidFlowChartRenderer(Renderer):
     def render(
-            self,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: dict[str, str],
-            output_filename: str,
-            view: bool = False,
-            hide_empty_plays: bool = False,
-            hide_plays_without_roles: bool = False,
-            directive: str = DEFAULT_DIRECTIVE,
-            orientation: str = DEFAULT_ORIENTATION,
-            **kwargs,
+        self,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: dict[str, str],
+        output_filename: str,
+        view: bool = False,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        directive: str = DEFAULT_DIRECTIVE,
+        orientation: str = DEFAULT_ORIENTATION,
+        **kwargs,
     ) -> str:
         """Render the graph to a Mermaid flow chart format.
 
@@ -147,13 +147,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     """ """
 
     def __init__(
-            self,
-            playbook_node: PlaybookNode,
-            open_protocol_handler: str,
-            open_protocol_custom_formats: dict[str, str],
-            roles_usage: dict[RoleNode, set[PlayNode]],
-            roles_built: set[RoleNode],
-            link_order: int = 0,
+        self,
+        playbook_node: PlaybookNode,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: dict[str, str],
+        roles_usage: dict[RoleNode, set[PlayNode]],
+        roles_built: set[RoleNode],
+        link_order: int = 0,
     ) -> None:
         super().__init__(
             playbook_node,
@@ -170,10 +170,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self._indentation_level = 1
 
     def build_playbook(
-            self,
-            hide_empty_plays: bool = False,
-            hide_plays_without_roles: bool = False,
-            **kwargs,
+        self,
+        hide_empty_plays: bool = False,
+        hide_plays_without_roles: bool = False,
+        **kwargs,
     ) -> str:
         """Build a playbook.
 
@@ -197,8 +197,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self._indentation_level += 1
         for play_node in self.playbook_node.plays(
-                exclude_empty=hide_empty_plays,
-                exclude_without_roles=hide_plays_without_roles,
+            exclude_empty=hide_empty_plays,
+            exclude_without_roles=hide_plays_without_roles,
         ):
             self.build_play(play_node)
         self._indentation_level -= 1
@@ -241,11 +241,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the play '{play_node.name}'")
 
     def build_task(
-            self,
-            task_node: TaskNode,
-            color: str,
-            fontcolor: str,
-            **kwargs,
+        self,
+        task_node: TaskNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Build a task.
 
@@ -297,11 +297,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             self.add_text(f"style {node_id} {style}")
 
     def build_role(
-            self,
-            role_node: RoleNode,
-            color: str,
-            fontcolor: str,
-            **kwargs,
+        self,
+        role_node: RoleNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Build a role.
 
@@ -354,11 +354,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(
-            self,
-            block_node: BlockNode,
-            color: str,
-            fontcolor: str,
-            **kwargs,
+        self,
+        block_node: BlockNode,
+        color: str,
+        fontcolor: str,
+        **kwargs,
     ) -> None:
         """Build a block.
 
@@ -400,12 +400,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the block '{block_node.name}'")
 
     def add_link(
-            self,
-            source_id: str,
-            text: str,
-            dest_id: str,
-            style: str = "",
-            link_type: str = "--",
+        self,
+        source_id: str,
+        text: str,
+        dest_id: str,
+        style: str = "",
+        link_type: str = "--",
     ) -> None:
         """Add the link between two nodes.
 
