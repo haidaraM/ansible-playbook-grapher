@@ -305,7 +305,7 @@ class PlaybookParser(BaseParser):
                     node_type="post_task",
                 )
 
-            # loop through the handlers
+            # loop through the handlers of the play
             for handler_block in play.get_handlers():
                 self._include_tasks_in_blocks(
                     current_play=play,
