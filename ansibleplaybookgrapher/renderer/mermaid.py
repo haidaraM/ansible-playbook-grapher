@@ -40,16 +40,16 @@ DEFAULT_ORIENTATION = "LR"  # Left to right
 
 class MermaidFlowChartRenderer(Renderer):
     def render(
-        self,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: dict[str, str],
-        output_filename: str,
-        view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
-        directive: str = DEFAULT_DIRECTIVE,
-        orientation: str = DEFAULT_ORIENTATION,
-        **kwargs,
+            self,
+            open_protocol_handler: str,
+            open_protocol_custom_formats: dict[str, str],
+            output_filename: str,
+            view: bool = False,
+            hide_empty_plays: bool = False,
+            hide_plays_without_roles: bool = False,
+            directive: str = DEFAULT_DIRECTIVE,
+            orientation: str = DEFAULT_ORIENTATION,
+            **kwargs,
     ) -> str:
         """Render the graph to a Mermaid flow chart format.
 
@@ -147,13 +147,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     """ """
 
     def __init__(
-        self,
-        playbook_node: PlaybookNode,
-        open_protocol_handler: str,
-        open_protocol_custom_formats: dict[str, str],
-        roles_usage: dict[RoleNode, set[PlayNode]],
-        roles_built: set[RoleNode],
-        link_order: int = 0,
+            self,
+            playbook_node: PlaybookNode,
+            open_protocol_handler: str,
+            open_protocol_custom_formats: dict[str, str],
+            roles_usage: dict[RoleNode, set[PlayNode]],
+            roles_built: set[RoleNode],
+            link_order: int = 0,
     ) -> None:
         super().__init__(
             playbook_node,
@@ -170,10 +170,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self._indentation_level = 1
 
     def build_playbook(
-        self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
-        **kwargs,
+            self,
+            hide_empty_plays: bool = False,
+            hide_plays_without_roles: bool = False,
+            **kwargs,
     ) -> str:
         """Build a playbook.
 
@@ -189,12 +189,16 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # Playbook node
         self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")
-        self.add_text(f'{self.playbook_node.id}("{self.playbook_node.name}")')
+        self.add_node(
+            node_id=self.playbook_node.id,
+            shape="rounded",
+            label=f"{self.playbook_node.name}",
+        )
 
         self._indentation_level += 1
         for play_node in self.playbook_node.plays(
-            exclude_empty=hide_empty_plays,
-            exclude_without_roles=hide_plays_without_roles,
+                exclude_empty=hide_empty_plays,
+                exclude_without_roles=hide_plays_without_roles,
         ):
             self.build_play(play_node)
         self._indentation_level -= 1
@@ -214,8 +218,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         color, play_font_color = play_node.colors
         self.add_comment(f"Start of the play '{play_node.name}'")
 
-        self.add_text(f'{play_node.id}["{play_node.name}"]')
-        self.add_text(f"style {play_node.id} fill:{color},color:{play_font_color}")
+        self.add_node(
+            node_id=play_node.id,
+            shape="rect",
+            label=f"{play_node.name}",
+            style=f"stroke:{color},fill:{color},color:{play_font_color}",
+        )
 
         # From playbook to play
         self.add_link(
@@ -233,11 +241,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the play '{play_node.name}'")
 
     def build_task(
-        self,
-        task_node: TaskNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
+            self,
+            task_node: TaskNode,
+            color: str,
+            fontcolor: str,
+            **kwargs,
     ) -> None:
         """Build a task.
 
@@ -249,15 +257,21 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         node_label_prefix = kwargs.get("node_label_prefix", "")
 
+        link_type = "--"
+        shape = "rect"
+
         if task_node.is_handler():
             # dotted style for handlers
             link_type = "-.-"
-        else:
-            link_type = "--"
+            shape = "hexagon"
 
         # Task node
-        self.add_text(f'{task_node.id}["{node_label_prefix} {task_node.name}"]')
-        self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
+        self.add_node(
+            node_id=task_node.id,
+            shape=shape,
+            label=f"{node_label_prefix} {task_node.name}",
+            style=f"stroke:{color},fill:{fontcolor}",
+        )
 
         # From parent to task
         self.add_link(
@@ -268,12 +282,26 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             link_type=link_type,
         )
 
+    def add_node(self, node_id: str, shape: str, label: str, style: str = "") -> None:
+        """Add a node to the mermaid code.
+
+        :param node_id: The node id.
+        :param shape: The shape of the node.
+        :param label: The label of the node.
+        :param style: The style of the node.
+        :return:
+        """
+        self.add_text(f'{node_id}@{{ shape: {shape}, label: "{label.strip()}" }}')
+
+        if style != "":
+            self.add_text(f"style {node_id} {style}")
+
     def build_role(
-        self,
-        role_node: RoleNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
+            self,
+            role_node: RoleNode,
+            color: str,
+            fontcolor: str,
+            **kwargs,
     ) -> None:
         """Build a role.
 
@@ -306,9 +334,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.add_text(f'{role_node.id}(["[role] {role_node.name}"])')
-        self.add_text(
-            f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}",
+        self.add_node(
+            node_id=role_node.id,
+            shape="stadium",
+            label=f"[role] {role_node.name}",
+            style=f"fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )
 
         # Role tasks
@@ -324,11 +354,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the role '{role_node.name}'")
 
     def build_block(
-        self,
-        block_node: BlockNode,
-        color: str,
-        fontcolor: str,
-        **kwargs,
+            self,
+            block_node: BlockNode,
+            color: str,
+            fontcolor: str,
+            **kwargs,
     ) -> None:
         """Build a block.
 
@@ -340,9 +370,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         # Block node
         self.add_comment(f"Start of the block '{block_node.name}'")
-        self.add_text(f'{block_node.id}["[block] {block_node.name}"]')
-        self.add_text(
-            f"style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}",
+        self.add_node(
+            node_id=block_node.id,
+            shape="rect",
+            label=f"[block] {block_node.name}",
+            style=f"fill:{color},color:{fontcolor},stroke:{color}",
         )
 
         # from parent to block
@@ -368,12 +400,12 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_comment(f"End of the block '{block_node.name}'")
 
     def add_link(
-        self,
-        source_id: str,
-        text: str,
-        dest_id: str,
-        style: str = "",
-        link_type: str = "--",
+            self,
+            source_id: str,
+            text: str,
+            dest_id: str,
+            style: str = "",
+            link_type: str = "--",
     ) -> None:
         """Add the link between two nodes.
 
