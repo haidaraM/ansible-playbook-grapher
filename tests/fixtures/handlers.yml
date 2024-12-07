@@ -1,6 +1,12 @@
 - name: play 1 - handlers
   hosts: localhost
   gather_facts: false
+  pre_tasks:
+    - name: pre task
+      debug: msg="pre task"
+      changed_when: true
+      # TODO: this handler should be included in the graph at the end of pre_tasks
+      notify: restart mysql in the pre_tasks
   tasks:
     - name: foo
       assert: { that: true }
@@ -17,6 +23,9 @@
       assert: { that: true }
 
     - name: restart mysql
+      assert: { that: true }
+
+    - name: restart mysql in the pre_tasks
       assert: { that: true }
 
 - name: play 2 - handlers with meta

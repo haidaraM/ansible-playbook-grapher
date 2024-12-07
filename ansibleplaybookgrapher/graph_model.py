@@ -311,7 +311,7 @@ class CompositeNode(Node):
 
 
 class CompositeTasksNode(CompositeNode):
-    """A special composite node which only support adding "tasks". Useful for block and role."""
+    """A special composite node that only supports adding "tasks". Useful for block and role."""
 
     def __init__(
         self,
@@ -333,7 +333,7 @@ class CompositeTasksNode(CompositeNode):
         self._supported_compositions = ["tasks"]
 
     def add_node(self, target_composition: str, node: Node) -> None:
-        """Override the add_node because the composite tasks only contains "tasks" regardless of the context
+        """Override the add_node because the composite tasks only contain "tasks" regardless of the context
          (pre_tasks or post_tasks).
 
         :param target_composition: This is ignored.
@@ -517,6 +517,11 @@ class PlayNode(CompositeNode):
 
     @property
     def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined at the play level.
+
+        The handlers defined in roles are not included here.
+        :return:
+        """
         return self.get_nodes("handlers")
 
     def to_dict(self, **kwargs) -> dict:
@@ -647,3 +652,13 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         node_dict["include_role"] = self.include_role
 
         return node_dict
+
+    @property
+    def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined in the role.
+
+        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
+        of a role.
+        :return:
+        """
+        return [t for t in self.get_all_tasks() if t.is_handler()]

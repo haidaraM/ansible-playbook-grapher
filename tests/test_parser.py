@@ -452,8 +452,13 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
 
     assert len(play_1.tasks) == 2, "The first play should have 2 tasks"
-    assert len(play_1.handlers) == 2, "The first play should have 2 handlers"
-    expected_names = ["restart nginx", "restart mysql"]
+    assert len(play_1.handlers) == 3, "The first play should have 3 handlers"
+    expected_names = [
+        "restart nginx",
+        "restart mysql",
+        "restart mysql in the pre_tasks",
+    ]
+
     for idx, h in enumerate(play_1.handlers):
         assert (
             h.name == expected_names[idx]
@@ -473,3 +478,28 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
         ), f"The handler should be '{expected_names[idx]}'"
         assert h.is_handler()
         assert h.location is not None
+
+
+@pytest.mark.parametrize("grapher_cli", [["handlers-in-role.yml"]], indirect=True)
+def test_parsing_of_handlers_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test if we are able to get the handlers defined in a role and add them in the graph
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbooks[0], include_role_tasks=True)
+    playbook_node = parser.parse()
+    plays = playbook_node.plays()
+
+    assert len(plays) == 1
+    play = plays[0]
+    assert len(play.handlers) == 1, "The play should have 1 handler"
+    handler = play.handlers[0]
+    assert handler.name == "restart postgres"
+
+    assert len(play.roles) == 1, "The play should have 1 role"
+    role = play.roles[0]
+    assert len(role.tasks) == 2, "The role should have 2 task: 1 task and 1 handler"
+    assert len(role.handlers) == 1, "The role should have 1 handler"
+
+    assert role.tasks[1] == role.handlers[0], "The second task of the role should be the handler"
+    assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert role.handlers[0].location is not None

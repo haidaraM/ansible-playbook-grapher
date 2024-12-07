@@ -200,7 +200,7 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-        # handlers
+        # play handlers
         for handler in play_node.handlers:
             self.build_node(
                 node=handler,

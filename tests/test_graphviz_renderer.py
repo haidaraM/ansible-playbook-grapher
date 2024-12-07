@@ -145,7 +145,7 @@ def _common_tests(
 
     assert (
         len(handlers) == handlers_number
-    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(handlers)} blocks "
+    ), f"The graph '{svg_filename}' should contains {blocks_number} handlers(s) but we found {len(handlers)} handlers "
 
     return {
         "tasks": tasks,
@@ -154,6 +154,7 @@ def _common_tests(
         "pre_tasks": pre_tasks,
         "roles": roles,
         "blocks": blocks,
+        "handlers": handlers,
     }
 
 
@@ -726,7 +727,8 @@ def test_handlers(
     _common_tests(
         svg_filename=svg_path,
         playbook_paths=playbook_paths,
+        pre_tasks_number=1,
         plays_number=2,
         tasks_number=6,
-        handlers_number=5,
+        handlers_number=6,
     )

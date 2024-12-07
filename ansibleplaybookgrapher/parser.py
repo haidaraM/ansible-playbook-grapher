@@ -21,6 +21,7 @@ from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
+from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -99,7 +100,12 @@ class BaseParser(ABC):
         node_type: str,
         parent_node: CompositeNode,
     ) -> bool:
-        """Include the task in the graph.
+        """Add the task in the graph.
+
+        :param task: The task to include.
+        :param task_vars: The variables of the task.
+        :param node_type: The type of the node.
+        :param parent_node: The parent node.
         :return: True if the task has been included, false otherwise.
         """
         # Ansible-core 2.11 added an implicit meta-task at the end of the role. So wee skip it here.
@@ -232,7 +238,7 @@ class PlaybookParser(BaseParser):
                 if role.from_include:
                     continue
 
-                # the role object doesn't inherit the tags from the play. So we add it manually.
+                # The role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 
                 # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
@@ -266,8 +272,8 @@ class PlaybookParser(BaseParser):
                 play_node.add_node("roles", role_node)
 
                 if self.include_role_tasks:
-                    # loop through the tasks of the roles
-                    for block in role.compile(play):
+                    # loop through the tasks and handlers of the roles
+                    for block in role.compile(play) + role.get_handler_blocks(play):
                         self._include_tasks_in_blocks(
                             current_play=play,
                             parent_nodes=[role_node],
@@ -275,7 +281,7 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                    # end of the roles loop
+            # end of the roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -299,7 +305,15 @@ class PlaybookParser(BaseParser):
                     node_type="post_task",
                 )
 
-            add_play_handlers(play, play_node)
+            # loop through the handlers
+            for handler_block in play.get_handlers():
+                self._include_tasks_in_blocks(
+                    current_play=play,
+                    parent_nodes=[play_node],
+                    block=handler_block,
+                    play_vars=play_vars,
+                    node_type="handler",
+                )
 
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
@@ -319,9 +333,10 @@ class PlaybookParser(BaseParser):
         node_type: str,
         play_vars: dict,
     ) -> None:
-        """Recursively read all the tasks of the block and add it to the graph
-        :param parent_nodes: This a list of parent nodes. Each time, we see an include_role, the corresponding node is
-        added to this list
+        """Recursively read all the tasks of the block and add it to the graph.
+
+        :param parent_nodes: This a list of parent nodes.
+        Each time, we see an include_role; the corresponding node is added to this list.
         :param current_play:
         :param block:
         :param play_vars:
@@ -512,22 +527,3 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
-
-
-def add_play_handlers(play: Play, play_node: PlayNode):
-    """Add handlers to the play node.
-
-    :param play: The raw play object.
-    :param play_node: The play node.
-    :return:
-    """
-    handlers = play.get_handlers()
-    for handler_block in handlers:
-        for h in handler_block.block:
-            task_node = TaskNode(
-                clean_name(h.get_name()),
-                node_id=generate_id("handler_"),
-                raw_object=h,
-                parent=play_node,
-            )
-            play_node.add_node("handlers", task_node)
