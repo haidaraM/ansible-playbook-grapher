@@ -299,7 +299,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.add_text(f'{role_node.id}("[role] {role_node.name}")')
+        self.add_text(f'{role_node.id}(["[role] {role_node.name}"])')
         self.add_text(
             f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )

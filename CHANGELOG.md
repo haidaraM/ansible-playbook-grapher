@@ -1,3 +1,12 @@
+# 2.5.1 (2024-12-04)
+
+## What's Changed
+
+* chore(deps): bump ruff from 0.7.4 to 0.8.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/211
+* chore(deps): update ansible-core requirement from <2.17.5,>=2.16 to >=2.16,<2.18.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/210
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.5.0...v2.5.1
+
 # 2.5.0 (2024-11-23)
 
 ## What's Changed
