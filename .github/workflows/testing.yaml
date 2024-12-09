@@ -29,8 +29,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - uses: actions/setup-python@v5
         name: Setup Python ${{ matrix.python-version }}
@@ -66,17 +64,6 @@ jobs:
           path: ${{ env.SVG_FILES_PATH }}/
           if-no-files-found: error # the tests should generate SVGs files
 
-#      - uses: stefanzweifel/git-auto-commit-action@v4
-#        id: commit-svg-files
-#        with:
-#          commit_message: Adding SVG for the run ${{ env.MATRIX_JOB_IDENTIFIER }}
-#          file_pattern: ${{ env.SVG_FILES_PATH }}/*.svg
-#          skip_dirty_check: true
-#          add_options: '--force'
-#          push_options: '--force'
-#          branch: generated-svgs-${{ github.head_ref || github.ref }}-${{ env.MATRIX_JOB_IDENTIFIER }}
-#          create_branch: true
-#
       - name: Publish job summary
         run: python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
