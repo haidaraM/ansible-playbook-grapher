@@ -172,7 +172,7 @@ class PlaybookGrapherCLI(CLI):
             "--only-roles",
             dest="only_roles",
             action="store_true",
-            help="Ignore all tasks when rendering graphs.",
+            help="Only display the roles in the graph (ignoring the tasks)",
         )
 
         self.parser.add_argument(
