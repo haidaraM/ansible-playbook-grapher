@@ -40,7 +40,9 @@ JavaScript:
 ## Prerequisites
 
 - Python 3.10 at least. It might work with previous versions, but the code is NOT tested against them.
-  See [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix).
+  See
+  the [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
+  and the matrix in the [testing workflow](.github/workflows/testing.yaml).
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
   some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
   some older versions of Ansible (
