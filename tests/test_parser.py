@@ -179,6 +179,29 @@ def test_include_role_parsing(
     assert include_role_4.has_loop(), "The third include role has a loop"
 
 
+@pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
+def test_include_role_parsing_with_only_roles(
+    grapher_cli: PlaybookGrapherCLI,
+) -> None:
+    """Test parsing of include_role with only roles option
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        include_role_tasks=True,
+        only_roles=True,
+    )
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays()) == 1
+
+    # If only roles option is set then there should be no Task Nodes
+    all_tasks = get_all_tasks([playbook_node])
+    assert (
+        len(all_tasks) == 0
+    ), "There should be no Task Nodes when running with only roles option"
+
+
 @pytest.mark.parametrize("grapher_cli", [["with_block.yml"]], indirect=True)
 def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     """The parsing of a playbook with blocks
