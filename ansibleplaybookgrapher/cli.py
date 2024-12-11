@@ -79,6 +79,7 @@ class PlaybookGrapherCLI(CLI):
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
+            exclude_roles=self.options.exclude_roles,
             only_roles=self.options.only_roles,
         )
 
@@ -168,6 +169,13 @@ class PlaybookGrapherCLI(CLI):
         """
         self.parser.prog = __prog__
 
+        self.parser.add_argument(
+            "--exclude-roles",
+            dest="exclude_roles",
+            action="append",
+            help="Specifiy file path or comma separated list of roles, which should be excluded",
+        )
+        
         self.parser.add_argument(
             "--only-roles",
             dest="only_roles",
@@ -348,6 +356,26 @@ class PlaybookGrapherCLI(CLI):
 
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
+
+        # create list of roles to exclude
+        if options.exclude_roles:
+            exclude_roles = set()
+            for arg in options.exclude_roles:
+                path = Path(arg)
+                if path.exists():
+                    if path.is_dir():
+                        raise IsADirectoryError(f"{path} is a directory")
+
+                    if path.is_file():
+                        with path.open("r") as exclude_roles_file:
+                            exclude_roles.update(
+                                [line.strip() for line in exclude_roles_file]
+                            )
+                else:
+                    for role in arg.split(","):
+                        exclude_roles.add(role.strip())
+
+            options.exclude_roles = list(exclude_roles)
 
         return options
 

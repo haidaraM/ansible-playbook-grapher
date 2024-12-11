@@ -232,6 +232,15 @@ class CompositeNode(Node):
         self._get_all_tasks_nodes(tasks)
         return tasks
 
+    def get_all_roles(self) -> list["RoleNode"]:
+        """Return all the RoleNode inside this composite node.
+
+        :return:
+        """
+        roles: list[RoleNode] = []
+        self._get_all_roles_nodes(roles)
+        return roles
+
     def _get_all_tasks_nodes(self, task_acc: list["Node"]) -> None:
         """Recursively get all tasks.
 
@@ -245,6 +254,20 @@ class CompositeNode(Node):
                     task_acc.append(node)
                 elif isinstance(node, CompositeNode):
                     node._get_all_tasks_nodes(task_acc)
+
+    def _get_all_roles_nodes(self, role_acc: list["Node"]) -> None:
+        """Recursively get all roles.
+
+        :param role_acc:
+        :return:
+        """
+        items = self._compositions.items()
+        for _, nodes in items:
+            for node in nodes:
+                if isinstance(node, RoleNode):
+                    role_acc.append(node)
+                elif isinstance(node, CompositeNode):
+                    node._get_all_roles_nodes(role_acc)
 
     def links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
