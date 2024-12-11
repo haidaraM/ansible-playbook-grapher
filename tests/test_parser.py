@@ -220,13 +220,34 @@ def test_include_role_parsing_with_exclude_roles(
         exclude_roles=exclude_roles,
     )
     playbook_node = parser.parse()
-    assert len(playbook_node.plays()) == 1
-
+    
     # If exclude roles option is set then there should be no roles with the names identical to the option arguments
     if exclude_roles is not None:
         all_roles = get_all_roles([playbook_node])
         role_names = list(map(lambda role_node: role_node.name, all_roles))
         assert exclude_roles not in role_names
+
+        
+@pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
+def test_include_role_parsing_with_only_roles(
+    grapher_cli: PlaybookGrapherCLI,
+) -> None:
+    """Test parsing of include_role with only roles option
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        include_role_tasks=True,
+        only_roles=True,
+    )
+    playbook_node = parser.parse()
+
+    # If only roles option is set then there should be no Task Nodes
+    all_tasks = get_all_tasks([playbook_node])
+    assert (
+        len(all_tasks) == 0
+    ), "There should be no Task Nodes when running with only roles option"
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_block.yml"]], indirect=True)

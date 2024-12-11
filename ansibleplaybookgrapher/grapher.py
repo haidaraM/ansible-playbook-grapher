@@ -38,6 +38,7 @@ class Grapher:
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
         exclude_roles: list[str] | None = None,
+        only_roles: bool = False,
     ) -> tuple[list[PlaybookNode], dict[RoleNode, set[PlayNode]]]:
         """Parses all the provided playbooks
 
@@ -46,6 +47,7 @@ class Grapher:
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
         :param exclude_roles: Only add tasks whose roles do not match these values
+        :param only_roles: Ignore all task nodes when rendering graph
         :return: Tuple of the list of playbook nodes and the dictionary of the role usages: the key is the role and the
         value is the set of plays that use the role.
         """
@@ -62,6 +64,7 @@ class Grapher:
                 group_roles_by_name=group_roles_by_name,
                 playbook_name=playbook_arg,
                 exclude_roles=exclude_roles,
+                only_roles=only_roles,
             )
             playbook_node = playbook_parser.parse()
             playbook_node.index = counter

@@ -80,6 +80,7 @@ class PlaybookGrapherCLI(CLI):
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
             exclude_roles=self.options.exclude_roles,
+            only_roles=self.options.only_roles,
         )
 
         match self.options.renderer:
@@ -173,6 +174,13 @@ class PlaybookGrapherCLI(CLI):
             dest="exclude_roles",
             action="append",
             help="Specifiy file path or comma separated list of roles, which should be excluded",
+        )
+        
+        self.parser.add_argument(
+            "--only-roles",
+            dest="only_roles",
+            action="store_true",
+            help="Only display the roles in the graph (ignoring the tasks)",
         )
 
         self.parser.add_argument(

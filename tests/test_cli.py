@@ -56,14 +56,33 @@ def test_cli_exclude_roles(
         example_dir_path.mkdir(exist_ok=True)
         exclude_roles_option[1] = str(example_dir_path)
 
-    print(exclude_roles_option)
     args = [__prog__, *exclude_roles_option, "playbook.yml"]
+    
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+    
+    assert sorted(cli.options.exclude_roles or []) == sorted(expected or [])
+
+    
+@pytest.mark.parametrize(  
+    ("only_roles_option", "expected"),
+    [(["--"], False), (["--only-roles"], True)],
+    ids=["default", "only_roles"],
+)
+def test_cli_only_roles(only_roles_option: str, expected: bool) -> None:
+    """Test for the only roles option: --only-roles
+    :param only_roles_option:
+    :param expected:
+    :return:
+    """
+    args = [__prog__, *only_roles_option, "playbook.yml"]
 
     cli = PlaybookGrapherCLI(args)
 
     cli.parse()
 
-    assert sorted(cli.options.exclude_roles or []) == sorted(expected or [])
+    assert cli.options.only_roles == expected
 
 
 @pytest.mark.parametrize("help_option", ["-h", "--help"])
