@@ -407,12 +407,14 @@ class PlaybookParser(BaseParser):
                             # If we have an include_role, and we want to include its tasks, the parent node now becomes
                             # the role.
                             parent_nodes.append(role_node)
-
-                        block_list, _ = task_or_block.get_block_list(
-                            play=current_play,
-                            loader=self.data_loader,
-                            variable_manager=self.variable_manager,
-                        )
+                            block_list, _ = task_or_block.get_block_list(
+                                play=current_play,
+                                loader=self.data_loader,
+                                variable_manager=self.variable_manager,
+                            )
+                        else:
+                            # Go to the next task if we don't want to include the tasks of the role
+                            continue
                 else:
                     display.v(
                         f"An 'include_tasks' found. Including tasks from '{task_or_block.get_name()}'",
@@ -501,7 +503,7 @@ class PlaybookParser(BaseParser):
                 if has_role_parent(task_or_block) and not self.include_role_tasks:
                     # skip role's task
                     display.vv(
-                        f"The task '{task_or_block.get_name()}' has a role as parent and include_role_tasks is false. "
+                        f"The task '{task_or_block.get_name()}' has a role as parent and include_role_tasks is False. "
                         "It will be skipped.",
                     )
                     # skipping
