@@ -6,6 +6,7 @@
 * ci: Collapse the mermaid graphs in the job summary by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/221
 * feat: Add support for ignoring standalone tasks and role tasks with `--only-roles` in the graph view by @Eltryo in https://github.com/haidaraM/ansible-playbook-grapher/pull/218
 * fix: Tasks in 'include_role' were being wrongly included in the graph by default by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/222
+* fix: Increase Ansible and Python compatibility range to [2.16, 2.18.2[ by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/220
 
 **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.5.1...v2.6.0
 
