@@ -5,6 +5,7 @@
 * chore(deps): bump pytest from 8.3.3 to 8.3.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/216
 * ci: Collapse the mermaid graphs in the job summary by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/221
 * feat: Add support for ignoring standalone tasks and role tasks with `--only-roles` in the graph view by @Eltryo in https://github.com/haidaraM/ansible-playbook-grapher/pull/218
+* fix: Tasks in 'include_role' were being wrongly included in the graph by default by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/222
 
 **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.5.1...v2.6.0
 
