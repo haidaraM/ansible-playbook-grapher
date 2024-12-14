@@ -291,9 +291,22 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param style: The style of the node.
         :return:
         """
-        self.add_text(f'{node_id}@{{ shape: {shape}, label: "{label.strip()}" }}')
+        # To ensure backward compatibility with older versions of Mermaid, I'm still using the old syntax of defining the
+        # shape and label of the node.
+        # This method takes the shape name which is converted to the corresponding shape using the old syntax.
+        # See https://mermaid.js.org/syntax/flowchart.html#expanded-node-shapes-in-mermaid-flowcharts-v11-3-0
+        # Once Gitlab updates to mermaid >= 11.3.0 (https://gitlab.com/gitlab-org/gitlab/-/issues/491514), we can use the new syntax.
+        label = label.strip()
+        shapes_mapping = {
+            "rect": f'{node_id}["{label}"]',
+            "hexagon": f'{node_id}{{{{"{label}"}}}}',
+            "rounded": f'{node_id}("{label}")',
+            "stadium": f'{node_id}(["{label}"])',
+        }
 
-        if style != "":
+        self.add_text(shapes_mapping[shape])
+
+        if style.strip() != "":
             self.add_text(f"style {node_id} {style}")
 
     def build_role(
