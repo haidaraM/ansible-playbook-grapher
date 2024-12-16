@@ -259,18 +259,20 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         link_type = "--"
         node_shape = "rect"
+        style = f"stroke:{color},fill:{fontcolor}"
 
         if task_node.is_handler():
             # dotted style for handlers
             link_type = "-.-"
             node_shape = "hexagon"
+            style += ",stroke-dasharray: 2, 2"
 
         # Task node
         self.add_node(
             node_id=task_node.id,
             shape=node_shape,
             label=f"{node_label_prefix} {task_node.name}",
-            style=f"stroke:{color},fill:{fontcolor}",
+            style=style
         )
 
         # From parent to task
