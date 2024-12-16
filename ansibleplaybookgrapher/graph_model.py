@@ -579,7 +579,7 @@ class TaskNode(LoopMixin, Node):
 
         :return:
         """
-        return isinstance(self.raw_object, Handler)
+        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
 
 
 class RoleNode(LoopMixin, CompositeNode):
@@ -620,7 +620,7 @@ class RoleNode(LoopMixin, CompositeNode):
         :return:
         """
         if target_composition != "handlers":
-            # If we are not adding a handler, we always add the node to the tasks composition
+            # If we are not adding a handler, we always add the node to the task composition
             super().add_node("tasks", node)
         else:
             super().add_node("handlers", node)
