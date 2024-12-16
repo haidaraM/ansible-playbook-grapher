@@ -155,10 +155,12 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         edge_style = "solid"
         node_shape = "rectangle"
+        node_style = "solid"
 
         if task_node.is_handler():
             edge_style = "dotted"
-            node_shape = "octagon"
+            node_shape = "hexagon"
+            node_style = "dotted"
 
         digraph.node(
             task_node.id,
@@ -167,6 +169,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             id=task_node.id,
             tooltip=task_node.name,
             color=color,
+            style=node_style,
             URL=self.get_node_url(task_node),
         )
 
