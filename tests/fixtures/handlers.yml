@@ -5,7 +5,6 @@
     - name: pre task
       debug: msg="pre task"
       changed_when: true
-      # TODO: this handler should be included in the graph at the end of pre_tasks
       notify: restart mysql in the pre_tasks
   tasks:
     - name: foo
