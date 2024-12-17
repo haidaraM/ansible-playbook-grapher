@@ -272,7 +272,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             node_id=task_node.id,
             shape=node_shape,
             label=f"{node_label_prefix} {task_node.name}",
-            style=style
+            style=style,
         )
 
         # From parent to task

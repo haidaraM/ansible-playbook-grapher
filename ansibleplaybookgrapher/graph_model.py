@@ -63,7 +63,6 @@ class Node:
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         """:param node_name: The name of the node
         :param node_id: An identifier for this node
@@ -82,7 +81,7 @@ class Node:
         self.set_location()
 
         # The index of this node in the parent node if it has one (starting from 1)
-        self.index: int | None = index
+        self.index: int | None = None
 
     def set_location(self) -> None:
         """Set the location of this node based on the raw object. Not all objects have path.
@@ -173,7 +172,6 @@ class CompositeNode(Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         supported_compositions: list[str] | None = None,
     ) -> None:
         """Init a composite node.
@@ -190,7 +188,6 @@ class CompositeNode(Node):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
         )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
@@ -332,14 +329,12 @@ class PlaybookNode(CompositeNode):
         node_id: str | None = None,
         when: str = "",
         raw_object: Any = None,
-        index: int | None = None,
     ) -> None:
         super().__init__(
             node_name=node_name,
             node_id=node_id or generate_id("playbook_"),
             when=when,
             raw_object=raw_object,
-            index=index,
             supported_compositions=["plays"],
         )
 
@@ -440,7 +435,6 @@ class PlayNode(CompositeNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         hosts: list[str] | None = None,
     ) -> None:
         """
@@ -455,7 +449,6 @@ class PlayNode(CompositeNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
             supported_compositions=[
                 "pre_tasks",
                 "roles",
@@ -486,6 +479,13 @@ class PlayNode(CompositeNode):
     @property
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
+
+    def clear_handlers(self) -> None:
+        """Remove the handlers from the play.
+
+        :return:
+        """
+        self._compositions["handlers"] = []
 
     @property
     def handlers(self) -> list["TaskNode"]:
@@ -519,7 +519,6 @@ class BlockNode(CompositeNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         super().__init__(
             node_name=node_name,
@@ -528,7 +527,6 @@ class BlockNode(CompositeNode):
             raw_object=raw_object,
             parent=parent,
             supported_compositions=["tasks"],
-            index=index,
         )
 
     def add_node(self, target_composition: str, node: Node) -> None:
@@ -559,7 +557,6 @@ class TaskNode(LoopMixin, Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         """:param node_name:
         :param node_id:
@@ -571,7 +568,6 @@ class TaskNode(LoopMixin, Node):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
         )
 
     def is_handler(self) -> bool:
@@ -592,7 +588,6 @@ class RoleNode(LoopMixin, CompositeNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         include_role: bool = False,
     ) -> None:
         """
@@ -609,7 +604,6 @@ class RoleNode(LoopMixin, CompositeNode):
             raw_object=raw_object,
             parent=parent,
             supported_compositions=["tasks", "handlers"],
-            index=index,
         )
 
     def add_node(self, target_composition: str, node: Node) -> None:

@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
-from ansible.parsing.yaml.objects import AnsibleUnicode
+from ansible.parsing.yaml.objects import AnsibleSequence, AnsibleUnicode
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
@@ -31,6 +31,7 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
+    Node,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -336,6 +337,7 @@ class PlaybookParser(BaseParser):
                     node_type="handler",
                 )
 
+            _add_handlers_in_notify(play_node)
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
@@ -557,3 +559,58 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
+
+
+def _add_notified_handlers(
+    play_node: PlayNode, target_composition: str, tasks: list[Node]
+) -> list[str]:
+    """Get the handlers that are notified by the tasks.
+
+    :param play_node: The list of the play handlers.
+    :param target_composition: The target composition to add the handlers.
+    :param tasks:  The list of tasks.
+    :return:
+    """
+    notified_handlers = []
+    play_handlers = play_node.handlers
+    for task_node in tasks:
+        task = task_node.raw_object
+        if task.notify:
+            if isinstance(task.notify, AnsibleUnicode):
+                notified_handlers.append(task.notify)
+            elif isinstance(task.notify, AnsibleSequence):
+                notified_handlers.extend(task.notify)
+
+    for p_handler in play_handlers:
+        if p_handler.name in notified_handlers:
+            play_node.add_node(
+                target_composition,
+                TaskNode(
+                    p_handler.name,
+                    node_id=generate_id("handler_"),
+                    raw_object=p_handler.raw_object,
+                    parent=p_handler.parent,
+                ),
+            )
+
+    return notified_handlers
+
+
+def _add_handlers_in_notify(play_node: PlayNode):
+    """
+    Add the handlers in the "notify" attribute of the tasks. This has to be done separately for the pre_tasks, tasks
+    and post_tasks because the handlers are not shared between them.
+
+    Handlers not used will not be kept in the graph.
+
+    The role handlers are managed separately.
+    :param play_node:
+    :return:
+    """
+
+    _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
+    _add_notified_handlers(play_node, "tasks", play_node.tasks)
+    _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)
+
+    # We clear the handlers from the play because they are already added in the graph
+    play_node.clear_handlers()
