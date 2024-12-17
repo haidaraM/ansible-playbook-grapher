@@ -173,9 +173,9 @@ class PlaybookGrapherCLI(CLI):
             "--exclude-roles",
             dest="exclude_roles",
             action="append",
-            help="Specifiy file path or comma separated list of roles, which should be excluded",
+            help="Specify file path or comma separated list of roles, which should be excluded",
         )
-        
+
         self.parser.add_argument(
             "--only-roles",
             dest="only_roles",

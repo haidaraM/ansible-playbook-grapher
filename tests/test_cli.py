@@ -56,7 +56,7 @@ def test_cli_exclude_roles_with_file(
     expected: list[str],
     tmp_path: Path,
 ) -> None:
-    """Test for the exclude roles option with file path as argument: --exclude-roles
+    """Test for the exclude roles option with a file path as argument: --exclude-roles
     :param exclude_roles_option:
     :param expected:
     :return:

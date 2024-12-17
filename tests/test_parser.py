@@ -260,7 +260,7 @@ def test_include_role_parsing_with_exclude_roles(
     )
     playbook_node = parser.parse()
 
-    # If exclude roles option is set then there should be no roles with the names identical to the option arguments
+    # If the exclude roles option is set, then there should be no roles with the names identical to the option arguments
     if exclude_roles is not None:
         all_roles = get_all_roles([playbook_node])
         role_names = list(map(lambda role_node: role_node.name, all_roles))

@@ -410,7 +410,7 @@ positional arguments:
 
 options:
   --exclude-roles EXCLUDE_ROLES
-			Specifiy file path or comma separated list of roles, which should be excluded. This argument may be specified multiple times.
+			Specify file path or comma separated list of roles, which should be excluded. This argument may be specified multiple times.
   --group-roles-by-name
                         When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the same names. Default: False
   --hide-empty-plays    Hide the plays that end up with no tasks in the graph (after applying the tags filter).

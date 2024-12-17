@@ -162,7 +162,7 @@ class PlaybookParser(BaseParser):
         self.include_role_tasks = include_role_tasks
         self.playbook_path = playbook_path
         self.playbook_name = playbook_name
-        self.exclude_roles = exclude_roles
+        self.exclude_roles = exclude_roles or []
         self.only_roles = only_roles
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
@@ -238,9 +238,8 @@ class PlaybookParser(BaseParser):
                     continue
 
                 # Don't show roles, which are set in --exclude-roles option
-                if self.exclude_roles:
-                    if role.get_name() in self.exclude_roles:
-                        continue
+                if role.get_name() in self.exclude_roles:
+                    continue
 
                 # the role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
@@ -377,10 +376,9 @@ class PlaybookParser(BaseParser):
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     display.v(f"An 'include_role' found: '{task_or_block.get_name()}'")
 
-                    # don't show roles, which are set in --exclude-roles option
-                    if self.exclude_roles:
-                        if task_or_block._role_name in self.exclude_roles:
-                            continue
+                    # Don't show roles, which are set in --exclude-roles option
+                    if task_or_block._role_name in self.exclude_roles:
+                        continue
 
                     if not task_or_block.evaluate_tags(
                         only_tags=self.tags,
