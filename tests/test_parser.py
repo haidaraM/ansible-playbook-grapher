@@ -264,7 +264,7 @@ def test_include_role_parsing_with_exclude_roles(
     if exclude_roles is not None:
         all_roles = get_all_roles([playbook_node])
         role_names = list(map(lambda role_node: role_node.name, all_roles))
-        assert exclude_roles not in role_names
+        assert all(exclude_role not in role_names for exclude_role in exclude_roles)
 
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
