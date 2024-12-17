@@ -2,10 +2,12 @@
   hosts: localhost
   gather_facts: false
   pre_tasks:
-    - name: pre task
+    - name: My debug pre task
       debug: msg="pre task"
       changed_when: true
-      notify: restart mysql in the pre_tasks
+      notify:
+        - restart mysql in the pre_tasks
+        - restart nginx
   tasks:
     - name: foo
       assert: { that: true }
