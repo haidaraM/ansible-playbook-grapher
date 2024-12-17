@@ -195,6 +195,45 @@ def test_include_role_parsing(
     assert include_role_4.has_loop(), "The third include role has a loop"
 
 
+@pytest.mark.parametrize("grapher_cli", [["group-roles-by-name.yml"]], indirect=True)
+@pytest.mark.parametrize(
+    ("include_role_tasks", "nested_include_role_tasks_count"), [(True, 4), (False, 0)]
+)
+def test_include_role_parsing_with_different_include_role_tasks(
+    include_role_tasks: bool,
+    nested_include_role_tasks_count: int,
+    grapher_cli: PlaybookGrapherCLI,
+) -> None:
+    """Test parsing of include_role with different include_role_tasks options.
+
+    :param include_role_tasks:
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        include_role_tasks=include_role_tasks,
+    )
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays()) == 1
+
+    play_node = playbook_node.plays()[0]
+
+    assert (
+        len(play_node.roles) == 2
+    ), "Two roles should be at the play level (the ones in the 'roles:' section)"
+
+    # The first task of the play is an include role in the block
+    assert len(play_node.tasks) == 1
+    assert isinstance(play_node.tasks[0], BlockNode)
+    assert isinstance(play_node.tasks[0].tasks[0], RoleNode)
+
+    # The first post task is an include role as well but with nested include roles
+    assert len(play_node.post_tasks) == 1
+    assert isinstance(play_node.post_tasks[0], RoleNode)
+    assert len(play_node.post_tasks[0].tasks) == nested_include_role_tasks_count
+
+
 @pytest.mark.parametrize(
     "exclude_roles",
     [
@@ -220,14 +259,14 @@ def test_include_role_parsing_with_exclude_roles(
         exclude_roles=exclude_roles,
     )
     playbook_node = parser.parse()
-    
+
     # If exclude roles option is set then there should be no roles with the names identical to the option arguments
     if exclude_roles is not None:
         all_roles = get_all_roles([playbook_node])
         role_names = list(map(lambda role_node: role_node.name, all_roles))
         assert exclude_roles not in role_names
 
-        
+
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
 def test_include_role_parsing_with_only_roles(
     grapher_cli: PlaybookGrapherCLI,
@@ -352,7 +391,8 @@ def test_roles_usage_multi_plays(
     nb_display_some_facts: int,
     nb_nested_include_role: int,
 ) -> None:
-    """Test the role_usages method for multiple plays referencing the same roles
+    """Test the role_usages method for multiple plays referencing the same roles.
+
     :param grapher_cli:
     :param roles_number: The number of uniq roles in the graph
     :param group_roles_by_name: flag to enable grouping roles or not
