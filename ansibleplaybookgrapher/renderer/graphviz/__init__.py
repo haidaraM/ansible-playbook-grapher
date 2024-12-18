@@ -150,7 +150,6 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         """
         # Here we have a TaskNode
         digraph = kwargs["digraph"]
-        node_label_prefix = kwargs["node_label_prefix"]
         edge_label = f"{task_node.index} {task_node.when}"
 
         edge_style = "solid"
@@ -164,7 +163,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         digraph.node(
             task_node.id,
-            label=node_label_prefix + task_node.name,
+            label=task_node.display_name(),
             shape=node_shape,
             id=task_node.id,
             tooltip=task_node.name,
@@ -216,7 +215,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             # block node
             cluster_block_subgraph.node(
                 block_node.id,
-                label=f"[block] {block_node.name}",
+                label=f"{block_node.display_name()}",
                 shape="box",
                 style="filled",
                 id=block_node.id,
@@ -285,7 +284,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             role_subgraph.node(
                 role_node.id,
                 id=role_node.id,
-                label=f"[role] {role_node.name}",
+                label=f"{role_node.display_name()}",
                 style="filled",
                 tooltip=role_node.name,
                 fontcolor=fontcolor,
@@ -347,7 +346,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         digraph.node(
             play_node.id,
             id=play_node.id,
-            label=play_node.name,
+            label=play_node.display_name(),
             style="filled",
             shape="box",
             color=color,
@@ -357,7 +356,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
         # from playbook to play
-        playbook_to_play_label = f"{play_node.index} {play_node.name}"
+        playbook_to_play_label = f"{play_node.index}"
         self.digraph.edge(
             self.playbook_node.id,
             play_node.id,
