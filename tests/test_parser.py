@@ -614,7 +614,7 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
         assert h.is_handler()
 
     # Second play
-    assert len(play_2.tasks) == 4, "The second play should have 4 tasks"
+    assert len(play_2.tasks) == 6, "The second play should have 6 tasks"
     play_1_expected_handler = [
         "restart postgres",
         "stop traefik",
