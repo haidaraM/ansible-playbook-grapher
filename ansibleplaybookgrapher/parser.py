@@ -611,6 +611,3 @@ def _add_handlers_in_notify(play_node: PlayNode):
     _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
     _add_notified_handlers(play_node, "tasks", play_node.tasks)
     _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)
-
-    # We clear the handlers from the play because they are already added in the graph
-    play_node.clear_handlers()
