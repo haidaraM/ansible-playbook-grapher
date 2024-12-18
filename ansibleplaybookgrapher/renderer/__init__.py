@@ -209,16 +209,6 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-        # play handlers
-        for p_handler in play_node.handlers:
-            self.build_node(
-                node=p_handler,
-                color=color,
-                fontcolor=play_font_color,
-                node_label_prefix="[handler] ",
-                **kwargs,
-            )
-
     @abstractmethod
     def build_task(
         self,

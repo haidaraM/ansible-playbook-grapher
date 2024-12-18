@@ -480,13 +480,6 @@ class PlayNode(CompositeNode):
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
 
-    def clear_handlers(self) -> None:
-        """Remove the handlers from the play.
-
-        :return:
-        """
-        self._compositions["handlers"] = []
-
     @property
     def handlers(self) -> list["TaskNode"]:
         """Return the handlers defined at the play level.

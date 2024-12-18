@@ -46,6 +46,7 @@
 
     - name: bar
       assert: { that: true }
+      changed_when: true
       notify: stop traefik
 
   handlers:
