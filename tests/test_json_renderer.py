@@ -279,7 +279,13 @@ def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
 
 
 def test_handlers(request: pytest.FixtureRequest) -> None:
-    """:return:"""
+    """Test for handlers.
+
+    The JSON renderer additionally adds the handlers to the output in a separate section. As such, it has more handlers
+    than the other renderers.
+
+    :param request:
+    :return:"""
     json_path, playbook_paths = run_grapher(
         ["handlers.yml"],
         output_filename=request.node.name,
@@ -290,12 +296,21 @@ def test_handlers(request: pytest.FixtureRequest) -> None:
         ],
     )
     _common_tests(
-        json_path, plays_number=2, pre_tasks_number=1, tasks_number=6, handlers_number=6
+        json_path,
+        plays_number=2,
+        pre_tasks_number=1,
+        tasks_number=6,
+        handlers_number=6 + 6,
     )
 
 
 def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
-    """:return:"""
+    """The JSON renderer additionally adds the handlers to the output in a separate section. As such, it has more handlers
+    than the other renderers.
+
+    :param request:
+    :return:
+    """
     json_path, playbook_paths = run_grapher(
         ["handlers-in-role.yml"],
         output_filename=request.node.name,
@@ -311,6 +326,6 @@ def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
         pre_tasks_number=1,
         post_tasks_number=1,
         tasks_number=1,
-        handlers_number=2,
+        handlers_number=3,
         roles_number=1,
     )
