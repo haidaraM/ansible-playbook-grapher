@@ -192,8 +192,6 @@ class CompositeNode(Node):
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
         self._compositions = defaultdict(list)  # type: dict[str, list]
-        # Used to count the number of nodes in this composite node
-        self._node_counter = 0
 
     def add_node(self, target_composition: str, node: Node) -> None:
         """Add a node in the target composition.
@@ -208,9 +206,21 @@ class CompositeNode(Node):
                 msg,
             )
         self._compositions[target_composition].append(node)
-        # The node index is position in the composition regardless of the type of the node
-        node.index = self._node_counter + 1
-        self._node_counter += 1
+
+    def calculate_indices(self):
+        """
+        Calculate the indices of all nodes based on their composition type.
+        This is only called when needed.
+        """
+        current_index = 1
+        for comp_type in self._supported_compositions:
+            for node in self._compositions[comp_type]:
+                node.index = current_index
+                current_index += 1
+
+                if isinstance(node, CompositeNode):
+                    node.calculate_indices()
+
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.
