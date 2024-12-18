@@ -9,6 +9,108 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 
 
 @pytest.mark.parametrize(
+    ("exclude_roles_option", "expected"),
+    [
+        (["--"], None),
+        (["--exclude-roles", "fake_role"], ["fake_role"]),
+        (
+            ["--exclude-roles", "fake_role,display_some_facts"],
+            ["display_some_facts", "fake_role"],
+        ),
+    ],
+    ids=[
+        "default",
+        "exclude_roles_single_role",
+        "exclude_roles_multiple_roles",
+    ],
+)
+def test_cli_exclude_roles(
+    exclude_roles_option: list[str],
+    expected: list[str],
+) -> None:
+    """Test for the exclude roles option: --exclude-roles
+    :param exclude_roles_option:
+    :param expected:
+    :return:
+    """
+    args = [__prog__, *exclude_roles_option, "playbook.yml"]
+
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    assert cli.options.exclude_roles == expected
+
+
+@pytest.mark.parametrize(
+    ("exclude_roles_option", "expected"),
+    [
+        (["--exclude-roles", "exclude_roles.txt"], ["display_some_facts", "fake_role"]),
+    ],
+    ids=[
+        "exclude_roles_with_file",
+    ],
+)
+def test_cli_exclude_roles_with_file(
+    exclude_roles_option: list[str],
+    expected: list[str],
+    tmp_path: Path,
+) -> None:
+    """Test for the exclude roles option with a file path as argument: --exclude-roles
+    :param exclude_roles_option:
+    :param expected:
+    :return:
+    """
+    content = "fake_role\ndisplay_some_facts"
+    exclude_role_file = tmp_path / exclude_roles_option[1]
+    exclude_role_file.write_text(content)
+    exclude_roles_option[1] = str(exclude_role_file)
+
+    args = [__prog__, *exclude_roles_option, "playbook.yml"]
+
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    assert cli.options.exclude_roles == expected
+
+
+@pytest.mark.parametrize(
+    ("exclude_roles_option", "expected"),
+    [
+        (
+            ["--exclude-roles", "path/to/example_role/"],
+            ["example_role"],
+        ),
+    ],
+    ids=[
+        "exclude_roles_with_dir",
+    ],
+)
+def test_cli_exclude_roles_with_dir(
+    exclude_roles_option: list[str],
+    expected: list[str],
+    tmp_path: Path,
+) -> None:
+    """Test for the exclude roles option with directory path as argument: --exclude-roles
+    :param exclude_roles_option:
+    :param expected:
+    :return:
+    """
+    example_dir_path = tmp_path / exclude_roles_option[1]
+    example_dir_path.mkdir(parents=True, exist_ok=True)
+    exclude_roles_option[1] = str(example_dir_path)
+
+    args = [__prog__, *exclude_roles_option, "playbook.yml"]
+
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    assert cli.options.exclude_roles == expected
+
+
+@pytest.mark.parametrize(
     ("only_roles_option", "expected"),
     [(["--"], False), (["--only-roles"], True)],
     ids=["default", "only_roles"],

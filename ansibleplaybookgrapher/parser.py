@@ -142,6 +142,7 @@ class PlaybookParser(BaseParser):
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
         playbook_name: str | None = None,
+        exclude_roles: list[str] | None = None,
         only_roles: bool = False,
     ) -> None:
         """
@@ -152,6 +153,7 @@ class PlaybookParser(BaseParser):
         :param skip_tags: Only add plays and tasks whose tags do not match these values.
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs.
         :param playbook_name: On optional name of the playbook to parse.
+        :param exclude_roles: Only add tasks whose roles do not match these values
         :param only_roles: Ignore all task nodes when rendering graph
         It will be used as the node name if provided in replacement of the file name.
         """
@@ -160,6 +162,7 @@ class PlaybookParser(BaseParser):
         self.include_role_tasks = include_role_tasks
         self.playbook_path = playbook_path
         self.playbook_name = playbook_name
+        self.exclude_roles = exclude_roles or []
         self.only_roles = only_roles
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
@@ -232,6 +235,10 @@ class PlaybookParser(BaseParser):
             for role in play.get_roles():  # type: Role
                 # Don't insert tasks from ``import/include_role``, preventing duplicate graphing
                 if role.from_include:
+                    continue
+
+                # Don't show roles, which are set in --exclude-roles option
+                if role.get_name() in self.exclude_roles:
                     continue
 
                 # the role object doesn't inherit the tags from the play. So we add it manually.
@@ -368,6 +375,10 @@ class PlaybookParser(BaseParser):
                     # We do this because the management of an 'include_role' is different.
                     # See :func:`~ansible.playbook.included_file.IncludedFile.process_include_results` from line 155
                     display.v(f"An 'include_role' found: '{task_or_block.get_name()}'")
+
+                    # Don't show roles, which are set in --exclude-roles option
+                    if task_or_block._role_name in self.exclude_roles:
+                        continue
 
                     if not task_or_block.evaluate_tags(
                         only_tags=self.tags,
