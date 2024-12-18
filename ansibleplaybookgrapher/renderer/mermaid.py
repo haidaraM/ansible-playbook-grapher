@@ -221,7 +221,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=play_node.id,
             shape="rect",
-            label=f"{play_node.name}",
+            label=f"{play_node.display_name()}",
             style=f"stroke:{color},fill:{color},color:{play_font_color}",
         )
 
@@ -255,7 +255,6 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        node_label_prefix = kwargs.get("node_label_prefix", "")
 
         link_type = "--"
         node_shape = "rect"
@@ -271,7 +270,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=task_node.id,
             shape=node_shape,
-            label=f"{node_label_prefix} {task_node.name}",
+            label=f"{task_node.display_name()}",
             style=style,
         )
 
@@ -352,7 +351,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=role_node.id,
             shape="stadium",
-            label=f"[role] {role_node.name}",
+            label=f"{role_node.display_name()}",
             style=f"fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )
 
@@ -388,7 +387,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=block_node.id,
             shape="rect",
-            label=f"[block] {block_node.name}",
+            label=f"{block_node.display_name()}",
             style=f"fill:{color},color:{fontcolor},stroke:{color}",
         )
 
