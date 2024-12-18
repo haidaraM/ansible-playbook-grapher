@@ -83,6 +83,19 @@ class Node:
         # The index of this node in the parent node if it has one (starting from 1)
         self.index: int | None = None
 
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        It's composed of the ID prefix between brackets and the name of the node.
+        :return:
+        """
+        try:
+            split = self.id.split("_")
+            id_prefix = "_".join(split[:-1])
+            return f"[{id_prefix}] {self.name}"
+        except IndexError:
+            return self.name
+
     def set_location(self) -> None:
         """Set the location of this node based on the raw object. Not all objects have path.
 
@@ -220,7 +233,6 @@ class CompositeNode(Node):
 
                 if isinstance(node, CompositeNode):
                     node.calculate_indices()
-
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.
@@ -469,6 +481,13 @@ class PlayNode(CompositeNode):
         )
         self.hosts = hosts or []
         self.colors: tuple[str, str] = get_play_colors(self.id)
+
+    def display_name(self) -> str:
+        """
+        Return the display name of the node.
+        :return:
+        """
+        return f"Play: {self.name} ({len(self.hosts)})"
 
     @property
     def roles(self) -> list["RoleNode"]:
