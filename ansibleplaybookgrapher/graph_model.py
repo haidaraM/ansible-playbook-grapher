@@ -229,7 +229,7 @@ class CompositeNode(Node):
         :return:
         """
         tasks: list[TaskNode] = []
-        self._get_all_tasks_nodes(tasks)
+        self._get_all_nodes_type(TaskNode, tasks)
         return tasks
 
     def get_all_roles(self) -> list["RoleNode"]:
@@ -238,36 +238,22 @@ class CompositeNode(Node):
         :return:
         """
         roles: list[RoleNode] = []
-        self._get_all_roles_nodes(roles)
+        self._get_all_nodes_type(RoleNode, roles)
         return roles
 
-    def _get_all_tasks_nodes(self, task_acc: list["Node"]) -> None:
-        """Recursively get all tasks.
-
-        :param task_acc:
-        :return:
-        """
-        items = self._compositions.items()
-        for _, nodes in items:
-            for node in nodes:
-                if isinstance(node, TaskNode):
-                    task_acc.append(node)
-                elif isinstance(node, CompositeNode):
-                    node._get_all_tasks_nodes(task_acc)
-
-    def _get_all_roles_nodes(self, role_acc: list["Node"]) -> None:
+    def _get_all_nodes_type[T](self, node_type: type, acc: list[T]) -> None:
         """Recursively get all roles.
 
-        :param role_acc:
+        :param acc: The accumulator
         :return:
         """
         items = self._compositions.items()
         for _, nodes in items:
             for node in nodes:
-                if isinstance(node, RoleNode):
-                    role_acc.append(node)
+                if isinstance(node, node_type):
+                    acc.append(node)
                 elif isinstance(node, CompositeNode):
-                    node._get_all_roles_nodes(role_acc)
+                    node._get_all_nodes_type(node_type, acc)
 
     def links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
