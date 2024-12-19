@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Type, TypeVar
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -152,6 +152,10 @@ class Node:
         return data
 
 
+# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
+T = TypeVar("T", bound=Node)
+
+
 class CompositeNode(Node):
     """A node composed of multiple of nodes:
     - playbook containing plays
@@ -241,7 +245,7 @@ class CompositeNode(Node):
         self._get_all_nodes_type(RoleNode, roles)
         return roles
 
-    def _get_all_nodes_type[T](self, node_type: type, acc: list[T]) -> None:
+    def _get_all_nodes_type(self, node_type: Type[T], acc: list[T]) -> None:
         """Recursively get all roles.
 
         :param acc: The accumulator
