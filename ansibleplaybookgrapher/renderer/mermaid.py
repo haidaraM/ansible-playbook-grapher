@@ -184,15 +184,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         display.vvv(
-            f"Converting the playbook '{self.playbook_node.name}' to mermaid format",
+            f"Converting the playbook '{self.playbook_node.display_name()}' to mermaid format",
         )
 
         # Playbook node
-        self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")
+        self.add_comment(f"Start of the playbook '{self.playbook_node.display_name()}'")
         self.add_node(
             node_id=self.playbook_node.id,
             shape="rounded",
-            label=f"{self.playbook_node.name}",
+            label=f"{self.playbook_node.display_name()}",
         )
 
         self._indentation_level += 1
@@ -203,7 +203,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             self.build_play(play_node)
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the playbook '{self.playbook_node.name}'\n")
+        self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")
 
         return self.mermaid_code
 
@@ -216,7 +216,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         # Play node
         color, play_font_color = play_node.colors
-        self.add_comment(f"Start of the play '{play_node.name}'")
+        self.add_comment(f"Start of the play '{play_node.display_name()}'")
 
         self.add_node(
             node_id=play_node.id,
@@ -238,7 +238,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.traverse_play(play_node)
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the play '{play_node.name}'")
+        self.add_comment(f"End of the play '{play_node.display_name()}'")
 
     def build_task(
         self,
@@ -270,7 +270,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=task_node.id,
             shape=node_shape,
-            label=f"{task_node.display_name()}",
+            label=task_node.display_name(),
             style=style,
         )
 
@@ -325,7 +325,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        self.add_comment(f"Start of the role '{role_node.name}'")
+        self.add_comment(f"Start of the role '{role_node.display_name()}'")
 
         plays_using_this_role = len(self.roles_usage[role_node])
         node_color = color
@@ -351,7 +351,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=role_node.id,
             shape="stadium",
-            label=f"{role_node.display_name()}",
+            label=role_node.display_name(),
             style=f"fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )
 
@@ -365,7 +365,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             )
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the role '{role_node.name}'")
+        self.add_comment(f"End of the role '{role_node.display_name()}'")
 
     def build_block(
         self,
@@ -387,7 +387,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.add_node(
             node_id=block_node.id,
             shape="rect",
-            label=f"{block_node.display_name()}",
+            label=block_node.display_name(),
             style=f"fill:{color},color:{fontcolor},stroke:{color}",
         )
 

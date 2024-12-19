@@ -360,6 +360,9 @@ class PlaybookNode(CompositeNode):
             supported_compositions=["plays"],
         )
 
+    def display_name(self) -> str:
+        return self.name
+
     def set_location(self) -> None:
         """Playbooks only have the path as position.
 

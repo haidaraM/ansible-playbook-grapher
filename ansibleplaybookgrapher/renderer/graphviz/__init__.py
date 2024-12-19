@@ -215,7 +215,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             # block node
             cluster_block_subgraph.node(
                 block_node.id,
-                label=f"{block_node.display_name()}",
+                label=block_node.display_name(),
                 shape="box",
                 style="filled",
                 id=block_node.id,
@@ -284,7 +284,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             role_subgraph.node(
                 role_node.id,
                 id=role_node.id,
-                label=f"{role_node.display_name()}",
+                label=role_node.display_name(),
                 style="filled",
                 tooltip=role_node.name,
                 fontcolor=fontcolor,
