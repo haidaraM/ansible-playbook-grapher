@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, Type, TypeVar
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -152,6 +152,10 @@ class Node:
         return data
 
 
+# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
+T = TypeVar("T", bound=Node)
+
+
 class CompositeNode(Node):
     """A node composed of multiple of nodes:
     - playbook containing plays
@@ -229,7 +233,7 @@ class CompositeNode(Node):
         :return:
         """
         tasks: list[TaskNode] = []
-        self._get_all_tasks_nodes(tasks)
+        self._get_all_nodes_type(TaskNode, tasks)
         return tasks
 
     def get_all_roles(self) -> list["RoleNode"]:
@@ -238,36 +242,22 @@ class CompositeNode(Node):
         :return:
         """
         roles: list[RoleNode] = []
-        self._get_all_roles_nodes(roles)
+        self._get_all_nodes_type(RoleNode, roles)
         return roles
 
-    def _get_all_tasks_nodes(self, task_acc: list["Node"]) -> None:
-        """Recursively get all tasks.
-
-        :param task_acc:
-        :return:
-        """
-        items = self._compositions.items()
-        for _, nodes in items:
-            for node in nodes:
-                if isinstance(node, TaskNode):
-                    task_acc.append(node)
-                elif isinstance(node, CompositeNode):
-                    node._get_all_tasks_nodes(task_acc)
-
-    def _get_all_roles_nodes(self, role_acc: list["Node"]) -> None:
+    def _get_all_nodes_type(self, node_type: Type[T], acc: list[T]) -> None:
         """Recursively get all roles.
 
-        :param role_acc:
+        :param acc: The accumulator
         :return:
         """
         items = self._compositions.items()
         for _, nodes in items:
             for node in nodes:
-                if isinstance(node, RoleNode):
-                    role_acc.append(node)
+                if isinstance(node, node_type):
+                    acc.append(node)
                 elif isinstance(node, CompositeNode):
-                    node._get_all_roles_nodes(role_acc)
+                    node._get_all_nodes_type(node_type, acc)
 
     def links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
