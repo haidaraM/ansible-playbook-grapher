@@ -11,7 +11,7 @@ from tests import FIXTURES_DIR_PATH, INVENTORY_PATH
 
 @pytest.fixture(name="data_loader")
 def fixture_data_loader() -> DataLoader:
-    """Return an Ansible  DataLoader.
+    """Return an Ansible DataLoader.
     :return:
     """
     from ansible.parsing.dataloader import DataLoader

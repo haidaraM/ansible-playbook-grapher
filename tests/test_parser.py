@@ -371,6 +371,38 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     assert post_tasks[0].index == 6
 
 
+@pytest.mark.parametrize("grapher_cli", [["blocks_with_role.yml"]], indirect=True)
+def test_block_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test the parsing of a playbook with blocks and roles.
+
+
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        include_role_tasks=True,
+    )
+    playbook_node = parser.parse()
+    play = playbook_node.plays()[0]
+
+    assert len(play.pre_tasks) == 1
+    assert isinstance(play.pre_tasks[0], BlockNode)
+    assert len(play.pre_tasks[0].tasks) == 1
+
+    assert len(play.roles) == 1
+    role = play.roles[0]
+    assert len(role.tasks) == 4
+    assert isinstance(role.tasks[1], BlockNode)
+    assert len(role.tasks[1].tasks) == 1
+    assert isinstance(role.tasks[3], BlockNode)
+    assert len(role.tasks[3].tasks) == 1
+
+    assert len(play.tasks) == 2
+    assert isinstance(play.tasks[1], BlockNode)
+    assert len(play.tasks[1].tasks) == 1
+
+
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
 @pytest.mark.parametrize(
     (
