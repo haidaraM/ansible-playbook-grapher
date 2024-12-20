@@ -1,0 +1,23 @@
+---
+- name: test
+  hosts: localhost
+  gather_facts: false
+  pre_tasks:
+    - name: Block of pre_tasks
+      block:
+        - name: Pre_task in a block
+          ansible.builtin.debug:
+            msg: msg from pre_task in a block
+  roles:
+    - role: blocks
+
+  tasks:
+    - name: Task with a msg
+      ansible.builtin.debug:
+        msg: msg from a task
+
+    - name: Block of tasks
+      block:
+        - name: Task in a block
+          ansible.builtin.debug:
+            msg: msg from a task in a block

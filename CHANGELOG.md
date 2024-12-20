@@ -1,3 +1,12 @@
+# 2.7.0 (unreleased)
+
+## What's Changed
+
+* fix: Blocks inside roles weren't added to the graph @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/225
+* feat: Add support for excluding specific roles in the graph view with `--exclude-roles` by @Eltryo in https://github.com/haidaraM/ansible-playbook-grapher/pull/219
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.6.0...v2.7.0
+
 # 2.6.0 (2024-12-16)
 
 ## What's Changed

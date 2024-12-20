@@ -324,8 +324,9 @@ class PlaybookParser(BaseParser):
         node_type: str,
         play_vars: dict,
     ) -> None:
-        """Recursively read all the tasks of the block and add it to the graph
-        :param parent_nodes: This a list of parent nodes. Each time, we see an include_role, the corresponding node is
+        """Recursively read all the tasks of the block and add it to the graph.
+
+        :param parent_nodes: This is a list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
         :param current_play:
         :param block:
@@ -333,7 +334,7 @@ class PlaybookParser(BaseParser):
         :param node_type:
         :return:
         """
-        if not block._implicit and block._role is None:
+        if Block.is_block(block.get_ds()):
             # Here we have an explicit block. Ansible internally converts all normal tasks to Block
             block_node = BlockNode(
                 str(block.name),

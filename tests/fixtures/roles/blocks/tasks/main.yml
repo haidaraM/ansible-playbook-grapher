@@ -1,0 +1,16 @@
+---
+
+- name: Task with a msg in a role
+  ansible.builtin.debug:
+    msg: Msg from a task
+
+- name: Block of tasks in a role
+  block:
+    - name: My task in a block in a role
+      ansible.builtin.debug:
+        msg: Msg from a task in a block in a role
+
+- name: Import tasks_file
+  ansible.builtin.import_role:
+    name: blocks
+    tasks_from: tasks_with_block
