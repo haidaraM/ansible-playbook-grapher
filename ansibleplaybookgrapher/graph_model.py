@@ -87,6 +87,15 @@ class Node:
         """Return the display name of the node.
 
         It's composed of the ID prefix between brackets and the name of the node.
+        Examples:
+         - [playbook] My playbook
+         - [play] My play
+         - [pre_task] My pre task
+         - [role] My role
+         - [task] My task
+         - [block] My block
+         - [post_task] My post task
+
         :return:
         """
         try:
