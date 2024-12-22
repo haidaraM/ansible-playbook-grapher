@@ -594,19 +594,15 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(plays) == 2
     play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
 
-    assert (
-        len(play_1.pre_tasks) == 3
-    ), "The first play should have 3 pre_tasks (1 tasks and 2 handler)"
-    assert (
-        len(play_1.tasks) == 4
-    ), "The first play should have 4 tasks: 2 task and 2 handlers"
+    assert len(play_1.pre_tasks) == 1, "The first play should have 1 pre_tasks"
+    assert len(play_1.tasks) == 2, "The first play should have 2 tasks"
 
     play_1_expected_handlers = [
         "restart nginx",
         "restart mysql",
         "restart mysql in the pre_tasks",
     ]
-
+    assert len(play_1.handlers) == len(play_1_expected_handlers)
     for idx, h in enumerate(play_1.handlers):
         assert (
             h.name == play_1_expected_handlers[idx]
@@ -614,12 +610,13 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
         assert h.is_handler()
 
     # Second play
-    assert len(play_2.tasks) == 6, "The second play should have 6 tasks"
+    assert len(play_2.tasks) == 4, "The second play should have 6 tasks"
     play_1_expected_handler = [
         "restart postgres",
         "stop traefik",
         "restart apache",
     ]
+    assert len(play_2.handlers) == len(play_1_expected_handler)
     for idx, h in enumerate(play_2.handlers):
         assert (
             h.name == play_1_expected_handler[idx]

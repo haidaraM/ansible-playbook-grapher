@@ -293,7 +293,7 @@ class PlaybookParser(BaseParser):
                             node_type="task",
                         )
 
-                    # loop through handlers of the roles
+                    # loop through the handlers of the roles
                     for block in role.get_handler_blocks(play):
                         self._include_tasks_in_blocks(
                             current_play=play,
@@ -336,7 +336,8 @@ class PlaybookParser(BaseParser):
                     node_type="handler",
                 )
 
-            _add_handlers_in_notify(play_node)
+            # TODO: Add handlers only only if they are notified AND after each section.
+            # add_handlers_in_notify(play_node)
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
@@ -560,6 +561,23 @@ class PlaybookParser(BaseParser):
                 )
 
 
+def add_handlers_in_notify(play_node: PlayNode):
+    """
+    Add the handlers in the "notify" attribute of the tasks. This has to be done separately for the pre_tasks, tasks
+    and post_tasks because the handlers are not shared between them.
+
+    Handlers not used will not be kept in the graph.
+
+    The role handlers are managed separately.
+    :param play_node:
+    :return:
+    """
+
+    _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
+    _add_notified_handlers(play_node, "tasks", play_node.tasks)
+    _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)
+
+
 def _add_notified_handlers(
     play_node: PlayNode, target_composition: str, tasks: list[Node]
 ) -> list[str]:
@@ -593,20 +611,3 @@ def _add_notified_handlers(
             )
 
     return notified_handlers
-
-
-def _add_handlers_in_notify(play_node: PlayNode):
-    """
-    Add the handlers in the "notify" attribute of the tasks. This has to be done separately for the pre_tasks, tasks
-    and post_tasks because the handlers are not shared between them.
-
-    Handlers not used will not be kept in the graph.
-
-    The role handlers are managed separately.
-    :param play_node:
-    :return:
-    """
-
-    _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
-    _add_notified_handlers(play_node, "tasks", play_node.tasks)
-    _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)

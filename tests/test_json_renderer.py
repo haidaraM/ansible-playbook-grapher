@@ -300,7 +300,7 @@ def test_handlers(request: pytest.FixtureRequest) -> None:
         plays_number=2,
         pre_tasks_number=1,
         tasks_number=6,
-        handlers_number=6 + 6,
+        handlers_number=6,
     )
 
 
@@ -326,6 +326,6 @@ def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
         pre_tasks_number=1,
         post_tasks_number=1,
         tasks_number=1,
-        handlers_number=3,
+        handlers_number=2,
         roles_number=1,
     )

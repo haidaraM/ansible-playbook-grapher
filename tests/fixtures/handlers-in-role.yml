@@ -3,14 +3,13 @@
   gather_facts: false
 
   pre_tasks:
-    - name: pre task
+    - name: My pre task debug
       debug: msg="pre task"
 
   roles:
     - role: role-with-handlers
-
   post_tasks:
-    - name: post task
+    - name: My post task debug
       debug: msg="post task"
       changed_when: true
       notify: restart postgres
