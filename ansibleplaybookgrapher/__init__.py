@@ -3,5 +3,5 @@
 While you can use this package into another project, it is not primarily designed for that (yet).
 """
 
-__version__ = "2.7.0dev"
+__version__ = "2.7.0"
 __prog__ = "ansible-playbook-grapher"

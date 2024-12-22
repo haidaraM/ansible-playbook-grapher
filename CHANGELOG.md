@@ -1,4 +1,4 @@
-# 2.7.0 (unreleased)
+# 2.7.0 (2024-12-22)
 
 ## What's Changed
 
