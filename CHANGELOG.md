@@ -1,3 +1,18 @@
+# 2.8.0 (Unreleased)
+
+## What's Changed
+
+* Add the handlers to the graph with `--show-handlers` (**the initial support for handlers**). They are by default added
+  at the end of the play and roles only. This might change in the future to actually reflect the handlers' behavior.
+* Changes the shape of the graphviz node to make it consistent with Mermaid. The tasks will be rectangle instead of
+  `octagon`: https://graphviz.org/doc/info/shapes.html
+* Refactor how the nodes and tasks indices are computed given we can now add handlers after all the tasks are parsed.
+* Add a new `display_name()` method to the node for a friendly name for the graph. This removes passing the
+  `node_label_prefix` in multiple places.
+* Remove the play name from the edge going from playbook to the plays. This was not consistent with the other edges.
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.7.0...v2.8.0
+
 # 2.7.0 (2024-12-22)
 
 ## What's Changed
