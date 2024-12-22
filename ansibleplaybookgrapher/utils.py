@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

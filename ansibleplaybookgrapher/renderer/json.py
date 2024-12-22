@@ -54,6 +54,7 @@ class JSONRenderer(Renderer):
             json_builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
+                show_handlers=show_handlers,
             )
 
             playbooks.append(json_builder.json_output)
@@ -91,12 +92,14 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
         :param hide_empty_plays:
         :param hide_plays_without_roles:
+        :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
         """
@@ -107,6 +110,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         self.json_output = self.playbook_node.to_dict(
             exclude_empty_plays=hide_empty_plays,
             exclude_plays_without_roles=hide_plays_without_roles,
+            include_handlers=show_handlers,
         )
 
         return json.dumps(self.json_output)

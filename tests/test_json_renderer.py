@@ -278,11 +278,15 @@ def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
     )
 
 
-def test_handlers(request: pytest.FixtureRequest) -> None:
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 6)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handlers(
+    request: pytest.FixtureRequest, flag: str, handlers_number: int
+) -> None:
     """Test for handlers.
-
-    The JSON renderer additionally adds the handlers to the output in a separate section. As such, it has more handlers
-    than the other renderers.
 
     :param request:
     :return:"""
@@ -293,6 +297,7 @@ def test_handlers(request: pytest.FixtureRequest) -> None:
             "-i",
             str(INVENTORY_PATH),
             "--include-role-tasks",
+            flag,
         ],
     )
     _common_tests(
@@ -300,13 +305,19 @@ def test_handlers(request: pytest.FixtureRequest) -> None:
         plays_number=2,
         pre_tasks_number=1,
         tasks_number=6,
-        handlers_number=6,
+        handlers_number=handlers_number,
     )
 
 
-def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
-    """The JSON renderer additionally adds the handlers to the output in a separate section. As such, it has more handlers
-    than the other renderers.
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 2)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handler_in_a_role(
+    request: pytest.FixtureRequest, flag: str, handlers_number: int
+) -> None:
+    """Test for handlers in the role.
 
     :param request:
     :return:
@@ -318,6 +329,7 @@ def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
             "-i",
             str(INVENTORY_PATH),
             "--include-role-tasks",
+            flag,
         ],
     )
     _common_tests(
@@ -326,6 +338,6 @@ def test_handler_in_a_role(request: pytest.FixtureRequest) -> None:
         pre_tasks_number=1,
         post_tasks_number=1,
         tasks_number=1,
-        handlers_number=2,
+        handlers_number=handlers_number,
         roles_number=1,
     )

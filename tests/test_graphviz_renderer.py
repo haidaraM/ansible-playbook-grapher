@@ -15,9 +15,9 @@ DIR_PATH = Path(__file__).parent.resolve()
 
 
 def run_grapher(
-        playbooks: list[str],
-        output_filename: str,
-        additional_args: list[str] | None = None,
+    playbooks: list[str],
+    output_filename: str,
+    additional_args: list[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Utility function to run the grapher
     :param output_filename:
@@ -71,16 +71,16 @@ def run_grapher(
 
 
 def _common_tests(
-        svg_filename: str,
-        playbook_paths: list[str],
-        playbooks_number: int = 1,
-        plays_number: int = 0,
-        tasks_number: int = 0,
-        post_tasks_number: int = 0,
-        roles_number: int = 0,
-        pre_tasks_number: int = 0,
-        blocks_number: int = 0,
-        handlers_number: int = 0,
+    svg_filename: str,
+    playbook_paths: list[str],
+    playbooks_number: int = 1,
+    plays_number: int = 0,
+    tasks_number: int = 0,
+    post_tasks_number: int = 0,
+    roles_number: int = 0,
+    pre_tasks_number: int = 0,
+    blocks_number: int = 0,
+    handlers_number: int = 0,
 ) -> dict[str, list[Element]]:
     """Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -112,39 +112,39 @@ def _common_tests(
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
-            playbooks_file_names == playbook_paths
+        playbooks_file_names == playbook_paths
     ), "The playbook file names should be in the svg file"
 
     assert (
-            len(playbooks) == playbooks_number
+        len(playbooks) == playbooks_number
     ), f"The graph '{svg_filename}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
 
     assert (
-            len(plays) == plays_number
+        len(plays) == plays_number
     ), f"The graph '{svg_filename}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
 
     assert (
-            len(pre_tasks) == pre_tasks_number
+        len(pre_tasks) == pre_tasks_number
     ), f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
 
     assert (
-            len(roles) == roles_number
+        len(roles) == roles_number
     ), f"The graph '{svg_filename}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
 
     assert (
-            len(tasks) == tasks_number
+        len(tasks) == tasks_number
     ), f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
 
     assert (
-            len(post_tasks) == post_tasks_number
+        len(post_tasks) == post_tasks_number
     ), f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
 
     assert (
-            len(blocks) == blocks_number
+        len(blocks) == blocks_number
     ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks"
 
     assert (
-            len(handlers) == handlers_number
+        len(handlers) == handlers_number
     ), f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handlers "
 
     return {
@@ -238,9 +238,9 @@ def test_import_tasks(request: pytest.FixtureRequest) -> None:
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_with_roles(
-        request: pytest.FixtureRequest,
-        include_role_tasks_option: str,
-        expected_tasks_number: int,
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test with_roles.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
@@ -266,9 +266,9 @@ def test_with_roles(
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_include_role(
-        request: pytest.FixtureRequest,
-        include_role_tasks_option: str,
-        expected_tasks_number: int,
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test include_role.yml, an example with include_role."""
     svg_path, playbook_paths = run_grapher(
@@ -328,9 +328,9 @@ def test_nested_include_tasks(request: pytest.FixtureRequest) -> None:
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_import_role(
-        request: pytest.FixtureRequest,
-        include_role_tasks_option: str,
-        expected_tasks_number: int,
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test import_role.yml, an example with import role.
     Import role is special because the tasks imported from role are treated as "normal tasks" when the playbook is parsed.
@@ -372,9 +372,9 @@ def test_import_playbook(request: pytest.FixtureRequest) -> None:
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
-        request: pytest.FixtureRequest,
-        include_role_tasks_option: str,
-        expected_tasks_number: int,
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_tasks_number: int,
 ) -> None:
     """Test nested import playbook with an import_role and include_tasks."""
     svg_path, playbook_paths = run_grapher(
@@ -405,10 +405,10 @@ def test_relative_var_files(request: pytest.FixtureRequest) -> None:
 
     # check if the plays title contains the interpolated variables
     assert (
-            "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
+        "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
     ), "The title should contain player name"
     assert (
-            "Lionel Messi" in res["tasks"][1].find("g/a/text").text
+        "Lionel Messi" in res["tasks"][1].find("g/a/text").text
     ), "The title should contain player name"
 
 
@@ -482,7 +482,7 @@ def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
 
 
 def test_with_roles_with_custom_protocol_handlers(
-        request: pytest.FixtureRequest,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test with_roles.yml with a custom protocol handlers."""
     formats_str = '{"file": "vscode://file/{path}:{line}", "folder": "{path}"}'
@@ -520,7 +520,7 @@ def test_with_roles_with_custom_protocol_handlers(
 
 
 def test_community_download_roles_and_collection(
-        request: pytest.FixtureRequest,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test if the grapher is able to find some downloaded roles and collections when graphing the playbook
     :return:
@@ -538,11 +538,11 @@ def test_community_download_roles_and_collection(
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
-        request: pytest.FixtureRequest,
-        flag: str,
-        roles_number: int,
-        tasks_number: int,
-        post_tasks_number: int,
+    request: pytest.FixtureRequest,
+    flag: str,
+    roles_number: int,
+    tasks_number: int,
+    post_tasks_number: int,
 ) -> None:
     """Test group roles by name
     :return:
@@ -607,7 +607,7 @@ def test_hiding_empty_plays_with_tags_filter(request: pytest.FixtureRequest) -> 
 
 
 def test_hiding_empty_plays_with_tags_filter_all(
-        request: pytest.FixtureRequest,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test hiding plays with the flag --hide-empty-plays.
 
@@ -652,7 +652,7 @@ def test_hiding_plays_without_roles(request: pytest.FixtureRequest) -> None:
 
 
 def test_hiding_plays_without_roles_with_tags_filtering(
-        request: pytest.FixtureRequest,
+    request: pytest.FixtureRequest,
 ) -> None:
     """Test hiding plays with the flag --hide-plays-without-roles.
 
@@ -688,7 +688,7 @@ def test_hiding_plays_without_roles_with_tags_filtering(
     ],
 )
 def test_graphing_a_playbook_in_a_collection(
-        request: pytest.FixtureRequest, playbook: str
+    request: pytest.FixtureRequest, playbook: str
 ) -> None:
     """Test graphing a playbook in a collection
 
@@ -718,9 +718,9 @@ def test_graphing_a_playbook_in_a_collection(
     ids=["no_handlers", "show_handlers"],
 )
 def test_handlers(
-        request: pytest.FixtureRequest,
-        flag: str,
-        handlers_number: int,
+    request: pytest.FixtureRequest,
+    flag: str,
+    handlers_number: int,
 ) -> None:
     """Test graphing a playbook with handlers
 
@@ -747,9 +747,9 @@ def test_handlers(
     ids=["no_handlers", "show_handlers"],
 )
 def test_handlers_in_role(
-        request: pytest.FixtureRequest,
-        flag: str,
-        handlers_number: int,
+    request: pytest.FixtureRequest,
+    flag: str,
+    handlers_number: int,
 ) -> None:
     """Test graphing a playbook with handlers
 

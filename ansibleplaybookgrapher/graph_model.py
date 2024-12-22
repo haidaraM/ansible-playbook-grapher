@@ -422,12 +422,14 @@ class PlaybookNode(CompositeNode):
         self,
         exclude_empty_plays: bool = False,
         exclude_plays_without_roles: bool = False,
+        include_handlers: bool = False,
         **kwargs,
     ) -> dict:
         """Return a dictionary representation of this playbook.
 
         :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
+        :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
         """
@@ -439,7 +441,9 @@ class PlaybookNode(CompositeNode):
             exclude_empty=exclude_empty_plays,
             exclude_without_roles=exclude_plays_without_roles,
         ):
-            playbook_dict["plays"].append(play.to_dict(**kwargs))
+            playbook_dict["plays"].append(
+                play.to_dict(include_handlers=include_handlers, **kwargs)
+            )
 
         return playbook_dict
 
@@ -521,15 +525,19 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def to_dict(self, **kwargs) -> dict:
+    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
         :return:
         """
-        data = super().to_dict(**kwargs)
+
+        data = super().to_dict(include_handlers=include_handlers, **kwargs)
         data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
+
+        if not include_handlers:
+            data["handlers"] = []
 
         return data
 
@@ -664,15 +672,19 @@ class RoleNode(LoopMixin, CompositeNode):
 
         return super().has_loop()
 
-    def to_dict(self, **kwargs) -> dict:
+    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
+        :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
         """
         node_dict = super().to_dict(**kwargs)
         node_dict["include_role"] = self.include_role
+
+        if not include_handlers:
+            node_dict["handlers"] = []
 
         return node_dict
 

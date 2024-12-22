@@ -88,7 +88,7 @@ class GraphvizRenderer(Renderer):
             builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
-                show_handlers=show_handlers
+                show_handlers=show_handlers,
             )
             roles_built.update(builder.roles_built)
 
