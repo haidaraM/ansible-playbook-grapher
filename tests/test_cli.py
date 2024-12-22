@@ -242,6 +242,30 @@ def test_cli_include_role_tasks(
 
 
 @pytest.mark.parametrize(
+    ("show_handlers_option", "expected"),
+    [(["--"], False), (["--show-handlers"], True)],
+    ids=["default", "include"],
+)
+def test_cli_show_handlers(
+    show_handlers_option: list[str],
+    expected: bool,
+) -> None:
+    """Test for show handlers options: --show-handlers
+
+    :param show_handlers_option:
+    :param expected:
+    :return:
+    """
+    args = [__prog__, *show_handlers_option, "playboook.yml"]
+
+    cli = PlaybookGrapherCLI(args)
+
+    cli.parse()
+
+    assert cli.options.show_handlers == expected
+
+
+@pytest.mark.parametrize(
     ("tags_option", "expected"),
     [
         (["--"], ["all"]),

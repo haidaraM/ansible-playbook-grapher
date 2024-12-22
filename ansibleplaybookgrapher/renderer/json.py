@@ -44,6 +44,7 @@ class JSONRenderer(Renderer):
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         playbooks = []
@@ -110,9 +111,12 @@ class JSONPlaybookBuilder(PlaybookBuilder):
 
         return json.dumps(self.json_output)
 
-    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+    def build_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
         """Not needed.
 
+        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:

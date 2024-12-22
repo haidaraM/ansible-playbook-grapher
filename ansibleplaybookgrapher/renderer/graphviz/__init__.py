@@ -54,14 +54,17 @@ class GraphvizRenderer(Renderer):
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
-        """:param open_protocol_handler: The protocol handler name to use
+        """
+        :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
         :param view: Whether to open the rendered file in the default viewer
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param show_handlers:
         :return: The path of the rendered file
         """
         save_dot_file = kwargs.get("save_dot_file", False)
@@ -85,6 +88,7 @@ class GraphvizRenderer(Renderer):
             builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
+                show_handlers=show_handlers
             )
             roles_built.update(builder.roles_built)
 
@@ -244,6 +248,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         **kwargs,
     ) -> None:
         """Render a role in the graph
+
         :return:
         """
         digraph = kwargs["digraph"]
@@ -267,10 +272,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         self.roles_built.add(role_node)
 
-        if role_node.include_role:  # For include_role, we point to a file
-            url = self.get_node_url(role_node)
-        else:  # For normal role invocation, we point to the folder
-            url = self.get_node_url(role_node)
+        url = self.get_node_url(role_node)
 
         plays_using_this_role = self.roles_usage[role_node]
         if len(plays_using_this_role) > 1:
@@ -304,11 +306,13 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param show_handlers: Whether to show the handlers or not.
         :return: The text representation of the graphviz dot format for the playbook.
         """
         display.vvv("Converting the graph to the dot format for graphviz")
@@ -326,12 +330,19 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             exclude_without_roles=hide_plays_without_roles,
         ):
             with self.digraph.subgraph(name=play.name) as play_subgraph:
-                self.build_play(play, digraph=play_subgraph, **kwargs)
+                self.build_play(
+                    play, digraph=play_subgraph, show_handlers=show_handlers, **kwargs
+                )
 
         return self.digraph.source
 
-    def build_play(self, play_node: PlayNode, **kwargs) -> None:
-        """:param play_node:
+    def build_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
+        """
+
+        :param show_handlers:
+        :param play_node:
         :param kwargs:
         :return:
         """
@@ -369,4 +380,4 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
         # traverse the play
-        self.traverse_play(play_node, **kwargs)
+        self.traverse_play(play_node, show_handlers=show_handlers, **kwargs)

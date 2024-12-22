@@ -35,6 +35,7 @@ JavaScript:
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
   and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
+  To not confuse with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
 - Export the dot file used to generate the graph with Graphviz.
 
 ## Prerequisites
@@ -397,11 +398,14 @@ regarding the blocks.
 The available options:
 
 ```
-usage: ansible-playbook-grapher [-h] [-v] [-i INVENTORY] [--include-role-tasks] [-s] [--view] [-o OUTPUT_FILENAME]
-                                [--open-protocol-handler {default,vscode,custom}] [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS]
-                                [--group-roles-by-name] [--renderer {graphviz,mermaid-flowchart,json}] [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
-                                [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version] [--hide-plays-without-roles] [--hide-empty-plays] [-t TAGS]
-                                [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS] [-J | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
+usage: ansible-playbook-grapher [-h] [-v] [--exclude-roles EXCLUDE_ROLES] [--only-roles] [-i INVENTORY] [--include-role-tasks] [-s]
+                                [--view] [-o OUTPUT_FILENAME] [--open-protocol-handler {default,vscode,custom}]
+                                [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--group-roles-by-name]
+                                [--renderer {graphviz,mermaid-flowchart,json}]
+                                [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
+                                [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version] [--hide-plays-without-roles]
+                                [--hide-empty-plays] [--show-handlers] [-t TAGS] [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS] [-J |
+                                --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
 
 Make graphs from your Ansible Playbooks.
@@ -419,7 +423,7 @@ options:
                         Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play level and include_role as tasks are
                         considered (no import_role).
   --include-role-tasks  Include the tasks of the roles in the graph. Applied when parsing the playbooks.
-  --only-roles          Ignore all tasks when rendering graphs.
+  --only-roles          Only display the roles in the graph (ignoring the tasks)
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a
                         JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser and files
@@ -438,12 +442,13 @@ options:
                         https://mermaid.js.org/config/directives.html. Default: '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
   --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
                         The orientation of the flow chart. Default: 'LR'
+  --show-handlers       Show the handlers in the graph. See the limitations in the project README on GitHub.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these values. This argument may be specified multiple times.
   --vault-id VAULT_IDS  the vault identity to use. This argument may be specified multiple times.
   --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
-  --version
+  --version             show program's version number and exit
   --view                Automatically open the resulting SVG file with your system's default viewer application for the file type
   -J, --ask-vault-password, --ask-vault-pass
                         ask for vault password
@@ -481,6 +486,9 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
   the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
+- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't entirely
+  reflect their real order of execution in the playbook. They are displayed at the end of the play and roles, but they
+  might be executed before that.
 
 ## Contribution
 

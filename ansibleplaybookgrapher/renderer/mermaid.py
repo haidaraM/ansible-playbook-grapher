@@ -47,6 +47,7 @@ class MermaidFlowChartRenderer(Renderer):
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
@@ -59,6 +60,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param view: Not supported for the moment.
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
         :param hide_plays_without_roles: Whether to hide plays without any roles or not.
+        :param show_handlers: Whether to show handlers or not.
         :param directive: Mermaid directive.
         :param orientation: Mermaid graph orientation.
         :param kwargs:
@@ -95,6 +97,7 @@ class MermaidFlowChartRenderer(Renderer):
             mermaid_code += playbook_builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
+                show_handlers=show_handlers
             )
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
@@ -173,6 +176,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
@@ -180,6 +184,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param hide_empty_plays: Whether to hide empty plays or not
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
         """
@@ -200,16 +205,19 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             exclude_empty=hide_empty_plays,
             exclude_without_roles=hide_plays_without_roles,
         ):
-            self.build_play(play_node)
+            self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")
 
         return self.mermaid_code
 
-    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+    def build_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
         """Build a play.
 
+        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
@@ -235,7 +243,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # traverse the play
         self._indentation_level += 1
-        self.traverse_play(play_node)
+        self.traverse_play(play_node, show_handlers, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the play '{play_node.display_name()}'")

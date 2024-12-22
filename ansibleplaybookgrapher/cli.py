@@ -97,6 +97,7 @@ class PlaybookGrapherCLI(CLI):
                     save_dot_file=self.options.save_dot_file,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case "mermaid-flowchart":
@@ -113,6 +114,7 @@ class PlaybookGrapherCLI(CLI):
                     orientation=self.options.renderer_mermaid_orientation,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case "json":
@@ -124,6 +126,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case _:
@@ -301,6 +304,14 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="Hide the plays that end up with no tasks in the graph (after applying the tags filter).",
+        )
+
+        self.parser.add_argument(
+            "--show-handlers",
+            dest="show_handlers",
+            action="store_true",
+            default=False,
+            help="Show the handlers in the graph. See the limitations in the project README on GitHub.",
         )
 
         self.parser.add_argument(

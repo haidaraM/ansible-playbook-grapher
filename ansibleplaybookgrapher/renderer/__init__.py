@@ -136,26 +136,35 @@ class PlaybookBuilder(ABC):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build the whole playbook
         :param hide_empty_plays: Whether to hide empty plays or not
-        :param hide_plays_without_roles:
+        :param hide_plays_without_roles: Whether to hide plays without roles or not
+        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return: The rendered playbook as a string.
         """
 
     @abstractmethod
-    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+    def build_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
         """Build a single play to be rendered
-        :param play_node:
+
+        :param play_node: The play to render
+        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
 
-    def traverse_play(self, play_node: PlayNode, **kwargs) -> None:
+    def traverse_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
         """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
         :param play_node:
+        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
@@ -178,13 +187,14 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-            for r_handler in role.handlers:
-                self.build_node(
-                    node=r_handler,
-                    color=color,
-                    fontcolor=play_font_color,
-                    **kwargs,
-                )
+            if show_handlers:
+                for r_handler in role.handlers:
+                    self.build_node(
+                        node=r_handler,
+                        color=color,
+                        fontcolor=play_font_color,
+                        **kwargs,
+                    )
 
         # tasks
         for task in play_node.tasks:
@@ -204,15 +214,16 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-        # play handlers
-        for p_handler in play_node.handlers:
-            self.build_node(
-                node=p_handler,
-                color=color,
-                fontcolor=play_font_color,
-                node_label_prefix="[handler] ",
-                **kwargs,
-            )
+        if show_handlers:
+            # play handlers
+            for p_handler in play_node.handlers:
+                self.build_node(
+                    node=p_handler,
+                    color=color,
+                    fontcolor=play_font_color,
+                    node_label_prefix="[handler] ",
+                    **kwargs,
+                )
 
     @abstractmethod
     def build_task(
