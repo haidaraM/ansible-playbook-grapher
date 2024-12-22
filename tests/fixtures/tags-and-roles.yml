@@ -1,0 +1,7 @@
+# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_tags.html#adding-tags-to-roles
+---
+- name: test
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - role: role-with-tagged-tasks
