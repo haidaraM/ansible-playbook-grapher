@@ -234,6 +234,30 @@ def test_include_role_parsing_with_different_include_role_tasks(
     assert len(play_node.post_tasks[0].tasks) == nested_include_role_tasks_count
 
 
+@pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)
+def test_parsing_tasks_with_tags_in_roles(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test a case where tags are attached to tasks inside the role but not the role itself.
+
+    When filtering with '-t tag', these tasks should be included in the graph.
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        include_role_tasks=True,
+        tags=[
+            "this_is_a_tag"
+        ],
+    )
+    playbook_node = parser.parse()
+
+    assert len(playbook_node.plays()) == 1
+
+    play_node = playbook_node.plays()[0]
+    assert len(play_node.roles) == 1, "Only one role should be in the play"
+    role = play_node.roles[0]
+    assert len(role.tasks) == 1, "Only the tagged task should be included in the graph"
+
+
 @pytest.mark.parametrize(
     "exclude_roles",
     [

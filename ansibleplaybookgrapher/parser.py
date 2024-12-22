@@ -249,6 +249,7 @@ class PlaybookParser(BaseParser):
                 if role.get_name() in self.exclude_roles:
                     continue
 
+                """
                 # The role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 
@@ -266,6 +267,7 @@ class PlaybookParser(BaseParser):
                     )
                     # Go to the next role
                     continue
+                """
 
                 if self.group_roles_by_name:
                     # If we are grouping roles, we use the hash of role name as the node id
