@@ -1,0 +1,3 @@
+---
+- name: restart postgres from the role
+  assert: { that: true }

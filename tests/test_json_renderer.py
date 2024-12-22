@@ -61,8 +61,9 @@ def _common_tests(
     roles_number: int = 0,
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
+    handlers_number: int = 0,
 ) -> dict:
-    """Do some checks on the generated json files.
+    """Do some checks on the generated JSON files.
 
     We are using JQ to avoid traversing the JSON ourselves (much easier).
     :param json_path:
@@ -75,7 +76,7 @@ def _common_tests(
         schema = json.load(schema_file)
 
     # If no exception is raised by validate(), the instance is valid.
-    # I currently don't use format but added it here to not forget to add in case I use in the future.
+    # I currently don't use format but added it here to not forget to add it in case I use in the future.
     validate(
         instance=output,
         schema=schema,
@@ -130,6 +131,14 @@ def _common_tests(
         .all()
     )
 
+    handlers = (
+        jq.compile(
+            '.. | objects | select(.type == "TaskNode" and (.id | startswith("handler_")))',
+        )
+        .input(output)
+        .all()
+    )
+
     assert (
         len(playbooks) == playbooks_number
     ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
@@ -158,6 +167,10 @@ def _common_tests(
         len(blocks) == blocks_number
     ), f"The file '{json_path}' should contains {blocks_number} block(s) but we found {len(blocks)} blocks"
 
+    assert (
+        len(handlers) == handlers_number
+    ), f"The file '{json_path}' should contains {handlers_number} handler(s) but we found {len(handlers)} handlers"
+
     # Check the play
     for play in plays:
         assert (
@@ -171,6 +184,7 @@ def _common_tests(
         "pre_tasks": pre_tasks,
         "roles": roles,
         "blocks": blocks,
+        "handlers": handlers,
     }
 
 
@@ -261,4 +275,69 @@ def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
         roles_number=10,
         tasks_number=35,
         post_tasks_number=4,
+    )
+
+
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 6)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handlers(
+    request: pytest.FixtureRequest, flag: str, handlers_number: int
+) -> None:
+    """Test for handlers.
+
+    :param request:
+    :return:"""
+    json_path, playbook_paths = run_grapher(
+        ["handlers.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "-i",
+            str(INVENTORY_PATH),
+            "--include-role-tasks",
+            flag,
+        ],
+    )
+    _common_tests(
+        json_path,
+        plays_number=2,
+        pre_tasks_number=1,
+        tasks_number=6,
+        handlers_number=handlers_number,
+    )
+
+
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 2)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handler_in_a_role(
+    request: pytest.FixtureRequest, flag: str, handlers_number: int
+) -> None:
+    """Test for handlers in the role.
+
+    :param request:
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["handlers-in-role.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "-i",
+            str(INVENTORY_PATH),
+            "--include-role-tasks",
+            flag,
+        ],
+    )
+    _common_tests(
+        json_path,
+        plays_number=1,
+        pre_tasks_number=1,
+        post_tasks_number=1,
+        tasks_number=1,
+        handlers_number=handlers_number,
+        roles_number=1,
     )

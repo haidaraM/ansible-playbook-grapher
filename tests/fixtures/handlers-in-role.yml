@@ -1,0 +1,19 @@
+- name: handler in role
+  hosts: localhost
+  gather_facts: false
+
+  pre_tasks:
+    - name: My pre task debug
+      debug: msg="pre task"
+
+  roles:
+    - role: role-with-handlers
+  post_tasks:
+    - name: My post task debug
+      debug: msg="post task"
+      changed_when: true
+      notify: restart postgres
+
+  handlers:
+    - name: restart postgres
+      assert: { that: true }

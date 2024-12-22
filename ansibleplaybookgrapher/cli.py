@@ -97,6 +97,7 @@ class PlaybookGrapherCLI(CLI):
                     save_dot_file=self.options.save_dot_file,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case "mermaid-flowchart":
@@ -113,6 +114,7 @@ class PlaybookGrapherCLI(CLI):
                     orientation=self.options.renderer_mermaid_orientation,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case "json":
@@ -124,6 +126,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    show_handlers=self.options.show_handlers,
                 )
 
             case _:
@@ -304,6 +307,14 @@ class PlaybookGrapherCLI(CLI):
         )
 
         self.parser.add_argument(
+            "--show-handlers",
+            dest="show_handlers",
+            action="store_true",
+            default=False,
+            help="Show the handlers in the graph. See the limitations in the project README on GitHub.",
+        )
+
+        self.parser.add_argument(
             "playbooks",
             help="Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in collections.",
             metavar="playbooks",
@@ -357,7 +368,7 @@ class PlaybookGrapherCLI(CLI):
         if self.options.open_protocol_handler == "custom":
             self.validate_open_protocol_custom_formats()
 
-        # create list of roles to exclude
+        # create the list of roles to exclude
         if options.exclude_roles:
             exclude_roles = set()
             for arg in options.exclude_roles:
@@ -375,6 +386,13 @@ class PlaybookGrapherCLI(CLI):
                         exclude_roles.add(role.strip())
 
             options.exclude_roles = sorted(exclude_roles)
+
+        if self.options.show_handlers:
+            display.warning(
+                "The handlers are partially supported for the moment. Their position in the graph doesn't entirely reflect "
+                "their real order of execution in the playbook. They are displayed at the end of the play and roles, "
+                "but they might be executed before that."
+            )
 
         return options
 

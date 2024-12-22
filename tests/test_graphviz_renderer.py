@@ -80,6 +80,7 @@ def _common_tests(
     roles_number: int = 0,
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
+    handlers_number: int = 0,
 ) -> dict[str, list[Element]]:
     """Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -91,6 +92,7 @@ def _common_tests(
     :param roles_number: Number of roles in the playbook
     :param tasks_number: Number of tasks in the playbook
     :param post_tasks_number: Number of post tasks in the playbook
+    :param handlers_number: Number of handlers in the playbook
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
     # test if the file exists. It will exist only if we write in it.
@@ -106,6 +108,7 @@ def _common_tests(
     pre_tasks = pq("g[id^='pre_task_']")
     blocks = pq("g[id^='block_']")
     roles = pq("g[id^='role_']")
+    handlers = pq("g[id^='handler_']")
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
@@ -138,7 +141,11 @@ def _common_tests(
 
     assert (
         len(blocks) == blocks_number
-    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks "
+    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks"
+
+    assert (
+        len(handlers) == handlers_number
+    ), f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handlers "
 
     return {
         "tasks": tasks,
@@ -147,6 +154,7 @@ def _common_tests(
         "pre_tasks": pre_tasks,
         "roles": roles,
         "blocks": blocks,
+        "handlers": handlers,
     }
 
 
@@ -701,4 +709,69 @@ def test_graphing_a_playbook_in_a_collection(
         plays_number=1,
         roles_number=2,
         tasks_number=6,
+    )
+
+
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 6)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handlers(
+    request: pytest.FixtureRequest,
+    flag: str,
+    handlers_number: int,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["handlers.yml"], output_filename=request.node.name, additional_args=[flag]
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        pre_tasks_number=1,
+        plays_number=2,
+        tasks_number=6,
+        handlers_number=handlers_number,
+    )
+
+
+@pytest.mark.parametrize(
+    ("flag", "handlers_number"),
+    [("--", 0), ("--show-handlers", 2)],
+    ids=["no_handlers", "show_handlers"],
+)
+def test_handlers_in_role(
+    request: pytest.FixtureRequest,
+    flag: str,
+    handlers_number: int,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["handlers-in-role.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "--include-role-tasks",
+            flag,
+        ],
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        pre_tasks_number=1,
+        plays_number=1,
+        tasks_number=1,
+        post_tasks_number=1,
+        roles_number=1,
+        handlers_number=handlers_number,
     )

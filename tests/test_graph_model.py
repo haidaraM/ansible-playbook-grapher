@@ -113,6 +113,8 @@ def test_to_dict() -> None:
     play.add_node("post_tasks", TaskNode("task 2"))
     playbook.add_node("plays", play)
 
+    playbook.calculate_indices()
+
     dict_rep = playbook.to_dict(exclude_empty_plays=True)
 
     assert dict_rep["type"] == "PlaybookNode"

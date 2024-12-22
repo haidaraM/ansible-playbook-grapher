@@ -580,3 +580,74 @@ def test_parsing_playbook_in_collection(
     assert (
         len(all_tasks) == 4 + 2
     ), "There should be 6 tasks in the playbook: 4 from the roles and 2 from the tasks at the playbook level"
+
+
+@pytest.mark.parametrize("grapher_cli", [["handlers.yml"]], indirect=True)
+def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test if we are able to get the handlers in each play and add them in the graph
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
+    playbook_node = parser.parse()
+    plays = playbook_node.plays()
+
+    assert len(plays) == 2
+    play_1, play_2 = playbook_node.plays()[0], playbook_node.plays()[1]
+
+    assert len(play_1.pre_tasks) == 1, "The first play should have 1 pre_tasks"
+    assert len(play_1.tasks) == 2, "The first play should have 2 tasks"
+
+    play_1_expected_handlers = [
+        "restart nginx",
+        "restart mysql",
+        "restart mysql in the pre_tasks",
+    ]
+    assert len(play_1.handlers) == len(play_1_expected_handlers)
+    for idx, h in enumerate(play_1.handlers):
+        assert (
+            h.name == play_1_expected_handlers[idx]
+        ), f"The handler should be '{play_1_expected_handlers[idx]}'"
+        assert h.is_handler()
+
+    # Second play
+    assert len(play_2.tasks) == 4, "The second play should have 6 tasks"
+    play_1_expected_handler = [
+        "restart postgres",
+        "stop traefik",
+        "restart apache",
+    ]
+    assert len(play_2.handlers) == len(play_1_expected_handler)
+    for idx, h in enumerate(play_2.handlers):
+        assert (
+            h.name == play_1_expected_handler[idx]
+        ), f"The handler should be '{play_1_expected_handler[idx]}'"
+        assert h.is_handler()
+        assert h.location is not None
+
+
+@pytest.mark.parametrize("grapher_cli", [["handlers-in-role.yml"]], indirect=True)
+def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test if we are able to get the handlers defined in a role and add them in the graph
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbooks[0], include_role_tasks=True)
+    playbook_node = parser.parse()
+    plays = playbook_node.plays()
+
+    assert len(plays) == 1
+    play = plays[0]
+    assert len(play.handlers) == 1, "The play should have 1 handler"
+    handler = play.handlers[0]
+    assert handler.name == "restart postgres"
+
+    assert len(play.roles) == 1, "The play should have 1 role"
+    role = play.roles[0]
+    assert len(role.tasks) == 1, "The role should have 1 task"
+    assert len(role.handlers) == 1, "The role should have 1 handler"
+
+    assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert role.handlers[0].location is not None
+
+    assert (
+        len(set(play.handlers + role.handlers)) == 2
+    ), "The total number of handlers should be 2"

@@ -47,20 +47,22 @@ class MermaidFlowChartRenderer(Renderer):
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
     ) -> str:
         """Render the graph to a Mermaid flow chart format.
 
-        :param open_protocol_handler: Not supported for the moment
-        :param open_protocol_custom_formats: Not supported for the moment
-        :param output_filename: The output filename without any extension
-        :param view: Not supported for the moment
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :param directive: Mermaid directive
-        :param orientation: Mermaid graph orientation
+        :param open_protocol_handler: Not supported for the moment.
+        :param open_protocol_custom_formats: Not supported for the moment.
+        :param output_filename: The output filename without any extension.
+        :param view: Not supported for the moment.
+        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
+        :param show_handlers: Whether to show handlers or not.
+        :param directive: Mermaid directive.
+        :param orientation: Mermaid graph orientation.
         :param kwargs:
         :return:
         """
@@ -95,6 +97,7 @@ class MermaidFlowChartRenderer(Renderer):
             mermaid_code += playbook_builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
+                show_handlers=show_handlers,
             )
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
@@ -173,6 +176,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
@@ -180,42 +184,54 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param hide_empty_plays: Whether to hide empty plays or not
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
         """
         display.vvv(
-            f"Converting the playbook '{self.playbook_node.name}' to mermaid format",
+            f"Converting the playbook '{self.playbook_node.display_name()}' to mermaid format",
         )
 
         # Playbook node
-        self.add_comment(f"Start of the playbook '{self.playbook_node.name}'")
-        self.add_text(f'{self.playbook_node.id}("{self.playbook_node.name}")')
+        self.add_comment(f"Start of the playbook '{self.playbook_node.display_name()}'")
+        self.add_node(
+            node_id=self.playbook_node.id,
+            shape="rounded",
+            label=f"{self.playbook_node.display_name()}",
+        )
 
         self._indentation_level += 1
         for play_node in self.playbook_node.plays(
             exclude_empty=hide_empty_plays,
             exclude_without_roles=hide_plays_without_roles,
         ):
-            self.build_play(play_node)
+            self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the playbook '{self.playbook_node.name}'\n")
+        self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")
 
         return self.mermaid_code
 
-    def build_play(self, play_node: PlayNode, **kwargs) -> None:
+    def build_play(
+        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+    ) -> None:
         """Build a play.
 
+        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
         """
         # Play node
         color, play_font_color = play_node.colors
-        self.add_comment(f"Start of the play '{play_node.name}'")
+        self.add_comment(f"Start of the play '{play_node.display_name()}'")
 
-        self.add_text(f'{play_node.id}["{play_node.name}"]')
-        self.add_text(f"style {play_node.id} fill:{color},color:{play_font_color}")
+        self.add_node(
+            node_id=play_node.id,
+            shape="rect",
+            label=f"{play_node.display_name()}",
+            style=f"stroke:{color},fill:{color},color:{play_font_color}",
+        )
 
         # From playbook to play
         self.add_link(
@@ -227,10 +243,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # traverse the play
         self._indentation_level += 1
-        self.traverse_play(play_node)
+        self.traverse_play(play_node, show_handlers, **kwargs)
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the play '{play_node.name}'")
+        self.add_comment(f"End of the play '{play_node.display_name()}'")
 
     def build_task(
         self,
@@ -247,11 +263,24 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        node_label_prefix = kwargs.get("node_label_prefix", "")
+
+        link_type = "--"
+        node_shape = "rect"
+        style = f"stroke:{color},fill:{fontcolor}"
+
+        if task_node.is_handler():
+            # dotted style for handlers
+            link_type = "-.-"
+            node_shape = "hexagon"
+            style += ",stroke-dasharray: 2, 2"
 
         # Task node
-        self.add_text(f'{task_node.id}["{node_label_prefix} {task_node.name}"]')
-        self.add_text(f"style {task_node.id} stroke:{color},fill:{fontcolor}")
+        self.add_node(
+            node_id=task_node.id,
+            shape=node_shape,
+            label=task_node.display_name(),
+            style=style,
+        )
 
         # From parent to task
         self.add_link(
@@ -259,7 +288,35 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             text=f"{task_node.index} {task_node.when}",
             dest_id=task_node.id,
             style=f"stroke:{color},color:{color}",
+            link_type=link_type,
         )
+
+    def add_node(self, node_id: str, shape: str, label: str, style: str = "") -> None:
+        """Add a node to the mermaid code.
+
+        :param node_id: The node id.
+        :param shape: The shape of the node.
+        :param label: The label of the node.
+        :param style: The style of the node.
+        :return:
+        """
+        # To ensure backward compatibility with older versions of Mermaid, I'm still using the old syntax of defining the
+        # shape and label of the node.
+        # This method takes the shape name which is converted to the corresponding shape using the old syntax.
+        # See https://mermaid.js.org/syntax/flowchart.html#expanded-node-shapes-in-mermaid-flowcharts-v11-3-0
+        # Once Gitlab updates to mermaid >= 11.3.0 (https://gitlab.com/gitlab-org/gitlab/-/issues/491514), we can use the new syntax.
+        label = label.strip()
+        shapes_mapping = {
+            "rect": f'{node_id}["{label}"]',
+            "hexagon": f'{node_id}{{{{"{label}"}}}}',
+            "rounded": f'{node_id}("{label}")',
+            "stadium": f'{node_id}(["{label}"])',
+        }
+
+        self.add_text(shapes_mapping[shape])
+
+        if style.strip() != "":
+            self.add_text(f"style {node_id} {style}")
 
     def build_role(
         self,
@@ -276,7 +333,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :param kwargs:
         :return:
         """
-        self.add_comment(f"Start of the role '{role_node.name}'")
+        self.add_comment(f"Start of the role '{role_node.display_name()}'")
 
         plays_using_this_role = len(self.roles_usage[role_node])
         node_color = color
@@ -299,9 +356,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self.roles_built.add(role_node)
 
         # Role node
-        self.add_text(f'{role_node.id}(["[role] {role_node.name}"])')
-        self.add_text(
-            f"style {role_node.id} fill:{node_color},color:{fontcolor},stroke:{node_color}",
+        self.add_node(
+            node_id=role_node.id,
+            shape="stadium",
+            label=role_node.display_name(),
+            style=f"fill:{node_color},color:{fontcolor},stroke:{node_color}",
         )
 
         # Role tasks
@@ -314,7 +373,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             )
         self._indentation_level -= 1
 
-        self.add_comment(f"End of the role '{role_node.name}'")
+        self.add_comment(f"End of the role '{role_node.display_name()}'")
 
     def build_block(
         self,
@@ -333,9 +392,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         """
         # Block node
         self.add_comment(f"Start of the block '{block_node.name}'")
-        self.add_text(f'{block_node.id}["[block] {block_node.name}"]')
-        self.add_text(
-            f"style {block_node.id} fill:{color},color:{fontcolor},stroke:{color}",
+        self.add_node(
+            node_id=block_node.id,
+            shape="rect",
+            label=block_node.display_name(),
+            style=f"fill:{color},color:{fontcolor},stroke:{color}",
         )
 
         # from parent to block
@@ -368,13 +429,13 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         style: str = "",
         link_type: str = "--",
     ) -> None:
-        """Add link between two nodes.
+        """Add the link between two nodes.
 
-        :param source_id: The link source
-        :param text: The text on the link
-        :param dest_id: The link destination
-        :param style: The style to apply to the link
-        :param link_type: Type of link to create. https://mermaid.js.org/syntax/flowchart.html#links-between-nodes
+        :param source_id: The link source.
+        :param text: The text on the link.
+        :param dest_id: The link destination.
+        :param style: The style to apply to the link.
+        :param link_type: Type of link to create. https://mermaid.js.org/syntax/flowchart.html#links-between-nodes.
         :return:
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes

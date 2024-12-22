@@ -16,11 +16,12 @@ from abc import ABC, abstractmethod
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
-from ansible.parsing.yaml.objects import AnsibleUnicode
+from ansible.parsing.yaml.objects import AnsibleSequence, AnsibleUnicode
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
+from ansible.playbook.role import Role
 from ansible.playbook.role_include import IncludeRole
 from ansible.playbook.task import Task
 from ansible.playbook.task_include import TaskInclude
@@ -30,6 +31,7 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
+    Node,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -99,7 +101,12 @@ class BaseParser(ABC):
         node_type: str,
         parent_node: CompositeNode,
     ) -> bool:
-        """Include the task in the graph.
+        """Add the task in the graph.
+
+        :param task: The task to include.
+        :param task_vars: The variables of the task.
+        :param node_type: The type of the node.
+        :param parent_node: The parent node.
         :return: True if the task has been included, false otherwise.
         """
         # Ansible-core 2.11 added an implicit meta-task at the end of the role. So wee skip it here.
@@ -154,7 +161,7 @@ class PlaybookParser(BaseParser):
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs.
         :param playbook_name: On optional name of the playbook to parse.
         :param exclude_roles: Only add tasks whose roles do not match these values
-        :param only_roles: Ignore all task nodes when rendering graph
+        :param only_roles: Ignore all task nodes when rendering the graph.
         It will be used as the node name if provided in replacement of the file name.
         """
         super().__init__(tags=tags, skip_tags=skip_tags)
@@ -168,14 +175,16 @@ class PlaybookParser(BaseParser):
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
 
-        The graph is drawn following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
+        The graph is parsed following this order (https://docs.ansible.com/ansible/2.4/playbooks_reuse_roles.html#using-roles)
         for each play:
             add pre_tasks
             add roles
                 if include_role_tasks
-                    add role_tasks
+                    add role tasks
+                    add role handlers
             add tasks
             add post_tasks
+            add handlers
         :return:
         """
         display.display(f"Parsing the playbook '{self.playbook_path}'")
@@ -205,8 +214,7 @@ class PlaybookParser(BaseParser):
                     self.template(play.hosts, play_vars),
                 )
             ]
-            play_name = f"Play: {clean_name(play.get_name())} ({len(play_hosts)})"
-            play_name = self.template(play_name, play_vars)
+            play_name = self.template(clean_name(play.get_name()), play_vars)
 
             display.v(f"Parsing {play_name}")
 
@@ -241,7 +249,7 @@ class PlaybookParser(BaseParser):
                 if role.get_name() in self.exclude_roles:
                     continue
 
-                # the role object doesn't inherit the tags from the play. So we add it manually.
+                # The role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 
                 # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
@@ -275,7 +283,7 @@ class PlaybookParser(BaseParser):
                 play_node.add_node("roles", role_node)
 
                 if self.include_role_tasks:
-                    # loop through the tasks of the roles
+                    # loop through the tasks
                     for block in role.compile(play):
                         self._include_tasks_in_blocks(
                             current_play=play,
@@ -284,7 +292,17 @@ class PlaybookParser(BaseParser):
                             play_vars=play_vars,
                             node_type="task",
                         )
-                    # end of the roles loop
+
+                    # loop through the handlers of the roles
+                    for block in role.get_handler_blocks(play):
+                        self._include_tasks_in_blocks(
+                            current_play=play,
+                            parent_nodes=[role_node],
+                            block=block,
+                            play_vars=play_vars,
+                            node_type="handler",
+                        )
+            # end of the roles loop
 
             # loop through the tasks
             display.v("Parsing tasks...")
@@ -307,6 +325,19 @@ class PlaybookParser(BaseParser):
                     play_vars=play_vars,
                     node_type="post_task",
                 )
+
+            # loop through the handlers of the play
+            for handler_block in play.get_handlers():
+                self._include_tasks_in_blocks(
+                    current_play=play,
+                    parent_nodes=[play_node],
+                    block=handler_block,
+                    play_vars=play_vars,
+                    node_type="handler",
+                )
+
+            # TODO: Add handlers only only if they are notified AND after each section.
+            # add_handlers_in_notify(play_node)
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
@@ -314,6 +345,7 @@ class PlaybookParser(BaseParser):
             display.v(f"{len(play_node.post_tasks)} post_task(s) added to the play")
             # moving to the next play
 
+        playbook_root_node.calculate_indices()
         return playbook_root_node
 
     def _include_tasks_in_blocks(
@@ -326,7 +358,7 @@ class PlaybookParser(BaseParser):
     ) -> None:
         """Recursively read all the tasks of the block and add it to the graph.
 
-        :param parent_nodes: This is a list of parent nodes. Each time, we see an include_role, the corresponding node is
+        :param parent_nodes: This is the list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
         :param current_play:
         :param block:
@@ -527,3 +559,55 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
+
+
+def add_handlers_in_notify(play_node: PlayNode):
+    """
+    Add the handlers in the "notify" attribute of the tasks. This has to be done separately for the pre_tasks, tasks
+    and post_tasks because the handlers are not shared between them.
+
+    Handlers not used will not be kept in the graph.
+
+    The role handlers are managed separately.
+    :param play_node:
+    :return:
+    """
+
+    _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
+    _add_notified_handlers(play_node, "tasks", play_node.tasks)
+    _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)
+
+
+def _add_notified_handlers(
+    play_node: PlayNode, target_composition: str, tasks: list[Node]
+) -> list[str]:
+    """Get the handlers that are notified by the tasks.
+
+    :param play_node: The list of the play handlers.
+    :param target_composition: The target composition to add the handlers.
+    :param tasks:  The list of tasks.
+    :return:
+    """
+    notified_handlers = []
+    play_handlers = play_node.handlers
+    for task_node in tasks:
+        task = task_node.raw_object
+        if task.notify:
+            if isinstance(task.notify, AnsibleUnicode):
+                notified_handlers.append(task.notify)
+            elif isinstance(task.notify, AnsibleSequence):
+                notified_handlers.extend(task.notify)
+
+    for p_handler in play_handlers:
+        if p_handler.name in notified_handlers:
+            play_node.add_node(
+                target_composition,
+                TaskNode(
+                    p_handler.name,
+                    node_id=generate_id("handler_"),
+                    raw_object=p_handler.raw_object,
+                    parent=p_handler.parent,
+                ),
+            )
+
+    return notified_handlers

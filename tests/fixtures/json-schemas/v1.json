@@ -103,6 +103,12 @@
                   "items": {
                     "$ref": "#/$defs/task"
                   }
+                },
+                "handlers": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/task"
+                  }
                 }
               },
               "required": [
@@ -148,7 +154,7 @@
           "type": "string"
         },
         "id": {
-          "pattern": "^(pre_task|task|post_task|role|block)_.+$",
+          "pattern": "^(pre_task|task|post_task|role|block|handler)_.+$",
           "type": "string"
         },
         "name": {

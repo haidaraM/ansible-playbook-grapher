@@ -16,6 +16,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from typing import Any, Type, TypeVar
 
+from ansible.playbook.handler import Handler
+
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
@@ -61,7 +63,6 @@ class Node:
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         """:param node_name: The name of the node
         :param node_id: An identifier for this node
@@ -80,7 +81,29 @@ class Node:
         self.set_location()
 
         # The index of this node in the parent node if it has one (starting from 1)
-        self.index: int | None = index
+        self.index: int | None = None
+
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        It's composed of the ID prefix between brackets and the name of the node.
+        Examples:
+         - [playbook] My playbook
+         - [play] My play
+         - [pre_task] My pre task
+         - [role] My role
+         - [task] My task
+         - [block] My block
+         - [post_task] My post task
+
+        :return:
+        """
+        try:
+            split = self.id.split("_")
+            id_prefix = "_".join(split[:-1])
+            return f"[{id_prefix}] {self.name}"
+        except IndexError:
+            return self.name
 
     def set_location(self) -> None:
         """Set the location of this node based on the raw object. Not all objects have path.
@@ -99,13 +122,13 @@ class Node:
                     column=column,
                 )
             else:
-                # Here we likely have a task a validate argument spec task inserted by Ansible
+                # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
     def get_first_parent_matching_type(self, node_type: type) -> type:
         """Get the first parent of this node matching the given type.
 
-        :param node_type: The type of the parent to get
+        :param node_type: The type of the parent node to get.
         :return:
         """
         current_parent = self.parent
@@ -171,7 +194,6 @@ class CompositeNode(Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         supported_compositions: list[str] | None = None,
     ) -> None:
         """Init a composite node.
@@ -188,13 +210,10 @@ class CompositeNode(Node):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
         )
         self._supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
-        self._compositions = defaultdict(list)  # type: Dict[str, List]
-        # Used to count the number of nodes in this composite node
-        self._node_counter = 0
+        self._compositions = defaultdict(list)  # type: dict[str, list]
 
     def add_node(self, target_composition: str, node: Node) -> None:
         """Add a node in the target composition.
@@ -209,9 +228,20 @@ class CompositeNode(Node):
                 msg,
             )
         self._compositions[target_composition].append(node)
-        # The node index is position in the composition regardless of the type of the node
-        node.index = self._node_counter + 1
-        self._node_counter += 1
+
+    def calculate_indices(self):
+        """
+        Calculate the indices of all nodes based on their composition type.
+        This is only called when needed.
+        """
+        current_index = 1
+        for comp_type in self._supported_compositions:
+            for node in self._compositions[comp_type]:
+                node.index = current_index
+                current_index += 1
+
+                if isinstance(node, CompositeNode):
+                    node.calculate_indices()
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.
@@ -321,47 +351,6 @@ class CompositeNode(Node):
         return node_dict
 
 
-class CompositeTasksNode(CompositeNode):
-    """A special composite node which only support adding "tasks". Useful for block and role."""
-
-    def __init__(
-        self,
-        node_name: str,
-        node_id: str,
-        when: str = "",
-        raw_object: Any = None,
-        parent: "Node" = None,
-        index: int | None = None,
-    ) -> None:
-        super().__init__(
-            node_name=node_name,
-            node_id=node_id,
-            when=when,
-            raw_object=raw_object,
-            parent=parent,
-            index=index,
-        )
-        self._supported_compositions = ["tasks"]
-
-    def add_node(self, target_composition: str, node: Node) -> None:
-        """Override the add_node because the composite tasks only contains "tasks" regardless of the context
-         (pre_tasks or post_tasks).
-
-        :param target_composition: This is ignored.
-        :param node:
-        :return:
-        """
-        super().add_node("tasks", node)
-
-    @property
-    def tasks(self) -> list[Node]:
-        """The tasks attached to this block.
-
-        :return:
-        """
-        return self.get_nodes("tasks")
-
-
 class PlaybookNode(CompositeNode):
     """A playbook is a list of play."""
 
@@ -371,16 +360,17 @@ class PlaybookNode(CompositeNode):
         node_id: str | None = None,
         when: str = "",
         raw_object: Any = None,
-        index: int | None = None,
     ) -> None:
         super().__init__(
             node_name=node_name,
             node_id=node_id or generate_id("playbook_"),
             when=when,
             raw_object=raw_object,
-            index=index,
             supported_compositions=["plays"],
         )
+
+    def display_name(self) -> str:
+        return self.name
 
     def set_location(self) -> None:
         """Playbooks only have the path as position.
@@ -441,12 +431,14 @@ class PlaybookNode(CompositeNode):
         self,
         exclude_empty_plays: bool = False,
         exclude_plays_without_roles: bool = False,
+        include_handlers: bool = False,
         **kwargs,
     ) -> dict:
         """Return a dictionary representation of this playbook.
 
         :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
+        :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
         """
@@ -458,7 +450,9 @@ class PlaybookNode(CompositeNode):
             exclude_empty=exclude_empty_plays,
             exclude_without_roles=exclude_plays_without_roles,
         ):
-            playbook_dict["plays"].append(play.to_dict(**kwargs))
+            playbook_dict["plays"].append(
+                play.to_dict(include_handlers=include_handlers, **kwargs)
+            )
 
         return playbook_dict
 
@@ -468,7 +462,8 @@ class PlayNode(CompositeNode):
     - pre_tasks
     - roles
     - tasks
-    - post_tasks.
+    - post_tasks
+    - handlers
     """
 
     def __init__(
@@ -478,7 +473,6 @@ class PlayNode(CompositeNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         hosts: list[str] | None = None,
     ) -> None:
         """
@@ -493,11 +487,23 @@ class PlayNode(CompositeNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
-            supported_compositions=["pre_tasks", "roles", "tasks", "post_tasks"],
+            supported_compositions=[
+                "pre_tasks",
+                "roles",
+                "tasks",
+                "post_tasks",
+                "handlers",
+            ],
         )
         self.hosts = hosts or []
         self.colors: tuple[str, str] = get_play_colors(self.id)
+
+    def display_name(self) -> str:
+        """
+        Return the display name of the node.
+        :return:
+        """
+        return f"Play: {self.name} ({len(self.hosts)})"
 
     @property
     def roles(self) -> list["RoleNode"]:
@@ -519,20 +525,33 @@ class PlayNode(CompositeNode):
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
 
-    def to_dict(self, **kwargs) -> dict:
+    @property
+    def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined at the play level.
+
+        The handlers defined in roles are not included here.
+        :return:
+        """
+        return self.get_nodes("handlers")
+
+    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
         :return:
         """
-        data = super().to_dict(**kwargs)
+
+        data = super().to_dict(include_handlers=include_handlers, **kwargs)
         data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
+
+        if not include_handlers:
+            data["handlers"] = []
 
         return data
 
 
-class BlockNode(CompositeTasksNode):
+class BlockNode(CompositeNode):
     """A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html."""
 
     def __init__(
@@ -542,7 +561,6 @@ class BlockNode(CompositeTasksNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         super().__init__(
             node_name=node_name,
@@ -550,8 +568,25 @@ class BlockNode(CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
+            supported_compositions=["tasks"],
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Block only supports adding tasks regardless of the context
+
+        :param target_composition: This is ignored.
+        :param node:
+        :return:
+        """
+        super().add_node("tasks", node)
+
+    @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
 
 
 class TaskNode(LoopMixin, Node):
@@ -564,7 +599,6 @@ class TaskNode(LoopMixin, Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
     ) -> None:
         """:param node_name:
         :param node_id:
@@ -576,11 +610,17 @@ class TaskNode(LoopMixin, Node):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
         )
 
+    def is_handler(self) -> bool:
+        """Return true if this task is a handler, false otherwise.
 
-class RoleNode(LoopMixin, CompositeTasksNode):
+        :return:
+        """
+        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
+
+
+class RoleNode(LoopMixin, CompositeNode):
     """A role node. A role is a composition of tasks."""
 
     def __init__(
@@ -590,7 +630,6 @@ class RoleNode(LoopMixin, CompositeTasksNode):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
-        index: int | None = None,
         include_role: bool = False,
     ) -> None:
         """
@@ -606,8 +645,21 @@ class RoleNode(LoopMixin, CompositeTasksNode):
             when=when,
             raw_object=raw_object,
             parent=parent,
-            index=index,
+            supported_compositions=["tasks", "handlers"],
         )
+
+    def add_node(self, target_composition: str, node: Node) -> None:
+        """Add a node in the target composition.
+
+        :param target_composition: The name of the target composition
+        :param node: The node to add in the given composition
+        :return:
+        """
+        if target_composition != "handlers":
+            # If we are not adding a handler, we always add the node to the task composition
+            super().add_node("tasks", node)
+        else:
+            super().add_node("handlers", node)
 
     def set_location(self) -> None:
         """Retrieve the position depending on whether it's an include_role or not.
@@ -624,19 +676,41 @@ class RoleNode(LoopMixin, CompositeTasksNode):
 
     def has_loop(self) -> bool:
         if not self.include_role:
-            # Only include_role supports loop
+            # Only the include_role supports loop
             return False
 
         return super().has_loop()
 
-    def to_dict(self, **kwargs) -> dict:
+    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
+        :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
         """
         node_dict = super().to_dict(**kwargs)
         node_dict["include_role"] = self.include_role
 
+        if not include_handlers:
+            node_dict["handlers"] = []
+
         return node_dict
+
+    @property
+    def tasks(self) -> list[Node]:
+        """The tasks attached to this block.
+
+        :return:
+        """
+        return self.get_nodes("tasks")
+
+    @property
+    def handlers(self) -> list["TaskNode"]:
+        """Return the handlers defined in the role.
+
+        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
+        of a role.
+        :return:
+        """
+        return self.get_nodes("handlers")
