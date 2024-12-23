@@ -57,7 +57,9 @@ class BaseParser(ABC):
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
     ) -> None:
-        """:param tags: Only add plays and tasks tagged with these values
+        """
+
+        :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         """
         loader, inventory, variable_manager = CLI._play_prereqs()
