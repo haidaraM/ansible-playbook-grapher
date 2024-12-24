@@ -57,7 +57,9 @@ class BaseParser(ABC):
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
     ) -> None:
-        """:param tags: Only add plays and tasks tagged with these values
+        """
+
+        :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         """
         loader, inventory, variable_manager = CLI._play_prereqs()
@@ -249,6 +251,7 @@ class PlaybookParser(BaseParser):
                 if role.get_name() in self.exclude_roles:
                     continue
 
+                """
                 # The role object doesn't inherit the tags from the play. So we add it manually.
                 role.tags = role.tags + play.tags
 
@@ -266,6 +269,7 @@ class PlaybookParser(BaseParser):
                     )
                     # Go to the next role
                     continue
+                """
 
                 if self.group_roles_by_name:
                     # If we are grouping roles, we use the hash of role name as the node id

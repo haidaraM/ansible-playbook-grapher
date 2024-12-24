@@ -1,0 +1,16 @@
+---
+- name: Task with a tag
+  ansible.builtin.debug:
+    msg: Msg from a task with the tag 'this_is_a_tag'
+  tags:
+    - this_is_a_tag
+
+- name: Another Task with a tag
+  ansible.builtin.debug:
+    msg: Msg from a task with with the tag 'this_is_a_another_tag'
+  tags:
+    - this_is_a_another_tag
+
+- name: A task with no tags
+  ansible.builtin.debug:
+    msg: Msg from a task without a tag
