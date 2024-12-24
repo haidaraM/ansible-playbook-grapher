@@ -223,6 +223,9 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         with digraph.subgraph(
             name=f"cluster_{block_node.id}",
         ) as cluster_block_subgraph:
+            # Prevents the cluster from having the root graph label (not needed)
+            cluster_block_subgraph.attr(label="")
+
             # block node
             cluster_block_subgraph.node(
                 block_node.id,
