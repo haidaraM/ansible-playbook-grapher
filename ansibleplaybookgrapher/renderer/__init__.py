@@ -55,6 +55,7 @@ class Renderer(ABC):
         open_protocol_handler: str,
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
+        title: str,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
@@ -64,6 +65,7 @@ class Renderer(ABC):
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
+        :param title: The title of the graph
         :param view: Whether to open the rendered file in the default viewer
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not

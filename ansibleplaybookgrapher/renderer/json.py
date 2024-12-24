@@ -41,6 +41,7 @@ class JSONRenderer(Renderer):
         open_protocol_handler: str | None,
         open_protocol_custom_formats: dict[str, str] | None,
         output_filename: str,
+        title: str,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
@@ -62,6 +63,7 @@ class JSONRenderer(Renderer):
         output = {
             "version": 1,
             "playbooks": playbooks,
+            "title": title,
         }
 
         final_output_path_file = Path(f"{output_filename}.json")
