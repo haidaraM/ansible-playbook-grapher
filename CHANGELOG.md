@@ -10,8 +10,9 @@
 * Add a new `display_name()` method to the node for a friendly name for the graph. This removes passing the
   `node_label_prefix` in multiple places.
 * Remove the play name from the edge going from playbook to the plays. This was not consistent with the other edges.
-* feat: Add a new option `--title` to add a title to the graph. Default to 'Ansible Playbook Grapher'. The graphviz
-  renderer will now use this as the title (label). The Mermaid render already has a title.
+* feat: Add a new option `--title` to add a title to the graph by @haidaraM
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/229. Default to 'Ansible Playbook Grapher'. The graphviz
+  renderer will now use this as the title (label). The Mermaid renderer already has a title.
 
 **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.7.0...v2.8.0
 
