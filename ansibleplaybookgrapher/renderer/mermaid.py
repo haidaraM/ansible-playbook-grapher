@@ -44,6 +44,7 @@ class MermaidFlowChartRenderer(Renderer):
         open_protocol_handler: str,
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
+        title: str,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
@@ -57,6 +58,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param open_protocol_handler: Not supported for the moment.
         :param open_protocol_custom_formats: Not supported for the moment.
         :param output_filename: The output filename without any extension.
+        :param title: The title of the graph.
         :param view: Not supported for the moment.
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
         :param hide_plays_without_roles: Whether to hide plays without any roles or not.
@@ -70,7 +72,7 @@ class MermaidFlowChartRenderer(Renderer):
         # TODO: Add support for hover
 
         mermaid_code = "---\n"
-        mermaid_code += "title: Ansible Playbook Grapher\n"
+        mermaid_code += f"title: {title}\n"
         mermaid_code += "---\n"
 
         display.vvv(f"Using '{directive}' as directive for the mermaid chart")

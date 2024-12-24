@@ -73,6 +73,7 @@ def run_grapher(
 def _common_tests(
     svg_filename: str,
     playbook_paths: list[str],
+    title: str = "Ansible Playbook Grapher",
     playbooks_number: int = 1,
     plays_number: int = 0,
     tasks_number: int = 0,
@@ -101,14 +102,19 @@ def _common_tests(
     pq = PyQuery(filename=svg_filename)
     pq.remove_namespaces()
 
-    playbooks = pq("g[id^='playbook_']")
-    plays = pq("g[id^='play_']")
-    tasks = pq("g[id^='task_']")
-    post_tasks = pq("g[id^='post_task_']")
-    pre_tasks = pq("g[id^='pre_task_']")
-    blocks = pq("g[id^='block_']")
-    roles = pq("g[id^='role_']")
-    handlers = pq("g[id^='handler_']")
+    graph_title: str = pq("g > text")[0].text
+    playbooks: PyQuery = pq("g[id^='playbook_']")
+    plays: PyQuery = pq("g[id^='play_']")
+    tasks: PyQuery = pq("g[id^='task_']")
+    post_tasks: PyQuery = pq("g[id^='post_task_']")
+    pre_tasks: PyQuery = pq("g[id^='pre_task_']")
+    blocks: PyQuery = pq("g[id^='block_']")
+    roles: PyQuery = pq("g[id^='role_']")
+    handlers: PyQuery = pq("g[id^='handler_']")
+
+    assert (
+        graph_title == title
+    ), f"The title should be '{graph_title}' but we found '{title}'"
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
@@ -163,7 +169,7 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
     svg_path, playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
-        additional_args=["-i", str(INVENTORY_PATH)],
+        additional_args=["-i", str(INVENTORY_PATH), "--title", "My custom title"],
     )
 
     _common_tests(
@@ -171,6 +177,7 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
         playbook_paths=playbook_paths,
         plays_number=1,
         post_tasks_number=2,
+        title="My custom title",
     )
 
 

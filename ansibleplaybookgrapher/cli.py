@@ -93,11 +93,12 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_handler=self.options.open_protocol_handler,
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
+                    title=self.options.title,
                     view=self.options.view,
-                    save_dot_file=self.options.save_dot_file,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
                     show_handlers=self.options.show_handlers,
+                    save_dot_file=self.options.save_dot_file,
                 )
 
             case "mermaid-flowchart":
@@ -109,6 +110,7 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_handler=self.options.open_protocol_handler,
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
+                    title=self.options.title,
                     view=self.options.view,
                     directive=self.options.renderer_mermaid_directive,
                     orientation=self.options.renderer_mermaid_orientation,
@@ -123,6 +125,7 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_handler=self.options.open_protocol_handler,
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
+                    title=self.options.title,
                     view=self.options.view,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
@@ -304,6 +307,12 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="Hide the plays that end up with no tasks in the graph (after applying the tags filter).",
+        )
+
+        self.parser.add_argument(
+            "--title",
+            default="Ansible Playbook Grapher",
+            help="The title to display in the graph. Default: '%(default)s'. Set it to an empty string to remove the title.",
         )
 
         self.parser.add_argument(

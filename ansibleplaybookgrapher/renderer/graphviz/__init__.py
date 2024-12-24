@@ -51,6 +51,7 @@ class GraphvizRenderer(Renderer):
         open_protocol_handler: str,
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
+        title: str,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
@@ -61,6 +62,7 @@ class GraphvizRenderer(Renderer):
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
+        :param title: The title of the graph
         :param view: Whether to open the rendered file in the default viewer
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
@@ -76,6 +78,8 @@ class GraphvizRenderer(Renderer):
             graph_attr=DEFAULT_GRAPH_ATTR,
             edge_attr=DEFAULT_EDGE_ATTR,
         )
+        digraph.attr(label=title, labelloc="t")
+
         for playbook_node in self.playbook_nodes:
             builder = GraphvizPlaybookBuilder(
                 playbook_node,
@@ -107,7 +111,7 @@ class GraphvizRenderer(Renderer):
 
         display.display(f"The graph has been exported to {svg_path}", color="green")
         if save_dot_file:
-            # add .dot extension. The render doesn't add an extension
+            # Add .dot extension. The render doesn't add an extension
             final_name = output_filename + ".dot"
             Path(output_filename).rename(final_name)
             display.display(f"Graphviz dot file has been exported to {final_name}")
@@ -127,7 +131,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         roles_built: set[RoleNode],
         digraph: Digraph,
     ) -> None:
-        """:param digraph: Graphviz graph into which build the graph"""
+        """
+
+        :param digraph: The Graphviz graph object into which to build the nodes and edges.
+        """
         super().__init__(
             playbook_node,
             open_protocol_handler,
@@ -216,6 +223,9 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         with digraph.subgraph(
             name=f"cluster_{block_node.id}",
         ) as cluster_block_subgraph:
+            # Prevents the cluster from having the root graph label (not needed)
+            cluster_block_subgraph.attr(label="")
+
             # block node
             cluster_block_subgraph.node(
                 block_node.id,
@@ -309,7 +319,8 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
-        """Convert the PlaybookNode to the graphviz dot format
+        """Convert the PlaybookNode to the graphviz dot format.
+
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param show_handlers: Whether to show the handlers or not.

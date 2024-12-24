@@ -445,6 +445,8 @@ options:
   --show-handlers       Show the handlers in the graph. See the limitations in the project README on GitHub.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these values. This argument may be specified multiple times.
+   --title TITLE         The title to display in the graph. Default: 'Ansible Playbook Grapher'. Set it to an empty string to remove the
+                        title.
   --vault-id VAULT_IDS  the vault identity to use. This argument may be specified multiple times.
   --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file

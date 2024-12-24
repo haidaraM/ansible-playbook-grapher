@@ -54,6 +54,7 @@ def run_grapher(
 
 def _common_tests(
     json_path: str,
+    title: str = "Ansible Playbook Grapher",
     playbooks_number: int = 1,
     plays_number: int = 0,
     tasks_number: int = 0,
@@ -140,6 +141,10 @@ def _common_tests(
     )
 
     assert (
+        output["title"] == title
+    ), f"The title should be '{title}' but we found '{output['title']}'"
+
+    assert (
         len(playbooks) == playbooks_number
     ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
 
@@ -197,9 +202,13 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
             "-i",
             str(INVENTORY_PATH),
             "--include-role-tasks",
+            "--title",
+            "My custom title",
         ],
     )
-    _common_tests(json_path, plays_number=1, post_tasks_number=2)
+    _common_tests(
+        json_path, plays_number=1, post_tasks_number=2, title="My custom title"
+    )
 
 
 def test_with_block(request: pytest.FixtureRequest) -> None:

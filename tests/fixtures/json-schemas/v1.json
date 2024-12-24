@@ -8,6 +8,10 @@
       "description": "The version of the JSON output",
       "type": "integer"
     },
+    "title": {
+      "description": "The title of the output",
+      "type": "string"
+    },
     "playbooks": {
       "type": "array",
       "items": {
@@ -142,7 +146,8 @@
   },
   "required": [
     "version",
-    "playbooks"
+    "playbooks",
+    "title"
   ],
   "$defs": {
     "task": {
