@@ -72,7 +72,7 @@ class MermaidFlowChartRenderer(Renderer):
         # TODO: Add support for hover
 
         mermaid_code = "---\n"
-        mermaid_code += f"title: {title}\n"
+        mermaid_code += f'title: "{title}"\n'
         mermaid_code += "---\n"
 
         display.vvv(f"Using '{directive}' as directive for the mermaid chart")

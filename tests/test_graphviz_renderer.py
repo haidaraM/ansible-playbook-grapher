@@ -33,7 +33,7 @@ def run_grapher(
         additional_args.insert(0, "--view")
 
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        # Setting a custom protocol handler for browsing on github
+        # Setting a custom protocol handler for browsing on GitHub
         additional_args.insert(0, "--open-protocol-handler")
         additional_args.insert(1, "custom")
 
@@ -58,10 +58,14 @@ def run_grapher(
 
     args = [__prog__]
 
-    # Clean the name a little bit
+    # Clean the name a little bit and put the file in a dedicated folder
     output_filename = output_filename.replace("[", "-").replace("]", "")
-    # put the generated file in a dedicated folder
     args.extend(["-o", str(DIR_PATH / "generated-svgs" / output_filename)])
+
+    if "--title" not in additional_args:
+        title_args = " ".join(additional_args)
+        args.append("--title")
+        args.append(f"Args: '{title_args}'")
 
     args.extend(additional_args + playbooks)
 
@@ -73,7 +77,7 @@ def run_grapher(
 def _common_tests(
     svg_filename: str,
     playbook_paths: list[str],
-    title: str = "Ansible Playbook Grapher",
+    expected_title: str | None = None,
     playbooks_number: int = 1,
     plays_number: int = 0,
     tasks_number: int = 0,
@@ -88,6 +92,7 @@ def _common_tests(
      - Check number of plays, tasks, pre_tasks, role_tasks, post_tasks
      - Root node text that must be the playbook path
 
+    :param expected_title: The expected title of the graph
     :param plays_number: Number of plays in the playbook
     :param pre_tasks_number: Number of pre tasks in the playbook
     :param roles_number: Number of roles in the playbook
@@ -112,9 +117,10 @@ def _common_tests(
     roles: PyQuery = pq("g[id^='role_']")
     handlers: PyQuery = pq("g[id^='handler_']")
 
-    assert (
-        graph_title == title
-    ), f"The title should be '{graph_title}' but we found '{title}'"
+    if expected_title:
+        assert (
+            graph_title == expected_title
+        ), f"The title should be '{graph_title}' but we found '{expected_title}'"
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
     assert (
@@ -177,7 +183,7 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
         playbook_paths=playbook_paths,
         plays_number=1,
         post_tasks_number=2,
-        title="My custom title",
+        expected_title="My custom title",
     )
 
 

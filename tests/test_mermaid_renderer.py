@@ -24,7 +24,7 @@ def run_grapher(
     """
     additional_args = additional_args or []
     # Explicitly add verbosity to the tests
-    additional_args.insert(0, "-vvv")
+    additional_args.insert(0, "-vv")
 
     if os.environ.get("TEST_VIEW_GENERATED_FILE") == "1":
         additional_args.insert(0, "--view")
@@ -35,19 +35,20 @@ def run_grapher(
 
     args = [__prog__]
 
-    # Clean the name a little bit
+    # Clean the name a little bit and put the file in a dedicated folder
     output_filename = (
         output_filename.replace("[", "-").replace("]", "").replace(".yml", "")
     )
-    # put the generated file in a dedicated folder
-
     args.extend(["-o", str(DIR_PATH / "generated-mermaids" / output_filename)])
-
-    args.extend(additional_args)
 
     args.extend(["--renderer", "mermaid-flowchart"])
 
-    args.extend(playbooks)
+    if "--title" not in additional_args:
+        title_args = " ".join(additional_args)
+        args.append("--title")
+        args.append(f"Args: '{title_args}'")
+
+    args.extend(additional_args + playbooks)
 
     cli = PlaybookGrapherCLI(args)
 
