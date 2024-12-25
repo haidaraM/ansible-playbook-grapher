@@ -5,3 +5,5 @@
   gather_facts: false
   roles:
     - role: role-with-tagged-tasks
+      tags:
+        - role_tag

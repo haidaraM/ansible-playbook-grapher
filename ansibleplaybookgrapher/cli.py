@@ -75,7 +75,6 @@ class PlaybookGrapherCLI(CLI):
         self.resolve_playbooks_paths()
         grapher = Grapher(self._playbook_paths_mapping)
         playbook_nodes, roles_usage = grapher.parse(
-            include_role_tasks=self.options.include_role_tasks,
             tags=self.options.tags,
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
@@ -97,6 +96,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
                     save_dot_file=self.options.save_dot_file,
                 )
@@ -116,6 +116,7 @@ class PlaybookGrapherCLI(CLI):
                     orientation=self.options.renderer_mermaid_orientation,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
                 )
 
@@ -129,6 +130,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     hide_empty_plays=self.options.hide_empty_plays,
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
+                    include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
                 )
 
@@ -197,12 +199,13 @@ class PlaybookGrapherCLI(CLI):
             help="Specify inventory host path or comma separated host list.",
         )
 
+        # TODO: Rename this in the next major version for consistency with the other options: --show-role-tasks ?
         self.parser.add_argument(
             "--include-role-tasks",
             dest="include_role_tasks",
             action="store_true",
             default=False,
-            help="Include the tasks of the roles in the graph. Applied when parsing the playbooks.",
+            help="Include the tasks of the roles in the graph. Default: %(default)s",
         )
 
         self.parser.add_argument(

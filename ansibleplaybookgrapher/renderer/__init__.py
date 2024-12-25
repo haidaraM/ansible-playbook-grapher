@@ -56,21 +56,26 @@ class Renderer(ABC):
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
+        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
-        :param open_protocol_handler: The protocol handler name to use
+
+        :param open_protocol_handler: The protocol handler name to use.
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
-        :param title: The title of the graph
+        :param title: The title of the graph.
+        :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
+        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
-        :return: The path of the rendered file.
+        :return:
         """
 
 
@@ -86,18 +91,22 @@ class PlaybookBuilder(ABC):
         open_protocol_custom_formats: dict[str, str] | None = None,
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
+        include_role_tasks: bool = False,
     ) -> None:
         """The base class for all playbook builders.
+
         :param playbook_node: Playbook parsed node
         :param open_protocol_handler: The protocol handler name to use
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far.
+        :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
+        self.include_role_tasks = include_role_tasks
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
@@ -119,7 +128,10 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
         elif isinstance(node, RoleNode):
-            self.build_role(role_node=node, color=color, fontcolor=fontcolor, **kwargs)
+            if node.should_be_included():
+                self.build_role(
+                    role_node=node, color=color, fontcolor=fontcolor, **kwargs
+                )
         elif isinstance(node, TaskNode):
             self.build_task(
                 task_node=node,
@@ -182,6 +194,9 @@ class PlaybookBuilder(ABC):
 
         # roles
         for role in play_node.roles:
+            if not role.should_be_included():
+                continue
+
             self.build_role(
                 color=color,
                 fontcolor=play_font_color,

@@ -491,6 +491,7 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 - **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't entirely
   reflect their real order of execution in the playbook. They are displayed at the end of the play and roles, but they
   might be executed before that.
+- Looping on tasks is not supported. The tasks using loop are displayed as a single task.
 
 ## Contribution
 

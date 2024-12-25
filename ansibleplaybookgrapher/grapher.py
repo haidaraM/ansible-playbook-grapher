@@ -33,7 +33,6 @@ class Grapher:
 
     def parse(
         self,
-        include_role_tasks: bool = False,
         tags: list[str] | None = None,
         skip_tags: list[str] | None = None,
         group_roles_by_name: bool = False,
@@ -42,7 +41,6 @@ class Grapher:
     ) -> tuple[list[PlaybookNode], dict[RoleNode, set[PlayNode]]]:
         """Parses all the provided playbooks
 
-        :param include_role_tasks: Should we include the role tasks
         :param tags: Only add plays and tasks tagged with these values
         :param skip_tags: Only add plays and tasks whose tags do not match these values
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs
@@ -60,7 +58,6 @@ class Grapher:
                 playbook_path=self.playbooks_mapping[playbook_arg],
                 tags=tags,
                 skip_tags=skip_tags,
-                include_role_tasks=include_role_tasks,
                 group_roles_by_name=group_roles_by_name,
                 playbook_name=playbook_arg,
                 exclude_roles=exclude_roles,

@@ -128,3 +128,6 @@ def test_to_dict() -> None:
     assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
     assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
+
+
+# TODO: add a test for the only roles option/filter. It's no longer set when parsing the playbook

@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,22 +52,26 @@ class GraphvizRenderer(Renderer):
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
-        """
-        :param open_protocol_handler: The protocol handler name to use
+        """Render the playbooks to a file.
+
+        :param open_protocol_handler: The protocol handler name to use.
         :param open_protocol_custom_formats: The custom formats to use when the protocol handler is set to custom
         :param output_filename: The output filename without any extension
-        :param title: The title of the graph
+        :param title: The title of the graph.
+        :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :param show_handlers:
-        :return: The path of the rendered file
+        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
+        :param show_handlers: Whether to show the handlers or not.
+        :param kwargs:
+        :return: The path of the rendered file.
         """
         save_dot_file = kwargs.get("save_dot_file", False)
 
@@ -88,7 +92,10 @@ class GraphvizRenderer(Renderer):
                 roles_usage=self.roles_usage,
                 roles_built=roles_built,
                 digraph=digraph,
+                include_role_tasks=include_role_tasks,
             )
+
+            # TODO: move these parameters to the constructor
             builder.build_playbook(
                 hide_empty_plays=hide_empty_plays,
                 hide_plays_without_roles=hide_plays_without_roles,
@@ -129,6 +136,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         open_protocol_custom_formats: dict[str, str],
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
+        include_role_tasks: bool,
         digraph: Digraph,
     ) -> None:
         """
@@ -137,10 +145,11 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         """
         super().__init__(
             playbook_node,
-            open_protocol_handler,
-            open_protocol_custom_formats,
-            roles_usage,
-            roles_built,
+            open_protocol_handler=open_protocol_handler,
+            open_protocol_custom_formats=open_protocol_custom_formats,
+            roles_usage=roles_usage,
+            roles_built=roles_built,
+            include_role_tasks=include_role_tasks,
         )
 
         self.digraph = digraph
@@ -303,14 +312,16 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 color=color,
                 URL=url,
             )
-            # role tasks
-            for role_task in role_node.tasks:
-                self.build_node(
-                    node=role_task,
-                    color=role_color,
-                    fontcolor=fontcolor,
-                    digraph=role_subgraph,
-                )
+
+            if self.include_role_tasks:
+                # role tasks
+                for role_task in role_node.tasks:
+                    self.build_node(
+                        node=role_task,
+                        color=role_color,
+                        fontcolor=fontcolor,
+                        digraph=role_subgraph,
+                    )
 
     def build_playbook(
         self,

@@ -129,24 +129,18 @@ def test_include_role_parsing(
     capsys: pytest.CaptureFixture,
 ) -> None:
     """Test parsing of include_role
+
     :param grapher_cli:
     :return:
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
     )
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
     play_node = playbook_node.plays()[0]
     tasks = play_node.tasks
     assert len(tasks) == 6
-
-    # Since we use some loops inside the playbook, a warning should be displayed
-    assert (
-        "Looping on tasks or roles are not supported for the moment"
-        in capsys.readouterr().err
-    ), "A warning should be displayed regarding loop being not supported"
 
     # first include_role using a block
     block_include_role = tasks[0]
@@ -195,25 +189,16 @@ def test_include_role_parsing(
     assert include_role_4.has_loop(), "The third include role has a loop"
 
 
-@pytest.mark.parametrize("grapher_cli", [["group-roles-by-name.yml"]], indirect=True)
-@pytest.mark.parametrize(
-    ("include_role_tasks", "nested_include_role_tasks_count"), [(True, 4), (False, 0)]
-)
-def test_include_role_parsing_with_different_include_role_tasks(
-    include_role_tasks: bool,
-    nested_include_role_tasks_count: int,
+@pytest.mark.parametrize("grapher_cli", [["nested-include-role.yml"]], indirect=True)
+def test_nested_include_role_parsing(
     grapher_cli: PlaybookGrapherCLI,
 ) -> None:
     """Test parsing of include_role with different include_role_tasks options.
 
-    :param include_role_tasks:
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(
-        grapher_cli.options.playbooks[0],
-        include_role_tasks=include_role_tasks,
-    )
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
 
@@ -231,31 +216,7 @@ def test_include_role_parsing_with_different_include_role_tasks(
     # The first post task is an include role as well but with nested include roles
     assert len(play_node.post_tasks) == 1
     assert isinstance(play_node.post_tasks[0], RoleNode)
-    assert len(play_node.post_tasks[0].tasks) == nested_include_role_tasks_count
-
-
-@pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)
-def test_parsing_tasks_with_tags_in_roles(grapher_cli: PlaybookGrapherCLI) -> None:
-    """Test a case where tags are attached to tasks inside the role but not the role itself.
-
-    When filtering with '-t tag', these tasks should be included in the graph.
-    :return:
-    """
-    parser = PlaybookParser(
-        grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
-        tags=[
-            "this_is_a_tag"
-        ],
-    )
-    playbook_node = parser.parse()
-
-    assert len(playbook_node.plays()) == 1
-
-    play_node = playbook_node.plays()[0]
-    assert len(play_node.roles) == 1, "Only one role should be in the play"
-    role = play_node.roles[0]
-    assert len(role.tasks) == 1, "Only the tagged task should be included in the graph"
+    assert len(play_node.post_tasks[0].tasks) == 4
 
 
 @pytest.mark.parametrize(
@@ -279,7 +240,6 @@ def test_include_role_parsing_with_exclude_roles(
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
         exclude_roles=exclude_roles,
     )
     playbook_node = parser.parse()
@@ -291,38 +251,13 @@ def test_include_role_parsing_with_exclude_roles(
         assert all(exclude_role not in role_names for exclude_role in exclude_roles)
 
 
-@pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
-def test_include_role_parsing_with_only_roles(
-    grapher_cli: PlaybookGrapherCLI,
-) -> None:
-    """Test parsing of include_role with only roles option
-    :param grapher_cli:
-    :return:
-    """
-    parser = PlaybookParser(
-        grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
-        only_roles=True,
-    )
-    playbook_node = parser.parse()
-
-    # If only roles option is set then there should be no Task Nodes
-    all_tasks = get_all_tasks([playbook_node])
-    assert (
-        len(all_tasks) == 0
-    ), "There should be no Task Nodes when running with only roles option"
-
-
 @pytest.mark.parametrize("grapher_cli", [["with_block.yml"]], indirect=True)
 def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     """The parsing of a playbook with blocks
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(
-        grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
-    )
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     assert len(playbook_node.plays()) == 1
 
@@ -403,10 +338,7 @@ def test_block_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     :param grapher_cli:
     :return:
     """
-    parser = PlaybookParser(
-        grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
-    )
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     play = playbook_node.plays()[0]
 
@@ -459,7 +391,6 @@ def test_roles_usage_multi_plays(
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
     playbook_node = parser.parse()
@@ -504,7 +435,6 @@ def test_roles_usage_single_play(
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
         group_roles_by_name=group_roles_by_name,
     )
     playbook_node = parser.parse()
@@ -520,7 +450,6 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
     )
     playbook_node = parser.parse()
     roles = playbook_node.plays()[0].roles
@@ -552,7 +481,6 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     """
     parser = PlaybookParser(
         grapher_cli.options.playbooks[0],
-        include_role_tasks=True,
     )
     playbook_node = parser.parse()
     roles = playbook_node.plays()[0].roles
@@ -587,7 +515,6 @@ def test_parsing_playbook_in_collection(
     playbook_path = grapher_cli.get_playbook_path(grapher_cli.options.playbooks[0])
     parser = PlaybookParser(
         playbook_path,
-        include_role_tasks=True,
     )
     playbook_node = parser.parse()
 
@@ -654,7 +581,7 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     """Test if we are able to get the handlers defined in a role and add them in the graph
     :return:
     """
-    parser = PlaybookParser(grapher_cli.options.playbooks[0], include_role_tasks=True)
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
     playbook_node = parser.parse()
     plays = playbook_node.plays()
 
@@ -675,3 +602,24 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     assert (
         len(set(play.handlers + role.handlers)) == 2
     ), "The total number of handlers should be 2"
+
+
+@pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)
+def test_parsing_tasks_with_tags_in_roles(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test a case where tags are attached to tasks inside the role but not the role itself.
+
+    When filtering with '-t tag', these tasks should be included in the graph.
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+        tags=["this_is_a_tag"],
+    )
+    playbook_node = parser.parse()
+
+    assert len(playbook_node.plays()) == 1
+
+    play_node = playbook_node.plays()[0]
+    assert len(play_node.roles) == 1, "Only one role should be in the play"
+    role = play_node.roles[0]
+    assert len(role.tasks) == 1, "Only the tagged task should be included in the graph"

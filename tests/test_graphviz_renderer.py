@@ -579,7 +579,7 @@ def test_group_roles_by_name(
 def test_hiding_plays(request: pytest.FixtureRequest) -> None:
     """Test hiding_plays with the flag --hide-empty-plays.
 
-    This case is about hiding plays with 0 zero task (no filtering)
+    This case is about hiding plays with zero tasks (no filtering)
     :param request:
     :return:
     """
@@ -787,4 +787,36 @@ def test_handlers_in_role(
         post_tasks_number=1,
         roles_number=1,
         handlers_number=handlers_number,
+    )
+
+
+@pytest.mark.parametrize(
+    ("include_role_tasks_option", "expected_roles_number"),
+    [("--", 4), ("--include-role-tasks", 6)],
+    ids=["no_include_role_tasks_option", "include_role_tasks_option"],
+)
+def test_only_roles_with_nested_include_roles(
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_roles_number: int,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["nested-include-role.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "--only-roles",
+            include_role_tasks_option,
+        ],
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        roles_number=expected_roles_number,
     )
