@@ -350,3 +350,5 @@ def test_handler_in_a_role(
         handlers_number=handlers_number,
         roles_number=1,
     )
+
+# TODO: add a test for the --only-roles flag for the json renderer

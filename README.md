@@ -478,7 +478,7 @@ For example `TAGS_RUN` and `TAGS_SKIP` or vault configuration.
 
 More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
-## Limitations
+## Limitations and notes
 
 - Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
   statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are

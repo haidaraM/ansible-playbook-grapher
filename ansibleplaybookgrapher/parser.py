@@ -94,7 +94,7 @@ class BaseParser(ABC):
             # Sometimes we need to export
             if fail_on_undefined:
                 raise
-            display.warning(ansible_error)
+            display.warning(ansible_error.message)
             return data
 
     def _add_task(
@@ -152,7 +152,6 @@ class PlaybookParser(BaseParser):
         group_roles_by_name: bool = False,
         playbook_name: str | None = None,
         exclude_roles: list[str] | None = None,
-        only_roles: bool = False,
     ) -> None:
         """
 
@@ -162,7 +161,6 @@ class PlaybookParser(BaseParser):
         :param group_roles_by_name: Group roles by name instead of considering them as separate nodes with different IDs.
         :param playbook_name: On optional name of the playbook to parse.
         :param exclude_roles: Only add tasks whose roles do not match these values
-        :param only_roles: Ignore all task nodes when rendering the graph.
         It will be used as the node name if provided in replacement of the file name.
         """
         super().__init__(tags=tags, skip_tags=skip_tags)
@@ -170,7 +168,6 @@ class PlaybookParser(BaseParser):
         self.playbook_path = playbook_path
         self.playbook_name = playbook_name
         self.exclude_roles = exclude_roles or []
-        self.only_roles = only_roles
 
     def parse(self, *args, **kwargs) -> PlaybookNode:
         """Loop through the playbook and generate the graph.
@@ -262,7 +259,6 @@ class PlaybookParser(BaseParser):
                     all_vars=play_vars,
                 ):
                     display.vv(
-                        f"The role '{role.get_name()}' is skipped due to the tags.",
                     )
                     # Go to the next role
                     continue
@@ -522,9 +518,6 @@ class PlaybookParser(BaseParser):
                     # We remove the parent node we have added if we included some tasks from a role
                     parent_nodes.pop()
             else:  # It's here that we add the task in the graph
-                if self.only_roles:
-                    continue
-
                 if (
                     len(parent_nodes) > 1  # 1
                     and not has_role_parent(task_or_block)  # 2

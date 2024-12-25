@@ -46,6 +46,7 @@ class JSONRenderer(Renderer):
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        ony_roles: bool = False,
         **kwargs,
     ) -> str:
         playbooks = []

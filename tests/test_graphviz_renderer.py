@@ -818,5 +818,6 @@ def test_only_roles_with_nested_include_roles(
         svg_filename=svg_path,
         playbook_paths=playbook_paths,
         plays_number=1,
+        blocks_number=1,
         roles_number=expected_roles_number,
     )

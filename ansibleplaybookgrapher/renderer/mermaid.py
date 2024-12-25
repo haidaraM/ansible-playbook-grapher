@@ -49,6 +49,7 @@ class MermaidFlowChartRenderer(Renderer):
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        ony_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
@@ -63,6 +64,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
         :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show handlers or not.
+        :param ony_roles: Only render the roles without the tasks.
         :param directive: Mermaid directive.
         :param orientation: Mermaid graph orientation.
         :param kwargs:
@@ -94,6 +96,7 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_usage=self.roles_usage,
                 roles_built=roles_built,
                 link_order=link_order,
+                ony_roles=ony_roles,
             )
 
             mermaid_code += playbook_builder.build_playbook(
@@ -158,6 +161,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         open_protocol_custom_formats: dict[str, str],
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
+        ony_roles: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -166,6 +170,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             open_protocol_custom_formats,
             roles_usage,
             roles_built,
+            ony_roles=ony_roles,
         )
 
         self.mermaid_code = ""

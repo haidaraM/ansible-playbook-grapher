@@ -79,7 +79,6 @@ class PlaybookGrapherCLI(CLI):
             skip_tags=self.options.skip_tags,
             group_roles_by_name=self.options.group_roles_by_name,
             exclude_roles=self.options.exclude_roles,
-            only_roles=self.options.only_roles,
         )
 
         match self.options.renderer:
@@ -99,6 +98,7 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
                     save_dot_file=self.options.save_dot_file,
+                    ony_roles=self.options.only_roles,
                 )
 
             case "mermaid-flowchart":
@@ -118,6 +118,7 @@ class PlaybookGrapherCLI(CLI):
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
                     include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
+                    ony_roles=self.options.only_roles,
                 )
 
             case "json":
@@ -132,6 +133,7 @@ class PlaybookGrapherCLI(CLI):
                     hide_plays_without_roles=self.options.hide_plays_without_roles,
                     include_role_tasks=self.options.include_role_tasks,
                     show_handlers=self.options.show_handlers,
+                    ony_roles=self.options.only_roles,
                 )
 
             case _:

@@ -61,6 +61,7 @@ class Renderer(ABC):
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        ony_roles: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
@@ -74,6 +75,7 @@ class Renderer(ABC):
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show the handlers or not.
+        :param ony_roles: Only render the roles without the tasks.
         :param kwargs:
         :return:
         """
@@ -92,6 +94,7 @@ class PlaybookBuilder(ABC):
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
         include_role_tasks: bool = False,
+        ony_roles: bool = False,
     ) -> None:
         """The base class for all playbook builders.
 
@@ -107,6 +110,7 @@ class PlaybookBuilder(ABC):
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
         self.include_role_tasks = include_role_tasks
+        self.ony_roles = ony_roles
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
@@ -133,6 +137,9 @@ class PlaybookBuilder(ABC):
                     role_node=node, color=color, fontcolor=fontcolor, **kwargs
                 )
         elif isinstance(node, TaskNode):
+            if self.ony_roles:
+                return
+
             self.build_task(
                 task_node=node,
                 color=color,

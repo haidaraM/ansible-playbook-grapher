@@ -57,6 +57,7 @@ class GraphvizRenderer(Renderer):
         hide_empty_plays: bool = False,
         hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        ony_roles: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
@@ -70,6 +71,7 @@ class GraphvizRenderer(Renderer):
         :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
         :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show the handlers or not.
+        :param ony_roles: Only render the roles without the tasks.
         :param kwargs:
         :return: The path of the rendered file.
         """
@@ -93,6 +95,7 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
                 include_role_tasks=include_role_tasks,
+                ony_roles=ony_roles,
             )
 
             # TODO: move these parameters to the constructor
@@ -137,6 +140,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
+        ony_roles: bool,
         digraph: Digraph,
     ) -> None:
         """
@@ -150,8 +154,8 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             roles_usage=roles_usage,
             roles_built=roles_built,
             include_role_tasks=include_role_tasks,
+            ony_roles=ony_roles,
         )
-
         self.digraph = digraph
 
     def build_task(
