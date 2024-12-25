@@ -315,9 +315,15 @@ class CompositeNode(Node):
     def is_empty(self) -> bool:
         """Return true if the composite node is empty, false otherwise.
 
+        A composite node is considered empty if all its compositions are empty.
         :return:
         """
-        return all(len(nodes) <= 0 for _, nodes in self._compositions.items())
+        for nodes in self._compositions.values():
+            for node in nodes:
+                if isinstance(node, CompositeNode):
+                    return node.is_empty()
+
+        return all(len(nodes) == 0 for nodes in self._compositions.values())
 
     def has_node_type(self, node_type: type) -> bool:
         """Return true if the composite node has at least one node of the given type, false otherwise.
@@ -474,7 +480,8 @@ class PlaybookNode(CompositeNode):
         :param kwargs:
         :return:
         """
-        playbook_dict = super().to_dict(**kwargs)
+        # TODO: optimize to avoid calling to dict multiple times (filter the plays and then call to_dict)
+        playbook_dict = super().to_dict(include_handlers=include_handlers, **kwargs)
         playbook_dict["plays"] = []
 
         # We need to explicitly get the plays here to exclude the ones we don't need
@@ -573,7 +580,7 @@ class PlayNode(CompositeNode):
         :return:
         """
 
-        data = super().to_dict(**kwargs)
+        data = super().to_dict(include_handlers=include_handlers, **kwargs)
         data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
 

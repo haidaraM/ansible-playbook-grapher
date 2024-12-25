@@ -74,8 +74,12 @@ def test_empty_play() -> None:
     play = PlayNode("play")
     assert play.is_empty(), "The play should empty"
 
-    play.add_node("roles", RoleNode("my_role_1"))
-    assert not play.is_empty(), "The play should not be empty"
+    role = RoleNode("my_role_1")
+    play.add_node("roles", role)
+    assert play.is_empty(), "The play should still be empty given the role is empty"
+
+    role.add_node("tasks", TaskNode("task 1"))
+    assert not play.is_empty(), "The play should not be empty here"
 
 
 def test_has_node_type() -> None:
