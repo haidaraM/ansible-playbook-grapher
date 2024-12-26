@@ -31,6 +31,7 @@ from ansible.utils.collection_loader._collection_finder import (
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
+from ansibleplaybookgrapher.graph_model import TaskNode
 from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
@@ -87,6 +88,8 @@ class PlaybookGrapherCLI(CLI):
 
             if self.options.hide_plays_without_roles:
                 p.exclude_plays_without_roles()
+
+            p.calculate_indices()
 
         match self.options.renderer:
             case "graphviz":

@@ -351,4 +351,34 @@ def test_handler_in_a_role(
         roles_number=1,
     )
 
-# TODO: add a test for the --only-roles flag for the json renderer
+
+@pytest.mark.parametrize(
+    ("include_role_tasks_option", "expected_roles_number"),
+    [("--", 4), ("--include-role-tasks", 6)],
+    ids=["no_include_role_tasks_option", "include_role_tasks_option"],
+)
+def test_only_roles_with_nested_include_roles(
+    request: pytest.FixtureRequest,
+    include_role_tasks_option: str,
+    expected_roles_number: int,
+) -> None:
+    """Test graphing a playbook with handlers
+
+    :param request:
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["nested-include-role.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "--only-roles",
+            include_role_tasks_option,
+        ],
+    )
+
+    _common_tests(
+        json_path,
+        plays_number=1,
+        blocks_number=1,
+        roles_number=expected_roles_number,
+    )

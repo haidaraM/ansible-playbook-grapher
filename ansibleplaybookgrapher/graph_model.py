@@ -209,9 +209,21 @@ class CompositeNode(Node):
             raw_object=raw_object,
             parent=parent,
         )
-        self._supported_compositions = supported_compositions or []
+        self.supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
         self._compositions = defaultdict(list)  # type: dict[str, list]
+
+    def _check_target_composition(self, target_composition: str) -> None:
+        """Check if the target composition is supported.
+
+        :param target_composition:
+        :return:
+        """
+        if target_composition not in self.supported_compositions:
+            msg = f"The target composition '{target_composition}' is unknown. Supported ones are: {self.supported_compositions}"
+            raise ValueError(
+                msg,
+            )
 
     def add_node(self, target_composition: str, node: Node) -> None:
         """Add a node in the target composition.
@@ -220,11 +232,7 @@ class CompositeNode(Node):
         :param node: The node to add in the given composition
         :return:
         """
-        if target_composition not in self._supported_compositions:
-            msg = f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
-            raise ValueError(
-                msg,
-            )
+        self._check_target_composition(target_composition)
         self._compositions[target_composition].append(node)
 
     def remove_node(self, target_composition: str, node: Node) -> None:
@@ -234,11 +242,7 @@ class CompositeNode(Node):
         :param node: The node to remove from the given composition
         :return:
         """
-        if target_composition not in self._supported_compositions:
-            msg = f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
-            raise ValueError(
-                msg,
-            )
+        self._check_target_composition(target_composition)
         self._compositions[target_composition].remove(node)
 
     def calculate_indices(self):
@@ -247,7 +251,7 @@ class CompositeNode(Node):
         This is only called when needed.
         """
         current_index = 1
-        for comp_type in self._supported_compositions:
+        for comp_type in self.supported_compositions:
             for node in self._compositions[comp_type]:
                 node.index = current_index
                 current_index += 1
@@ -261,12 +265,7 @@ class CompositeNode(Node):
         :param target_composition:
         :return: A list of the nodes.
         """
-        if target_composition not in self._supported_compositions:
-            msg = f"The target composition '{target_composition}' is unknown. Supported ones are: {self._supported_compositions}"
-            raise Exception(
-                msg,
-            )
-
+        self._check_target_composition(target_composition)
         return self._compositions[target_composition]
 
     def get_all_tasks(self) -> list["TaskNode"]:
@@ -293,8 +292,7 @@ class CompositeNode(Node):
         :param acc: The accumulator
         :return:
         """
-        items = self._compositions.items()
-        for _, nodes in items:
+        for _, nodes in self._compositions.items():
             for node in nodes:
                 if isinstance(node, node_type):
                     acc.append(node)
