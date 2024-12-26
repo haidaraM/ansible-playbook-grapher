@@ -570,39 +570,6 @@ class PlayNode(CompositeNode):
 
         return data
 
-    def filter(self, include_handlers: bool = False) -> "PlayNode":
-        """Return a new play node by applying the filters.
-
-        :param include_handlers: Whether to include the handlers in the output or not
-        :return:
-        """
-        new_play = PlayNode(
-            node_name=self.name,
-            node_id=self.id,
-            when=self.when,
-            raw_object=self.raw_object,
-            hosts=self.hosts,
-            parent=self.parent,
-        )
-
-        for pre_task in self.pre_tasks:
-            new_play.add_node("pre_tasks", pre_task)
-
-        for role in self.roles:
-            new_play.add_node("roles", role.filter(include_handlers=include_handlers))
-
-        for task in self.tasks:
-            new_play.add_node("tasks", task)
-
-        for post_task in self.post_tasks:
-            new_play.add_node("post_tasks", post_task)
-
-        if include_handlers:
-            for handler in self.handlers:
-                new_play.add_node("handlers", handler)
-
-        return new_play
-
 
 class BlockNode(CompositeNode):
     """A block node: https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html."""
@@ -767,30 +734,6 @@ class RoleNode(LoopMixin, CompositeNode):
         :return:
         """
         return self.get_nodes("handlers")
-
-    def filter(self, include_handlers: bool = False) -> "RoleNode":
-        """Return a new role node by applying the filters.
-
-        :param include_handlers: Whether to include the handlers in the output or not
-        :return:
-        """
-        new_role = RoleNode(
-            node_name=self.name,
-            node_id=self.id,
-            when=self.when,
-            raw_object=self.raw_object,
-            include_role=self.include_role,
-            parent=self.parent,
-        )
-
-        for task in self.tasks:
-            new_role.add_node("tasks", task)
-
-        if include_handlers:
-            for handler in self.handlers:
-                new_role.add_node("handlers", handler)
-
-        return new_role
 
     def should_be_included(self) -> bool:
         """Return true if the role should be included in the graph, false otherwise.
