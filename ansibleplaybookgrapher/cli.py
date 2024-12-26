@@ -89,6 +89,9 @@ class PlaybookGrapherCLI(CLI):
             if self.options.hide_plays_without_roles:
                 p.exclude_plays_without_roles()
 
+            if self.options.only_roles:
+                p.exclude_tasks()
+
             p.calculate_indices()
 
         match self.options.renderer:
@@ -105,7 +108,7 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    ony_roles=self.options.only_roles,
+                    only_roles=self.options.only_roles,
                     save_dot_file=self.options.save_dot_file,
                 )
 
@@ -122,7 +125,7 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    ony_roles=self.options.only_roles,
+                    only_roles=self.options.only_roles,
                     directive=self.options.renderer_mermaid_directive,
                     orientation=self.options.renderer_mermaid_orientation,
                 )
@@ -137,7 +140,7 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    ony_roles=self.options.only_roles,
+                    only_roles=self.options.only_roles,
                 )
 
             case _:
@@ -194,7 +197,7 @@ class PlaybookGrapherCLI(CLI):
             "--only-roles",
             dest="only_roles",
             action="store_true",
-            help="Only display the roles in the graph (ignoring the tasks)",
+            help="Only render the roles in the graph (ignoring the tasks)",
         )
 
         self.parser.add_argument(

@@ -45,13 +45,15 @@ class JSONRenderer(Renderer):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        ony_roles: bool = False,
+        only_roles: bool = False,
         **kwargs,
     ) -> str:
         playbooks = []
 
         for playbook_node in self.playbook_nodes:
-            json_builder = JSONPlaybookBuilder(playbook_node, open_protocol_handler)
+            json_builder = JSONPlaybookBuilder(
+                playbook_node, open_protocol_handler, only_roles=only_roles
+            )
             json_builder.build_playbook(
                 show_handlers=show_handlers,
             )
@@ -83,8 +85,10 @@ class JSONRenderer(Renderer):
 
 
 class JSONPlaybookBuilder(PlaybookBuilder):
-    def __init__(self, playbook_node: PlaybookNode, open_protocol_handler: str) -> None:
-        super().__init__(playbook_node, open_protocol_handler)
+    def __init__(
+        self, playbook_node: PlaybookNode, open_protocol_handler: str, only_roles: bool
+    ) -> None:
+        super().__init__(playbook_node, open_protocol_handler, only_roles=only_roles)
 
         self.json_output = {}
 
@@ -105,6 +109,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
 
         self.json_output = self.playbook_node.to_dict(
             include_handlers=show_handlers,
+            only_roles=self.only_roles,
         )
 
         return json.dumps(self.json_output)

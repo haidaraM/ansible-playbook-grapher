@@ -211,7 +211,7 @@ class CompositeNode(Node):
         )
         self.supported_compositions = supported_compositions or []
         # The dict will contain the different types of composition: plays, tasks, roles...
-        self._compositions = defaultdict(list)  # type: dict[str, list]
+        self.compositions = defaultdict(list)  # type: dict[str, list]
 
     def _check_target_composition(self, target_composition: str) -> None:
         """Check if the target composition is supported.
@@ -233,7 +233,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
-        self._compositions[target_composition].append(node)
+        self.compositions[target_composition].append(node)
 
     def remove_node(self, target_composition: str, node: Node) -> None:
         """Remove a node from the target composition.
@@ -243,7 +243,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
-        self._compositions[target_composition].remove(node)
+        self.compositions[target_composition].remove(node)
 
     def calculate_indices(self):
         """
@@ -252,7 +252,7 @@ class CompositeNode(Node):
         """
         current_index = 1
         for comp_type in self.supported_compositions:
-            for node in self._compositions[comp_type]:
+            for node in self.compositions[comp_type]:
                 node.index = current_index
                 current_index += 1
 
@@ -266,7 +266,7 @@ class CompositeNode(Node):
         :return: A list of the nodes.
         """
         self._check_target_composition(target_composition)
-        return self._compositions[target_composition]
+        return self.compositions[target_composition]
 
     def get_all_tasks(self) -> list["TaskNode"]:
         """Return all the TaskNode inside this composite node.
@@ -292,7 +292,7 @@ class CompositeNode(Node):
         :param acc: The accumulator
         :return:
         """
-        for _, nodes in self._compositions.items():
+        for _, nodes in self.compositions.items():
             for node in nodes:
                 if isinstance(node, node_type):
                     acc.append(node)
@@ -314,7 +314,7 @@ class CompositeNode(Node):
 
         :return:
         """
-        for nodes in self._compositions.values():
+        for nodes in self.compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
                     node._get_all_links(links)
@@ -326,12 +326,12 @@ class CompositeNode(Node):
         A composite node is considered empty if all its compositions are empty.
         :return:
         """
-        for nodes in self._compositions.values():
+        for nodes in self.compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
                     return node.is_empty()
 
-        return all(len(nodes) == 0 for nodes in self._compositions.values())
+        return all(len(nodes) == 0 for nodes in self.compositions.values())
 
     def has_node_type(self, node_type: type) -> bool:
         """Return true if the composite node has at least one node of the given type, false otherwise.
@@ -339,7 +339,7 @@ class CompositeNode(Node):
         :param node_type: The type of the node
         :return:
         """
-        for nodes in self._compositions.values():
+        for nodes in self.compositions.values():
             for node in nodes:
                 if isinstance(node, node_type):
                     return True
@@ -349,6 +349,18 @@ class CompositeNode(Node):
 
         return False
 
+    def remove_node_types(self, types: list[type]):
+        """Exclude all the task nodes from the playbook.
+
+        :return:
+        """
+        for target_composition, nodes in self.compositions.items():
+            for node in nodes[:]:
+                if isinstance(node, tuple(types)):
+                    self.remove_node(target_composition, node)
+                elif isinstance(node, CompositeNode):
+                    node.remove_node_types(types)
+
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
@@ -357,7 +369,7 @@ class CompositeNode(Node):
         """
         node_dict = super().to_dict(**kwargs)
 
-        for composition, nodes in self._compositions.items():
+        for composition, nodes in self.compositions.items():
             nodes_dict_list = []
             for node in nodes:
                 nodes_dict_list.append(node.to_dict(**kwargs))
@@ -444,7 +456,7 @@ class PlaybookNode(CompositeNode):
             self.remove_node("plays", play)
 
     def exclude_plays_without_roles(self):
-        """Exclude the plays that do not have roles.
+        """Exclude the plays that do not have roles from the playbook.
 
         :return:
         """
@@ -475,6 +487,13 @@ class PlaybookNode(CompositeNode):
             )
 
         return playbook_dict
+
+    def exclude_tasks(self):
+        """Exclude all the task nodes from the playbook.
+
+        :return:
+        """
+        self.remove_node_types([TaskNode])
 
 
 class PlayNode(CompositeNode):

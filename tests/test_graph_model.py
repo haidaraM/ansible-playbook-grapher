@@ -168,3 +168,50 @@ def test_to_dict() -> None:
     assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
     assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
+
+
+def test_remove_node_types():
+    """
+    Test the method remove_node_types
+    :return:
+    """
+    playbook = PlaybookNode("my-fake-playbook.yml")
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+    play.add_node("roles", role)
+    assert len(playbook.plays()) == 1
+    assert len(play.roles) == 1, "The role should be there"
+    assert len(playbook.get_all_tasks()) == 1, "The task should be there"
+
+    playbook.remove_node_types([RoleNode])
+    assert len(playbook.plays()) == 1
+    assert len(play.roles) == 0, "The role should have been removed"
+    assert len(playbook.get_all_tasks()) == 0, "The task should have been removed"
+
+    playbook.remove_node_types(
+        [
+            PlayNode,
+        ]
+    )
+    assert len(playbook.plays()) == 0, "The play should have been removed"
+
+    assert playbook.is_empty(), "The playbook should be empty"
+
+    playbook.add_node("plays", play)
+    play.add_node("roles", role)
+
+    for i in range(10):
+        role.add_node("tasks", TaskNode(f"loop task {i}"))
+
+    new_role = RoleNode("new_role", include_role=True)
+    new_role.add_node("tasks", TaskNode("New role task"))
+    role2 = RoleNode("my_role_2")
+    role2.add_node("tasks", new_role)
+    role2.add_node("tasks", BlockNode("My block"))
+
+    assert len(playbook.get_all_tasks()) == 11
+    playbook.remove_node_types([TaskNode, BlockNode])
+    assert len(playbook.get_all_tasks()) == 0, "All tasks should have been removed"

@@ -45,9 +45,10 @@ class MermaidFlowChartRenderer(Renderer):
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        ony_roles: bool = False,
+        only_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
@@ -60,7 +61,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param title: The title of the graph.
         :param view: Not supported for the moment.
         :param show_handlers: Whether to show handlers or not.
-        :param ony_roles: Only render the roles without the tasks.
+        :param only_roles: Only render the roles without the tasks.
         :param directive: Mermaid directive.
         :param orientation: Mermaid graph orientation.
         :param kwargs:
@@ -92,7 +93,8 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_usage=self.roles_usage,
                 roles_built=roles_built,
                 link_order=link_order,
-                ony_roles=ony_roles,
+                include_role_tasks=include_role_tasks,
+                only_roles=only_roles,
             )
 
             mermaid_code += playbook_builder.build_playbook(
@@ -155,7 +157,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         open_protocol_custom_formats: dict[str, str],
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
-        ony_roles: bool,
+        include_role_tasks: bool,
+        only_roles: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -164,7 +167,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             open_protocol_custom_formats,
             roles_usage,
             roles_built,
-            ony_roles=ony_roles,
+            include_role_tasks=include_role_tasks,
+            only_roles=only_roles,
         )
 
         self.mermaid_code = ""
@@ -358,14 +362,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # Role tasks
-        self._indentation_level += 1
-        for role_task in role_node.tasks:
-            self.build_node(
-                node=role_task,
-                color=node_color,
-                fontcolor=fontcolor,
-            )
-        self._indentation_level -= 1
+        if self.include_role_tasks:
+            self._indentation_level += 1
+            for role_task in role_node.tasks:
+                self.build_node(
+                    node=role_task,
+                    color=node_color,
+                    fontcolor=fontcolor,
+                )
+            self._indentation_level -= 1
 
         self.add_comment(f"End of the role '{role_node.display_name()}'")
 

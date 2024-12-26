@@ -59,7 +59,7 @@ class Renderer(ABC):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        ony_roles: bool = False,
+        only_roles: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
@@ -71,7 +71,7 @@ class Renderer(ABC):
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
         :param show_handlers: Whether to show the handlers or not.
-        :param ony_roles: Only render the roles without the tasks.
+        :param only_roles: Only render the roles without the tasks.
         :param kwargs:
         :return:
         """
@@ -90,7 +90,7 @@ class PlaybookBuilder(ABC):
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
         include_role_tasks: bool = False,
-        ony_roles: bool = False,
+        only_roles: bool = False,
     ) -> None:
         """The base class for all playbook builders.
 
@@ -100,13 +100,14 @@ class PlaybookBuilder(ABC):
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
+        :param only_roles: Only render the roles in the graph (ignoring the tasks).
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
         self.include_role_tasks = include_role_tasks
-        self.ony_roles = ony_roles
+        self.only_roles = only_roles
 
         self.open_protocol_handler = open_protocol_handler
         # Merge the two dicts
@@ -128,12 +129,12 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
         elif isinstance(node, RoleNode):
-            if node.should_be_included():
+            if node.should_be_included() or self.only_roles:
                 self.build_role(
                     role_node=node, color=color, fontcolor=fontcolor, **kwargs
                 )
         elif isinstance(node, TaskNode):
-            if self.ony_roles:
+            if self.only_roles:
                 return
 
             self.build_task(
@@ -194,7 +195,7 @@ class PlaybookBuilder(ABC):
 
         # roles
         for role in play_node.roles:
-            if not role.should_be_included():
+            if not role.should_be_included() and not self.only_roles:
                 continue
 
             self.build_role(

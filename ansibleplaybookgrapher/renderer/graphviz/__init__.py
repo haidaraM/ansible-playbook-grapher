@@ -55,7 +55,7 @@ class GraphvizRenderer(Renderer):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        ony_roles: bool = False,
+        only_roles: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
@@ -67,7 +67,7 @@ class GraphvizRenderer(Renderer):
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
         :param show_handlers: Whether to show the handlers or not.
-        :param ony_roles: Only render the roles without the tasks.
+        :param only_roles: Only render the roles without the tasks.
         :param kwargs:
         :return: The path of the rendered file.
         """
@@ -91,7 +91,7 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
                 include_role_tasks=include_role_tasks,
-                ony_roles=ony_roles,
+                only_roles=only_roles,
             )
 
             # TODO: move these parameters to the constructor
@@ -134,7 +134,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
-        ony_roles: bool,
+        only_roles: bool,
         digraph: Digraph,
     ) -> None:
         """
@@ -148,7 +148,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             roles_usage=roles_usage,
             roles_built=roles_built,
             include_role_tasks=include_role_tasks,
-            ony_roles=ony_roles,
+            only_roles=only_roles,
         )
         self.digraph = digraph
 

@@ -423,7 +423,7 @@ options:
                         Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play level and include_role as tasks are
                         considered (no import_role).
   --include-role-tasks  Include the tasks of the roles in the graph. Applied when parsing the playbooks.
-  --only-roles          Only display the roles in the graph (ignoring the tasks)
+  --only-roles          Only render the roles in the graph (ignoring the tasks).
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a
                         JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser and files
