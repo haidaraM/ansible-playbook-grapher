@@ -81,6 +81,13 @@ class PlaybookGrapherCLI(CLI):
             exclude_roles=self.options.exclude_roles,
         )
 
+        for p in playbook_nodes:
+            if self.options.hide_empty_plays:
+                p.exclude_empty_plays()
+
+            if self.options.hide_plays_without_roles:
+                p.exclude_plays_without_roles()
+
         match self.options.renderer:
             case "graphviz":
                 renderer = GraphvizRenderer(
@@ -92,13 +99,11 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
                     title=self.options.title,
-                    view=self.options.view,
-                    hide_empty_plays=self.options.hide_empty_plays,
-                    hide_plays_without_roles=self.options.hide_plays_without_roles,
                     include_role_tasks=self.options.include_role_tasks,
+                    view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    save_dot_file=self.options.save_dot_file,
                     ony_roles=self.options.only_roles,
+                    save_dot_file=self.options.save_dot_file,
                 )
 
             case "mermaid-flowchart":
@@ -111,14 +116,12 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
                     title=self.options.title,
-                    view=self.options.view,
-                    directive=self.options.renderer_mermaid_directive,
-                    orientation=self.options.renderer_mermaid_orientation,
-                    hide_empty_plays=self.options.hide_empty_plays,
-                    hide_plays_without_roles=self.options.hide_plays_without_roles,
                     include_role_tasks=self.options.include_role_tasks,
+                    view=self.options.view,
                     show_handlers=self.options.show_handlers,
                     ony_roles=self.options.only_roles,
+                    directive=self.options.renderer_mermaid_directive,
+                    orientation=self.options.renderer_mermaid_orientation,
                 )
 
             case "json":
@@ -128,10 +131,8 @@ class PlaybookGrapherCLI(CLI):
                     open_protocol_custom_formats=self.options.open_protocol_custom_formats,
                     output_filename=self.options.output_filename,
                     title=self.options.title,
-                    view=self.options.view,
-                    hide_empty_plays=self.options.hide_empty_plays,
-                    hide_plays_without_roles=self.options.hide_plays_without_roles,
                     include_role_tasks=self.options.include_role_tasks,
+                    view=self.options.view,
                     show_handlers=self.options.show_handlers,
                     ony_roles=self.options.only_roles,
                 )

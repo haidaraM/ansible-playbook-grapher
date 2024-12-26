@@ -42,9 +42,8 @@ class JSONRenderer(Renderer):
         open_protocol_custom_formats: dict[str, str] | None,
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         ony_roles: bool = False,
         **kwargs,
@@ -54,8 +53,6 @@ class JSONRenderer(Renderer):
         for playbook_node in self.playbook_nodes:
             json_builder = JSONPlaybookBuilder(playbook_node, open_protocol_handler)
             json_builder.build_playbook(
-                hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles,
                 show_handlers=show_handlers,
             )
 
@@ -93,15 +90,11 @@ class JSONPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param hide_empty_plays:
-        :param hide_plays_without_roles:
         :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
@@ -111,8 +104,6 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         )
 
         self.json_output = self.playbook_node.to_dict(
-            exclude_empty_plays=hide_empty_plays,
-            exclude_plays_without_roles=hide_plays_without_roles,
             include_handlers=show_handlers,
         )
 

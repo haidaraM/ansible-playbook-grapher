@@ -58,8 +58,6 @@ class Renderer(ABC):
         title: str,
         include_role_tasks: bool = False,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         ony_roles: bool = False,
         **kwargs,
@@ -72,8 +70,6 @@ class Renderer(ABC):
         :param title: The title of the graph.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show the handlers or not.
         :param ony_roles: Only render the roles without the tasks.
         :param kwargs:
@@ -155,14 +151,11 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build the whole playbook
-        :param hide_empty_plays: Whether to hide empty plays or not
-        :param hide_plays_without_roles: Whether to hide plays without roles or not
+
         :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return: The rendered playbook as a string.

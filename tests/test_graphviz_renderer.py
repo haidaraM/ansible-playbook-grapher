@@ -635,7 +635,7 @@ def test_hiding_empty_plays_with_tags_filter_all(
             "--hide-empty-plays",
             "--tags",
             "fake-tag-that-does-not-exist",
-            "--include-role-tasks"
+            "--include-role-tasks",
         ],
     )
 

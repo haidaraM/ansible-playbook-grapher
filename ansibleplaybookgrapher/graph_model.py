@@ -227,6 +227,20 @@ class CompositeNode(Node):
             )
         self._compositions[target_composition].append(node)
 
+    def remove_node(self, target_composition: str, node: Node) -> None:
+        """Remove a node from the target composition.
+
+        :param target_composition: The name of the target composition
+        :param node: The node to remove from the given composition
+        :return:
+        """
+        if target_composition not in self._supported_compositions:
+            msg = f"The target composition '{target_composition}' is unknown. Supported are: {self._supported_compositions}"
+            raise ValueError(
+                msg,
+            )
+        self._compositions[target_composition].remove(node)
+
     def calculate_indices(self):
         """
         Calculate the indices of all nodes based on their composition type.
@@ -392,22 +406,12 @@ class PlaybookNode(CompositeNode):
 
     def plays(
         self,
-        exclude_empty_plays: bool = False,
-        exclude_without_roles: bool = False,
     ) -> list["PlayNode"]:
         """Return the list of plays.
 
-        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
-        :param exclude_without_roles: Whether to exclude the plays that do not have roles
         :return:
         """
         plays = self.get_nodes("plays")
-
-        if exclude_empty_plays:
-            plays = [play for play in plays if not play.is_empty()]
-
-        if exclude_without_roles:
-            plays = [play for play in plays if play.has_node_type(RoleNode)]
 
         return plays
 
@@ -431,47 +435,33 @@ class PlaybookNode(CompositeNode):
 
         return usages
 
-    def filter(
-        self,
-        exclude_empty_plays: bool = False,
-        exclude_plays_without_roles: bool = False,
-        include_handlers: bool = False,
-    ) -> "PlaybookNode":
-        """Return a new playbook node by applying the filters.
+    def exclude_empty_plays(self):
+        """Exclude the empty plays from the playbook.
 
-        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
-        :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
-        :param include_handlers: Whether to include the handlers in the output or not
         :return:
         """
-        new_playbook = PlaybookNode(
-            node_name=self.name,
-            node_id=self.id,
-            when=self.when,
-            raw_object=self.raw_object,
-        )
+        to_exclude = [play for play in self.plays() if play.is_empty()]
 
-        for play in self.plays(
-            exclude_empty_plays=exclude_empty_plays,
-            exclude_without_roles=exclude_plays_without_roles,
-        ):
-            new_playbook.add_node(
-                "plays", play.filter(include_handlers=include_handlers)
-            )
+        for play in to_exclude:
+            self.remove_node("plays", play)
 
-        return new_playbook
+    def exclude_plays_without_roles(self):
+        """Exclude the plays that do not have roles.
+
+        :return:
+        """
+        to_exclude = [play for play in self.plays() if not play.has_node_type(RoleNode)]
+
+        for play in to_exclude:
+            self.remove_node("plays", play)
 
     def to_dict(
         self,
-        exclude_empty_plays: bool = False,
-        exclude_plays_without_roles: bool = False,
         include_handlers: bool = False,
         **kwargs,
     ) -> dict:
         """Return a dictionary representation of this playbook.
 
-        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
-        :param exclude_plays_without_roles: Whether to exclude the plays that do not have roles
         :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
@@ -481,10 +471,7 @@ class PlaybookNode(CompositeNode):
         playbook_dict["plays"] = []
 
         # We need to explicitly get the plays here to exclude the ones we don't need
-        for play in self.plays(
-            exclude_empty_plays=exclude_empty_plays,
-            exclude_without_roles=exclude_plays_without_roles,
-        ):
+        for play in self.plays():
             playbook_dict["plays"].append(
                 play.to_dict(include_handlers=include_handlers, **kwargs)
             )

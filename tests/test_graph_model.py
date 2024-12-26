@@ -119,7 +119,8 @@ def test_to_dict() -> None:
 
     playbook.calculate_indices()
 
-    dict_rep = playbook.to_dict(exclude_empty_plays=True)
+    playbook.exclude_empty_plays()
+    dict_rep = playbook.to_dict()
 
     assert dict_rep["type"] == "PlaybookNode"
     assert dict_rep["location"] is None, "A fake playbook does not have a location"

@@ -46,8 +46,6 @@ class MermaidFlowChartRenderer(Renderer):
         output_filename: str,
         title: str,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         ony_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
@@ -61,8 +59,6 @@ class MermaidFlowChartRenderer(Renderer):
         :param output_filename: The output filename without any extension.
         :param title: The title of the graph.
         :param view: Not supported for the moment.
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show handlers or not.
         :param ony_roles: Only render the roles without the tasks.
         :param directive: Mermaid directive.
@@ -100,8 +96,6 @@ class MermaidFlowChartRenderer(Renderer):
             )
 
             mermaid_code += playbook_builder.build_playbook(
-                hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles,
                 show_handlers=show_handlers,
             )
             link_order = playbook_builder.link_order
@@ -181,16 +175,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :param hide_empty_plays: Whether to hide empty plays or not
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
@@ -208,10 +197,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         self._indentation_level += 1
-        for play_node in self.playbook_node.plays(
-            exclude_empty_plays=hide_empty_plays,
-            exclude_without_roles=hide_plays_without_roles,
-        ):
+
+        for play_node in self.playbook_node.plays():
             self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 

@@ -54,8 +54,6 @@ class GraphvizRenderer(Renderer):
         title: str,
         include_role_tasks: bool = False,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         ony_roles: bool = False,
         **kwargs,
@@ -68,8 +66,6 @@ class GraphvizRenderer(Renderer):
         :param title: The title of the graph.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show the handlers or not.
         :param ony_roles: Only render the roles without the tasks.
         :param kwargs:
@@ -100,8 +96,6 @@ class GraphvizRenderer(Renderer):
 
             # TODO: move these parameters to the constructor
             builder.build_playbook(
-                hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles,
                 show_handlers=show_handlers,
             )
             roles_built.update(builder.roles_built)
@@ -329,15 +323,11 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format.
 
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param show_handlers: Whether to show the handlers or not.
         :return: The text representation of the graphviz dot format for the playbook.
         """
@@ -351,10 +341,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             URL=self.get_node_url(self.playbook_node),
         )
 
-        for play in self.playbook_node.plays(
-            exclude_empty_plays=hide_empty_plays,
-            exclude_without_roles=hide_plays_without_roles,
-        ):
+        for play in self.playbook_node.plays():
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 self.build_play(
                     play, digraph=play_subgraph, show_handlers=show_handlers, **kwargs
