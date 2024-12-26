@@ -167,12 +167,8 @@ class Node:
             "name": self.name,
             "when": self.when,
             "index": self.index,
+            "location": asdict(self.location) if self.location else None,
         }
-
-        if self.location is not None:
-            data["location"] = asdict(self.location)
-        else:
-            data["location"] = None
 
         return data
 
