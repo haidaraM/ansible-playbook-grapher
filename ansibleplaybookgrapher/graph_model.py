@@ -392,18 +392,18 @@ class PlaybookNode(CompositeNode):
 
     def plays(
         self,
-        exclude_empty: bool = False,
+        exclude_empty_plays: bool = False,
         exclude_without_roles: bool = False,
     ) -> list["PlayNode"]:
         """Return the list of plays.
 
-        :param exclude_empty: Whether to exclude the empty plays from the result or not
+        :param exclude_empty_plays: Whether to exclude the empty plays from the result or not
         :param exclude_without_roles: Whether to exclude the plays that do not have roles
         :return:
         """
         plays = self.get_nodes("plays")
 
-        if exclude_empty:
+        if exclude_empty_plays:
             plays = [play for play in plays if not play.is_empty()]
 
         if exclude_without_roles:
@@ -452,7 +452,7 @@ class PlaybookNode(CompositeNode):
         )
 
         for play in self.plays(
-            exclude_empty=exclude_empty_plays,
+            exclude_empty_plays=exclude_empty_plays,
             exclude_without_roles=exclude_plays_without_roles,
         ):
             new_playbook.add_node(
@@ -482,7 +482,7 @@ class PlaybookNode(CompositeNode):
 
         # We need to explicitly get the plays here to exclude the ones we don't need
         for play in self.plays(
-            exclude_empty=exclude_empty_plays,
+            exclude_empty_plays=exclude_empty_plays,
             exclude_without_roles=exclude_plays_without_roles,
         ):
             playbook_dict["plays"].append(

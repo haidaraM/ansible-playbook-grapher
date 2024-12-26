@@ -352,7 +352,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
         for play in self.playbook_node.plays(
-            exclude_empty=hide_empty_plays,
+            exclude_empty_plays=hide_empty_plays,
             exclude_without_roles=hide_plays_without_roles,
         ):
             with self.digraph.subgraph(name=play.name) as play_subgraph:

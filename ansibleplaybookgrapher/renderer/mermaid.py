@@ -209,7 +209,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self._indentation_level += 1
         for play_node in self.playbook_node.plays(
-            exclude_empty=hide_empty_plays,
+            exclude_empty_plays=hide_empty_plays,
             exclude_without_roles=hide_plays_without_roles,
         ):
             self.build_play(play_node, show_handlers=show_handlers, **kwargs)
