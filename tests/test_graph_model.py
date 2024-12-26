@@ -37,6 +37,41 @@ def test_links_structure() -> None:
         assert e in all_links[role], f"The role should be linked to the edge {e}"
 
 
+def test_exclude_empty_plays() -> None:
+    """Test the exclusion of empty plays
+
+    :return:
+    """
+    playbook = PlaybookNode("my-playbook.yml")
+    playbook.add_node("plays", PlayNode("empty"))
+    assert len(playbook.plays()) == 1, "There should be only one play"
+    playbook.exclude_empty_plays()
+    assert len(playbook.plays()) == 0, "There should be no play"
+
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+    play.add_node("tasks", TaskNode("task 1"))
+    playbook.exclude_empty_plays()
+    assert len(playbook.plays()) == 1, "There should be only one play"
+
+
+def test_exclude_plays_without_roles() -> None:
+    """Test the exclusion of plays without roles.
+
+    :return:
+    """
+    playbook = PlaybookNode("my-playbook.yml")
+    play_1 = PlayNode("play 1")
+    play_2 = PlayNode("play 2")
+    play_1.add_node("roles", RoleNode("role 1"))
+    playbook.add_node("plays", play_1)
+    playbook.add_node("plays", play_2)
+
+    assert len(playbook.plays()) == 2, "There should be 2 plays"
+    playbook.exclude_plays_without_roles()
+    assert len(playbook.plays()) == 1, "There should be only one play"
+
+
 def test_get_all_tasks_nodes() -> None:
     """Test the function get_all_tasks_nodes
     :return:
