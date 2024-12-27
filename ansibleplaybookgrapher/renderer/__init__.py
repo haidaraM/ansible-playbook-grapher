@@ -152,7 +152,7 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_playbook(
         self,
-        show_handlers: bool = False,
+        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Build the whole playbook

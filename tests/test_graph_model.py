@@ -137,7 +137,9 @@ def test_has_node_type() -> None:
 
 
 def test_to_dict() -> None:
-    """:return:"""
+    """
+    :return:
+    """
     playbook = PlaybookNode("my-fake-playbook.yml")
     playbook.add_node("plays", PlayNode("empty"))
 
@@ -170,6 +172,28 @@ def test_to_dict() -> None:
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
 
 
+def test_role_to_dict_with_exclusion():
+    """
+    Test the method to_dict of the RoleNode
+    :return:
+    """
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+    role.add_node("tasks", TaskNode("task 2"))
+
+    dict_rep = role.to_dict(include_role_tasks=True)
+
+    assert dict_rep["type"] == "RoleNode"
+    assert dict_rep["name"] == "my_role"
+    assert dict_rep["tasks"][0]["name"] == "task 1"
+    assert dict_rep["tasks"][1]["name"] == "task 2"
+
+    dict_rep = role.to_dict()
+    assert dict_rep["type"] == "RoleNode"
+    assert dict_rep["name"] == "my_role"
+    assert len(dict_rep["tasks"]) == 0
+
+
 def test_remove_node_types():
     """
     Test the method remove_node_types
@@ -186,12 +210,12 @@ def test_remove_node_types():
     assert len(play.roles) == 1, "The role should be there"
     assert len(playbook.get_all_tasks()) == 1, "The task should be there"
 
-    playbook.remove_node_types([RoleNode])
+    playbook.remove_all_nodes_types([RoleNode])
     assert len(playbook.plays()) == 1
     assert len(play.roles) == 0, "The role should have been removed"
     assert len(playbook.get_all_tasks()) == 0, "The task should have been removed"
 
-    playbook.remove_node_types(
+    playbook.remove_all_nodes_types(
         [
             PlayNode,
         ]
@@ -213,5 +237,5 @@ def test_remove_node_types():
     role2.add_node("tasks", BlockNode("My block"))
 
     assert len(playbook.get_all_tasks()) == 11
-    playbook.remove_node_types([TaskNode, BlockNode])
+    playbook.remove_all_nodes_types([TaskNode, BlockNode])
     assert len(playbook.get_all_tasks()) == 0, "All tasks should have been removed"

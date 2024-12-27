@@ -362,8 +362,9 @@ def test_only_roles_with_nested_include_roles(
     include_role_tasks_option: str,
     expected_roles_number: int,
 ) -> None:
-    """Test graphing a playbook with handlers
+    """Test graphing a playbook with the --only-roles flag.
 
+    For the JSON renderer, the empty roles are not excluded by design. As a result, the number of roles is different
     :param request:
     :return:
     """

@@ -35,7 +35,8 @@ JavaScript:
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
   and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
-  To not confuse with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
+  To not confuse
+  with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
 - Export the dot file used to generate the graph with Graphviz.
 
 ## Prerequisites
@@ -82,7 +83,19 @@ At the time of writing, two renderers are supported:
    and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
 3. `json`: Generate a JSON representation of the graph. The corresponding JSON schema
    is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas) The JSON
-   output will give you more flexibility to create your own renderer.
+   output will give you more flexibility to create your own renderer outside the grapher.
+
+Comparison of the renderers:
+
+|                                                    | Graphviz (.svg) | Mermaid Flowchart (.mmd) |                       JSON (.json)                       |
+|----------------------------------------------------|:---------------:|:------------------------:|:--------------------------------------------------------:|
+| Click on nodes to open the files (open protocol)   |        ✅        |            ❌             |          ✅: the file location is in the output           |
+| Highlight on hover                                 |        ✅        |            ❌             |                          ❌: NA                           |
+| Change graph orientation                           |        ❌        |            ✅             |                          ❌: NA                           |
+| Group roles by name                                |        ✅        |            ✅             | ✅: the roles with the same names will have the same IDs. |
+| Hide empty roles                                   |        ✅        |            ✅             |        ❌: The empty roles are kept in the output         |
+| View the output file in your the OS default viewer |        ✅        |            ✅             |                            ✅                             |
+| Tests                                              |    Automatic    |  Manual (need a parser)  |                        Automatic                         |
 
 If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
 renderers.
@@ -117,191 +130,191 @@ title: Ansible Playbook Grapher
 ---
 %%{ init: { "flowchart": { "curve": "bumpX" } } }%%
 flowchart LR
-	%% Start of the playbook 'tests/fixtures/multi-plays.yml'
-	playbook_a27d9bec("tests/fixtures/multi-plays.yml")
-		%% Start of the play 'Play: all (0)'
-		play_d6dd122d["Play: all (0)"]
-		style play_d6dd122d stroke:#ba1a12,fill:#ba1a12,color:#ffffff
-		playbook_a27d9bec --> |"1"| play_d6dd122d
-		linkStyle 0 stroke:#ba1a12,color:#ba1a12
-			pre_task_676cdcb1["[pre_task] Pretask"]
-			style pre_task_676cdcb1 stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"1"| pre_task_676cdcb1
-			linkStyle 1 stroke:#ba1a12,color:#ba1a12
-			pre_task_44476583["[pre_task] Pretask 2"]
-			style pre_task_44476583 stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"2"| pre_task_44476583
-			linkStyle 2 stroke:#ba1a12,color:#ba1a12
-			%% Start of the role '[role] fake_role'
-			play_d6dd122d --> |"3"| role_f0c07194
-			linkStyle 3 stroke:#ba1a12,color:#ba1a12
-			role_f0c07194(["[role] fake_role"])
-			style role_f0c07194 fill:#ba1a12,color:#ffffff,stroke:#ba1a12
-				task_90876ffc["[task] fake_role : Debug 1"]
-				style task_90876ffc stroke:#ba1a12,fill:#ffffff
-				role_f0c07194 --> |"1 [when: ansible_distribution == 'Debian']"| task_90876ffc
-				linkStyle 4 stroke:#ba1a12,color:#ba1a12
-				task_bb701882["[task] fake_role : Debug 2"]
-				style task_bb701882 stroke:#ba1a12,fill:#ffffff
-				role_f0c07194 --> |"2 [when: ansible_distribution == 'Debian']"| task_bb701882
-				linkStyle 5 stroke:#ba1a12,color:#ba1a12
-				task_c00c5d61["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
-				style task_c00c5d61 stroke:#ba1a12,fill:#ffffff
-				role_f0c07194 --> |"3 [when: ansible_distribution == 'Debian']"| task_c00c5d61
-				linkStyle 6 stroke:#ba1a12,color:#ba1a12
-			%% End of the role '[role] fake_role'
-			%% Start of the role '[role] display_some_facts'
-			play_d6dd122d --> |"4"| role_a168caef
-			linkStyle 7 stroke:#ba1a12,color:#ba1a12
-			role_a168caef(["[role] display_some_facts"])
-			style role_a168caef fill:#ba1a12,color:#ffffff,stroke:#ba1a12
-				task_737e2be9["[task] display_some_facts : ansible_architecture"]
-				style task_737e2be9 stroke:#ba1a12,fill:#ffffff
-				role_a168caef --> |"1"| task_737e2be9
-				linkStyle 8 stroke:#ba1a12,color:#ba1a12
-				task_61bbb3fb["[task] display_some_facts : ansible_date_time"]
-				style task_61bbb3fb stroke:#ba1a12,fill:#ffffff
-				role_a168caef --> |"2"| task_61bbb3fb
-				linkStyle 9 stroke:#ba1a12,color:#ba1a12
-				task_3b7308dc["[task] display_some_facts : Specific included task for Debian"]
-				style task_3b7308dc stroke:#ba1a12,fill:#ffffff
-				role_a168caef --> |"3"| task_3b7308dc
-				linkStyle 10 stroke:#ba1a12,color:#ba1a12
-			%% End of the role '[role] display_some_facts'
-			task_c8b76065["[task] Add backport {{backport}}"]
-			style task_c8b76065 stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"5"| task_c8b76065
-			linkStyle 11 stroke:#ba1a12,color:#ba1a12
-			task_f7cebcbb["[task] Install packages"]
-			style task_f7cebcbb stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"6"| task_f7cebcbb
-			linkStyle 12 stroke:#ba1a12,color:#ba1a12
-			post_task_caafa665["[post_task] Posttask"]
-			style post_task_caafa665 stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"7"| post_task_caafa665
-			linkStyle 13 stroke:#ba1a12,color:#ba1a12
-			post_task_b5ade468["[post_task] Posttask 2"]
-			style post_task_b5ade468 stroke:#ba1a12,fill:#ffffff
-			play_d6dd122d --> |"8"| post_task_b5ade468
-			linkStyle 14 stroke:#ba1a12,color:#ba1a12
-		%% End of the play 'Play: all (0)'
-		%% Start of the play 'Play: database (0)'
-		play_d780677e["Play: database (0)"]
-		style play_d780677e stroke:#686864,fill:#686864,color:#ffffff
-		playbook_a27d9bec --> |"2"| play_d780677e
-		linkStyle 15 stroke:#686864,color:#686864
-			%% Start of the role '[role] fake_role'
-			play_d780677e --> |"1"| role_1e6bf323
-			linkStyle 16 stroke:#686864,color:#686864
-			role_1e6bf323(["[role] fake_role"])
-			style role_1e6bf323 fill:#686864,color:#ffffff,stroke:#686864
-				task_3cb17d25["[task] fake_role : Debug 1"]
-				style task_3cb17d25 stroke:#686864,fill:#ffffff
-				role_1e6bf323 --> |"1 [when: ansible_distribution == 'Debian']"| task_3cb17d25
-				linkStyle 17 stroke:#686864,color:#686864
-				task_1f6232f4["[task] fake_role : Debug 2"]
-				style task_1f6232f4 stroke:#686864,fill:#ffffff
-				role_1e6bf323 --> |"2 [when: ansible_distribution == 'Debian']"| task_1f6232f4
-				linkStyle 18 stroke:#686864,color:#686864
-				task_0361ffa3["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
-				style task_0361ffa3 stroke:#686864,fill:#ffffff
-				role_1e6bf323 --> |"3 [when: ansible_distribution == 'Debian']"| task_0361ffa3
-				linkStyle 19 stroke:#686864,color:#686864
-			%% End of the role '[role] fake_role'
-			%% Start of the role '[role] display_some_facts'
-			play_d780677e --> |"2"| role_a8b4b712
-			linkStyle 20 stroke:#686864,color:#686864
-			role_a8b4b712(["[role] display_some_facts"])
-			style role_a8b4b712 fill:#686864,color:#ffffff,stroke:#686864
-				task_c1d17653["[task] display_some_facts : ansible_architecture"]
-				style task_c1d17653 stroke:#686864,fill:#ffffff
-				role_a8b4b712 --> |"1"| task_c1d17653
-				linkStyle 21 stroke:#686864,color:#686864
-				task_8353a2ef["[task] display_some_facts : ansible_date_time"]
-				style task_8353a2ef stroke:#686864,fill:#ffffff
-				role_a8b4b712 --> |"2"| task_8353a2ef
-				linkStyle 22 stroke:#686864,color:#686864
-				task_d8141ffa["[task] display_some_facts : Specific included task for Debian"]
-				style task_d8141ffa stroke:#686864,fill:#ffffff
-				role_a8b4b712 --> |"3"| task_d8141ffa
-				linkStyle 23 stroke:#686864,color:#686864
-			%% End of the role '[role] display_some_facts'
-		%% End of the play 'Play: database (0)'
-		%% Start of the play 'Play: webserver (0)'
-		play_4d3ee472["Play: webserver (0)"]
-		style play_4d3ee472 stroke:#43418b,fill:#43418b,color:#ffffff
-		playbook_a27d9bec --> |"3"| play_4d3ee472
-		linkStyle 24 stroke:#43418b,color:#43418b
-			%% Start of the role '[role] nested_include_role'
-			play_4d3ee472 --> |"1"| role_f611e648
-			linkStyle 25 stroke:#43418b,color:#43418b
-			role_f611e648(["[role] nested_include_role"])
-			style role_f611e648 fill:#43418b,color:#ffffff,stroke:#43418b
-				task_8d2e4414["[task] nested_include_role : Ensure postgresql is at the latest version"]
-				style task_8d2e4414 stroke:#43418b,fill:#ffffff
-				role_f611e648 --> |"1"| task_8d2e4414
-				linkStyle 26 stroke:#43418b,color:#43418b
-				task_d1bc52f0["[task] nested_include_role : Ensure that postgresql is started"]
-				style task_d1bc52f0 stroke:#43418b,fill:#ffffff
-				role_f611e648 --> |"2"| task_d1bc52f0
-				linkStyle 27 stroke:#43418b,color:#43418b
-				%% Start of the role '[role] display_some_facts'
-				role_f611e648 --> |"3 [when: x is not defined]"| role_39ad2981
-				linkStyle 28 stroke:#43418b,color:#43418b
-				role_39ad2981(["[role] display_some_facts"])
-				style role_39ad2981 fill:#43418b,color:#ffffff,stroke:#43418b
-					task_110062e7["[task] display_some_facts : ansible_architecture"]
-					style task_110062e7 stroke:#43418b,fill:#ffffff
-					role_39ad2981 --> |"1"| task_110062e7
-					linkStyle 29 stroke:#43418b,color:#43418b
-					task_05309d40["[task] display_some_facts : ansible_date_time"]
-					style task_05309d40 stroke:#43418b,fill:#ffffff
-					role_39ad2981 --> |"2"| task_05309d40
-					linkStyle 30 stroke:#43418b,color:#43418b
-					task_d8106118["[task] display_some_facts : Specific included task for Debian"]
-					style task_d8106118 stroke:#43418b,fill:#ffffff
-					role_39ad2981 --> |"3"| task_d8106118
-					linkStyle 31 stroke:#43418b,color:#43418b
-				%% End of the role '[role] display_some_facts'
-				%% Start of the role '[role] fake_role'
-				role_f611e648 --> |"4"| role_60085133
-				linkStyle 32 stroke:#43418b,color:#43418b
-				role_60085133(["[role] fake_role"])
-				style role_60085133 fill:#43418b,color:#ffffff,stroke:#43418b
-					task_aa202401["[task] fake_role : Debug 1"]
-					style task_aa202401 stroke:#43418b,fill:#ffffff
-					role_60085133 --> |"1"| task_aa202401
-					linkStyle 33 stroke:#43418b,color:#43418b
-					task_bb8335d6["[task] fake_role : Debug 2"]
-					style task_bb8335d6 stroke:#43418b,fill:#ffffff
-					role_60085133 --> |"2"| task_bb8335d6
-					linkStyle 34 stroke:#43418b,color:#43418b
-					task_7e0c8ed3["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
-					style task_7e0c8ed3 stroke:#43418b,fill:#ffffff
-					role_60085133 --> |"3"| task_7e0c8ed3
-					linkStyle 35 stroke:#43418b,color:#43418b
-				%% End of the role '[role] fake_role'
-			%% End of the role '[role] nested_include_role'
-			%% Start of the role '[role] display_some_facts'
-			play_4d3ee472 --> |"2"| role_ff23a4e9
-			linkStyle 36 stroke:#43418b,color:#43418b
-			role_ff23a4e9(["[role] display_some_facts"])
-			style role_ff23a4e9 fill:#43418b,color:#ffffff,stroke:#43418b
-				task_8fc8f4bc["[task] display_some_facts : ansible_architecture"]
-				style task_8fc8f4bc stroke:#43418b,fill:#ffffff
-				role_ff23a4e9 --> |"1"| task_8fc8f4bc
-				linkStyle 37 stroke:#43418b,color:#43418b
-				task_6a9bc407["[task] display_some_facts : ansible_date_time"]
-				style task_6a9bc407 stroke:#43418b,fill:#ffffff
-				role_ff23a4e9 --> |"2"| task_6a9bc407
-				linkStyle 38 stroke:#43418b,color:#43418b
-				task_b6121d94["[task] display_some_facts : Specific included task for Debian"]
-				style task_b6121d94 stroke:#43418b,fill:#ffffff
-				role_ff23a4e9 --> |"3"| task_b6121d94
-				linkStyle 39 stroke:#43418b,color:#43418b
-			%% End of the role '[role] display_some_facts'
-		%% End of the play 'Play: webserver (0)'
-	%% End of the playbook 'tests/fixtures/multi-plays.yml'
+%% Start of the playbook 'tests/fixtures/multi-plays.yml'
+    playbook_a27d9bec("tests/fixtures/multi-plays.yml")
+%% Start of the play 'Play: all (0)'
+    play_d6dd122d["Play: all (0)"]
+    style play_d6dd122d stroke:#ba1a12, fill:#ba1a12, color:#ffffff
+    playbook_a27d9bec -->|" 1 "| play_d6dd122d
+    linkStyle 0 stroke:#ba1a12, color:#ba1a12
+    pre_task_676cdcb1["[pre_task] Pretask"]
+    style pre_task_676cdcb1 stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 1 "| pre_task_676cdcb1
+    linkStyle 1 stroke:#ba1a12, color:#ba1a12
+    pre_task_44476583["[pre_task] Pretask 2"]
+    style pre_task_44476583 stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 2 "| pre_task_44476583
+    linkStyle 2 stroke:#ba1a12, color:#ba1a12
+%% Start of the role '[role] fake_role'
+    play_d6dd122d -->|" 3 "| role_f0c07194
+    linkStyle 3 stroke:#ba1a12, color:#ba1a12
+    role_f0c07194(["[role] fake_role"])
+    style role_f0c07194 fill:#ba1a12, color:#ffffff, stroke:#ba1a12
+    task_90876ffc["[task] fake_role : Debug 1"]
+    style task_90876ffc stroke:#ba1a12, fill:#ffffff
+    role_f0c07194 -->|" 1 [when: ansible_distribution == 'Debian'] "| task_90876ffc
+    linkStyle 4 stroke:#ba1a12, color:#ba1a12
+    task_bb701882["[task] fake_role : Debug 2"]
+    style task_bb701882 stroke:#ba1a12, fill:#ffffff
+    role_f0c07194 -->|" 2 [when: ansible_distribution == 'Debian'] "| task_bb701882
+    linkStyle 5 stroke:#ba1a12, color:#ba1a12
+    task_c00c5d61["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
+    style task_c00c5d61 stroke:#ba1a12, fill:#ffffff
+    role_f0c07194 -->|" 3 [when: ansible_distribution == 'Debian'] "| task_c00c5d61
+    linkStyle 6 stroke:#ba1a12, color:#ba1a12
+%% End of the role '[role] fake_role'
+%% Start of the role '[role] display_some_facts'
+    play_d6dd122d -->|" 4 "| role_a168caef
+    linkStyle 7 stroke:#ba1a12, color:#ba1a12
+    role_a168caef(["[role] display_some_facts"])
+    style role_a168caef fill:#ba1a12, color:#ffffff, stroke:#ba1a12
+    task_737e2be9["[task] display_some_facts : ansible_architecture"]
+    style task_737e2be9 stroke:#ba1a12, fill:#ffffff
+    role_a168caef -->|" 1 "| task_737e2be9
+    linkStyle 8 stroke:#ba1a12, color:#ba1a12
+    task_61bbb3fb["[task] display_some_facts : ansible_date_time"]
+    style task_61bbb3fb stroke:#ba1a12, fill:#ffffff
+    role_a168caef -->|" 2 "| task_61bbb3fb
+    linkStyle 9 stroke:#ba1a12, color:#ba1a12
+    task_3b7308dc["[task] display_some_facts : Specific included task for Debian"]
+    style task_3b7308dc stroke:#ba1a12, fill:#ffffff
+    role_a168caef -->|" 3 "| task_3b7308dc
+    linkStyle 10 stroke:#ba1a12, color:#ba1a12
+%% End of the role '[role] display_some_facts'
+    task_c8b76065["[task] Add backport {{backport}}"]
+    style task_c8b76065 stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 5 "| task_c8b76065
+    linkStyle 11 stroke:#ba1a12, color:#ba1a12
+    task_f7cebcbb["[task] Install packages"]
+    style task_f7cebcbb stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 6 "| task_f7cebcbb
+    linkStyle 12 stroke:#ba1a12, color:#ba1a12
+    post_task_caafa665["[post_task] Posttask"]
+    style post_task_caafa665 stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 7 "| post_task_caafa665
+    linkStyle 13 stroke:#ba1a12, color:#ba1a12
+    post_task_b5ade468["[post_task] Posttask 2"]
+    style post_task_b5ade468 stroke:#ba1a12, fill:#ffffff
+    play_d6dd122d -->|" 8 "| post_task_b5ade468
+    linkStyle 14 stroke:#ba1a12, color:#ba1a12
+%% End of the play 'Play: all (0)'
+%% Start of the play 'Play: database (0)'
+    play_d780677e["Play: database (0)"]
+    style play_d780677e stroke:#686864, fill:#686864, color:#ffffff
+    playbook_a27d9bec -->|" 2 "| play_d780677e
+    linkStyle 15 stroke:#686864, color:#686864
+%% Start of the role '[role] fake_role'
+    play_d780677e -->|" 1 "| role_1e6bf323
+    linkStyle 16 stroke:#686864, color:#686864
+    role_1e6bf323(["[role] fake_role"])
+    style role_1e6bf323 fill:#686864, color:#ffffff, stroke:#686864
+    task_3cb17d25["[task] fake_role : Debug 1"]
+    style task_3cb17d25 stroke:#686864, fill:#ffffff
+    role_1e6bf323 -->|" 1 [when: ansible_distribution == 'Debian'] "| task_3cb17d25
+    linkStyle 17 stroke:#686864, color:#686864
+    task_1f6232f4["[task] fake_role : Debug 2"]
+    style task_1f6232f4 stroke:#686864, fill:#ffffff
+    role_1e6bf323 -->|" 2 [when: ansible_distribution == 'Debian'] "| task_1f6232f4
+    linkStyle 18 stroke:#686864, color:#686864
+    task_0361ffa3["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
+    style task_0361ffa3 stroke:#686864, fill:#ffffff
+    role_1e6bf323 -->|" 3 [when: ansible_distribution == 'Debian'] "| task_0361ffa3
+    linkStyle 19 stroke:#686864, color:#686864
+%% End of the role '[role] fake_role'
+%% Start of the role '[role] display_some_facts'
+    play_d780677e -->|" 2 "| role_a8b4b712
+    linkStyle 20 stroke:#686864, color:#686864
+    role_a8b4b712(["[role] display_some_facts"])
+    style role_a8b4b712 fill:#686864, color:#ffffff, stroke:#686864
+    task_c1d17653["[task] display_some_facts : ansible_architecture"]
+    style task_c1d17653 stroke:#686864, fill:#ffffff
+    role_a8b4b712 -->|" 1 "| task_c1d17653
+    linkStyle 21 stroke:#686864, color:#686864
+    task_8353a2ef["[task] display_some_facts : ansible_date_time"]
+    style task_8353a2ef stroke:#686864, fill:#ffffff
+    role_a8b4b712 -->|" 2 "| task_8353a2ef
+    linkStyle 22 stroke:#686864, color:#686864
+    task_d8141ffa["[task] display_some_facts : Specific included task for Debian"]
+    style task_d8141ffa stroke:#686864, fill:#ffffff
+    role_a8b4b712 -->|" 3 "| task_d8141ffa
+    linkStyle 23 stroke:#686864, color:#686864
+%% End of the role '[role] display_some_facts'
+%% End of the play 'Play: database (0)'
+%% Start of the play 'Play: webserver (0)'
+    play_4d3ee472["Play: webserver (0)"]
+    style play_4d3ee472 stroke:#43418b, fill:#43418b, color:#ffffff
+    playbook_a27d9bec -->|" 3 "| play_4d3ee472
+    linkStyle 24 stroke:#43418b, color:#43418b
+%% Start of the role '[role] nested_include_role'
+    play_4d3ee472 -->|" 1 "| role_f611e648
+    linkStyle 25 stroke:#43418b, color:#43418b
+    role_f611e648(["[role] nested_include_role"])
+    style role_f611e648 fill:#43418b, color:#ffffff, stroke:#43418b
+    task_8d2e4414["[task] nested_include_role : Ensure postgresql is at the latest version"]
+    style task_8d2e4414 stroke:#43418b, fill:#ffffff
+    role_f611e648 -->|" 1 "| task_8d2e4414
+    linkStyle 26 stroke:#43418b, color:#43418b
+    task_d1bc52f0["[task] nested_include_role : Ensure that postgresql is started"]
+    style task_d1bc52f0 stroke:#43418b, fill:#ffffff
+    role_f611e648 -->|" 2 "| task_d1bc52f0
+    linkStyle 27 stroke:#43418b, color:#43418b
+%% Start of the role '[role] display_some_facts'
+    role_f611e648 -->|" 3 [when: x is not defined] "| role_39ad2981
+    linkStyle 28 stroke:#43418b, color:#43418b
+    role_39ad2981(["[role] display_some_facts"])
+    style role_39ad2981 fill:#43418b, color:#ffffff, stroke:#43418b
+    task_110062e7["[task] display_some_facts : ansible_architecture"]
+    style task_110062e7 stroke:#43418b, fill:#ffffff
+    role_39ad2981 -->|" 1 "| task_110062e7
+    linkStyle 29 stroke:#43418b, color:#43418b
+    task_05309d40["[task] display_some_facts : ansible_date_time"]
+    style task_05309d40 stroke:#43418b, fill:#ffffff
+    role_39ad2981 -->|" 2 "| task_05309d40
+    linkStyle 30 stroke:#43418b, color:#43418b
+    task_d8106118["[task] display_some_facts : Specific included task for Debian"]
+    style task_d8106118 stroke:#43418b, fill:#ffffff
+    role_39ad2981 -->|" 3 "| task_d8106118
+    linkStyle 31 stroke:#43418b, color:#43418b
+%% End of the role '[role] display_some_facts'
+%% Start of the role '[role] fake_role'
+    role_f611e648 -->|" 4 "| role_60085133
+    linkStyle 32 stroke:#43418b, color:#43418b
+    role_60085133(["[role] fake_role"])
+    style role_60085133 fill:#43418b, color:#ffffff, stroke:#43418b
+    task_aa202401["[task] fake_role : Debug 1"]
+    style task_aa202401 stroke:#43418b, fill:#ffffff
+    role_60085133 -->|" 1 "| task_aa202401
+    linkStyle 33 stroke:#43418b, color:#43418b
+    task_bb8335d6["[task] fake_role : Debug 2"]
+    style task_bb8335d6 stroke:#43418b, fill:#ffffff
+    role_60085133 -->|" 2 "| task_bb8335d6
+    linkStyle 34 stroke:#43418b, color:#43418b
+    task_7e0c8ed3["[task] fake_role : Debug 3 with double quote &#34;here&#34; in the name"]
+    style task_7e0c8ed3 stroke:#43418b, fill:#ffffff
+    role_60085133 -->|" 3 "| task_7e0c8ed3
+    linkStyle 35 stroke:#43418b, color:#43418b
+%% End of the role '[role] fake_role'
+%% End of the role '[role] nested_include_role'
+%% Start of the role '[role] display_some_facts'
+    play_4d3ee472 -->|" 2 "| role_ff23a4e9
+    linkStyle 36 stroke:#43418b, color:#43418b
+    role_ff23a4e9(["[role] display_some_facts"])
+    style role_ff23a4e9 fill:#43418b, color:#ffffff, stroke:#43418b
+    task_8fc8f4bc["[task] display_some_facts : ansible_architecture"]
+    style task_8fc8f4bc stroke:#43418b, fill:#ffffff
+    role_ff23a4e9 -->|" 1 "| task_8fc8f4bc
+    linkStyle 37 stroke:#43418b, color:#43418b
+    task_6a9bc407["[task] display_some_facts : ansible_date_time"]
+    style task_6a9bc407 stroke:#43418b, fill:#ffffff
+    role_ff23a4e9 -->|" 2 "| task_6a9bc407
+    linkStyle 38 stroke:#43418b, color:#43418b
+    task_b6121d94["[task] display_some_facts : Specific included task for Debian"]
+    style task_b6121d94 stroke:#43418b, fill:#ffffff
+    role_ff23a4e9 -->|" 3 "| task_b6121d94
+    linkStyle 39 stroke:#43418b, color:#43418b
+%% End of the role '[role] display_some_facts'
+%% End of the play 'Play: webserver (0)'
+%% End of the playbook 'tests/fixtures/multi-plays.yml'
 ```
 
 ```shell
@@ -422,7 +435,7 @@ options:
   --hide-plays-without-roles
                         Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play level and include_role as tasks are
                         considered (no import_role).
-  --include-role-tasks  Include the tasks of the roles in the graph. Applied when parsing the playbooks.
+  --include-role-tasks  Include the tasks of the roles in the graph.
   --only-roles          Only render the roles in the graph (ignoring the tasks).
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
                         The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a
@@ -488,7 +501,8 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
   the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
-- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't entirely
+- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't
+  entirely
   reflect their real order of execution in the playbook. They are displayed at the end of the play and roles, but they
   might be executed before that.
 - Looping on tasks and roles is not supported. The tasks using loop are displayed as a single task.

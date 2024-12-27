@@ -220,7 +220,7 @@ class CompositeNode(Node):
         :return:
         """
         if target_composition not in self.supported_compositions:
-            msg = f"The target composition '{target_composition}' is unknown. Supported ones are: {self.supported_compositions}"
+            msg = f"The node {type(self).__name__} doesn't support '{target_composition}'. The supported ones are: {self.supported_compositions}"
             raise ValueError(
                 msg,
             )
@@ -349,7 +349,7 @@ class CompositeNode(Node):
 
         return False
 
-    def remove_node_types(self, types: list[type]):
+    def remove_all_nodes_types(self, types: list[type]):
         """Exclude all the task nodes from the playbook.
 
         :return:
@@ -359,22 +359,32 @@ class CompositeNode(Node):
                 if isinstance(node, tuple(types)):
                     self.remove_node(target_composition, node)
                 elif isinstance(node, CompositeNode):
-                    node.remove_node_types(types)
+                    node.remove_all_nodes_types(types)
 
-    def to_dict(self, **kwargs) -> dict:
+    def to_dict(self, exclude_compositions: list[str] | None = None, **kwargs) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
-        :return:
+        Caller can eventually pass a list of target compositions to NOT include in the output. If provided, the target
+        compositions will be set to an empty list in the output.
+
+        :param exclude_compositions: List of compositions to exclude from the output.
+        :return: Dictionary representation of the composite node.
         """
         node_dict = super().to_dict(**kwargs)
+        exclude_compositions = exclude_compositions or []
+        # checking the exclude_compositions
+        # TODO: check if this is really needed
+        list(map(self._check_target_composition, exclude_compositions))
 
         for composition, nodes in self.compositions.items():
-            nodes_dict_list = []
-            for node in nodes:
-                nodes_dict_list.append(node.to_dict(**kwargs))
-
-            node_dict[composition] = nodes_dict_list
+            if composition in exclude_compositions:
+                node_dict[composition] = []
+            else:
+                nodes_dict_list = []
+                for node in nodes:
+                    nodes_dict_list.append(node.to_dict(**kwargs))
+                node_dict[composition] = nodes_dict_list
 
         return node_dict
 
@@ -467,33 +477,25 @@ class PlaybookNode(CompositeNode):
 
     def to_dict(
         self,
-        include_handlers: bool = False,
+        exclude_compositions: list[str] | None = None,
         **kwargs,
     ) -> dict:
         """Return a dictionary representation of this playbook.
 
-        :param include_handlers: Whether to include the handlers in the output or not
+        :param exclude_compositions: List of compositions to exclude from the output.
         :param kwargs:
         :return:
         """
-        # TODO: optimize to avoid calling to dict multiple times (filter the plays and then call to_dict)
-        playbook_dict = super().to_dict(include_handlers=include_handlers, **kwargs)
-        playbook_dict["plays"] = []
-
-        # We need to explicitly get the plays here to exclude the ones we don't need
-        for play in self.plays():
-            playbook_dict["plays"].append(
-                play.to_dict(include_handlers=include_handlers, **kwargs)
-            )
+        playbook_dict = super().to_dict(**kwargs)
 
         return playbook_dict
 
-    def exclude_tasks(self):
+    def exclude_tasks_node(self):
         """Exclude all the task nodes from the playbook.
 
         :return:
         """
-        self.remove_node_types([TaskNode])
+        self.remove_all_nodes_types([TaskNode])
 
 
 class PlayNode(CompositeNode):
@@ -573,19 +575,31 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
+    def to_dict(
+        self,
+        exclude_compositions: list[str] | None = None,
+        include_handlers: bool = False,
+        **kwargs,
+    ) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
+        :param exclude_compositions: List of compositions to exclude from the output.
+        :param include_handlers: Whether to include the handlers in the output or not
         :return:
         """
+        exclude_compositions = exclude_compositions or []
+        if not include_handlers:
+            exclude_compositions.append("handlers")
 
-        data = super().to_dict(include_handlers=include_handlers, **kwargs)
+        data = super().to_dict(
+            exclude_compositions=exclude_compositions,
+            include_handlers=include_handlers,
+            **kwargs,
+        )
+
         data["hosts"] = self.hosts
         data["colors"] = {"main": self.colors[0], "font": self.colors[1]}
-
-        if not include_handlers:
-            data["handlers"] = []
 
         return data
 
@@ -720,19 +734,37 @@ class RoleNode(LoopMixin, CompositeNode):
 
         return super().has_loop()
 
-    def to_dict(self, include_handlers: bool = False, **kwargs) -> dict:
+    def to_dict(
+        self,
+        exclude_compositions: list[str] | None = None,
+        include_role_tasks: bool = False,
+        include_handlers: bool = False,
+        **kwargs,
+    ) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
+        :param exclude_compositions: List of compositions to exclude from the output.
+        :param include_role_tasks: Whether to include the role tasks in the output or not.
         :param include_handlers: Whether to include the handlers in the output or not
         :param kwargs:
         :return:
         """
-        node_dict = super().to_dict(**kwargs)
-        node_dict["include_role"] = self.include_role
+        exclude_compositions = exclude_compositions or []
+
+        if not include_role_tasks:
+            exclude_compositions.append("tasks")
 
         if not include_handlers:
-            node_dict["handlers"] = []
+            exclude_compositions.append("handlers")
+
+        node_dict = super().to_dict(
+            exclude_compositions=exclude_compositions,
+            include_handlers=include_handlers,
+            include_role_tasks=include_role_tasks,
+            **kwargs,
+        )
+        node_dict["include_role"] = self.include_role
 
         return node_dict
 
@@ -762,5 +794,5 @@ class RoleNode(LoopMixin, CompositeNode):
 
         :return:
         """
-
+        # TODO: check if this is really needed
         return not super().is_empty() or self.has_loop()

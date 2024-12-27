@@ -323,7 +323,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        show_handlers: bool = False,
+        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format.

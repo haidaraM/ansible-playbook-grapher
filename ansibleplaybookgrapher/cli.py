@@ -90,7 +90,7 @@ class PlaybookGrapherCLI(CLI):
                 p.exclude_plays_without_roles()
 
             if self.options.only_roles:
-                p.exclude_tasks()
+                p.exclude_tasks_node()
 
             p.calculate_indices()
 

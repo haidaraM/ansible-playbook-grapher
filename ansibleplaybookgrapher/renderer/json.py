@@ -52,7 +52,10 @@ class JSONRenderer(Renderer):
 
         for playbook_node in self.playbook_nodes:
             json_builder = JSONPlaybookBuilder(
-                playbook_node, open_protocol_handler, only_roles=only_roles
+                playbook_node,
+                open_protocol_handler,
+                only_roles=only_roles,
+                include_role_tasks=include_role_tasks,
             )
             json_builder.build_playbook(
                 show_handlers=show_handlers,
@@ -62,8 +65,8 @@ class JSONRenderer(Renderer):
 
         output = {
             "version": 1,
-            "playbooks": playbooks,
             "title": title,
+            "playbooks": playbooks,
         }
 
         final_output_path_file = Path(f"{output_filename}.json")
@@ -86,15 +89,15 @@ class JSONRenderer(Renderer):
 
 class JSONPlaybookBuilder(PlaybookBuilder):
     def __init__(
-        self, playbook_node: PlaybookNode, open_protocol_handler: str, only_roles: bool
+        self, playbook_node: PlaybookNode, open_protocol_handler: str, **kwargs
     ) -> None:
-        super().__init__(playbook_node, open_protocol_handler, only_roles=only_roles)
+        super().__init__(playbook_node, open_protocol_handler, **kwargs)
 
         self.json_output = {}
 
     def build_playbook(
         self,
-        show_handlers: bool = False,
+        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Build a playbook.
@@ -108,8 +111,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         )
 
         self.json_output = self.playbook_node.to_dict(
-            include_handlers=show_handlers,
-            only_roles=self.only_roles,
+            include_handlers=show_handlers, include_role_tasks=self.include_role_tasks
         )
 
         return json.dumps(self.json_output)

@@ -59,6 +59,7 @@ class MermaidFlowChartRenderer(Renderer):
         :param open_protocol_custom_formats: Not supported for the moment.
         :param output_filename: The output filename without any extension.
         :param title: The title of the graph.
+        :param include_role_tasks: Whether to include the tasks of the roles or not.
         :param view: Not supported for the moment.
         :param show_handlers: Whether to show handlers or not.
         :param only_roles: Only render the roles without the tasks.
