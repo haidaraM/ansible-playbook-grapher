@@ -203,7 +203,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         self._indentation_level += 1
 
-        for play_node in self.playbook_node.plays():
+        for play_node in self.playbook_node.plays:
             self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 

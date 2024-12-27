@@ -87,15 +87,15 @@ At the time of writing, two renderers are supported:
 
 Comparison of the renderers:
 
-|                                                    | Graphviz (.svg) | Mermaid Flowchart (.mmd) |                       JSON (.json)                       |
-|----------------------------------------------------|:---------------:|:------------------------:|:--------------------------------------------------------:|
-| Click on nodes to open the files (open protocol)   |        ✅        |            ❌             |          ✅: the file location is in the output           |
-| Highlight on hover                                 |        ✅        |            ❌             |                          ❌: NA                           |
-| Change graph orientation                           |        ❌        |            ✅             |                          ❌: NA                           |
-| Group roles by name                                |        ✅        |            ✅             | ✅: the roles with the same names will have the same IDs. |
-| Hide empty roles                                   |        ✅        |            ✅             |        ❌: The empty roles are kept in the output         |
-| View the output file in your the OS default viewer |        ✅        |            ✅             |                            ✅                             |
-| Tests                                              |    Automatic    |  Manual (need a parser)  |                        Automatic                         |
+|                                                          | `graphviz` (.svg) | `mermaid-flowchart` (.mmd) |                      `json` (.json)                      |
+|----------------------------------------------------------|:-----------------:|:--------------------------:|:--------------------------------------------------------:|
+| Click on nodes to open the files (open protocol handler) |         ✅         |             ❌              |          ✅: the file location is in the output           |
+| Highlight on hover                                       |         ✅         |             ❌              |                          ❌: NA                           |
+| Change graph orientation                                 |         ❌         |             ✅              |                          ❌: NA                           |
+| Group roles by name                                      |         ✅         |             ✅              | ✅: the roles with the same names will have the same IDs. |
+| Hide empty roles                                         |         ✅         |             ✅              |        ❌: The empty roles are kept in the output         |
+| View the output file in your the OS default viewer       |         ✅         |             ✅              |                            ✅                             |
+| Tests of the output                                      |     Automatic     |   Manual (need a parser)   |                        Automatic                         |
 
 If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
 renderers.

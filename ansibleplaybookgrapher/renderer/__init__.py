@@ -79,7 +79,7 @@ class Renderer(ABC):
 
 class PlaybookBuilder(ABC):
     """This is the base class to inherit from by the renderer to build a single Playbook in the target format.
-    It provides some methods that need to be implemented.
+    It provides some methods that MUST be implemented.
     """
 
     def __init__(

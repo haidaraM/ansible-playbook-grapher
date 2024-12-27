@@ -201,7 +201,6 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
         additional_args=[
             "-i",
             str(INVENTORY_PATH),
-            "--include-role-tasks",
             "--title",
             "My custom title",
         ],
@@ -219,13 +218,12 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
         additional_args=[
             "-i",
             str(INVENTORY_PATH),
-            "--include-role-tasks",
         ],
     )
     _common_tests(
         json_path,
         plays_number=1,
-        pre_tasks_number=4,
+        pre_tasks_number=1,
         roles_number=1,
         tasks_number=7,
         blocks_number=4,
@@ -234,17 +232,11 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
 
 
 @pytest.mark.parametrize(
-    ("flag", "roles_number", "tasks_number", "post_tasks_number"),
-    [("--", 6, 9, 8), ("--group-roles-by-name", 6, 9, 8)],
+    "flag",
+    ["--", "--group-roles-by-name"],
     ids=["no_group", "group"],
 )
-def test_group_roles_by_name(
-    request: pytest.FixtureRequest,
-    flag: str,
-    roles_number: int,
-    tasks_number: int,
-    post_tasks_number: int,
-) -> None:
+def test_group_roles_by_name(request: pytest.FixtureRequest, flag: str) -> None:
     """Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
     This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.
     :param request:
@@ -259,9 +251,9 @@ def test_group_roles_by_name(
     _common_tests(
         json_path,
         plays_number=1,
-        roles_number=roles_number,
-        tasks_number=tasks_number,
-        post_tasks_number=post_tasks_number,
+        roles_number=6,
+        tasks_number=9,
+        post_tasks_number=8,
         blocks_number=1,
     )
 

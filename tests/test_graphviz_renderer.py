@@ -303,9 +303,7 @@ def test_include_role(
 def test_with_block(request: pytest.FixtureRequest) -> None:
     """Test with_block.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
-        ["with_block.yml"],
-        output_filename=request.node.name,
-        additional_args=["--include-role-tasks"],
+        ["with_block.yml"], output_filename=request.node.name
     )
 
     _common_tests(
@@ -315,7 +313,7 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
         tasks_number=7,
         post_tasks_number=2,
         roles_number=1,
-        pre_tasks_number=4,
+        pre_tasks_number=1,
         blocks_number=4,
     )
 

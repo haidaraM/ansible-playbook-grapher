@@ -53,7 +53,7 @@ class JSONRenderer(Renderer):
         for playbook_node in self.playbook_nodes:
             json_builder = JSONPlaybookBuilder(
                 playbook_node,
-                open_protocol_handler,
+                open_protocol_handler="", # Not supported
                 only_roles=only_roles,
                 include_role_tasks=include_role_tasks,
             )

@@ -94,7 +94,6 @@ class GraphvizRenderer(Renderer):
                 only_roles=only_roles,
             )
 
-            # TODO: move these parameters to the constructor
             builder.build_playbook(
                 show_handlers=show_handlers,
             )
@@ -341,7 +340,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             URL=self.get_node_url(self.playbook_node),
         )
 
-        for play in self.playbook_node.plays():
+        for play in self.playbook_node.plays:
             with self.digraph.subgraph(name=play.name) as play_subgraph:
                 self.build_play(
                     play, digraph=play_subgraph, show_handlers=show_handlers, **kwargs

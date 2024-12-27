@@ -44,15 +44,15 @@ def test_exclude_empty_plays() -> None:
     """
     playbook = PlaybookNode("my-playbook.yml")
     playbook.add_node("plays", PlayNode("empty"))
-    assert len(playbook.plays()) == 1, "There should be only one play"
+    assert len(playbook.plays) == 1, "There should be only one play"
     playbook.exclude_empty_plays()
-    assert len(playbook.plays()) == 0, "There should be no play"
+    assert len(playbook.plays) == 0, "There should be no play"
 
     play = PlayNode("play")
     playbook.add_node("plays", play)
     play.add_node("tasks", TaskNode("task 1"))
     playbook.exclude_empty_plays()
-    assert len(playbook.plays()) == 1, "There should be only one play"
+    assert len(playbook.plays) == 1, "There should be only one play"
 
 
 def test_exclude_plays_without_roles() -> None:
@@ -67,9 +67,9 @@ def test_exclude_plays_without_roles() -> None:
     playbook.add_node("plays", play_1)
     playbook.add_node("plays", play_2)
 
-    assert len(playbook.plays()) == 2, "There should be 2 plays"
+    assert len(playbook.plays) == 2, "There should be 2 plays"
     playbook.exclude_plays_without_roles()
-    assert len(playbook.plays()) == 1, "There should be only one play"
+    assert len(playbook.plays) == 1, "There should be only one play"
 
 
 def test_get_all_tasks_nodes() -> None:
@@ -206,12 +206,12 @@ def test_remove_node_types():
     role = RoleNode("my_role")
     role.add_node("tasks", TaskNode("task 1"))
     play.add_node("roles", role)
-    assert len(playbook.plays()) == 1
+    assert len(playbook.plays) == 1
     assert len(play.roles) == 1, "The role should be there"
     assert len(playbook.get_all_tasks()) == 1, "The task should be there"
 
     playbook.remove_all_nodes_types([RoleNode])
-    assert len(playbook.plays()) == 1
+    assert len(playbook.plays) == 1
     assert len(play.roles) == 0, "The role should have been removed"
     assert len(playbook.get_all_tasks()) == 0, "The task should have been removed"
 
@@ -220,7 +220,7 @@ def test_remove_node_types():
             PlayNode,
         ]
     )
-    assert len(playbook.plays()) == 0, "The play should have been removed"
+    assert len(playbook.plays) == 0, "The play should have been removed"
 
     assert playbook.is_empty(), "The playbook should be empty"
 

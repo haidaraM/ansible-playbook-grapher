@@ -424,6 +424,7 @@ class PlaybookNode(CompositeNode):
                 column=1,
             )
 
+    @property
     def plays(
         self,
     ) -> list["PlayNode"]:
@@ -431,9 +432,8 @@ class PlaybookNode(CompositeNode):
 
         :return:
         """
-        plays = self.get_nodes("plays")
 
-        return plays
+        return self.get_nodes("plays")
 
     def roles_usage(self) -> dict["RoleNode", set["PlayNode"]]:
         """For each role in the playbook, get the uniq plays that reference the role.
@@ -460,7 +460,7 @@ class PlaybookNode(CompositeNode):
 
         :return:
         """
-        to_exclude = [play for play in self.plays() if play.is_empty()]
+        to_exclude = [play for play in self.plays if play.is_empty()]
 
         for play in to_exclude:
             self.remove_node("plays", play)
@@ -470,25 +470,10 @@ class PlaybookNode(CompositeNode):
 
         :return:
         """
-        to_exclude = [play for play in self.plays() if not play.has_node_type(RoleNode)]
+        to_exclude = [play for play in self.plays if not play.has_node_type(RoleNode)]
 
         for play in to_exclude:
             self.remove_node("plays", play)
-
-    def to_dict(
-        self,
-        exclude_compositions: list[str] | None = None,
-        **kwargs,
-    ) -> dict:
-        """Return a dictionary representation of this playbook.
-
-        :param exclude_compositions: List of compositions to exclude from the output.
-        :param kwargs:
-        :return:
-        """
-        playbook_dict = super().to_dict(**kwargs)
-
-        return playbook_dict
 
     def exclude_tasks_node(self):
         """Exclude all the task nodes from the playbook.
@@ -737,16 +722,16 @@ class RoleNode(LoopMixin, CompositeNode):
     def to_dict(
         self,
         exclude_compositions: list[str] | None = None,
-        include_role_tasks: bool = False,
         include_handlers: bool = False,
+        include_role_tasks: bool = False,
         **kwargs,
     ) -> dict:
         """Return a dictionary representation of this composite node. This representation is not meant to get the
         original object back.
 
         :param exclude_compositions: List of compositions to exclude from the output.
-        :param include_role_tasks: Whether to include the role tasks in the output or not.
         :param include_handlers: Whether to include the handlers in the output or not
+        :param include_role_tasks: Whether to include the role tasks in the output or not.
         :param kwargs:
         :return:
         """
