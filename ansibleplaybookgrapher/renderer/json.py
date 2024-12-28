@@ -38,8 +38,8 @@ class JSONRenderer(Renderer):
 
     def render(
         self,
-        open_protocol_handler: str | None,
-        open_protocol_custom_formats: dict[str, str] | None,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
         include_role_tasks: bool = False,
@@ -53,7 +53,8 @@ class JSONRenderer(Renderer):
         for playbook_node in self.playbook_nodes:
             json_builder = JSONPlaybookBuilder(
                 playbook_node,
-                open_protocol_handler="", # Not supported
+                open_protocol_handler=open_protocol_handler,
+                open_protocol_custom_formats=open_protocol_custom_formats,
                 only_roles=only_roles,
                 include_role_tasks=include_role_tasks,
             )

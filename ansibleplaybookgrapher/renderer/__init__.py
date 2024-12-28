@@ -85,7 +85,7 @@ class PlaybookBuilder(ABC):
     def __init__(
         self,
         playbook_node: PlaybookNode,
-        open_protocol_handler: str,
+        open_protocol_handler: str | None,
         open_protocol_custom_formats: dict[str, str] | None = None,
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
@@ -110,9 +110,11 @@ class PlaybookBuilder(ABC):
         self.only_roles = only_roles
 
         self.open_protocol_handler = open_protocol_handler
+        self.open_protocol_formats = None
         # Merge the two dicts
         formats = {**OPEN_PROTOCOL_HANDLERS, "custom": open_protocol_custom_formats}
-        self.open_protocol_formats = formats[self.open_protocol_handler]
+        if self.open_protocol_handler:
+            self.open_protocol_formats = formats[self.open_protocol_handler]
 
     def build_node(self, node: Node, color: str, fontcolor: str, **kwargs) -> None:
         """Build a generic node.

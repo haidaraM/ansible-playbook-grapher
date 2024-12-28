@@ -243,12 +243,15 @@ def test_include_role_parsing_with_exclude_roles(
         exclude_roles=exclude_roles,
     )
     playbook_node = parser.parse()
+    all_roles = get_all_roles([playbook_node])
 
     # If the exclude roles option is set, then there should be no roles with the names identical to the option arguments
-    if exclude_roles is not None:
-        all_roles = get_all_roles([playbook_node])
+    if exclude_roles:
         role_names = list(map(lambda role_node: role_node.name, all_roles))
         assert all(exclude_role not in role_names for exclude_role in exclude_roles)
+    else:
+        # If the exclude roles option is not set, then all roles should be included
+        assert len(all_roles) == 6
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_block.yml"]], indirect=True)
@@ -333,7 +336,6 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 @pytest.mark.parametrize("grapher_cli", [["blocks_with_role.yml"]], indirect=True)
 def test_block_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     """Test the parsing of a playbook with blocks and roles.
-
 
     :param grapher_cli:
     :return:
