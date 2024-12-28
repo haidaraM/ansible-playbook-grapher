@@ -38,23 +38,27 @@ class JSONRenderer(Renderer):
 
     def render(
         self,
-        open_protocol_handler: str | None,
-        open_protocol_custom_formats: dict[str, str] | None,
+        open_protocol_handler: str,
+        open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        only_roles: bool = False,
         **kwargs,
     ) -> str:
         playbooks = []
 
         for playbook_node in self.playbook_nodes:
-            json_builder = JSONPlaybookBuilder(playbook_node, open_protocol_handler)
+            json_builder = JSONPlaybookBuilder(
+                playbook_node,
+                open_protocol_handler=open_protocol_handler,
+                open_protocol_custom_formats=open_protocol_custom_formats,
+                only_roles=only_roles,
+                include_role_tasks=include_role_tasks,
+            )
             json_builder.build_playbook(
-                hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles,
                 show_handlers=show_handlers,
             )
 
@@ -62,8 +66,8 @@ class JSONRenderer(Renderer):
 
         output = {
             "version": 1,
-            "playbooks": playbooks,
             "title": title,
+            "playbooks": playbooks,
         }
 
         final_output_path_file = Path(f"{output_filename}.json")
@@ -85,22 +89,20 @@ class JSONRenderer(Renderer):
 
 
 class JSONPlaybookBuilder(PlaybookBuilder):
-    def __init__(self, playbook_node: PlaybookNode, open_protocol_handler: str) -> None:
-        super().__init__(playbook_node, open_protocol_handler)
+    def __init__(
+        self, playbook_node: PlaybookNode, open_protocol_handler: str, **kwargs
+    ) -> None:
+        super().__init__(playbook_node, open_protocol_handler, **kwargs)
 
         self.json_output = {}
 
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
-        show_handlers: bool = False,
+        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param hide_empty_plays:
-        :param hide_plays_without_roles:
         :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
@@ -110,9 +112,7 @@ class JSONPlaybookBuilder(PlaybookBuilder):
         )
 
         self.json_output = self.playbook_node.to_dict(
-            exclude_empty_plays=hide_empty_plays,
-            exclude_plays_without_roles=hide_plays_without_roles,
-            include_handlers=show_handlers,
+            include_handlers=show_handlers, include_role_tasks=self.include_role_tasks
         )
 
         return json.dumps(self.json_output)

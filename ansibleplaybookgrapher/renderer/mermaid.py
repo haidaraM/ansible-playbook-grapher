@@ -45,10 +45,10 @@ class MermaidFlowChartRenderer(Renderer):
         open_protocol_custom_formats: dict[str, str],
         output_filename: str,
         title: str,
+        include_role_tasks: bool = False,
         view: bool = False,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
+        only_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
@@ -59,10 +59,10 @@ class MermaidFlowChartRenderer(Renderer):
         :param open_protocol_custom_formats: Not supported for the moment.
         :param output_filename: The output filename without any extension.
         :param title: The title of the graph.
+        :param include_role_tasks: Whether to include the tasks of the roles or not.
         :param view: Not supported for the moment.
-        :param hide_empty_plays: Whether to hide empty plays or not when rendering the graph.
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not.
         :param show_handlers: Whether to show handlers or not.
+        :param only_roles: Only render the roles without the tasks.
         :param directive: Mermaid directive.
         :param orientation: Mermaid graph orientation.
         :param kwargs:
@@ -94,11 +94,11 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_usage=self.roles_usage,
                 roles_built=roles_built,
                 link_order=link_order,
+                include_role_tasks=include_role_tasks,
+                only_roles=only_roles,
             )
 
             mermaid_code += playbook_builder.build_playbook(
-                hide_empty_plays=hide_empty_plays,
-                hide_plays_without_roles=hide_plays_without_roles,
                 show_handlers=show_handlers,
             )
             link_order = playbook_builder.link_order
@@ -158,6 +158,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         open_protocol_custom_formats: dict[str, str],
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
+        include_role_tasks: bool,
+        only_roles: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -166,6 +168,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             open_protocol_custom_formats,
             roles_usage,
             roles_built,
+            include_role_tasks=include_role_tasks,
+            only_roles=only_roles,
         )
 
         self.mermaid_code = ""
@@ -176,16 +180,11 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        hide_empty_plays: bool = False,
-        hide_plays_without_roles: bool = False,
         show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
-        :param hide_empty_plays: Whether to hide empty plays or not
-        :param hide_plays_without_roles: Whether to hide plays without any roles or not
         :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
@@ -203,10 +202,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         self._indentation_level += 1
-        for play_node in self.playbook_node.plays(
-            exclude_empty=hide_empty_plays,
-            exclude_without_roles=hide_plays_without_roles,
-        ):
+
+        for play_node in self.playbook_node.plays:
             self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 
@@ -366,14 +363,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         # Role tasks
-        self._indentation_level += 1
-        for role_task in role_node.tasks:
-            self.build_node(
-                node=role_task,
-                color=node_color,
-                fontcolor=fontcolor,
-            )
-        self._indentation_level -= 1
+        if self.include_role_tasks:
+            self._indentation_level += 1
+            for role_task in role_node.tasks:
+                self.build_node(
+                    node=role_task,
+                    color=node_color,
+                    fontcolor=fontcolor,
+                )
+            self._indentation_level -= 1
 
         self.add_comment(f"End of the role '{role_node.display_name()}'")
 

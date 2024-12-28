@@ -2,17 +2,27 @@
 
 ## What's Changed
 
-* feat: Add the handlers to the graph with `--show-handlers` (**the initial support for handlers**). They are by default added
-  at the end of the play and roles only. This might change in the future to actually reflect the handlers' behavior.
-* Changes the shape of the graphviz node to make it consistent with Mermaid. The tasks will be rectangle instead of
-  `octagon`: https://graphviz.org/doc/info/shapes.html
-* Refactor how the nodes and tasks indices are computed given we can now add handlers after all the tasks are parsed.
-* Add a new `display_name()` method to the node for a friendly name for the graph. This removes passing the
-  `node_label_prefix` in multiple places.
-* Remove the play name from the edge going from playbook to the plays. This was not consistent with the other edges.
+* feat: Add the handlers to the graph with `--show-handlers` (**initial support for handlers**). They are by default
+  added at the end of the play and roles only. This might change in the future to actually reflect the handlers' behavior.
+* **Changes the shape of the graphviz node to make it consistent with Mermaid. The tasks will be rectangle instead of
+  `octagon`: https://graphviz.org/doc/info/shapes.html**
+* **fix: Remove the play name from the edge going from playbook to the plays. This was not consistent with the other edges.**
 * feat: Add a new option `--title` to add a title to the graph by @haidaraM
   in https://github.com/haidaraM/ansible-playbook-grapher/pull/229. Default to 'Ansible Playbook Grapher'. The graphviz
   renderer will now use this as the title (label). The Mermaid renderer already has a title.
+* **fix: The tags on the role itself should not be evaluated. Instead, what we care about is the tasks (they inherit the
+  tags set on the roles).** More
+  info [here.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_tags.html#adding-tags-to-roles)
+* "Empty roles" are no longer displayed by default. An empty role is a role with no tasks (after applying the tags
+  filters, for example). This is the same behavior as the option `--hide-empty-plays` but with roles. **I will eventually
+  drop `--hide-empty-plays` to make this the default behavior in the future.**
+* docs: Add a comparison matrix for the different renderers
+* (Internal) Moved some flags out of the parser to the renderer instead. The whole playbook and all the tasks and
+  roles (except the excluded ones) are always parsed. The renderer(s) will decide later what do based on the flags
+* (Internal) Refactor how the nodes and tasks indices are computed given we can now add handlers after all the tasks are
+  parsed.
+* (Internal) Add a new `display_name()` method to the node for a friendly name for the graph. This removes passing the
+  `node_label_prefix` in multiple places.
 
 **Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.7.0...v2.8.0
 

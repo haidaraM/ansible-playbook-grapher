@@ -35,7 +35,8 @@ JavaScript:
   Lastly, you can provide your own protocol formats
   with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
   and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
-  To not confuse with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
+  To not confuse
+  with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
 - Export the dot file used to generate the graph with Graphviz.
 
 ## Prerequisites
@@ -82,7 +83,19 @@ At the time of writing, two renderers are supported:
    and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
 3. `json`: Generate a JSON representation of the graph. The corresponding JSON schema
    is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas) The JSON
-   output will give you more flexibility to create your own renderer.
+   output will give you more flexibility to create your own renderer outside the grapher.
+
+Comparison of the renderers:
+
+|                                                          | `graphviz` (.svg) | `mermaid-flowchart` (.mmd) |                      `json` (.json)                      |
+|----------------------------------------------------------|:-----------------:|:--------------------------:|:--------------------------------------------------------:|
+| Click on nodes to open the files (open protocol handler) |         ✅         |             ❌              |          ✅: the file location is in the output           |
+| Highlight on hover                                       |         ✅         |             ❌              |                          ❌: NA                           |
+| Change graph orientation                                 |         ❌         |             ✅              |                          ❌: NA                           |
+| Group roles by name                                      |         ✅         |             ✅              | ✅: the roles with the same names will have the same IDs. |
+| Hide empty roles                                         |         ✅         |             ✅              |        ❌: The empty roles are kept in the output         |
+| View the output file in your the OS default viewer       |         ✅         |             ✅              |                            ✅                             |
+| Tests of the output                                      |     Automatic     |   Manual (need a parser)   |                        Automatic                         |
 
 If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
 renderers.
@@ -404,68 +417,154 @@ usage: ansible-playbook-grapher [-h] [-v] [--exclude-roles EXCLUDE_ROLES] [--onl
                                 [--renderer {graphviz,mermaid-flowchart,json}]
                                 [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
                                 [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version] [--hide-plays-without-roles]
-                                [--hide-empty-plays] [--show-handlers] [-t TAGS] [--skip-tags SKIP_TAGS] [--vault-id VAULT_IDS] [-J |
-                                --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
+                                [--hide-empty-plays] [--title TITLE] [--show-handlers] [-t TAGS] [--skip-tags SKIP_TAGS]
+                                [--vault-id VAULT_IDS] [-J | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
                                 playbooks [playbooks ...]
 
 Make graphs from your Ansible Playbooks.
 
 positional arguments:
-  playbooks             Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in collections.
+  playbooks             Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in
+                        collections.
 
 options:
   --exclude-roles EXCLUDE_ROLES
-			Specify file path or comma separated list of roles, which should be excluded. This argument may be specified multiple times.
+                        Specify file path or comma separated list of roles, which should be excluded. This argument may be specified
+                        multiple times.
   --group-roles-by-name
-                        When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the same names. Default: False
+                        When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the
+                        same names. Default: False
   --hide-empty-plays    Hide the plays that end up with no tasks in the graph (after applying the tags filter).
   --hide-plays-without-roles
-                        Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play level and include_role as tasks are
-                        considered (no import_role).
-  --include-role-tasks  Include the tasks of the roles in the graph. Applied when parsing the playbooks.
-  --only-roles          Only display the roles in the graph (ignoring the tasks)
+                        Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play
+                        level and include_role as tasks are considered (no import_role).
+  --include-role-tasks  Include the tasks of the roles in the graph. Default: False
+  --only-roles          Only render the roles in the graph (ignoring the tasks)
   --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
-                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to custom. You should provide a
-                        JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to open folders (roles) inside the browser and files
-                        (tasks) in vscode, set it to: '{"file": "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'. path: the absolute path to the
-                        file containing the the plays/tasks/roles. line/column: the position of the plays/tasks/roles in the file. You can optionally add the
-                        attribute "remove_from_path" to remove some parts of the path if you want relative paths.
+                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to
+                        custom. You should provide a JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to
+                        open folders (roles) inside the browser and files (tasks) in vscode, set it to: '{"file":
+                        "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'. path: the absolute path to the file containing
+                        the the plays/tasks/roles. line/column: the position of the plays/tasks/roles in the file. You can optionally
+                        add the attribute "remove_from_path" to remove some parts of the path if you want relative paths.
   --open-protocol-handler {default,vscode,custom}
-                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your SVG viewer must support
-                        double-click and Javascript. The supported values are 'default', 'vscode' and 'custom'. For 'default', the URL will be the path to the
-                        file or folders. When using a browser, it will open or download them. For 'vscode', the folders and files will be open with VSCode. For
-                        'custom', you need to set a custom format with --open-protocol-custom-formats.
+                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your
+                        SVG viewer must support double-click and Javascript. The supported values are 'default', 'vscode' and 'custom'.
+                        For 'default', the URL will be the path to the file or folders. When using a browser, it will open or download
+                        them. For 'vscode', the folders and files will be open with VSCode. For 'custom', you need to set a custom
+                        format with --open-protocol-custom-formats.
   --renderer {graphviz,mermaid-flowchart,json}
                         The renderer to use to generate the graph. Default: graphviz
   --renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE
-                        The directive for the mermaid renderer. Can be used to customize the output: fonts, theme, curve etc. More info at
-                        https://mermaid.js.org/config/directives.html. Default: '%%{ init: { "flowchart": { "curve": "bumpX" } } }%%'
+                        The directive for the mermaid renderer. Can be used to customize the output: fonts, theme, curve etc. More info
+                        at https://mermaid.js.org/config/directives.html. Default: '%%{ init: { "flowchart": { "curve": "bumpX" } }
+                        }%%'
   --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
                         The orientation of the flow chart. Default: 'LR'
   --show-handlers       Show the handlers in the graph. See the limitations in the project README on GitHub.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these values. This argument may be specified multiple times.
-   --title TITLE         The title to display in the graph. Default: 'Ansible Playbook Grapher'. Set it to an empty string to remove the
+  --title TITLE         The title to display in the graph. Default: 'Ansible Playbook Grapher'. Set it to an empty string to remove the
                         title.
   --vault-id VAULT_IDS  the vault identity to use. This argument may be specified multiple times.
-  --vault-password-file VAULT_PASSWORD_FILES, --vault-pass-file VAULT_PASSWORD_FILES
+  --vault-password-file, --vault-pass-file VAULT_PASSWORD_FILES
                         vault password file
   --version             show program's version number and exit
   --view                Automatically open the resulting SVG file with your system's default viewer application for the file type
   -J, --ask-vault-password, --ask-vault-pass
                         ask for vault password
-  -e EXTRA_VARS, --extra-vars EXTRA_VARS
-                        set additional variables as key=value or YAML/JSON, if filename prepend with @. This argument may be specified multiple times.
+  -e, --extra-vars EXTRA_VARS
+                        set additional variables as key=value or YAML/JSON, if filename prepend with @. This argument may be specified
+                        multiple times.
   -h, --help            show this help message and exit
-  -i INVENTORY, --inventory INVENTORY
+  -i, --inventory INVENTORY
                         Specify inventory host path or comma separated host list. This argument may be specified multiple times.
-  -o OUTPUT_FILENAME, --output-file-name OUTPUT_FILENAME
-                        Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. The extension will be added automatically.
+  -o, --output-file-name OUTPUT_FILENAME
+                        Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. The extension will
+                        be added automatically.
   -s, --save-dot-file   Save the graphviz dot file used to generate the graph.
-  -t TAGS, --tags TAGS  only run plays and tasks tagged with these values. This argument may be specified multiple times.
-  -v, --verbose         Causes Ansible to print more debug messages. Adding multiple -v will increase the verbosity, the builtin plugins currently evaluate up
-                        to -vvvvvv. A reasonable level to start is -vvv, connection debugging might require -vvvv. This argument may be specified multiple
-                        times.
+  -t, --tags TAGS       only run plays and tasks tagged with these values. This argument may be specified multiple times.
+  -v, --verbose         Causes Ansible to print more debug messages. Adding multiple -v will increase the verbosity, the builtin
+                        plugins currently evaluate up to -vvvvvv. A reasonable level to start is -vvv, connection debugging might
+                        require -vvvv. This argument may be specified multiple times.
+❯ ansible-playbook-grapher --help | pbcopy
+❯ ansible-playbook-grapher --help
+usage: ansible-playbook-grapher [-h] [-v] [--exclude-roles EXCLUDE_ROLES] [--only-roles] [-i INVENTORY] [--include-role-tasks] [-s]
+                                [--view] [-o OUTPUT_FILENAME] [--open-protocol-handler {default,vscode,custom}]
+                                [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--group-roles-by-name]
+                                [--renderer {graphviz,mermaid-flowchart,json}]
+                                [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
+                                [--renderer-mermaid-orientation {TD,RL,BT,RL,LR}] [--version] [--hide-plays-without-roles]
+                                [--hide-empty-plays] [--title TITLE] [--show-handlers] [-t TAGS] [--skip-tags SKIP_TAGS]
+                                [--vault-id VAULT_IDS] [-J | --vault-password-file VAULT_PASSWORD_FILES] [-e EXTRA_VARS]
+                                playbooks [playbooks ...]
+
+Make graphs from your Ansible Playbooks.
+
+positional arguments:
+  playbooks             Playbook(s) to graph. You can specify multiple playbooks, separated by spaces and reference playbooks in
+                        collections.
+
+options:
+  --exclude-roles EXCLUDE_ROLES
+                        Specify file path or comma separated list of roles, which should be excluded. This argument may be specified
+                        multiple times.
+  --group-roles-by-name
+                        When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the
+                        same names. Default: False
+  --hide-empty-plays    Hide the plays that end up with no tasks in the graph (after applying the tags filter).
+  --hide-plays-without-roles
+                        Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play
+                        level and include_role as tasks are considered (no import_role).
+  --include-role-tasks  Include the tasks of the roles in the graph. Default: False
+  --only-roles          Only render the roles in the graph (ignoring the tasks)
+  --open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS
+                        The custom formats to use as URLs for the nodes in the graph. Required if --open-protocol-handler is set to
+                        custom. You should provide a JSON formatted string like: {"file": "", "folder": ""}. Example: If you want to
+                        open folders (roles) inside the browser and files (tasks) in vscode, set it to: '{"file":
+                        "vscode://file/{path}:{line}:{column}", "folder": "{path}"}'. path: the absolute path to the file containing
+                        the the plays/tasks/roles. line/column: the position of the plays/tasks/roles in the file. You can optionally
+                        add the attribute "remove_from_path" to remove some parts of the path if you want relative paths.
+  --open-protocol-handler {default,vscode,custom}
+                        The protocol to use to open the nodes when double-clicking on them in your SVG viewer (only for graphviz). Your
+                        SVG viewer must support double-click and Javascript. The supported values are 'default', 'vscode' and 'custom'.
+                        For 'default', the URL will be the path to the file or folders. When using a browser, it will open or download
+                        them. For 'vscode', the folders and files will be open with VSCode. For 'custom', you need to set a custom
+                        format with --open-protocol-custom-formats.
+  --renderer {graphviz,mermaid-flowchart,json}
+                        The renderer to use to generate the graph. Default: graphviz
+  --renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE
+                        The directive for the mermaid renderer. Can be used to customize the output: fonts, theme, curve etc. More info
+                        at https://mermaid.js.org/config/directives.html. Default: '%%{ init: { "flowchart": { "curve": "bumpX" } }
+                        }%%'
+  --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
+                        The orientation of the flow chart. Default: 'LR'
+  --show-handlers       Show the handlers in the graph. See the limitations in the project README on GitHub.
+  --skip-tags SKIP_TAGS
+                        only run plays and tasks whose tags do not match these values. This argument may be specified multiple times.
+  --title TITLE         The title to display in the graph. Default: 'Ansible Playbook Grapher'. Set it to an empty string to remove the
+                        title.
+  --vault-id VAULT_IDS  the vault identity to use. This argument may be specified multiple times.
+  --vault-password-file, --vault-pass-file VAULT_PASSWORD_FILES
+                        vault password file
+  --version             show program's version number and exit
+  --view                Automatically open the resulting SVG file with your system's default viewer application for the file type
+  -J, --ask-vault-password, --ask-vault-pass
+                        ask for vault password
+  -e, --extra-vars EXTRA_VARS
+                        set additional variables as key=value or YAML/JSON, if filename prepend with @. This argument may be specified
+                        multiple times.
+  -h, --help            show this help message and exit
+  -i, --inventory INVENTORY
+                        Specify inventory host path or comma separated host list. This argument may be specified multiple times.
+  -o, --output-file-name OUTPUT_FILENAME
+                        Output filename without the '.svg' extension (for graphviz), '.mmd' for Mermaid or `.json`. The extension will
+                        be added automatically.
+  -s, --save-dot-file   Save the graphviz dot file used to generate the graph.
+  -t, --tags TAGS       only run plays and tasks tagged with these values. This argument may be specified multiple times.
+  -v, --verbose         Causes Ansible to print more debug messages. Adding multiple -v will increase the verbosity, the builtin
+                        plugins currently evaluate up to -vvvvvv. A reasonable level to start is -vvv, connection debugging might
+                        require -vvvv. This argument may be specified multiple times.
 ```
 
 ## Configuration: ansible.cfg
@@ -478,7 +577,7 @@ For example `TAGS_RUN` and `TAGS_SKIP` or vault configuration.
 
 More information [here](https://docs.ansible.com/ansible/latest/reference_appendices/config.html).
 
-## Limitations
+## Limitations and notes
 
 - Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
   statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
@@ -488,9 +587,11 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
   the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
-- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't entirely
+- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't
+  entirely
   reflect their real order of execution in the playbook. They are displayed at the end of the play and roles, but they
   might be executed before that.
+- Looping on tasks and roles is not supported. The tasks using loop are displayed as a single task.
 
 ## Contribution
 

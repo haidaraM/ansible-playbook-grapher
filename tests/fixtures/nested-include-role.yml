@@ -1,0 +1,13 @@
+---
+- hosts: all
+  roles:
+    - role: fake_role
+      when: ansible_distribution == "Debian"
+    - role: display_some_facts
+  tasks:
+    - block:
+        - include_role:
+            name: fake_role
+  post_tasks:
+    - include_role:
+        name: nested_include_role

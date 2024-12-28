@@ -37,6 +37,41 @@ def test_links_structure() -> None:
         assert e in all_links[role], f"The role should be linked to the edge {e}"
 
 
+def test_exclude_empty_plays() -> None:
+    """Test the exclusion of empty plays
+
+    :return:
+    """
+    playbook = PlaybookNode("my-playbook.yml")
+    playbook.add_node("plays", PlayNode("empty"))
+    assert len(playbook.plays) == 1, "There should be only one play"
+    playbook.exclude_empty_plays()
+    assert len(playbook.plays) == 0, "There should be no play"
+
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+    play.add_node("tasks", TaskNode("task 1"))
+    playbook.exclude_empty_plays()
+    assert len(playbook.plays) == 1, "There should be only one play"
+
+
+def test_exclude_plays_without_roles() -> None:
+    """Test the exclusion of plays without roles.
+
+    :return:
+    """
+    playbook = PlaybookNode("my-playbook.yml")
+    play_1 = PlayNode("play 1")
+    play_2 = PlayNode("play 2")
+    play_1.add_node("roles", RoleNode("role 1"))
+    playbook.add_node("plays", play_1)
+    playbook.add_node("plays", play_2)
+
+    assert len(playbook.plays) == 2, "There should be 2 plays"
+    playbook.exclude_plays_without_roles()
+    assert len(playbook.plays) == 1, "There should be only one play"
+
+
 def test_get_all_tasks_nodes() -> None:
     """Test the function get_all_tasks_nodes
     :return:
@@ -74,8 +109,12 @@ def test_empty_play() -> None:
     play = PlayNode("play")
     assert play.is_empty(), "The play should empty"
 
-    play.add_node("roles", RoleNode("my_role_1"))
-    assert not play.is_empty(), "The play should not be empty"
+    role = RoleNode("my_role_1")
+    play.add_node("roles", role)
+    assert play.is_empty(), "The play should still be empty given the role is empty"
+
+    role.add_node("tasks", TaskNode("task 1"))
+    assert not play.is_empty(), "The play should not be empty here"
 
 
 def test_has_node_type() -> None:
@@ -98,7 +137,9 @@ def test_has_node_type() -> None:
 
 
 def test_to_dict() -> None:
-    """:return:"""
+    """
+    :return:
+    """
     playbook = PlaybookNode("my-fake-playbook.yml")
     playbook.add_node("plays", PlayNode("empty"))
 
@@ -115,7 +156,8 @@ def test_to_dict() -> None:
 
     playbook.calculate_indices()
 
-    dict_rep = playbook.to_dict(exclude_empty_plays=True)
+    playbook.exclude_empty_plays()
+    dict_rep = playbook.to_dict()
 
     assert dict_rep["type"] == "PlaybookNode"
     assert dict_rep["location"] is None, "A fake playbook does not have a location"
@@ -128,3 +170,72 @@ def test_to_dict() -> None:
     assert dict_rep["plays"][0]["tasks"][0]["name"] == "block 1"
     assert dict_rep["plays"][0]["tasks"][0]["index"] == 1
     assert dict_rep["plays"][0]["tasks"][0]["type"] == "BlockNode"
+
+
+def test_role_to_dict_with_exclusion():
+    """
+    Test the method to_dict of the RoleNode
+    :return:
+    """
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+    role.add_node("tasks", TaskNode("task 2"))
+
+    dict_rep = role.to_dict(include_role_tasks=True)
+
+    assert dict_rep["type"] == "RoleNode"
+    assert dict_rep["name"] == "my_role"
+    assert dict_rep["tasks"][0]["name"] == "task 1"
+    assert dict_rep["tasks"][1]["name"] == "task 2"
+
+    dict_rep = role.to_dict()
+    assert dict_rep["type"] == "RoleNode"
+    assert dict_rep["name"] == "my_role"
+    assert len(dict_rep["tasks"]) == 0
+
+
+def test_remove_node_types():
+    """
+    Test the method remove_node_types
+    :return:
+    """
+    playbook = PlaybookNode("my-fake-playbook.yml")
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+
+    role = RoleNode("my_role")
+    role.add_node("tasks", TaskNode("task 1"))
+    play.add_node("roles", role)
+    assert len(playbook.plays) == 1
+    assert len(play.roles) == 1, "The role should be there"
+    assert len(playbook.get_all_tasks()) == 1, "The task should be there"
+
+    playbook.remove_all_nodes_types([RoleNode])
+    assert len(playbook.plays) == 1
+    assert len(play.roles) == 0, "The role should have been removed"
+    assert len(playbook.get_all_tasks()) == 0, "The task should have been removed"
+
+    playbook.remove_all_nodes_types(
+        [
+            PlayNode,
+        ]
+    )
+    assert len(playbook.plays) == 0, "The play should have been removed"
+
+    assert playbook.is_empty(), "The playbook should be empty"
+
+    playbook.add_node("plays", play)
+    play.add_node("roles", role)
+
+    for i in range(10):
+        role.add_node("tasks", TaskNode(f"loop task {i}"))
+
+    new_role = RoleNode("new_role", include_role=True)
+    new_role.add_node("tasks", TaskNode("New role task"))
+    role2 = RoleNode("my_role_2")
+    role2.add_node("tasks", new_role)
+    role2.add_node("tasks", BlockNode("My block"))
+
+    assert len(playbook.get_all_tasks()) == 11
+    playbook.remove_all_nodes_types([TaskNode, BlockNode])
+    assert len(playbook.get_all_tasks()) == 0, "All tasks should have been removed"

@@ -94,7 +94,8 @@ def get_play_colors(play_id: str) -> tuple[str, str]:
 
 
 def has_role_parent(task_block: Task) -> bool:
-    """Check if one of the parent of the task or block is a role
+    """Check if one of the parents of the task or block is a role.
+
     :param task_block:
     :return:
     """
