@@ -126,7 +126,6 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
 def test_include_role_parsing(
     grapher_cli: PlaybookGrapherCLI,
-    capsys: pytest.CaptureFixture,
 ) -> None:
     """Test parsing of include_role
 
@@ -173,11 +172,15 @@ def test_include_role_parsing(
 
     # third include_role
     include_role_3 = tasks[4]
-    assert tasks[4].when == "[when: x is not defined]"
     assert isinstance(include_role_3, RoleNode)
     assert include_role_3.include_role
     assert len(include_role_3.tasks) == 3
     assert not include_role_3.has_loop(), "The second include role doesn't have a loop"
+    assert include_role_3.when == "[when: x is not defined]"
+
+    # None of the tasks in the third include_role should have inherited the 'when' condition
+    for task in include_role_3.tasks:
+        assert task.when == ""
 
     # fourth include_role
     include_role_4 = tasks[5]
