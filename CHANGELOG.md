@@ -18,6 +18,8 @@
 * "Empty roles" are no longer displayed by default. An empty role is a role with no tasks (after applying the tags
   filters, for example). This is the same behavior as the option `--hide-empty-plays` but with roles. **I will eventually
   drop `--hide-empty-plays` to make this the default behavior in the future.**
+* improvement: Make the play node label like what "ansible-playbook --list-tasks" show. This is more consistent with the
+  actual playbook output.
 * docs: Add a comparison matrix for the different renderers
 * (Internal) Moved some flags out of the parser to the renderer instead. The whole playbook and all the tasks and
   roles (except the excluded ones) are always parsed. The renderer(s) will decide later what do based on the flags

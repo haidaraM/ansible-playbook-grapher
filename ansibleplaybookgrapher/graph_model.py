@@ -528,9 +528,11 @@ class PlayNode(CompositeNode):
     def display_name(self) -> str:
         """
         Return the display name of the node.
+
+        This is closer to what ansible-playbook --list-tasks does.
         :return:
         """
-        return f"Play: {self.name} ({len(self.hosts)})"
+        return f"play #{self.index} ({self.name}): {len(self.hosts)}"
 
     @property
     def roles(self) -> list["RoleNode"]:

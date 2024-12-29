@@ -367,6 +367,24 @@ def test_block_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
+def test_parsing_multiple_plays(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test the parsing of a playbook with multiple plays.
+
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(grapher_cli.options.playbooks[0])
+    playbook_node = parser.parse()
+    plays = playbook_node.plays
+
+    expected_plays = ["all", "database", "webserver"]
+    assert len(plays) == len(expected_plays)
+    for idx, play in enumerate(plays, 0):
+        assert play.index == idx + 1
+        assert play.display_name() == f"play #{idx+1} ({expected_plays[idx]}): 0"
+
+
+@pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
 @pytest.mark.parametrize(
     (
         "group_roles_by_name",
