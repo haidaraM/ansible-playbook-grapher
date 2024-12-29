@@ -3,6 +3,7 @@
 [![Testing](https://github.com/haidaraM/ansible-playbook-grapher/actions/workflows/testing.yaml/badge.svg)](https://github.com/haidaraM/ansible-playbook-grapher/actions/workflows/testing.yaml)
 [![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
 [![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=main)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=main)
+[![PyPI Downloads](https://static.pepy.tech/badge/ansible-playbook-grapher)](https://pepy.tech/projects/ansible-playbook-grapher)
 
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a
 graph representing your Ansible playbooks, plays, tasks and roles. The aim of this project is to have an overview of
