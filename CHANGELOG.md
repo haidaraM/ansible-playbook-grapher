@@ -2,6 +2,8 @@
 
 ## What's Changed
 
+* fix: Make sure the import_role tasks are always added to the graph. More info
+  in https://github.com/haidaraM/ansible-playbook-grapher/pull/231.
 * feat: Add the handlers to the graph with `--show-handlers` (**initial support for handlers**). They are by default
   added at the end of the play and roles only. This might change in the future to actually reflect the handlers' behavior.
 * **Changes the shape of the graphviz node to make it consistent with Mermaid. The tasks will be rectangle instead of
