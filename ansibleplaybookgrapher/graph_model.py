@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from collections import defaultdict
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any, Type, TypeVar
 
 from ansible.playbook.handler import Handler
@@ -419,7 +420,7 @@ class PlaybookNode(CompositeNode):
         if self.raw_object:
             self.location = NodeLocation(
                 type="file",
-                path=self.raw_object._file_name,
+                path=str(Path(self.raw_object._file_name).resolve()),
                 line=1,
                 column=1,
             )
