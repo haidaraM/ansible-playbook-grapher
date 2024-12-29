@@ -31,7 +31,6 @@ from ansible.utils.collection_loader._collection_finder import (
 from ansible.utils.display import Display
 
 from ansibleplaybookgrapher import __prog__, __version__
-from ansibleplaybookgrapher.graph_model import TaskNode
 from ansibleplaybookgrapher.grapher import Grapher
 from ansibleplaybookgrapher.renderer import OPEN_PROTOCOL_HANDLERS
 from ansibleplaybookgrapher.renderer.graphviz import GraphvizRenderer
@@ -214,7 +213,7 @@ class PlaybookGrapherCLI(CLI):
             dest="include_role_tasks",
             action="store_true",
             default=False,
-            help="Include the tasks of the roles in the graph. Default: %(default)s",
+            help="Include the tasks of the roles in the graph. Default: %(default)s. This only applies to roles at the play level and include_role tasks. The tasks from an 'import_role' are always added to the graph.",
         )
 
         self.parser.add_argument(
