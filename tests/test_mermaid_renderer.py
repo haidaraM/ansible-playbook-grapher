@@ -44,7 +44,7 @@ def run_grapher(
     args.extend(["--renderer", "mermaid-flowchart"])
 
     if "--title" not in additional_args:
-        title_args = " ".join(additional_args)
+        title_args = " ".join(additional_args + playbooks)
         args.append("--title")
         args.append(f"Args: '{title_args}'")
 
