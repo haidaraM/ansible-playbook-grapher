@@ -335,7 +335,7 @@ def test_nested_include_tasks(request: pytest.FixtureRequest) -> None:
 
 @pytest.mark.parametrize(
     ("include_role_tasks_option", "expected_tasks_number"),
-    [("--", 1), ("--include-role-tasks", 7)],
+    [("--", 4), ("--include-role-tasks", 7)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_import_role(
@@ -379,7 +379,7 @@ def test_import_playbook(request: pytest.FixtureRequest) -> None:
 
 @pytest.mark.parametrize(
     ("include_role_tasks_option", "expected_tasks_number"),
-    [("--", 4), ("--include-role-tasks", 7)],
+    [("--", 7), ("--include-role-tasks", 7)],
     ids=["no_include_role_tasks_option", "include_role_tasks_option"],
 )
 def test_nested_import_playbook(
