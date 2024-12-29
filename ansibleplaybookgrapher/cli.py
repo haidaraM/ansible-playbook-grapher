@@ -409,9 +409,8 @@ class PlaybookGrapherCLI(CLI):
 
         if self.options.show_handlers:
             display.warning(
-                "The handlers are partially supported for the moment. Their position in the graph doesn't entirely reflect "
-                "their real order of execution in the playbook. They are displayed at the end of the play and roles, "
-                "but they might be executed before that."
+                "The handlers are only partially supported for the moment. They are added at the end of the play and roles, "
+                "but they might be executed before that. As such, expect some changes in the future.",
             )
 
         return options
