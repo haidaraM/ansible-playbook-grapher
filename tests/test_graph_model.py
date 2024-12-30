@@ -37,26 +37,47 @@ def test_links_structure() -> None:
         assert e in all_links[role], f"The role should be linked to the edge {e}"
 
 
-def test_exclude_empty_plays() -> None:
-    """Test the exclusion of empty plays
+def test_empty_play_method() -> None:
+    """Testing the emptiness of a play
+    :return:
+    """
+    play = PlayNode("play")
+    assert play.is_empty(), "The play should empty"
+
+    role = RoleNode("my_role_1")
+    play.add_node("roles", role)
+    assert play.is_empty(), "The play should still be empty given the role is empty"
+
+    task = TaskNode("Block 1")
+    play.add_node("tasks", task)
+    assert not play.is_empty(), "The play should not be empty here"
+    play.remove_node("tasks", task)
+    assert play.is_empty(), "The play should be empty again"
+
+    role.add_node("tasks", TaskNode("task 1"))
+    assert not play.is_empty(), "The play should not be empty here"
+
+
+def test_remove_empty_plays() -> None:
+    """Test removing empty plays from a playbook
 
     :return:
     """
     playbook = PlaybookNode("my-playbook.yml")
     playbook.add_node("plays", PlayNode("empty"))
     assert len(playbook.plays) == 1, "There should be only one play"
-    playbook.exclude_empty_plays()
+    playbook.remove_empty_plays()
     assert len(playbook.plays) == 0, "There should be no play"
 
     play = PlayNode("play")
     playbook.add_node("plays", play)
     play.add_node("tasks", TaskNode("task 1"))
-    playbook.exclude_empty_plays()
+    playbook.remove_empty_plays()
     assert len(playbook.plays) == 1, "There should be only one play"
 
 
-def test_exclude_plays_without_roles() -> None:
-    """Test the exclusion of plays without roles.
+def test_remove_plays_without_roles() -> None:
+    """Test removing plays without roles from a playbook
 
     :return:
     """
@@ -68,7 +89,7 @@ def test_exclude_plays_without_roles() -> None:
     playbook.add_node("plays", play_2)
 
     assert len(playbook.plays) == 2, "There should be 2 plays"
-    playbook.exclude_plays_without_roles()
+    playbook.remove_plays_without_roles()
     assert len(playbook.plays) == 1, "There should be only one play"
 
 
@@ -100,21 +121,6 @@ def test_get_all_tasks_nodes() -> None:
     all_tasks = play.get_all_tasks()
     assert len(all_tasks) == 4, "There should be 4 tasks in all"
     assert [task_1, task_2, task_3, task_4] == all_tasks
-
-
-def test_empty_play() -> None:
-    """Testing the emptiness of a play
-    :return:
-    """
-    play = PlayNode("play")
-    assert play.is_empty(), "The play should empty"
-
-    role = RoleNode("my_role_1")
-    play.add_node("roles", role)
-    assert play.is_empty(), "The play should still be empty given the role is empty"
-
-    role.add_node("tasks", TaskNode("task 1"))
-    assert not play.is_empty(), "The play should not be empty here"
 
 
 def test_has_node_type() -> None:
@@ -156,7 +162,7 @@ def test_to_dict() -> None:
 
     playbook.calculate_indices()
 
-    playbook.exclude_empty_plays()
+    playbook.remove_empty_plays()
     dict_rep = playbook.to_dict()
 
     assert dict_rep["type"] == "PlaybookNode"
@@ -239,3 +245,42 @@ def test_remove_node_types():
     assert len(playbook.get_all_tasks()) == 11
     playbook.remove_all_nodes_types([TaskNode, BlockNode])
     assert len(playbook.get_all_tasks()) == 0, "All tasks should have been removed"
+
+
+def test_calculate_indices():
+    """Test the method calculate_indices
+
+    :return:
+    """
+    playbook = PlaybookNode("my-fake-playbook.yml")
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+
+    role = RoleNode("nested_include_role", include_role=True)
+    role.add_node("tasks", TaskNode("task 1"))
+    role.add_node("tasks", TaskNode("task 2"))
+    play.add_node("tasks", role)
+
+    nested_include_1 = RoleNode("nested_include_role_1", include_role=True)
+    nested_include_1.add_node("tasks", TaskNode("task 1 in nested include 1"))
+    nested_include_2 = RoleNode("nested_include_role_2", include_role=True)
+    nested_include_2.add_node("tasks", TaskNode("task 1 in nested include 2"))
+
+    role.add_node("tasks", nested_include_1)
+    role.add_node("tasks", nested_include_2)
+
+    playbook.calculate_indices(only_roles=False)
+    assert play.index == 1
+    assert role.index == 1
+    role.tasks[0].index = 1
+    role.tasks[0].index = 2
+    assert nested_include_1.index == 3
+    assert nested_include_2.index == 4
+
+    playbook.calculate_indices(only_roles=True)
+    assert play.index == 1
+    assert role.index == 1
+    role.tasks[0].index = None
+    role.tasks[0].index = None
+    assert nested_include_1.index == 1
+    assert nested_include_2.index == 2

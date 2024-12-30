@@ -33,7 +33,7 @@
             "type": "string"
           },
           "index": {
-            "type": "integer"
+            "type": ["integer", "null"]
           },
           "location": {
             "$ref": "#/$defs/location"
@@ -151,7 +151,7 @@
   ],
   "$defs": {
     "task": {
-      "description": "An Ansible task or role",
+      "description": "An Ansible task, block or role.",
       "type": "object",
       "properties": {
         "type": {
@@ -172,7 +172,7 @@
         },
         "index": {
           "description": "The index of the task",
-          "type": "integer"
+          "type": ["integer", "null"]
         },
         "location": {
           "$ref": "#/$defs/location"

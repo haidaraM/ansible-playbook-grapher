@@ -231,6 +231,41 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
     )
 
 
+def test_with_block_with_skip_tags(
+    request: pytest.FixtureRequest,
+) -> None:
+    """
+    :return:
+
+    """
+    json_path, playbook_paths = run_grapher(
+        ["with_block.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "-i",
+            str(INVENTORY_PATH),
+            "--skip-tags",
+            "pre_task_tag",
+        ],
+    )
+    result = _common_tests(
+        json_path,
+        plays_number=1,
+        pre_tasks_number=0,
+        roles_number=1,
+        tasks_number=7,
+        blocks_number=4,
+        post_tasks_number=2,
+    )
+
+    blocks = result["blocks"]
+    # The first block should have None as an index
+    assert blocks[0]["index"] is None, "The first block should have None as an index"
+    assert (
+        len(blocks[0]["tasks"]) == 0
+    ), "The first block should have no tasks (skipped)"
+
+
 @pytest.mark.parametrize(
     "flag",
     ["--", "--group-roles-by-name"],

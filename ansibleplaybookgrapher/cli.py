@@ -83,15 +83,16 @@ class PlaybookGrapherCLI(CLI):
 
         for p in playbook_nodes:
             if self.options.hide_empty_plays:
-                p.exclude_empty_plays()
+                # TODO: This will be the default behavior in the next major version (v3.0.0)
+                p.remove_empty_plays()
 
             if self.options.hide_plays_without_roles:
-                p.exclude_plays_without_roles()
+                p.remove_plays_without_roles()
 
             if self.options.only_roles:
-                p.exclude_tasks_node()
+                p.remove_tasks_node()
 
-            p.calculate_indices()
+            p.calculate_indices(only_roles=self.options.only_roles)
 
         match self.options.renderer:
             case "graphviz":
@@ -317,7 +318,7 @@ class PlaybookGrapherCLI(CLI):
             "--hide-empty-plays",
             action="store_true",
             default=False,
-            help="Hide the plays that end up with no tasks in the graph (after applying the tags filter).",
+            help="Hide the plays that end up with no tasks in the graph (after applying the tags filter). Will be removed in the next major version (v3.0.0) to make it the default behavior. Default: %(default)s",
         )
 
         self.parser.add_argument(
@@ -406,6 +407,11 @@ class PlaybookGrapherCLI(CLI):
                         exclude_roles.add(role.strip())
 
             options.exclude_roles = sorted(exclude_roles)
+
+        if self.options.hide_empty_plays:
+            display.warning(
+                "The option --hide-empty-plays will be removed in the next major version (v3.0.0) to make it the default behavior.",
+            )
 
         if self.options.show_handlers:
             display.warning(

@@ -128,11 +128,11 @@ class Node:
                 # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
-    def get_first_parent_matching_type(self, node_type: type) -> type:
+    def get_first_parent_matching_type(self, node_type: type) -> type | None:
         """Get the first parent of this node matching the given type.
 
         :param node_type: The type of the parent node to get.
-        :return:
+        :return: The first parent matching the given type or None if no parent matches the type.
         """
         current_parent = self.parent
 
@@ -141,11 +141,10 @@ class Node:
                 return current_parent
             current_parent = current_parent.parent
 
-        msg = f"No parent of type {node_type} found for {self}"
-        raise ValueError(msg)
+        return None
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name='{self.name}', id='{self.id}')"
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index})"
 
     def __eq__(self, other: "Node") -> bool:
         return self.id == other.id
@@ -246,19 +245,33 @@ class CompositeNode(Node):
         self._check_target_composition(target_composition)
         self._compositions[target_composition].remove(node)
 
-    def calculate_indices(self):
+    def calculate_indices(self, only_roles: bool = False) -> None:
         """
-        Calculate the indices of all nodes based on their composition type.
-        This is only called when needed.
+        Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
+        or not.
+
+        :param only_roles: When in only roles, we need to skip the tasks.
         """
         current_index = 1
         for comp_type in self.supported_compositions:
             for node in self._compositions[comp_type]:
+                if (
+                    isinstance(node, CompositeNode) and node.is_empty()
+                ) and not only_roles:  # Skip empty nodes when we don't need only roles
+                    node.index = None
+                    continue
+
+                if (
+                    isinstance(node, TaskNode) and only_roles
+                ):  # Skip tasks when no needed
+                    node.index = None
+                    continue
+
                 node.index = current_index
                 current_index += 1
 
                 if isinstance(node, CompositeNode):
-                    node.calculate_indices()
+                    node.calculate_indices(only_roles=only_roles)
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.
@@ -324,15 +337,18 @@ class CompositeNode(Node):
     def is_empty(self) -> bool:
         """Return true if the composite node is empty, false otherwise.
 
-        A composite node is considered empty if all its compositions are empty.
+        A composite node with at least one task is not empty.
         :return:
         """
         for nodes in self._compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
-                    return node.is_empty()
-
-        return all(len(nodes) == 0 for nodes in self._compositions.values())
+                    if not node.is_empty():
+                        return False
+                else:
+                    # We have a task node here => the composite node is not empty
+                    return False
+        return True
 
     def has_node_type(self, node_type: type) -> bool:
         """Return true if the composite node has at least one node of the given type, false otherwise.
@@ -351,8 +367,9 @@ class CompositeNode(Node):
         return False
 
     def remove_all_nodes_types(self, types: list[type]):
-        """Exclude all the task nodes from the playbook.
+        """Remove all the nodes of the given types from the composite node.
 
+        :param types: List of types to remove.
         :return:
         """
         for target_composition, nodes in self._compositions.items():
@@ -374,18 +391,13 @@ class CompositeNode(Node):
         """
         node_dict = super().to_dict(**kwargs)
         exclude_compositions = exclude_compositions or []
-        # checking the exclude_compositions
-        # TODO: check if this is really needed
-        list(map(self._check_target_composition, exclude_compositions))
 
-        for composition, nodes in self._compositions.items():
+        for composition in self.supported_compositions:
             if composition in exclude_compositions:
                 node_dict[composition] = []
             else:
-                nodes_dict_list = []
-                for node in nodes:
-                    nodes_dict_list.append(node.to_dict(**kwargs))
-                node_dict[composition] = nodes_dict_list
+                nodes = self._compositions.get(composition, [])
+                node_dict[composition] = [node.to_dict(**kwargs) for node in nodes]
 
         return node_dict
 
@@ -456,8 +468,8 @@ class PlaybookNode(CompositeNode):
 
         return usages
 
-    def exclude_empty_plays(self):
-        """Exclude the empty plays from the playbook.
+    def remove_empty_plays(self):
+        """Remove the empty plays from the playbook.
 
         :return:
         """
@@ -466,8 +478,8 @@ class PlaybookNode(CompositeNode):
         for play in to_exclude:
             self.remove_node("plays", play)
 
-    def exclude_plays_without_roles(self):
-        """Exclude the plays that do not have roles from the playbook.
+    def remove_plays_without_roles(self):
+        """Remove the plays that do not have roles from the playbook.
 
         :return:
         """
@@ -476,7 +488,7 @@ class PlaybookNode(CompositeNode):
         for play in to_exclude:
             self.remove_node("plays", play)
 
-    def exclude_tasks_node(self):
+    def remove_tasks_node(self):
         """Exclude all the task nodes from the playbook.
 
         :return:
@@ -653,6 +665,18 @@ class TaskNode(LoopMixin, Node):
             parent=parent,
         )
 
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        When a task is from a role, we just display the name of the task. In this case, its name already contains the
+        role name.
+        :return:
+        """
+        if self.get_first_parent_matching_type(RoleNode):
+            return self.name
+
+        return super().display_name()
+
     def is_handler(self) -> bool:
         """Return true if this task is a handler, false otherwise.
 
@@ -688,6 +712,9 @@ class RoleNode(LoopMixin, CompositeNode):
             parent=parent,
             supported_compositions=["tasks", "handlers"],
         )
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index}, include_role={self.include_role})"
 
     def add_node(self, target_composition: str, node: Node) -> None:
         """Add a node in the target composition.
@@ -774,13 +801,13 @@ class RoleNode(LoopMixin, CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def should_be_included(self) -> bool:
-        """Return true if the role should be included in the graph, false otherwise.
-
-        A role should be included in the graph by default if it's not empty or if it has a loop. Given we are not parsing
-        roles with a loop, we can't know if it's empty or not. So we include them for now.
+    def is_empty(self) -> bool:
+        """Return true if the role is empty, false otherwise.
 
         :return:
         """
-        # TODO: check if this is really needed
-        return not super().is_empty() or self.has_loop()
+        if self.has_loop():
+            # We can't parse roles with a loop. So we consider them as not empty.
+            return False
+
+        return super().is_empty()
