@@ -318,7 +318,7 @@ class PlaybookGrapherCLI(CLI):
             "--hide-empty-plays",
             action="store_true",
             default=False,
-            help="Hide the plays that end up with no tasks in the graph (after applying the tags filter).",
+            help="Hide the plays that end up with no tasks in the graph (after applying the tags filter). Will be removed in the next major version (v3.0.0) to make it the default behavior. Default: %(default)s",
         )
 
         self.parser.add_argument(

@@ -94,7 +94,7 @@ Comparison of the renderers:
 | Highlight on hover                                       |         ✅         |             ❌              |                          ❌: NA                           |
 | Change graph orientation                                 |         ❌         |             ✅              |                          ❌: NA                           |
 | Group roles by name                                      |         ✅         |             ✅              | ✅: the roles with the same names will have the same IDs. |
-| Hide empty roles and blocks                              |         ✅         |             ✅              |        ❌: The empty roles are kept in the output         |
+| Hide empty roles and blocks                              |         ✅         |             ✅              |           ❌: They are kept in the JSON output            |
 | View the output file in your the OS default viewer       |         ✅         | ✅ on https://mermaid.live/ |                            ✅                             |
 | Tests of the output                                      |     Automatic     |   Manual (need a parser)   |                        Automatic                         |
 
@@ -435,7 +435,8 @@ options:
   --group-roles-by-name
                         When rendering the graph (graphviz and mermaid), only a single role will be displayed for all roles having the
                         same names. Default: False
-  --hide-empty-plays    Hide the plays that end up with no tasks in the graph (after applying the tags filter).
+  --hide-empty-plays    Hide the plays that end up with no tasks in the graph (after applying the tags filter). Will be removed in the next major version
+                        (v3.0.0) to make it the default behavior. Default: False
   --hide-plays-without-roles
                         Hide the plays that end up with no roles in the graph (after applying the tags filter). Only roles at the play level and include_role as
                         tasks are considered (no import_role).
