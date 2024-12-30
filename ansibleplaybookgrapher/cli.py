@@ -408,6 +408,11 @@ class PlaybookGrapherCLI(CLI):
 
             options.exclude_roles = sorted(exclude_roles)
 
+        if self.options.hide_empty_plays:
+            display.warning(
+                "The option --hide-empty-plays will be removed in the next major version (v3.0.0) to make it the default behavior.",
+            )
+
         if self.options.show_handlers:
             display.warning(
                 "The handlers are only partially supported for the moment. They are added at the end of the play and roles, "
