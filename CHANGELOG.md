@@ -10,7 +10,7 @@
 * **fix: The tags on the role itself should not be evaluated. Instead, what we care about is the tasks (they inherit the
   tags set on the roles).** More
   info [here.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_tags.html#adding-tags-to-roles)
-* **"Empty roles" are no longer displayed by default**. An empty role is a role with no tasks (after applying the tags
+* **The empty roles and blocks are no longer displayed by default**. An empty role is a role with no tasks (after applying the tags
   filters, for example). This is the same behavior as the option `--hide-empty-plays` but with roles. **I will eventually
   drop `--hide-empty-plays` to make this the default behavior in the future.**
 * feat: Add the initial support for handlers to the graph with `--show-handlers`. They are by default
