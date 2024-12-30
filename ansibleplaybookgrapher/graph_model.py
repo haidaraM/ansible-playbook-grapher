@@ -392,18 +392,13 @@ class CompositeNode(Node):
         """
         node_dict = super().to_dict(**kwargs)
         exclude_compositions = exclude_compositions or []
-        # checking the exclude_compositions
-        # TODO: check if this is really needed
-        list(map(self._check_target_composition, exclude_compositions))
 
-        for composition, nodes in self._compositions.items():
+        for composition in self.supported_compositions:
             if composition in exclude_compositions:
                 node_dict[composition] = []
             else:
-                nodes_dict_list = []
-                for node in nodes:
-                    nodes_dict_list.append(node.to_dict(**kwargs))
-                node_dict[composition] = nodes_dict_list
+                nodes = self._compositions.get(composition, [])
+                node_dict[composition] = [node.to_dict(**kwargs) for node in nodes]
 
         return node_dict
 
