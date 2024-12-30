@@ -145,7 +145,7 @@ class Node:
         raise ValueError(msg)
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name='{self.name}', id='{self.id}')"
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index})"
 
     def __eq__(self, other: "Node") -> bool:
         return self.id == other.id
@@ -248,8 +248,8 @@ class CompositeNode(Node):
 
     def calculate_indices(self):
         """
-        Calculate the indices of all nodes based on their composition type.
-        This is only called when needed.
+        Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
+        or not.
         """
         current_index = 1
         for comp_type in self.supported_compositions:
@@ -351,8 +351,9 @@ class CompositeNode(Node):
         return False
 
     def remove_all_nodes_types(self, types: list[type]):
-        """Exclude all the task nodes from the playbook.
+        """Remove all the nodes of the given types from the composite node.
 
+        :param types: List of types to remove.
         :return:
         """
         for target_composition, nodes in self._compositions.items():
@@ -456,8 +457,8 @@ class PlaybookNode(CompositeNode):
 
         return usages
 
-    def exclude_empty_plays(self):
-        """Exclude the empty plays from the playbook.
+    def remove_empty_plays(self):
+        """Remove the empty plays from the playbook.
 
         :return:
         """
@@ -466,8 +467,8 @@ class PlaybookNode(CompositeNode):
         for play in to_exclude:
             self.remove_node("plays", play)
 
-    def exclude_plays_without_roles(self):
-        """Exclude the plays that do not have roles from the playbook.
+    def remove_plays_without_roles(self):
+        """Remove the plays that do not have roles from the playbook.
 
         :return:
         """
@@ -476,7 +477,7 @@ class PlaybookNode(CompositeNode):
         for play in to_exclude:
             self.remove_node("plays", play)
 
-    def exclude_tasks_node(self):
+    def remove_tasks_node(self):
         """Exclude all the task nodes from the playbook.
 
         :return:
@@ -689,6 +690,9 @@ class RoleNode(LoopMixin, CompositeNode):
             supported_compositions=["tasks", "handlers"],
         )
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index}, include_role={self.include_role})"
+
     def add_node(self, target_composition: str, node: Node) -> None:
         """Add a node in the target composition.
 
@@ -774,13 +778,13 @@ class RoleNode(LoopMixin, CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def should_be_included(self) -> bool:
-        """Return true if the role should be included in the graph, false otherwise.
-
-        A role should be included in the graph by default if it's not empty or if it has a loop. Given we are not parsing
-        roles with a loop, we can't know if it's empty or not. So we include them for now.
+    def is_empty(self) -> bool:
+        """Return true if the role is empty, false otherwise.
 
         :return:
         """
-        # TODO: check if this is really needed
-        return not super().is_empty() or self.has_loop()
+        if self.has_loop():
+            # We can't parse roles with a loop. So we consider them as not empty.
+            return False
+
+        return super().is_empty()

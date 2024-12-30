@@ -118,20 +118,25 @@ class PlaybookBuilder(ABC):
 
     def build_node(self, node: Node, color: str, fontcolor: str, **kwargs) -> None:
         """Build a generic node.
+
         :param node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
         :return:
         """
         if isinstance(node, BlockNode):
-            self.build_block(
-                block_node=node,
-                color=color,
-                fontcolor=fontcolor,
-                **kwargs,
-            )
+            # Only build the block if it is not empty or if it has a role node when we only want roles
+            if not node.is_empty() or (
+                node.has_node_type(RoleNode) and self.only_roles
+            ):
+                self.build_block(
+                    block_node=node,
+                    color=color,
+                    fontcolor=fontcolor,
+                    **kwargs,
+                )
         elif isinstance(node, RoleNode):
-            if node.should_be_included() or self.only_roles:
+            if not node.is_empty() or self.only_roles:
                 self.build_role(
                     role_node=node, color=color, fontcolor=fontcolor, **kwargs
                 )
@@ -197,7 +202,7 @@ class PlaybookBuilder(ABC):
 
         # roles
         for role in play_node.roles:
-            if not role.should_be_included() and not self.only_roles:
+            if role.is_empty() and not self.only_roles:
                 continue
 
             self.build_role(

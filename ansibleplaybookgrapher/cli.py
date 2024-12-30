@@ -83,13 +83,14 @@ class PlaybookGrapherCLI(CLI):
 
         for p in playbook_nodes:
             if self.options.hide_empty_plays:
-                p.exclude_empty_plays()
+                # TODO: This will be the default behavior in the next major version (v3.0.0)
+                p.remove_empty_plays()
 
             if self.options.hide_plays_without_roles:
-                p.exclude_plays_without_roles()
+                p.remove_plays_without_roles()
 
             if self.options.only_roles:
-                p.exclude_tasks_node()
+                p.remove_tasks_node()
 
             p.calculate_indices()
 

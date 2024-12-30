@@ -6,7 +6,7 @@
   at https://github.com/haidaraM/ansible-playbook-grapher/pull/231.**
 * **Changes the shape of the graphviz node to make it consistent with Mermaid. The tasks will be rectangle instead of
   `octagon`: https://graphviz.org/doc/info/shapes.html**
-* **fix: Remove the play name from the edge going from playbook to the plays. This was not consistent with the other edges.**
+* **fix: Remove the play name from the edge going from the playbook to the plays. This was not consistent with the other edges.**
 * **fix: The tags on the role itself should not be evaluated. Instead, what we care about is the tasks (they inherit the
   tags set on the roles).** More
   info [here.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_tags.html#adding-tags-to-roles)

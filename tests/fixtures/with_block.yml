@@ -9,6 +9,8 @@
         - name: debug
           debug:
             msg: "pre task debug"
+          tags:
+            - pre_task_tag
   tasks:
     - name: Install tree
       yum:
