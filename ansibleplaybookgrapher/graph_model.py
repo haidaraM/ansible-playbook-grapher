@@ -128,11 +128,11 @@ class Node:
                 # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
-    def get_first_parent_matching_type(self, node_type: type) -> type:
+    def get_first_parent_matching_type(self, node_type: type) -> type | None:
         """Get the first parent of this node matching the given type.
 
         :param node_type: The type of the parent node to get.
-        :return:
+        :return: The first parent matching the given type or None if no parent matches the type.
         """
         current_parent = self.parent
 
@@ -141,8 +141,7 @@ class Node:
                 return current_parent
             current_parent = current_parent.parent
 
-        msg = f"No parent of type {node_type} found for {self}"
-        raise ValueError(msg)
+        return None
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index})"
@@ -665,6 +664,18 @@ class TaskNode(LoopMixin, Node):
             raw_object=raw_object,
             parent=parent,
         )
+
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        When a task is from a role, we just display the name of the task. In this case, its name already contains the
+        role name.
+        :return:
+        """
+        if self.get_first_parent_matching_type(RoleNode):
+            return self.name
+
+        return super().display_name()
 
     def is_handler(self) -> bool:
         """Return true if this task is a handler, false otherwise.
