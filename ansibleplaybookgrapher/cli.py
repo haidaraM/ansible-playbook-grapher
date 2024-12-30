@@ -92,7 +92,7 @@ class PlaybookGrapherCLI(CLI):
             if self.options.only_roles:
                 p.remove_tasks_node()
 
-            p.calculate_indices()
+            p.calculate_indices(only_roles=self.options.only_roles)
 
         match self.options.renderer:
             case "graphviz":

@@ -246,19 +246,33 @@ class CompositeNode(Node):
         self._check_target_composition(target_composition)
         self._compositions[target_composition].remove(node)
 
-    def calculate_indices(self):
+    def calculate_indices(self, only_roles: bool = False) -> None:
         """
         Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
         or not.
+
+        :param only_roles: Whether to calculate the indices only for the roles or not.
         """
         current_index = 1
         for comp_type in self.supported_compositions:
             for node in self._compositions[comp_type]:
+                if (
+                    isinstance(node, CompositeNode) and node.is_empty()
+                ) and not only_roles:  # Skip empty nodes
+                    node.index = None
+                    continue
+
+                if (
+                    isinstance(node, TaskNode) and only_roles
+                ):  # Skip tasks when no needed
+                    node.index = None
+                    continue
+
                 node.index = current_index
                 current_index += 1
 
                 if isinstance(node, CompositeNode):
-                    node.calculate_indices()
+                    node.calculate_indices(only_roles=only_roles)
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.

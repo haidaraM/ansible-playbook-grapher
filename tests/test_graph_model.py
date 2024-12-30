@@ -239,3 +239,38 @@ def test_remove_node_types():
     assert len(playbook.get_all_tasks()) == 11
     playbook.remove_all_nodes_types([TaskNode, BlockNode])
     assert len(playbook.get_all_tasks()) == 0, "All tasks should have been removed"
+
+
+def test_calculate_indices():
+    """Test the method calculate_indices
+
+    :return:
+    """
+    playbook = PlaybookNode("my-fake-playbook.yml")
+    play = PlayNode("play")
+    playbook.add_node("plays", play)
+
+    role = RoleNode("nested_include_role", include_role=True)
+    role.add_node("tasks", TaskNode("task 1"))
+    role.add_node("tasks", TaskNode("task 2"))
+    play.add_node("tasks", role)
+
+    nested_include_1 = RoleNode("nested_include_role_1", include_role=True)
+    nested_include_1.add_node("tasks", TaskNode("task 1 in nested include 1"))
+    nested_include_2 = RoleNode("nested_include_role_2", include_role=True)
+    nested_include_2.add_node("tasks", TaskNode("task 1 in nested include 2"))
+
+    role.add_node("tasks", nested_include_1)
+    role.add_node("tasks", nested_include_2)
+
+    playbook.calculate_indices(only_roles=False)
+    assert play.index == 1
+    assert role.index == 1
+    assert nested_include_1.index == 3
+    assert nested_include_2.index == 4
+
+    playbook.calculate_indices(only_roles=True)
+    assert play.index == 1
+    assert role.index == 1
+    assert nested_include_1.index == 1
+    assert nested_include_2.index == 2
