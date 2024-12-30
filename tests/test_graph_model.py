@@ -48,6 +48,12 @@ def test_empty_play_method() -> None:
     play.add_node("roles", role)
     assert play.is_empty(), "The play should still be empty given the role is empty"
 
+    task = TaskNode("Block 1")
+    play.add_node("tasks", task)
+    assert not play.is_empty(), "The play should not be empty here"
+    play.remove_node("tasks", task)
+    assert play.is_empty(), "The play should be empty again"
+
     role.add_node("tasks", TaskNode("task 1"))
     assert not play.is_empty(), "The play should not be empty here"
 
@@ -266,11 +272,15 @@ def test_calculate_indices():
     playbook.calculate_indices(only_roles=False)
     assert play.index == 1
     assert role.index == 1
+    role.tasks[0].index = 1
+    role.tasks[0].index = 2
     assert nested_include_1.index == 3
     assert nested_include_2.index == 4
 
     playbook.calculate_indices(only_roles=True)
     assert play.index == 1
     assert role.index == 1
+    role.tasks[0].index = None
+    role.tasks[0].index = None
     assert nested_include_1.index == 1
     assert nested_include_2.index == 2

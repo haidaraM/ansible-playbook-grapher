@@ -251,14 +251,14 @@ class CompositeNode(Node):
         Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
         or not.
 
-        :param only_roles: Whether to calculate the indices only for the roles or not.
+        :param only_roles: When in only roles, we need to skip the tasks.
         """
         current_index = 1
         for comp_type in self.supported_compositions:
             for node in self._compositions[comp_type]:
                 if (
                     isinstance(node, CompositeNode) and node.is_empty()
-                ) and not only_roles:  # Skip empty nodes
+                ) and not only_roles:  # Skip empty nodes when we don't need only roles
                     node.index = None
                     continue
 
@@ -338,15 +338,18 @@ class CompositeNode(Node):
     def is_empty(self) -> bool:
         """Return true if the composite node is empty, false otherwise.
 
-        A composite node is considered empty if all its compositions are empty.
+        A composite node with at least one task is not empty.
         :return:
         """
         for nodes in self._compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
-                    return node.is_empty()
-
-        return all(len(nodes) == 0 for nodes in self._compositions.values())
+                    if not node.is_empty():
+                        return False
+                else:
+                    # We have a task node here => the composite node is not empty
+                    return False
+        return True
 
     def has_node_type(self, node_type: type) -> bool:
         """Return true if the composite node has at least one node of the given type, false otherwise.
