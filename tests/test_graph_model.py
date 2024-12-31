@@ -269,7 +269,7 @@ def test_calculate_indices():
     role.add_node("tasks", nested_include_1)
     role.add_node("tasks", nested_include_2)
 
-    playbook.calculate_indices(only_roles=False)
+    playbook.calculate_indices()
     assert play.index == 1
     assert role.index == 1
     role.tasks[0].index = 1
@@ -277,7 +277,8 @@ def test_calculate_indices():
     assert nested_include_1.index == 3
     assert nested_include_2.index == 4
 
-    playbook.calculate_indices(only_roles=True)
+    playbook.hide_task_nodes()
+    playbook.calculate_indices()
     assert play.index == 1
     assert role.index == 1
     role.tasks[0].index = None

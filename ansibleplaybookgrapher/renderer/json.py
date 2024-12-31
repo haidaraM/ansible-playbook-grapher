@@ -45,7 +45,6 @@ class JSONRenderer(Renderer):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        only_roles: bool = False,
         **kwargs,
     ) -> str:
         playbooks = []
@@ -55,7 +54,6 @@ class JSONRenderer(Renderer):
                 playbook_node,
                 open_protocol_handler=open_protocol_handler,
                 open_protocol_custom_formats=open_protocol_custom_formats,
-                only_roles=only_roles,
                 include_role_tasks=include_role_tasks,
             )
             json_builder.build_playbook(

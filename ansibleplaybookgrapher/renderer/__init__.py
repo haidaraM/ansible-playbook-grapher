@@ -59,7 +59,6 @@ class Renderer(ABC):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        only_roles: bool = False,
         **kwargs,
     ) -> str:
         """Render the playbooks to a file.
@@ -71,7 +70,6 @@ class Renderer(ABC):
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
         :param view: Whether to open the rendered file in the default viewer
         :param show_handlers: Whether to show the handlers or not.
-        :param only_roles: Only render the roles without the tasks.
         :param kwargs:
         :return:
         """
@@ -90,7 +88,6 @@ class PlaybookBuilder(ABC):
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
         include_role_tasks: bool = False,
-        only_roles: bool = False,
     ) -> None:
         """The base class for all playbook builders.
 
@@ -100,14 +97,12 @@ class PlaybookBuilder(ABC):
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
-        :param only_roles: Only render the roles in the graph (ignoring the tasks).
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
         self.include_role_tasks = include_role_tasks
-        self.only_roles = only_roles
 
         self.open_protocol_handler = open_protocol_handler
         self.open_protocol_formats = None
@@ -124,11 +119,13 @@ class PlaybookBuilder(ABC):
         :param fontcolor: The font color to apply
         :return:
         """
+
+        if node.is_hidden:
+            return
+
         if isinstance(node, BlockNode):
             # Only build the block if it is not empty or if it has a role node when we only want roles
-            if not node.is_empty() or (
-                node.has_node_type(RoleNode) and self.only_roles
-            ):
+            if not node.is_empty():
                 self.build_block(
                     block_node=node,
                     color=color,
@@ -136,14 +133,11 @@ class PlaybookBuilder(ABC):
                     **kwargs,
                 )
         elif isinstance(node, RoleNode):
-            if not node.is_empty() or self.only_roles:
+            if not node.is_empty():
                 self.build_role(
                     role_node=node, color=color, fontcolor=fontcolor, **kwargs
                 )
         elif isinstance(node, TaskNode):
-            if self.only_roles:
-                return
-
             self.build_task(
                 task_node=node,
                 color=color,
@@ -202,7 +196,7 @@ class PlaybookBuilder(ABC):
 
         # roles
         for role in play_node.roles:
-            if role.is_empty() and not self.only_roles:
+            if role.is_empty():
                 continue
 
             self.build_role(

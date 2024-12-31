@@ -29,6 +29,8 @@
         state: latest
 
 - hosts: database
+  tags:
+    - database
   roles:
     - role: fake_role
       when: ansible_distribution == "Debian"
@@ -37,6 +39,8 @@
     - role: display_some_facts
 
 - hosts: webserver
+  tags:
+    - webserver
   roles:
     - role: nested_include_role
     - role: display_some_facts

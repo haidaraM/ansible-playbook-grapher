@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: localhost
   roles:
     - role: fake_role
       when: ansible_distribution == "Debian"
@@ -8,6 +8,8 @@
     - block:
         - include_role:
             name: fake_role
+      tags:
+        - hello
   post_tasks:
     - include_role:
         name: nested_include_role

@@ -820,3 +820,26 @@ def test_only_roles_with_nested_include_roles(
         blocks_number=1,
         roles_number=expected_roles_number,
     )
+
+
+def test_only_roles_with_nested_include_roles_with_a_tag(
+    request: pytest.FixtureRequest,
+) -> None:
+    """Test graphing a playbook with the --only-roles flag and a tag
+
+    :param request:
+    :return:
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["nested-include-role.yml"],
+        output_filename=request.node.name,
+        additional_args=["--only-roles", "-t", "hello"],
+    )
+
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        blocks_number=1,
+        roles_number=1,
+    )

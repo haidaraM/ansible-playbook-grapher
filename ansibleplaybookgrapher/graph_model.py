@@ -64,21 +64,24 @@ class Node:
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
+        is_hidden: bool = False,
     ) -> None:
         """
 
         :param node_name: The name of the node
         :param node_id: An identifier for this node
-        :param when: The conditional attached to the node
+        :param when: The condition attached to the node
         :param raw_object: The raw ansible object matching this node in the graph. Will be None if there is no match on
         Ansible side
         :param parent: The parent node of this node
+        :param is_hidden: Whether the node is hidden or not. Hidden nodes are not displayed in the graph.
         """
         self.name = node_name
         self.parent = parent
         self.id = node_id
         self.when = when
         self.raw_object = raw_object
+        self.is_hidden = is_hidden
 
         self.location: NodeLocation | None = None
         self.set_location()
@@ -245,33 +248,30 @@ class CompositeNode(Node):
         self._check_target_composition(target_composition)
         self._compositions[target_composition].remove(node)
 
-    def calculate_indices(self, only_roles: bool = False) -> None:
-        """
-        Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
+    def calculate_indices(self) -> None:
+        """Calculate the indices of all nodes based on their composition type and whether they are supposed to be included
         or not.
 
-        :param only_roles: When in only roles, we need to skip the tasks.
         """
         current_index = 1
         for comp_type in self.supported_compositions:
             for node in self._compositions[comp_type]:
-                if (
-                    isinstance(node, CompositeNode) and node.is_empty()
-                ) and not only_roles:  # Skip empty nodes when we don't need only roles
+                if node.is_hidden:
                     node.index = None
                     continue
 
                 if (
-                    isinstance(node, TaskNode) and only_roles
-                ):  # Skip tasks when no needed
+                    isinstance(node, CompositeNode) and node.is_empty()
+                ):  # Skip empty nodes
                     node.index = None
+                    node.is_hidden = True
                     continue
 
                 node.index = current_index
                 current_index += 1
 
                 if isinstance(node, CompositeNode):
-                    node.calculate_indices(only_roles=only_roles)
+                    node.calculate_indices()
 
     def get_nodes(self, target_composition: str) -> list:
         """Get a node from the compositions.
@@ -397,9 +397,23 @@ class CompositeNode(Node):
                 node_dict[composition] = []
             else:
                 nodes = self._compositions.get(composition, [])
-                node_dict[composition] = [node.to_dict(**kwargs) for node in nodes]
+                node_dict[composition] = [
+                    node.to_dict(**kwargs) for node in nodes if not node.is_hidden
+                ]
 
         return node_dict
+
+    def hide_task_nodes(self):
+        """Hide all the task nodes from the playbook.
+
+        :return:
+        """
+        for target_composition, nodes in self._compositions.items():
+            for node in nodes:
+                if isinstance(node, TaskNode):
+                    node.is_hidden = True
+                elif isinstance(node, CompositeNode):
+                    node.hide_task_nodes()
 
 
 class PlaybookNode(CompositeNode):
@@ -487,13 +501,6 @@ class PlaybookNode(CompositeNode):
 
         for play in to_exclude:
             self.remove_node("plays", play)
-
-    def remove_tasks_node(self):
-        """Exclude all the task nodes from the playbook.
-
-        :return:
-        """
-        self.remove_all_nodes_types([TaskNode])
 
 
 class PlayNode(CompositeNode):

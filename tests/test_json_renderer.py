@@ -248,22 +248,15 @@ def test_with_block_with_skip_tags(
             "pre_task_tag",
         ],
     )
-    result = _common_tests(
+    _common_tests(
         json_path,
         plays_number=1,
         pre_tasks_number=0,
         roles_number=1,
         tasks_number=7,
-        blocks_number=4,
+        blocks_number=3,
         post_tasks_number=2,
     )
-
-    blocks = result["blocks"]
-    # The first block should have None as an index
-    assert blocks[0]["index"] is None, "The first block should have None as an index"
-    assert (
-        len(blocks[0]["tasks"]) == 0
-    ), "The first block should have no tasks (skipped)"
 
 
 @pytest.mark.parametrize(

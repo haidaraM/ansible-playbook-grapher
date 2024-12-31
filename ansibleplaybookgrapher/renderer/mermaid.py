@@ -48,7 +48,6 @@ class MermaidFlowChartRenderer(Renderer):
         include_role_tasks: bool = False,
         view: bool = False,
         show_handlers: bool = False,
-        only_roles: bool = False,
         directive: str = DEFAULT_DIRECTIVE,
         orientation: str = DEFAULT_ORIENTATION,
         **kwargs,
@@ -62,7 +61,6 @@ class MermaidFlowChartRenderer(Renderer):
         :param include_role_tasks: Whether to include the tasks of the roles or not.
         :param view: Not supported for the moment.
         :param show_handlers: Whether to show handlers or not.
-        :param only_roles: Only render the roles without the tasks.
         :param directive: Mermaid directive.
         :param orientation: Mermaid graph orientation.
         :param kwargs:
@@ -95,7 +93,6 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_built=roles_built,
                 link_order=link_order,
                 include_role_tasks=include_role_tasks,
-                only_roles=only_roles,
             )
 
             mermaid_code += playbook_builder.build_playbook(
@@ -159,7 +156,6 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
-        only_roles: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -169,7 +165,6 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             roles_usage,
             roles_built,
             include_role_tasks=include_role_tasks,
-            only_roles=only_roles,
         )
 
         self.mermaid_code = ""

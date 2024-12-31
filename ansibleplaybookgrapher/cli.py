@@ -90,9 +90,9 @@ class PlaybookGrapherCLI(CLI):
                 p.remove_plays_without_roles()
 
             if self.options.only_roles:
-                p.remove_tasks_node()
+                p.hide_task_nodes()
 
-            p.calculate_indices(only_roles=self.options.only_roles)
+            p.calculate_indices()
 
         match self.options.renderer:
             case "graphviz":
@@ -108,7 +108,6 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    only_roles=self.options.only_roles,
                     save_dot_file=self.options.save_dot_file,
                 )
 
@@ -125,7 +124,6 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    only_roles=self.options.only_roles,
                     directive=self.options.renderer_mermaid_directive,
                     orientation=self.options.renderer_mermaid_orientation,
                 )
@@ -140,7 +138,6 @@ class PlaybookGrapherCLI(CLI):
                     include_role_tasks=self.options.include_role_tasks,
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
-                    only_roles=self.options.only_roles,
                 )
 
             case _:
