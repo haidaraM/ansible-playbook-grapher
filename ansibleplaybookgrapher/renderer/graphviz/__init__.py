@@ -339,7 +339,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             if not play.is_hidden:
                 with self.digraph.subgraph(name=play.name) as play_subgraph:
                     self.build_play(
-                        play, digraph=play_subgraph, show_handlers=show_handlers, **kwargs
+                        play,
+                        digraph=play_subgraph,
+                        show_handlers=show_handlers,
+                        **kwargs,
                     )
 
         return self.digraph.source
