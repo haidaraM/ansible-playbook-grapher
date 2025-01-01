@@ -89,8 +89,11 @@ def test_remove_plays_without_roles() -> None:
     playbook.add_node("plays", play_2)
 
     assert len(playbook.plays) == 2, "There should be 2 plays"
-    playbook.remove_plays_without_roles()
-    assert len(playbook.plays) == 1, "There should be only one play"
+    assert not play_1.is_hidden
+    assert not play_2.is_hidden
+    playbook.hide_plays_without_roles()
+    assert not play_1.is_hidden
+    assert play_2.is_hidden
 
 
 def test_get_all_tasks_nodes() -> None:

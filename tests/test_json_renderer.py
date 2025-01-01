@@ -234,9 +234,9 @@ def test_with_block(request: pytest.FixtureRequest) -> None:
 def test_with_block_with_skip_tags(
     request: pytest.FixtureRequest,
 ) -> None:
-    """
-    :return:
+    """Test with the --skip-tags option with a block.
 
+    :return:
     """
     json_path, playbook_paths = run_grapher(
         ["with_block.yml"],
@@ -267,6 +267,7 @@ def test_with_block_with_skip_tags(
 def test_group_roles_by_name(request: pytest.FixtureRequest, flag: str) -> None:
     """Test when grouping roles by name. This doesn't really affect the JSON renderer: multiple nodes will have the same ID.
     This test ensures that regardless of the flag '--group-roles-by-name', we get the same nodes in the output.
+
     :param request:
     :return:
     """
@@ -372,6 +373,27 @@ def test_handler_in_a_role(
     )
 
 
+def test_hide_plays_without_roles(request: pytest.FixtureRequest) -> None:
+    """Test the --hide-plays-without-roles flag.
+
+    :param request:
+    :return:
+    """
+    json_path, playbook_paths = run_grapher(
+        ["play-hiding.yml"],
+        output_filename=request.node.name,
+        additional_args=[
+            "--hide-plays-without-roles",
+        ],
+    )
+    _common_tests(
+        json_path,
+        plays_number=2,
+        roles_number=2,
+        tasks_number=1,
+    )
+
+
 @pytest.mark.parametrize(
     ("include_role_tasks_option", "expected_roles_number"),
     [("--", 4), ("--include-role-tasks", 6)],
@@ -384,7 +406,6 @@ def test_only_roles_with_nested_include_roles(
 ) -> None:
     """Test graphing a playbook with the --only-roles flag.
 
-    For the JSON renderer, the empty roles are not excluded by design. As a result, the number of roles is different
     :param request:
     :return:
     """

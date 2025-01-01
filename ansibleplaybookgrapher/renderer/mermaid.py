@@ -199,7 +199,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self._indentation_level += 1
 
         for play_node in self.playbook_node.plays:
-            self.build_play(play_node, show_handlers=show_handlers, **kwargs)
+            if not play_node.is_hidden:
+                self.build_play(play_node, show_handlers=show_handlers, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")

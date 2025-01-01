@@ -492,15 +492,14 @@ class PlaybookNode(CompositeNode):
         for play in to_exclude:
             self.remove_node("plays", play)
 
-    def remove_plays_without_roles(self):
-        """Remove the plays that do not have roles from the playbook.
+    def hide_plays_without_roles(self):
+        """Hide the plays that do not have at least one role.
 
         :return:
         """
-        to_exclude = [play for play in self.plays if not play.has_node_type(RoleNode)]
-
-        for play in to_exclude:
-            self.remove_node("plays", play)
+        for play in self.plays:
+            if not play.has_node_type(RoleNode):
+                play.is_hidden = True
 
 
 class PlayNode(CompositeNode):

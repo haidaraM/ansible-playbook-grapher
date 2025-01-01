@@ -87,7 +87,7 @@ class PlaybookGrapherCLI(CLI):
                 p.remove_empty_plays()
 
             if self.options.hide_plays_without_roles:
-                p.remove_plays_without_roles()
+                p.hide_plays_without_roles()
 
             if self.options.only_roles:
                 p.hide_task_nodes()

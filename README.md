@@ -94,7 +94,6 @@ Comparison of the renderers:
 | Highlight on hover                                       |         ✅         |             ❌              |                          ❌: NA                           |
 | Change graph orientation                                 |         ❌         |             ✅              |                          ❌: NA                           |
 | Group roles by name                                      |         ✅         |             ✅              | ✅: the roles with the same names will have the same IDs. |
-| Hide empty roles and blocks                              |         ✅         |             ✅              |           ❌: They are kept in the JSON output            |
 | View the output file in your the OS default viewer       |         ✅         | ✅ on https://mermaid.live/ |                            ✅                             |
 | Tests of the output                                      |     Automatic     |   Manual (need a parser)   |                        Automatic                         |
 

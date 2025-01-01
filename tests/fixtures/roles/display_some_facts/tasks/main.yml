@@ -2,6 +2,8 @@
 - name: ansible_architecture
   debug:
     var: ansible_architecture
+  tags:
+    - test
 
 - name: ansible_date_time
   debug:
