@@ -1,4 +1,4 @@
-# 2.8.0 (Unreleased)
+# 2.8.0 (2025-01-01)
 
 ## What's Changed
 
