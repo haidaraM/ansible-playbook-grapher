@@ -1,3 +1,15 @@
+# 3.0.0 (upcoming)
+
+Here are a few break changes to expect in the next major release:
+
+- Remove the flag `--hide-empty-plays`. The default behavior is now to hide empty plays.
+- Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
+  `include_role` task.
+
+# 2.9.0 (unreleased)
+
+WIP
+
 # 2.8.0 (2025-01-01)
 
 ## What's Changed
