@@ -715,7 +715,7 @@ class HandlerNode(TaskNode):
         raw_object: Any = None,
         parent: "Node" = None,
         notify: list[str] | None = None,
-        listen: str | None = None,
+        listen: list[str] | None = None,
     ) -> None:
         super().__init__(
             node_name=node_name,
