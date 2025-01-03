@@ -658,6 +658,7 @@ class TaskNode(LoopMixin, Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
+        notify: list[str] | None = None,
     ) -> None:
         """:param node_name:
         :param node_id:
@@ -670,6 +671,18 @@ class TaskNode(LoopMixin, Node):
             raw_object=raw_object,
             parent=parent,
         )
+        # The list of handlers to notify
+        self.notify = notify or []
+
+    def to_dict(self, **kwargs) -> dict:
+        """Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
+
+        :return:
+        """
+        data = super().to_dict(**kwargs)
+        data["notify"] = self.notify
+        return data
 
     def display_name(self) -> str:
         """Return the display name of the node.
@@ -689,6 +702,47 @@ class TaskNode(LoopMixin, Node):
         :return:
         """
         return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
+
+
+class HandlerNode(TaskNode):
+    """A handler node. This matches an Ansible Handler."""
+
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str | None = None,
+        when: str = "",
+        raw_object: Any = None,
+        parent: "Node" = None,
+        notify: list[str] | None = None,
+        listen: str | None = None,
+    ) -> None:
+        super().__init__(
+            node_name=node_name,
+            node_id=node_id or generate_id("handler_"),
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            notify=notify,
+        )
+        self.listen = listen
+
+    def to_dict(self, **kwargs) -> dict:
+        """Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
+
+        :return:
+        """
+        data = super().to_dict(**kwargs)
+        data["listen"] = self.listen
+        return data
+
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        :return:
+        """
+        return f"[handler] {self.name}"
 
 
 class RoleNode(LoopMixin, CompositeNode):

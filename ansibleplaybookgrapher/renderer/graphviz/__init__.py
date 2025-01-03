@@ -168,7 +168,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         node_shape = "rectangle"
         node_style = "solid"
 
-        if task_node.is_handler():
+        if task_node.is_handler():  # TODO: replace
             edge_style = "dotted"
             node_shape = "hexagon"
             node_style = "dotted"

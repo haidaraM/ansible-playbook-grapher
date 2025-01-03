@@ -32,6 +32,7 @@ from ansible.utils.display import Display
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
+    HandlerNode,
     Node,
     PlaybookNode,
     PlayNode,
@@ -124,21 +125,43 @@ class BaseParser(ABC):
             display.vv(f"The task '{task.get_name()}' is skipped due to the tags.")
             return False
 
-        display.vv(f"Adding {node_type} '{task.get_name()}' to the graph")
+        display.vv(f"Adding the {node_type} '{task.get_name()}' to the graph")
 
         task_name = clean_name(self.template(task.get_name(), task_vars))
+        node_params = {
+            "node_name": task_name,
+            "node_id": generate_id(f"{node_type}_"),
+            "when": convert_when_to_str(task.when),
+            "raw_object": task,
+            "parent": parent_node,
+            "notify": _get_notified_handlers(task),
+        }
+        if node_type == "handler":
+            node = HandlerNode(**node_params, listen=task.listen)
+        else:
+            node = TaskNode(**node_params)
         parent_node.add_node(
             target_composition=f"{node_type}s",
-            node=TaskNode(
-                task_name,
-                generate_id(f"{node_type}_"),
-                when=convert_when_to_str(task.when),
-                raw_object=task,
-                parent=parent_node,
-            ),
+            node=node,
         )
 
         return True
+
+
+def _get_notified_handlers(task: Task) -> list[str]:
+    """Get the handlers that are notified by the task.
+
+    :param task: The task to get the notified from.
+    :return:
+    """
+    handlers = []
+    if task.notify:
+        if isinstance(task.notify, AnsibleUnicode):
+            handlers.append(task.notify)
+        elif isinstance(task.notify, AnsibleSequence):
+            handlers.extend(task.notify)
+
+    return handlers
 
 
 class PlaybookParser(BaseParser):
@@ -280,21 +303,21 @@ class PlaybookParser(BaseParser):
                 play_node.add_node("roles", role_node)
 
                 # loop through the tasks
-                for block in role.compile(play):
+                for handler_block in role.compile(play):
                     self._include_tasks_in_blocks(
                         current_play=play,
                         parent_nodes=[role_node],
-                        block=block,
+                        block=handler_block,
                         play_vars=play_vars,
                         node_type="task",
                     )
 
                 # loop through the handlers of the roles
-                for block in role.get_handler_blocks(play):
+                for handler_block in role.get_handler_blocks(play):
                     self._include_tasks_in_blocks(
                         current_play=play,
                         parent_nodes=[role_node],
-                        block=block,
+                        block=handler_block,
                         play_vars=play_vars,
                         node_type="handler",
                     )
@@ -332,8 +355,6 @@ class PlaybookParser(BaseParser):
                     node_type="handler",
                 )
 
-            # TODO: Add handlers only only if they are notified AND after each section.
-            # add_handlers_in_notify(play_node)
             # Summary
             display.v(f"{len(play_node.pre_tasks)} pre_task(s) added to the graph.")
             display.v(f"{len(play_node.roles)} role(s) added to the play")
