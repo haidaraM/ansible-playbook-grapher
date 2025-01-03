@@ -137,7 +137,7 @@ class BaseParser(ABC):
             "notify": _get_notified_handlers(task),
         }
         if node_type == "handler":
-            listen = task.listen if isinstance(task.listen, AnsibleSequence) else list(task.listen)
+            listen = task.listen if isinstance(task.listen, AnsibleSequence) else [task.listen]
             node = HandlerNode(**node_params, listen=listen)
         else:
             node = TaskNode(**node_params)
