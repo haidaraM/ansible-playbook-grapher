@@ -134,7 +134,7 @@ def _common_tests(
 
     handlers = (
         jq.compile(
-            '.. | objects | select(.type == "TaskNode" and (.id | startswith("handler_")))',
+            '.. | objects | select(.type == "HandlerNode" and (.id | startswith("handler_")))',
         )
         .input(output)
         .all()

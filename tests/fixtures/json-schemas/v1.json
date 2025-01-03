@@ -155,7 +155,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "pattern": "^(TaskNode|BlockNode|RoleNode)$",
+          "pattern": "^(TaskNode|BlockNode|RoleNode|HandlerNode)$",
           "type": "string"
         },
         "id": {

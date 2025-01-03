@@ -263,7 +263,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         node_shape = "rect"
         style = f"stroke:{color},fill:{fontcolor}"
 
-        if task_node.is_handler():
+        if task_node.is_handler():  # TODO: replace
             # dotted style for handlers
             link_type = "-.-"
             node_shape = "hexagon"

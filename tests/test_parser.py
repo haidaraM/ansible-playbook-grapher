@@ -7,6 +7,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
+    HandlerNode,
     Node,
     RoleNode,
     TaskNode,
@@ -576,14 +577,20 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     play_1_expected_handlers = [
         "restart nginx",
         "restart mysql",
-        "restart mysql in the pre_tasks",
+        "restart docker",
     ]
     assert len(play_1.handlers) == len(play_1_expected_handlers)
     for idx, h in enumerate(play_1.handlers):
         assert (
             h.name == play_1_expected_handlers[idx]
         ), f"The handler should be '{play_1_expected_handlers[idx]}'"
-        assert h.is_handler()
+        assert isinstance(h, HandlerNode)
+        assert h.location is not None
+        assert h.listen == []
+
+    assert play_1.pre_tasks[0].notify == ["restart mysql", "restart nginx"]
+    assert play_1.tasks[0].notify == ["restart mysql"]
+    assert play_1.tasks[1].notify == ["restart nginx"]
 
     # Second play
     assert len(play_2.tasks) == 4, "The second play should have 6 tasks"
@@ -597,8 +604,14 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
         assert (
             h.name == play_1_expected_handler[idx]
         ), f"The handler should be '{play_1_expected_handler[idx]}'"
-        assert h.is_handler()
-        assert h.location is not None
+        assert isinstance(h, HandlerNode)
+
+    assert play_2.handlers[0].notify == ["restart web services"]
+    assert play_2.handlers[0].listen == []
+    assert play_2.handlers[1].notify == []
+    assert play_2.handlers[1].listen == ["restart web services"]
+    assert play_2.handlers[2].notify == []
+    assert play_2.handlers[2].listen == ["restart web services"]
 
 
 @pytest.mark.parametrize("grapher_cli", [["handlers-in-role.yml"]], indirect=True)
