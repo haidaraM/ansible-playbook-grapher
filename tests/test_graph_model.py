@@ -1,5 +1,6 @@
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -288,3 +289,25 @@ def test_calculate_indices():
     role.tasks[0].index = None
     assert nested_include_1.index == 1
     assert nested_include_2.index == 2
+
+
+def test_get_handler_from_play():
+    """Test the method PlayNode.get_handler
+
+    :return:
+    """
+    play = PlayNode("play 1")
+    restart_nginx = HandlerNode("restart nginx")
+    restart_postgres = HandlerNode("restart postgres", listen=["restart dbs"])
+    restart_mysql = HandlerNode("restart mysql", listen=["restart dbs"])
+    play.add_node("handlers", restart_nginx)
+    play.add_node("handlers", restart_postgres)
+    play.add_node("handlers", restart_mysql)
+
+    assert play.get_handler("fake handler") is None
+    assert play.get_handler("restart nginx") == restart_nginx
+    assert play.get_handler("restart postgres") == restart_postgres
+    assert play.get_handler("restart mysql") == restart_mysql
+
+    # When multiple handlers have the same listen, the last one should be returned
+    assert play.get_handler("restart dbs") == restart_mysql

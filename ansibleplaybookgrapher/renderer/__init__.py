@@ -114,12 +114,15 @@ class PlaybookBuilder(ABC):
         if self.open_protocol_handler:
             self.open_protocol_formats = formats[self.open_protocol_handler]
 
-    def build_node(self, node: Node, color: str, fontcolor: str, **kwargs) -> None:
+    def build_node(
+        self, play_node: PlayNode, node: Node, color: str, fontcolor: str, **kwargs
+    ) -> None:
         """Build a generic node.
 
-        :param node: The RoleNode to render
-        :param color: The color to apply
-        :param fontcolor: The font color to apply
+        :param play_node: The PlayNode to which the node belongs.
+        :param node: The Node to render
+        :param color: The color to apply.
+        :param fontcolor: The font color to apply.
         :return:
         """
 
@@ -130,6 +133,7 @@ class PlaybookBuilder(ABC):
             # Only build the block if it is not empty or if it has a role node when we only want roles
             if not node.is_empty():
                 self.build_block(
+                    play_node=play_node,
                     block_node=node,
                     color=color,
                     fontcolor=fontcolor,
@@ -138,10 +142,15 @@ class PlaybookBuilder(ABC):
         elif isinstance(node, RoleNode):
             if not node.is_empty():
                 self.build_role(
-                    role_node=node, color=color, fontcolor=fontcolor, **kwargs
+                    play_node=play_node,
+                    role_node=node,
+                    color=color,
+                    fontcolor=fontcolor,
+                    **kwargs,
                 )
         elif isinstance(node, TaskNode):
             self.build_task(
+                play_node=play_node,
                 task_node=node,
                 color=color,
                 fontcolor=fontcolor,
@@ -165,9 +174,7 @@ class PlaybookBuilder(ABC):
         """
 
     @abstractmethod
-    def build_play(
-        self, play_node: PlayNode, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """Build a single play to be rendered
 
         :param play_node: The play to render
@@ -175,10 +182,9 @@ class PlaybookBuilder(ABC):
         :return:
         """
 
-    def traverse_play(
-        self, play_node: PlayNode, **kwargs
-    ) -> None:
-        """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
+    def traverse_play(self, play_node: PlayNode, **kwargs) -> None:
+        """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks, handlers.
+
         :param play_node:
         :param kwargs:
         :return:
@@ -187,6 +193,7 @@ class PlaybookBuilder(ABC):
         # pre_tasks
         for pre_task in play_node.pre_tasks:
             self.build_node(
+                play_node=play_node,
                 node=pre_task,
                 color=color,
                 fontcolor=play_font_color,
@@ -199,6 +206,7 @@ class PlaybookBuilder(ABC):
                 continue
 
             self.build_role(
+                play_node=play_node,
                 color=color,
                 fontcolor=play_font_color,
                 role_node=role,
@@ -208,6 +216,7 @@ class PlaybookBuilder(ABC):
             if self.show_handlers:
                 for r_handler in role.handlers:
                     self.build_node(
+                        play_node=play_node,
                         node=r_handler,
                         color=color,
                         fontcolor=play_font_color,
@@ -217,6 +226,7 @@ class PlaybookBuilder(ABC):
         # tasks
         for task in play_node.tasks:
             self.build_node(
+                play_node=play_node,
                 node=task,
                 color=color,
                 fontcolor=play_font_color,
@@ -226,6 +236,7 @@ class PlaybookBuilder(ABC):
         # post_tasks
         for post_task in play_node.post_tasks:
             self.build_node(
+                play_node=play_node,
                 node=post_task,
                 color=color,
                 fontcolor=play_font_color,
@@ -236,6 +247,7 @@ class PlaybookBuilder(ABC):
             # play handlers
             for p_handler in play_node.handlers:
                 self.build_node(
+                    play_node=play_node,
                     node=p_handler,
                     color=color,
                     fontcolor=play_font_color,
@@ -246,12 +258,15 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """Build a single task to be rendered
+        """Build a single task to be rendered.
+
+        :param play_node: The play to which the task belongs
         :param task_node: The task
         :param fontcolor: The font color to apply
         :param color: Color from the play
@@ -262,12 +277,15 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
         """Render a role in the graph
+
+        :param play_node: The PlayNode to which the role belongs.
         :param role_node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
@@ -277,6 +295,7 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -284,6 +303,8 @@ class PlaybookBuilder(ABC):
     ) -> None:
         """Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
+
+        :param play_node: The PlayNode to which the block belongs.
         :param block_node: The BlockNode to build
         :param color: The color from the play to apply
         :param fontcolor: The font color to apply

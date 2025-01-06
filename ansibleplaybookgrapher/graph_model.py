@@ -15,7 +15,7 @@
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, Optional, Type, TypeVar
 
 from ansible.playbook.handler import Handler
 
@@ -162,6 +162,8 @@ class Node:
         """Return a dictionary representation of this node. This representation is not meant to get the original object
         back.
 
+        This only returns the attributes for this object, so this may need to be overridden for any subclasses that wish
+        to add additional attributes.
         :return:
         """
         data = {
@@ -581,6 +583,22 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
+    def get_handler(self, handler_name: str) -> Optional["HandlerNode"]:
+        """Return the handler with the given name if it exists, None otherwise. If multiple handlers have the same name,
+        only the last one loaded into the play is returned.
+
+        - The name can also be prefixed with the role name if the handler is defined in a role.
+          Example: "role_name : handler_name". TODO: implement this feature.
+        - You can also pass the listen topic of the handler. Example: "handler_name : listen_topic"
+        :param handler_name: The name of the handler to get.
+        :return:
+        """
+        for handler in reversed(self.handlers):  # type: HandlerNode
+            if handler.name == handler_name or handler_name in handler.listen:
+                return handler
+
+        return None
+
     def to_dict(
         self,
         exclude_compositions: list[str] | None = None,
@@ -698,7 +716,16 @@ class TaskNode(LoopMixin, Node):
 
 
 class HandlerNode(TaskNode):
-    """A handler node. This matches an Ansible Handler."""
+    """A handler node. This matches an Ansible Handler.
+
+    Key things to note:
+
+    - Each handler should have a globally unique name. If multiple handlers are defined with the same name, only the last
+    one loaded into the play can be notified and executed, effectively shadowing all of the previous handlers with the same name.
+    - There is only one global scope for handlers (handler names and listen topics) regardless of where the handlers are
+    defined. This also includes handlers defined in roles.
+    - If a handler is defined in a role, it can be notified using the role name as a prefix. Example: notify: "role_name : handler_name"
+    """
 
     def __init__(
         self,
@@ -718,7 +745,10 @@ class HandlerNode(TaskNode):
             parent=parent,
             notify=notify,
         )
-        self.listen = listen
+        self.listen = listen or []
+
+    def __repr__(self):
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index}, notify={self.notify}, listen={self.listen})"
 
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this node. This representation is not meant to get the original object

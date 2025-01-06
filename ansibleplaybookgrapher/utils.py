@@ -109,7 +109,8 @@ def has_role_parent(task_block: Task) -> bool:
 
 
 def merge_dicts(dict_1: dict[Any, set], dict_2: dict[Any, set]) -> dict[Any, set]:
-    """Merge two dicts by grouping keys and appending values in list
+    """Merge two dicts by grouping keys and appending values to the set.
+
     :param dict_1:
     :param dict_2:
     :return:

@@ -242,6 +242,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
@@ -249,6 +250,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a task.
 
+        :param play_node:
         :param task_node:
         :param color:
         :param fontcolor:
@@ -312,6 +314,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
@@ -319,6 +322,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a role.
 
+        :param play_node:
         :param role_node:
         :param color:
         :param fontcolor:
@@ -360,6 +364,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             self._indentation_level += 1
             for role_task in role_node.tasks:
                 self.build_node(
+                    play_node=play_node,
                     node=role_task,
                     color=node_color,
                     fontcolor=fontcolor,
@@ -370,6 +375,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -377,6 +383,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a block.
 
+        :param play_node:
         :param block_node:
         :param color:
         :param fontcolor:
@@ -405,6 +412,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self._indentation_level += 1
         for task in block_node.tasks:
             self.build_node(
+                play_node=play_node,
                 node=task,
                 color=color,
                 fontcolor=fontcolor,

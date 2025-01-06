@@ -120,7 +120,7 @@ class GraphvizRenderer(Renderer):
 
 
 class GraphvizPlaybookBuilder(PlaybookBuilder):
-    """Build the graphviz graph."""
+    """Build the graphviz graph for a single playbook."""
 
     def __init__(
         self,
@@ -150,12 +150,15 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
         """Build a task
+
+        :param play_node:
         :param task_node:
         :param color:
         :param fontcolor:
@@ -171,7 +174,9 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         node_style = "solid"
 
         if isinstance(task_node, HandlerNode):
-            edge_style = "dotted"
+            edge_style = (
+                "invis"  # We don't want to see the edge from the parent to the handler
+            )
             node_shape = "hexagon"
             node_style = "dotted"
 
@@ -199,8 +204,30 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             style=edge_style,
         )
 
+        # Build the edge from the task to the handlers it notifies
+        if self.show_handlers:
+            for notify_name in task_node.notify:
+                handler = play_node.get_handler(notify_name)
+                if handler:
+                    digraph.edge(
+                        task_node.id,
+                        handler.id,
+                        color="red",
+                        fontcolor="red",
+                        id=f"edge_{task_node.index}_{task_node.id}_{handler.id}",
+                        style="dotted",
+                        label=" ",
+                        tooltip=handler.name,
+                        labeltooltip=handler.name,
+                    )
+                else:
+                    display.warning(
+                        f"The handler '{notify_name}' not found in play '{play_node.name}'",
+                    )
+
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -247,6 +274,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             #  Don't really know why for the moment neither if there is an attribute to change that.
             for task in reversed(block_node.tasks):
                 self.build_node(
+                    play_node=play_node,
                     node=task,
                     color=color,
                     fontcolor=fontcolor,
@@ -255,6 +283,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
@@ -311,6 +340,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 # role tasks
                 for role_task in role_node.tasks:
                     self.build_node(
+                        play_node=play_node,
                         node=role_task,
                         color=role_color,
                         fontcolor=fontcolor,
