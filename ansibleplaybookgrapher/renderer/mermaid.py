@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2025 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -93,11 +94,10 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_built=roles_built,
                 link_order=link_order,
                 include_role_tasks=include_role_tasks,
-            )
-
-            mermaid_code += playbook_builder.build_playbook(
                 show_handlers=show_handlers,
             )
+
+            mermaid_code += playbook_builder.build_playbook()
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
 
@@ -156,6 +156,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
+        show_handlers: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -165,6 +166,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             roles_usage,
             roles_built,
             include_role_tasks=include_role_tasks,
+            show_handlers=show_handlers,
         )
 
         self.mermaid_code = ""
@@ -175,12 +177,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
         """
@@ -200,19 +200,16 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         for play_node in self.playbook_node.plays:
             if not play_node.is_hidden:
-                self.build_play(play_node, show_handlers=show_handlers, **kwargs)
+                self.build_play(play_node, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")
 
         return self.mermaid_code
 
-    def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """Build a play.
 
-        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
@@ -238,7 +235,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # traverse the play
         self._indentation_level += 1
-        self.traverse_play(play_node, show_handlers, **kwargs)
+        self.traverse_play(play_node, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the play '{play_node.display_name()}'")
@@ -263,7 +260,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         node_shape = "rect"
         style = f"stroke:{color},fill:{fontcolor}"
 
-        if task_node.is_handler():  # TODO: replace
+        if isinstance(task_node, HandlerNode):
             # dotted style for handlers
             link_type = "-.-"
             node_shape = "hexagon"

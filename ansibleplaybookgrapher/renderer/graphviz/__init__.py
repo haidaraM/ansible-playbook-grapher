@@ -19,6 +19,7 @@ from graphviz import Digraph
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -89,11 +90,10 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
                 include_role_tasks=include_role_tasks,
-            )
-
-            builder.build_playbook(
                 show_handlers=show_handlers,
             )
+
+            builder.build_playbook()
             roles_built.update(builder.roles_built)
 
         display.display("Rendering the graph...")
@@ -130,6 +130,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
+        show_handlers: bool,
         digraph: Digraph,
     ) -> None:
         """
@@ -143,6 +144,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             roles_usage=roles_usage,
             roles_built=roles_built,
             include_role_tasks=include_role_tasks,
+            show_handlers=show_handlers,
         )
         self.digraph = digraph
 
@@ -168,7 +170,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         node_shape = "rectangle"
         node_style = "solid"
 
-        if task_node.is_handler():  # TODO: replace
+        if isinstance(task_node, HandlerNode):
             edge_style = "dotted"
             node_shape = "hexagon"
             node_style = "dotted"
@@ -317,12 +319,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format.
 
-        :param show_handlers: Whether to show the handlers or not.
         :return: The text representation of the graphviz dot format for the playbook.
         """
         display.vvv("Converting the graph to the dot format for graphviz")
@@ -341,18 +341,14 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     self.build_play(
                         play,
                         digraph=play_subgraph,
-                        show_handlers=show_handlers,
                         **kwargs,
                     )
 
         return self.digraph.source
 
-    def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """
 
-        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
@@ -391,4 +387,4 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
         # traverse the play
-        self.traverse_play(play_node, show_handlers=show_handlers, **kwargs)
+        self.traverse_play(play_node, **kwargs)

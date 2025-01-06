@@ -696,13 +696,6 @@ class TaskNode(LoopMixin, Node):
 
         return super().display_name()
 
-    def is_handler(self) -> bool:
-        """Return true if this task is a handler, false otherwise.
-
-        :return:
-        """
-        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
-
 
 class HandlerNode(TaskNode):
     """A handler node. This matches an Ansible Handler."""

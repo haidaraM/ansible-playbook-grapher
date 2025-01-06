@@ -88,6 +88,7 @@ class PlaybookBuilder(ABC):
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
         include_role_tasks: bool = False,
+        show_handlers: bool = False,
     ) -> None:
         """The base class for all playbook builders.
 
@@ -97,12 +98,14 @@ class PlaybookBuilder(ABC):
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
+        :param show_handlers: Whether to show the handlers or not.
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
         self.include_role_tasks = include_role_tasks
+        self.show_handlers = show_handlers
 
         self.open_protocol_handler = open_protocol_handler
         self.open_protocol_formats = None
@@ -153,34 +156,30 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_playbook(
         self,
-        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Build the whole playbook
 
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return: The rendered playbook as a string.
         """
 
     @abstractmethod
     def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+        self, play_node: PlayNode, **kwargs
     ) -> None:
         """Build a single play to be rendered
 
         :param play_node: The play to render
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
 
     def traverse_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
+        self, play_node: PlayNode, **kwargs
     ) -> None:
         """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
         :param play_node:
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
@@ -206,7 +205,7 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-            if show_handlers:
+            if self.show_handlers:
                 for r_handler in role.handlers:
                     self.build_node(
                         node=r_handler,
@@ -233,7 +232,7 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-        if show_handlers:
+        if self.show_handlers:
             # play handlers
             for p_handler in play_node.handlers:
                 self.build_node(
