@@ -17,3 +17,6 @@
   handlers:
     - name: restart postgres
       assert: { that: true }
+
+    - name: restart traefik
+      assert: { that: true }

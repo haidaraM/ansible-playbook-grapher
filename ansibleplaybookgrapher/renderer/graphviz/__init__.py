@@ -222,7 +222,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     )
                 if not handlers:
                     display.warning(
-                        f"The handler '{notify_name}' not found in play '{play_node.name}'",
+                        f"The handler '{notify_name}' not found in the play '{play_node.name}'",
                     )
 
     def build_block(

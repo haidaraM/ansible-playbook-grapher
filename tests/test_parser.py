@@ -625,9 +625,9 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
 
     assert len(plays) == 1
     play = plays[0]
-    assert len(play.handlers) == 1, "The play should have 1 handler"
-    handler = play.handlers[0]
-    assert handler.name == "restart postgres"
+    assert len(play.handlers) == 2, "The play should have 2 handlers"
+    assert play.handlers[0].name == "restart postgres"
+    assert play.handlers[1].name == "restart traefik"
 
     assert len(play.roles) == 1, "The play should have 1 role"
     role = play.roles[0]
@@ -638,8 +638,8 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     assert role.handlers[0].location is not None
 
     assert (
-        len(set(play.handlers + role.handlers)) == 2
-    ), "The total number of handlers should be 2"
+        len(play.handlers + role.handlers) == 3
+    ), "The total number of handlers should be 3"
 
 
 @pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)

@@ -755,7 +755,7 @@ def test_handlers(
 
 @pytest.mark.parametrize(
     ("flag", "handlers_number"),
-    [("--", 0), ("--show-handlers", 2)],
+    [("--", 0), ("--show-handlers", 3)],
     ids=["no_handlers", "show_handlers"],
 )
 def test_handlers_in_role(
