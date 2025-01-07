@@ -258,15 +258,24 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
 
-        link_type = "--"
+        link_type = "-->"
+        link_text = f"{task_node.index} {task_node.when}"
         node_shape = "rect"
         style = f"stroke:{color},fill:{fontcolor}"
 
         if isinstance(task_node, HandlerNode):
             # dotted style for handlers
-            link_type = "-.-"
             node_shape = "hexagon"
             style += ",stroke-dasharray: 2, 2"
+        else:
+            # From parent to task
+            self.add_link(
+                source_id=task_node.parent.id,
+                text=link_text,
+                dest_id=task_node.id,
+                style=f"stroke:{color},color:{color}",
+                link_type=link_type,
+            )
 
         # Task node
         self.add_node(
@@ -276,14 +285,18 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=style,
         )
 
-        # From parent to task
-        self.add_link(
-            source_id=task_node.parent.id,
-            text=f"{task_node.index} {task_node.when}",
-            dest_id=task_node.id,
-            style=f"stroke:{color},color:{color}",
-            link_type=link_type,
-        )
+        if self.show_handlers:
+            # From task to handler
+            for notify_name in task_node.notify:
+                handlers = play_node.get_handlers(notify_name)
+                for counter, handler in enumerate(handlers, 1):
+                    self.add_link(
+                        source_id=task_node.id,
+                        text=f"{counter}",
+                        dest_id=handler.id,
+                        style=f"stroke:{color},color:{color}",
+                        link_type="-.->",
+                    )
 
     def add_node(self, node_id: str, shape: str, label: str, style: str = "") -> None:
         """Add a node to the mermaid code.
@@ -428,7 +441,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         text: str,
         dest_id: str,
         style: str = "",
-        link_type: str = "--",
+        link_type: str = "-->",
     ) -> None:
         """Add the link between two nodes.
 
@@ -440,8 +453,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes
-        text = text.replace('"', "'").strip()
-        self.add_text(f'{source_id} {link_type}> |"{text}"| {dest_id}')
+        text = text.replace('"', "'").strip()  # Remove leading and trailing spaces
+        self.add_text(f'{source_id} {link_type} |"{text}"| {dest_id}')
 
         if style != "" or style is not None:
             self.add_text(f"linkStyle {self.link_order} {style}")
