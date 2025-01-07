@@ -593,13 +593,13 @@ class PlayNode(CompositeNode):
         :param handler_name: The name of the handler to get.
         :return:
         """
-        result = []
+        result = set()
         for handler in reversed(self.handlers):  # type: HandlerNode
             if handler.name == handler_name or handler_name in handler.listen:
-                result.append(handler)
+                result.add(handler)
 
         # Return the handlers in the order they were defined in the play
-        return sorted(result, key=lambda x: x.index)
+        return sorted(list(result), key=lambda x: x.index)
 
     def to_dict(
         self,
@@ -751,6 +751,17 @@ class HandlerNode(TaskNode):
 
     def __repr__(self):
         return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index}, notify={self.notify}, listen={self.listen})"
+
+    def __eq__(self, other: "HandlerNode") -> bool:
+        """Handler uniqueness is based on the name
+
+        :param other:
+        :return:
+        """
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this node. This representation is not meant to get the original object

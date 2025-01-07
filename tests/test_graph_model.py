@@ -299,17 +299,21 @@ def test_get_handler_from_play():
     play = PlayNode("play 1")
     restart_nginx = HandlerNode("restart nginx")
     restart_postgres = HandlerNode("restart postgres", listen=["restart dbs"])
-    restart_mysql = HandlerNode("restart mysql", listen=["restart dbs"])
+    restart_mysql_1 = HandlerNode("restart mysql", listen=["restart dbs"])
+    restart_mysql_2 = HandlerNode("restart mysql", listen=["restart dbs"])
     play.add_node("handlers", restart_nginx)
     play.add_node("handlers", restart_postgres)
-    play.add_node("handlers", restart_mysql)
+    play.add_node("handlers", restart_mysql_1)
+    play.add_node("handlers", restart_mysql_2)
 
     play.calculate_indices()
 
     assert play.get_handlers("fake handler") == []
     assert play.get_handlers("restart nginx") == [restart_nginx]
     assert play.get_handlers("restart postgres") == [restart_postgres]
-    assert play.get_handlers("restart mysql") == [restart_mysql]
+    assert play.get_handlers("restart mysql") == [
+        restart_mysql_2
+    ], "The last mysql handler should be returned"
 
     # When multiple handlers have the same listen, we return them in the order they are defined
-    assert play.get_handlers("restart dbs") == [restart_postgres, restart_mysql]
+    assert play.get_handlers("restart dbs") == [restart_postgres, restart_mysql_2]
