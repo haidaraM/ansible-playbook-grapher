@@ -12,7 +12,9 @@
     - name: My post task debug
       debug: msg="post task"
       changed_when: true
-      notify: restart postgres
+      notify: 
+       - restart postgres
+       - restart traefik
 
   handlers:
     - name: restart postgres

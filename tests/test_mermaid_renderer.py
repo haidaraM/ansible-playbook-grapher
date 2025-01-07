@@ -112,6 +112,7 @@ def test_single_playbook(request: pytest.FixtureRequest, playbook: str) -> None:
         output_filename=request.node.name,
         additional_args=[
             "--include-role-tasks",
+            "--show-handlers",
         ],
     )
     _common_tests(mermaid_path, playbook_paths)
