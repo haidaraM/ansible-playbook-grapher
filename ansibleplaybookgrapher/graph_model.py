@@ -17,8 +17,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Optional, Type, TypeVar
 
-from ansible.playbook.handler import Handler
-
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
 
@@ -583,9 +581,11 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def get_handler(self, handler_name: str) -> Optional["HandlerNode"]:
-        """Return the handler with the given name if it exists, None otherwise. If multiple handlers have the same name,
+    def get_handlers(self, handler_name: str) -> list["HandlerNode"]:
+        """Return the handlers with the given name if they exists, None otherwise. If multiple handlers have the same name,
         only the last one loaded into the play is returned.
+
+        You must calculate the indices before calling this method.
 
         - The name can also be prefixed with the role name if the handler is defined in a role.
           Example: "role_name : handler_name". TODO: implement this feature.
@@ -593,11 +593,13 @@ class PlayNode(CompositeNode):
         :param handler_name: The name of the handler to get.
         :return:
         """
+        result = []
         for handler in reversed(self.handlers):  # type: HandlerNode
             if handler.name == handler_name or handler_name in handler.listen:
-                return handler
+                result.append(handler)
 
-        return None
+        # Return the handlers in the order they were defined in the play
+        return sorted(result, key=lambda x: x.index)
 
     def to_dict(
         self,

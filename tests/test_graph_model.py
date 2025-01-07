@@ -304,10 +304,12 @@ def test_get_handler_from_play():
     play.add_node("handlers", restart_postgres)
     play.add_node("handlers", restart_mysql)
 
-    assert play.get_handler("fake handler") is None
-    assert play.get_handler("restart nginx") == restart_nginx
-    assert play.get_handler("restart postgres") == restart_postgres
-    assert play.get_handler("restart mysql") == restart_mysql
+    play.calculate_indices()
 
-    # When multiple handlers have the same listen, the last one should be returned
-    assert play.get_handler("restart dbs") == restart_mysql
+    assert play.get_handlers("fake handler") == []
+    assert play.get_handlers("restart nginx") == [restart_nginx]
+    assert play.get_handlers("restart postgres") == [restart_postgres]
+    assert play.get_handlers("restart mysql") == [restart_mysql]
+
+    # When multiple handlers have the same listen, we return them in the order they are defined
+    assert play.get_handlers("restart dbs") == [restart_postgres, restart_mysql]

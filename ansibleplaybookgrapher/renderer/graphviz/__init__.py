@@ -34,7 +34,7 @@ DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 DEFAULT_GRAPH_ATTR = {
     "ratio": "fill",
     "rankdir": "LR",
-    "concentrate": "true",
+    "concentrate": "false",
     "ordering": "in",
 }
 
@@ -207,20 +207,20 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         # Build the edge from the task to the handlers it notifies
         if self.show_handlers:
             for notify_name in task_node.notify:
-                handler = play_node.get_handler(notify_name)
-                if handler:
+                handlers = play_node.get_handlers(notify_name)
+                for counter, handler in enumerate(handlers, 1):
                     digraph.edge(
                         task_node.id,
                         handler.id,
-                        color="red",
-                        fontcolor="red",
+                        color=color,
+                        fontcolor=color,
                         id=f"edge_{task_node.index}_{task_node.id}_{handler.id}",
                         style="dotted",
-                        label=" ",
+                        label=f"{counter}",
                         tooltip=handler.name,
                         labeltooltip=handler.name,
                     )
-                else:
+                if not handlers:
                     display.warning(
                         f"The handler '{notify_name}' not found in play '{play_node.name}'",
                     )
