@@ -291,7 +291,7 @@ def test_calculate_indices():
     assert nested_include_2.index == 2
 
 
-def test_get_handler_from_play():
+def test_get_handlers_from_play():
     """Test the method PlayNode.get_handler
 
     :return:

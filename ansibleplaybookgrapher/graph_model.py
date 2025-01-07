@@ -573,33 +573,43 @@ class PlayNode(CompositeNode):
         return self.get_nodes("tasks")
 
     @property
-    def handlers(self) -> list["TaskNode"]:
-        """Return the handlers defined at the play level.
+    def handlers(self) -> list["HandlerNode"]:
+        """Return all the handlers visible to the play (including the ones defined in roles).
 
-        The handlers defined in roles are not included here.
         :return:
         """
         return self.get_nodes("handlers")
 
     def get_handlers(self, handler_name: str) -> list["HandlerNode"]:
-        """Return the handlers with the given name if they exists, None otherwise. If multiple handlers have the same name,
+        """Return the handlers with the given name if they exist, None otherwise. If multiple handlers have the same name,
         only the last one loaded into the play is returned.
 
         You must calculate the indices before calling this method.
 
         - The name can also be prefixed with the role name if the handler is defined in a role.
-          Example: "role_name : handler_name". TODO: implement this feature.
+          Example: "role_name : handler_name".
         - You can also pass the listen topic of the handler. Example: "handler_name : listen_topic"
         :param handler_name: The name of the handler to get.
         :return:
         """
-        result = set()
-        for handler in reversed(self.handlers):  # type: HandlerNode
-            if handler.name == handler_name or handler_name in handler.listen:
-                result.add(handler)
 
-        # Return the handlers in the order they were defined in the play
-        return sorted(list(result), key=lambda x: x.index)
+        def matches_handler(handler: "HandlerNode", name: str) -> bool:
+            """Check if the handler matches the given name."""
+            if handler.name == name or name in handler.listen:
+                return True
+            if role_node := handler.get_first_parent_matching_type(RoleNode):
+                name_candidate = f"{role_node.name} : {name}"
+                return (
+                    handler.name == name_candidate or name_candidate in handler.listen
+                )
+            return False
+
+        result = set()
+        for h in self.handlers:
+            if matches_handler(h, handler_name):
+                result.add(h)
+
+        return sorted(result, key=lambda x: x.index)
 
     def to_dict(
         self,
@@ -888,7 +898,7 @@ class RoleNode(LoopMixin, CompositeNode):
         return self.get_nodes("tasks")
 
     @property
-    def handlers(self) -> list["TaskNode"]:
+    def handlers(self) -> list["HandlerNode"]:
         """Return the handlers defined in the role.
 
         When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers

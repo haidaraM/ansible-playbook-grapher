@@ -782,7 +782,7 @@ def test_handlers_in_role(
         playbook_paths=playbook_paths,
         pre_tasks_number=1,
         plays_number=1,
-        tasks_number=1,
+        tasks_number=2,
         post_tasks_number=1,
         roles_number=1,
         handlers_number=handlers_number,

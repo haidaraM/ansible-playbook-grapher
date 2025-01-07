@@ -103,6 +103,7 @@ class BaseParser(ABC):
         task: Task,
         task_vars: dict,
         node_type: str,
+        play_node: PlayNode,
         parent_node: CompositeNode,
     ) -> bool:
         """Add the task in the graph.
@@ -136,18 +137,30 @@ class BaseParser(ABC):
             "parent": parent_node,
             "notify": _get_notified_handlers(task),
         }
+
         if node_type == "handler":
             if isinstance(task.listen, list):
                 listen = task.listen
             else:
                 listen = [task.listen]
+
             node = HandlerNode(**node_params, listen=listen)
+
+            # Handlers defined in the roles are available at the play level
+            if has_role_parent(task):
+                play_node.add_node(
+                    target_composition="handlers",
+                    node=node,
+                )
         else:
             node = TaskNode(**node_params)
+
         parent_node.add_node(
             target_composition=f"{node_type}s",
             node=node,
         )
+
+        # For
 
         return True
 
@@ -254,6 +267,7 @@ class PlaybookParser(BaseParser):
             for pre_task_block in play.pre_tasks:
                 self._include_tasks_in_blocks(
                     current_play=play,
+                    current_play_node=play_node,
                     parent_nodes=[play_node],
                     block=pre_task_block,
                     play_vars=play_vars,
@@ -306,12 +320,13 @@ class PlaybookParser(BaseParser):
                 # edge from play to role
                 play_node.add_node("roles", role_node)
 
-                # loop through the tasks
-                for handler_block in role.compile(play):
+                # loop through the tasks of the roles
+                for block in role.compile(play):
                     self._include_tasks_in_blocks(
                         current_play=play,
+                        current_play_node=play_node,
                         parent_nodes=[role_node],
-                        block=handler_block,
+                        block=block,
                         play_vars=play_vars,
                         node_type="task",
                     )
@@ -320,6 +335,7 @@ class PlaybookParser(BaseParser):
                 for handler_block in role.get_handler_blocks(play):
                     self._include_tasks_in_blocks(
                         current_play=play,
+                        current_play_node=play_node,
                         parent_nodes=[role_node],
                         block=handler_block,
                         play_vars=play_vars,
@@ -332,6 +348,7 @@ class PlaybookParser(BaseParser):
             for task_block in play.tasks:
                 self._include_tasks_in_blocks(
                     current_play=play,
+                    current_play_node=play_node,
                     parent_nodes=[play_node],
                     block=task_block,
                     play_vars=play_vars,
@@ -343,6 +360,7 @@ class PlaybookParser(BaseParser):
             for post_task_block in play.post_tasks:
                 self._include_tasks_in_blocks(
                     current_play=play,
+                    current_play_node=play_node,
                     parent_nodes=[play_node],
                     block=post_task_block,
                     play_vars=play_vars,
@@ -353,6 +371,7 @@ class PlaybookParser(BaseParser):
             for handler_block in play.get_handlers():
                 self._include_tasks_in_blocks(
                     current_play=play,
+                    current_play_node=play_node,
                     parent_nodes=[play_node],
                     block=handler_block,
                     play_vars=play_vars,
@@ -372,6 +391,7 @@ class PlaybookParser(BaseParser):
     def _include_tasks_in_blocks(
         self,
         current_play: Play,
+        current_play_node: PlayNode,
         parent_nodes: list[CompositeNode],
         block: Block | TaskInclude,
         node_type: str,
@@ -381,10 +401,11 @@ class PlaybookParser(BaseParser):
 
         :param parent_nodes: This is the list of parent nodes. Each time, we see an include_role, the corresponding node is
         added to this list
-        :param current_play:
-        :param block:
-        :param play_vars:
-        :param node_type:
+        :param current_play: The current Ansible play, which the tasks are included.
+        :param current_play_node: The current play node, which the tasks are included.
+        :param block: The current block to include.
+        :param play_vars: The variables of the play.
+        :param node_type: The type of the node. It can be a task, a pre_task, a post_task or a handler.
         :return:
         """
         if Block.is_block(block.get_ds()):
@@ -408,6 +429,7 @@ class PlaybookParser(BaseParser):
             if isinstance(task_or_block, Block):
                 self._include_tasks_in_blocks(
                     current_play=current_play,
+                    current_play_node=current_play_node,
                     parent_nodes=parent_nodes,
                     block=task_or_block,
                     node_type=node_type,
@@ -499,6 +521,7 @@ class PlaybookParser(BaseParser):
                             "Some variables are available only during the execution of the playbook.",
                         )
                         self._add_task(
+                            play_node=current_play_node,
                             task=task_or_block,
                             task_vars=task_vars,
                             node_type=node_type,
@@ -534,6 +557,7 @@ class PlaybookParser(BaseParser):
                 ):  # loop through the blocks inside the included tasks or role
                     self._include_tasks_in_blocks(
                         current_play=current_play,
+                        current_play_node=current_play_node,
                         parent_nodes=parent_nodes,
                         block=b,
                         play_vars=task_vars,
@@ -558,6 +582,7 @@ class PlaybookParser(BaseParser):
                     parent_nodes.pop()
 
                 self._add_task(
+                    play_node=current_play_node,
                     task=task_or_block,
                     task_vars=play_vars,
                     node_type=node_type,

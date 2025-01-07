@@ -624,22 +624,30 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     plays = playbook_node.plays
 
     assert len(plays) == 1
-    play = plays[0]
-    assert len(play.handlers) == 2, "The play should have 2 handlers"
-    assert play.handlers[0].name == "restart postgres"
-    assert play.handlers[1].name == "restart traefik"
 
-    assert len(play.roles) == 1, "The play should have 1 role"
+    play = plays[0]
+    assert len(play.roles) == 1
     role = play.roles[0]
-    assert len(role.tasks) == 1, "The role should have 1 task"
-    assert len(role.handlers) == 1, "The role should have 1 handler"
+    assert len(role.tasks) == 2
+    assert len(role.handlers) == 1
+
+    assert (
+        len(play.handlers) == 3
+    ), "The play should have 3 handlers: 2 from the play itself and 1 from the role"
+
+    assert play.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert play.handlers[1].name == "restart postgres"
+    assert play.handlers[2].name == "restart traefik"
 
     assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert (
+        play.handlers[0].id == play.handlers[0].id
+    ), "The handler should be the same in the play and in the role"
     assert role.handlers[0].location is not None
 
     assert (
-        len(play.handlers + role.handlers) == 3
-    ), "The total number of handlers should be 3"
+        len(set(play.handlers + role.handlers)) == 3
+    ), "The total number of unique handlers should be 3"
 
 
 @pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)

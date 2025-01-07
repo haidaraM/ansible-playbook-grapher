@@ -8,13 +8,14 @@
 
   roles:
     - role: role-with-handlers
+
   post_tasks:
     - name: My post task debug
       debug: msg="post task"
       changed_when: true
       notify: 
-       - restart postgres
        - restart traefik
+       - restart postgres
 
   handlers:
     - name: restart postgres
