@@ -265,7 +265,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         if isinstance(task_node, HandlerNode):
             # dotted style for handlers
-            link_type = "~"  # Invisible link
+            link_type = "~~~"  # Invisible link
             link_text = " "
             node_shape = "hexagon"
             style += ",stroke-dasharray: 2, 2"
