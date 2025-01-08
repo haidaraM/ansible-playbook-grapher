@@ -20,6 +20,7 @@ from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVar
 from ansible.parsing.yaml.objects import AnsibleSequence, AnsibleUnicode
 from ansible.playbook import Playbook
 from ansible.playbook.block import Block
+from ansible.playbook.handler import Handler
 from ansible.playbook.helpers import load_list_of_blocks
 from ansible.playbook.play import Play
 from ansible.playbook.role import Role
@@ -139,6 +140,8 @@ class BaseParser(ABC):
         }
 
         if node_type == "handler":
+            # If we are here, the task is a Handler
+            task: Handler
             if isinstance(task.listen, list):
                 listen = task.listen
             else:
@@ -159,8 +162,6 @@ class BaseParser(ABC):
             target_composition=f"{node_type}s",
             node=node,
         )
-
-        # For
 
         return True
 
@@ -285,25 +286,6 @@ class PlaybookParser(BaseParser):
                 # Don't show roles, which are set in --exclude-roles option
                 if role.get_name() in self.exclude_roles:
                     continue
-
-                """
-                # The role object doesn't inherit the tags from the play. So we add it manually.
-                role.tags = role.tags + play.tags
-
-                # More context on this line, see here: https://github.com/ansible/ansible/issues/82310
-                # This seems to work for now.
-                role._parent = None
-
-                if not role.evaluate_tags(
-                    only_tags=self.tags,
-                    skip_tags=self.skip_tags,
-                    all_vars=play_vars,
-                ):
-                    display.vv(
-                    )
-                    # Go to the next role
-                    continue
-                """
 
                 if self.group_roles_by_name:
                     # If we are grouping roles, we use the hash of role name as the node id
@@ -588,55 +570,3 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
-
-
-def add_handlers_in_notify(play_node: PlayNode):
-    """
-    Add the handlers in the "notify" attribute of the tasks. This has to be done separately for the pre_tasks, tasks
-    and post_tasks because the handlers are not shared between them.
-
-    Handlers not used will not be kept in the graph.
-
-    The role handlers are managed separately.
-    :param play_node:
-    :return:
-    """
-
-    _add_notified_handlers(play_node, "pre_tasks", play_node.pre_tasks)
-    _add_notified_handlers(play_node, "tasks", play_node.tasks)
-    _add_notified_handlers(play_node, "post_tasks", play_node.post_tasks)
-
-
-def _add_notified_handlers(
-    play_node: PlayNode, target_composition: str, tasks: list[Node]
-) -> list[str]:
-    """Get the handlers that are notified by the tasks.
-
-    :param play_node: The list of the play handlers.
-    :param target_composition: The target composition to add the handlers.
-    :param tasks:  The list of tasks.
-    :return:
-    """
-    notified_handlers = []
-    play_handlers = play_node.handlers
-    for task_node in tasks:
-        task = task_node.raw_object
-        if task.notify:
-            if isinstance(task.notify, AnsibleUnicode):
-                notified_handlers.append(task.notify)
-            elif isinstance(task.notify, AnsibleSequence):
-                notified_handlers.extend(task.notify)
-
-    for p_handler in play_handlers:
-        if p_handler.name in notified_handlers:
-            play_node.add_node(
-                target_composition,
-                TaskNode(
-                    p_handler.name,
-                    node_id=generate_id("handler_"),
-                    raw_object=p_handler.raw_object,
-                    parent=p_handler.parent,
-                ),
-            )
-
-    return notified_handlers

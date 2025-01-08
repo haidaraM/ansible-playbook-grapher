@@ -265,17 +265,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         if isinstance(task_node, HandlerNode):
             # dotted style for handlers
+            link_type = "~"  # Invisible link
+            link_text = " "
             node_shape = "hexagon"
             style += ",stroke-dasharray: 2, 2"
-        else:
-            # From parent to task
-            self.add_link(
-                source_id=task_node.parent.id,
-                text=link_text,
-                dest_id=task_node.id,
-                style=f"stroke:{color},color:{color}",
-                link_type=link_type,
-            )
 
         # Task node
         self.add_node(
@@ -283,6 +276,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             shape=node_shape,
             label=task_node.display_name(),
             style=style,
+        )
+
+        # From parent to task
+        self.add_link(
+            source_id=task_node.parent.id,
+            text=link_text,
+            dest_id=task_node.id,
+            style=f"stroke:{color},color:{color}",
+            link_type=link_type,
         )
 
         if self.show_handlers:
@@ -461,7 +463,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes
-        text = text.replace('"', "'").strip()  # Remove leading and trailing spaces
+        text = text.replace('"', "'")
         self.add_text(f'{source_id} {link_type} |"{text}"| {dest_id}')
 
         if style != "" or style is not None:
