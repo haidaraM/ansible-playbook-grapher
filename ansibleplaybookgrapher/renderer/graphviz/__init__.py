@@ -25,7 +25,11 @@ from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
+from ansibleplaybookgrapher.renderer import (
+    PlaybookBuilder,
+    Renderer,
+    log_handlers_not_found,
+)
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphvizPostProcessor
 
 display = Display()
@@ -206,7 +210,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         # Build the edge from the task to the handlers it notifies
         if self.show_handlers:
-            notified_handlers = play_node.get_handlers(task_node.notify)
+            notified_handlers, not_found = play_node.get_notified_handlers(
+                task_node.notify
+            )
+            log_handlers_not_found(play_node, task_node, not_found)
 
             for counter, handler in enumerate(notified_handlers, 1):
                 digraph.edge(

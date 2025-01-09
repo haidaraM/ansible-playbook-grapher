@@ -319,3 +319,19 @@ class PlaybookBuilder(ABC):
             return url
 
         return None
+
+
+def log_handlers_not_found(
+    play_node: PlayNode, task_node: TaskNode, handlers_not_found: list[str]
+) -> None:
+    """Log the handlers that have not been found.
+
+    :param play_node: The play node
+    :param task_node: The task node
+    :param handlers_not_found: The handlers that have not been found.
+    :return:
+    """
+    for handler in handlers_not_found:
+        display.warning(
+            f"The handler '{handler}' notified by the task '{task_node.display_name()}' has not been found in the play '{play_node.display_name()}'."
+        )

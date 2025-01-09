@@ -29,7 +29,11 @@ from ansibleplaybookgrapher.graph_model import (
     RoleNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
+from ansibleplaybookgrapher.renderer import (
+    PlaybookBuilder,
+    Renderer,
+    log_handlers_not_found,
+)
 
 display = Display()
 
@@ -288,7 +292,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         )
 
         if self.show_handlers:
-            notified_handlers = play_node.get_handlers(task_node.notify)
+            notified_handlers, not_found = play_node.get_notified_handlers(
+                task_node.notify
+            )
+            log_handlers_not_found(play_node, task_node, not_found)
 
             for counter, handler in enumerate(notified_handlers, 1):
                 self.add_link(

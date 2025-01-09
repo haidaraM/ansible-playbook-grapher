@@ -580,25 +580,30 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def get_handlers(self, notify: list[str]) -> list["HandlerNode"]:
+    def get_notified_handlers(
+        self, notify: list[str]
+    ) -> tuple[list["HandlerNode"], list[str]]:
         """Return the handlers notified by the given names if they exist
 
         You must calculate the indices before calling this method.
 
-        :param notify: The name of the handler to get.
-        :return:
+        :param notify: The names of the handler to get from the play.
+        :return: A tuple of the notified handlers and the names of the handlers that were not found.
         """
-        # TODO: add a warning when a notified handler is not found
-        result = []
+        notified_handlers: list[HandlerNode] = []
+        found: set[str] = set()
+
         for h in reversed(self.handlers):
-            if h in result:
+            if h in notified_handlers:
                 continue
 
             for n in notify:
                 if h.matches_handler(n):
-                    result.append(h)
+                    notified_handlers.append(h)
+                    found.add(n)
 
-        return sorted(result, key=lambda x: x.index)
+        not_found = set(notify) - found
+        return sorted(notified_handlers, key=lambda x: x.index), list(not_found)
 
     def to_dict(
         self,
