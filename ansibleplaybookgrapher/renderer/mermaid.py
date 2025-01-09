@@ -278,35 +278,26 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=style,
         )
 
-        # From parent to task
+        # From the parent to the task
         self.add_link(
             source_id=task_node.parent.id,
-            text=link_text,
             dest_id=task_node.id,
+            text=link_text,
             style=f"stroke:{color},color:{color}",
             link_type=link_type,
         )
 
         if self.show_handlers:
-            # From task to handler
-            counter = 1
-            for notify_name in task_node.notify:
-                handlers = play_node.get_handlers(notify_name)
+            notified_handlers = play_node.get_handlers(task_node.notify)
 
-                for handler in handlers:
-                    self.add_link(
-                        source_id=task_node.id,
-                        text=f"{counter}",
-                        dest_id=handler.id,
-                        style=f"stroke:{color},color:{color}",
-                        link_type="-.->",
-                    )
-                    counter += 1
-
-                if not handlers:
-                    display.warning(
-                        f"The handler '{notify_name}' not found in the play '{play_node.name}'",
-                    )
+            for counter, handler in enumerate(notified_handlers, 1):
+                self.add_link(
+                    source_id=task_node.id,
+                    dest_id=handler.id,
+                    text=f"{counter}",
+                    style=f"stroke:{color},color:{color}",
+                    link_type="-.->",
+                )
 
     def add_node(self, node_id: str, shape: str, label: str, style: str = "") -> None:
         """Add a node to the mermaid code.

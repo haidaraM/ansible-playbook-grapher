@@ -206,27 +206,20 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
         # Build the edge from the task to the handlers it notifies
         if self.show_handlers:
-            counter = 1
-            for notify_name in task_node.notify:
-                handlers = play_node.get_handlers(notify_name)
-                for handler in handlers:
-                    digraph.edge(
-                        task_node.id,
-                        handler.id,
-                        color=color,
-                        fontcolor=color,
-                        id=f"edge_{task_node.index}_{task_node.id}_{handler.id}",
-                        style="dotted",
-                        label=f"{counter}",
-                        tooltip=handler.name,
-                        labeltooltip=handler.name,
-                    )
-                    counter += 1
+            notified_handlers = play_node.get_handlers(task_node.notify)
 
-                if not handlers:
-                    display.warning(
-                        f"The handler '{notify_name}' not found in the play '{play_node.name}'",
-                    )
+            for counter, handler in enumerate(notified_handlers, 1):
+                digraph.edge(
+                    task_node.id,
+                    handler.id,
+                    color=color,
+                    fontcolor=color,
+                    id=f"edge_{task_node.index}_{task_node.id}_{handler.id}",
+                    style="dotted",
+                    label=f"{counter}",
+                    tooltip=handler.name,
+                    labeltooltip=handler.name,
+                )
 
     def build_block(
         self,

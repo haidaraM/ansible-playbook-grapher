@@ -308,12 +308,13 @@ def test_get_handlers_from_play():
 
     play.calculate_indices()
 
-    assert play.get_handlers("fake handler") == []
-    assert play.get_handlers("restart nginx") == [restart_nginx]
-    assert play.get_handlers("restart postgres") == [restart_postgres]
-    assert play.get_handlers("restart mysql") == [
-        restart_mysql_2
-    ], "The last mysql handler should be returned"
+    assert play.get_handlers(["fake handler"]) == []
+    assert play.get_handlers(["restart nginx"]) == [restart_nginx]
+    assert play.get_handlers(["restart postgres"]) == [restart_postgres]
+
+    mysql_handlers = play.get_handlers(["restart mysql"])
+    assert len(mysql_handlers) == 1
+    assert mysql_handlers[0].id == restart_mysql_2.id
 
     # When multiple handlers have the same listen, we return them in the order they are defined
-    assert play.get_handlers("restart dbs") == [restart_postgres, restart_mysql_2]
+    assert play.get_handlers(["restart dbs"]) == [restart_postgres, restart_mysql_2]

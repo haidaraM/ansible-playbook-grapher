@@ -580,34 +580,23 @@ class PlayNode(CompositeNode):
         """
         return self.get_nodes("handlers")
 
-    def get_handlers(self, handler_name: str) -> list["HandlerNode"]:
-        """Return the handlers with the given name if they exist, None otherwise. If multiple handlers have the same name,
-        only the last one loaded into the play is returned.
+    def get_handlers(self, notify: list[str]) -> list["HandlerNode"]:
+        """Return the handlers notified by the given names if they exist
 
         You must calculate the indices before calling this method.
 
-        - The name can also be prefixed with the role name if the handler is defined in a role.
-          Example: "role_name : handler_name".
-        - You can also pass the listen topic of the handler. Example: "handler_name : listen_topic"
-        :param handler_name: The name of the handler to get.
+        :param notify: The name of the handler to get.
         :return:
         """
+        # TODO: add a warning when a notified handler is not found
+        result = []
+        for h in reversed(self.handlers):
+            if h in result:
+                continue
 
-        def matches_handler(handler: "HandlerNode", name: str) -> bool:
-            """Check if the handler matches the given name."""
-            if handler.name == name or name in handler.listen:
-                return True
-            if role_node := handler.get_first_parent_matching_type(RoleNode):
-                name_candidate = f"{role_node.name} : {name}"
-                return (
-                    handler.name == name_candidate or name_candidate in handler.listen
-                )
-            return False
-
-        result = set()
-        for h in self.handlers:
-            if matches_handler(h, handler_name):
-                result.add(h)
+            for n in notify:
+                if h.matches_handler(n):
+                    result.append(h)
 
         return sorted(result, key=lambda x: x.index)
 
@@ -702,7 +691,7 @@ class TaskNode(LoopMixin, Node):
             parent=parent,
         )
         # The list of handlers to notify
-        self.notify = notify or []
+        self.notify: list[str] = notify or []
 
     def to_dict(self, **kwargs) -> dict:
         """Return a dictionary representation of this node. This representation is not meant to get the original object
@@ -789,6 +778,23 @@ class HandlerNode(TaskNode):
         :return:
         """
         return f"[handler] {self.name}"
+
+    def matches_handler(self, name: str) -> bool:
+        """Check if the handler matches the given name.
+
+        - The name can also be prefixed with the role name if the handler is defined in a role.
+          Example: "role_name : handler_name".
+        - You can also pass the listen topic of the handler. Example: "handler_name : listen_topic"
+        :param name: The name of the handler to check (from the notify attribute)
+        """
+        if self.name == name or name in self.listen:
+            return True
+
+        if role_node := self.get_first_parent_matching_type(RoleNode):
+            name_candidate = f"{role_node.name} : {name}"
+            return self.name == name_candidate or name_candidate in self.listen
+
+        return False
 
 
 class RoleNode(LoopMixin, CompositeNode):

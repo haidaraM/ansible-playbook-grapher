@@ -251,7 +251,6 @@ class PlaybookBuilder(ABC):
                     node=p_handler,
                     color=color,
                     fontcolor=play_font_color,
-                    node_label_prefix="[handler] ",
                     **kwargs,
                 )
 
