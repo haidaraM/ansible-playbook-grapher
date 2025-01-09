@@ -213,16 +213,6 @@ class PlaybookBuilder(ABC):
                 **kwargs,
             )
 
-            if self.show_handlers:
-                for r_handler in role.handlers:
-                    self.build_node(
-                        play_node=play_node,
-                        node=r_handler,
-                        color=color,
-                        fontcolor=play_font_color,
-                        **kwargs,
-                    )
-
         # tasks
         for task in play_node.tasks:
             self.build_node(
