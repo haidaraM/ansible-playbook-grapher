@@ -10,32 +10,89 @@ from ansibleplaybookgrapher.graph_model import (
 
 def test_links_structure() -> None:
     """Test links structure of a graph
+
     :return:
     """
     play = PlayNode("composite_node")
 
     # play -> role -> task 1 and 2
-    role = RoleNode("my_role_1")
+    role = RoleNode("my_role_1", parent=play)
     play.add_node("roles", role)
-    task_1 = TaskNode("task 1")
+    task_1 = TaskNode("task 1", parent=role)
     role.add_node("tasks", task_1)
-    task_2 = TaskNode("task 2")
+    task_2 = TaskNode("task 2", parent=role)
     role.add_node("tasks", task_2)
 
     # play -> task 3
-    task_3 = TaskNode("task 3")
+    task_3 = TaskNode("task 3", parent=play)
     play.add_node("tasks", task_3)
 
     all_links = play.links_structure()
     assert len(all_links) == 2, "The links should contains only 2 elements"
 
     assert len(all_links[play]) == 2, "The play should be linked to 2 nodes"
-    for e in [role, task_3]:
-        assert e in all_links[play], f"The play should be linked to the task {task_1}"
+    for n in [role, task_3]:
+        assert n in all_links[play], f"The play should be linked to the task '{task_1}'"
 
     assert len(all_links[role]) == 2, "The role should be linked to two nodes"
-    for e in [task_1, task_2]:
-        assert e in all_links[role], f"The role should be linked to the edge {e}"
+    for n in [task_1, task_2]:
+        assert n in all_links[role], f"The role should be linked to the node '{n}'"
+
+
+def test_links_structure_with_handlers() -> None:
+    """Test links structure of a graph with handlers
+
+    :return:
+    """
+    play = PlayNode("composite_node")
+    play.add_node("handlers", HandlerNode("handler 1", parent=play))
+    play.add_node("handlers", HandlerNode("handler 2", parent=play))
+    play.add_node(
+        "handlers",
+        HandlerNode("handler 3", listen=["topic"], notify=["handler 1"], parent=play),
+    )
+
+    # play -> role -> task 1 and 2
+    role = RoleNode("my_role_1", parent=play)
+    play.add_node("roles", role)
+    # task 1 -> handler 1
+    task_1 = TaskNode("task 1", notify=["handler 1"])
+    role.add_node("tasks", task_1)
+    # task 2 -> handler 2
+    task_2 = TaskNode("task 2", notify=["handler 2"])
+    role.add_node("tasks", task_2)
+
+    # play -> task 3 -> handler 3 via the listen 'topic'
+    task_3 = TaskNode("task 3", notify=["topic"], parent=play)
+    play.add_node("tasks", task_3)
+
+    all_links = play.links_structure()
+
+    play_links = all_links[play]
+    assert (
+        len(play_links) == 5
+    ), "The play should be linked to 5 nodes: 1 role, 1 task, 3 handlers"
+
+    role_links = all_links[role]
+    assert len(role_links) == 2, "The role should be linked to 2 nodes"
+    for n in [task_1, task_2]:
+        assert n in role_links, f"The role should be linked to the node '{n}'"
+
+    assert all_links[task_1] == [
+        play.handlers[0]
+    ], "Task 1 should be linked to handler 1"
+    assert all_links[task_2] == [
+        play.handlers[1]
+    ], "Task 2 should be linked to handler 2"
+    assert all_links[task_3] == [
+        play.handlers[2]
+    ], "Task 3 should be linked to handler 3"
+
+    assert all_links[play.handlers[2]] == [
+        play.handlers[0]
+    ], "Handler 3 should be linked to handler 1"
+
+    print(all_links)
 
 
 def test_empty_play_method() -> None:

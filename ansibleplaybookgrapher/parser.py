@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2025 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
     HandlerNode,
-    Node,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -149,7 +148,7 @@ class BaseParser(ABC):
 
             node = HandlerNode(**node_params, listen=listen)
 
-            # Handlers defined in the roles are available at the play level
+            # We make the Handlers defined in the roles are available at the play level
             if has_role_parent(task):
                 play_node.add_node(
                     target_composition="handlers",

@@ -124,7 +124,8 @@ class GraphvizPostProcessor:
 
     def _insert_links(self, playbook_node: PlaybookNode) -> None:
         """Insert the links between nodes in the SVG file.
-        :param playbook_node: one of the playbook in the svg.
+
+        :param playbook_node: One of the playbooks in the svg.
         """
         display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
         links_structure = playbook_node.links_structure()

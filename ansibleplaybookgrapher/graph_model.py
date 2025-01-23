@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2025 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,6 +50,10 @@ class NodeLocation:
             raise ValueError(
                 msg,
             )
+
+
+# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
+T = TypeVar("T", bound="Node")
 
 
 class Node:
@@ -129,7 +133,7 @@ class Node:
                 # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
-    def get_first_parent_matching_type(self, node_type: type) -> type | None:
+    def get_first_parent_matching_type(self, node_type: Type[T]) -> T | None:
         """Get the first parent of this node matching the given type.
 
         :param node_type: The type of the parent node to get.
@@ -174,10 +178,6 @@ class Node:
         }
 
         return data
-
-
-# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
-T = TypeVar("T", bound=Node)
 
 
 class CompositeNode(Node):
@@ -317,7 +317,7 @@ class CompositeNode(Node):
         """Return a representation of the composite node where each key of the dictionary is the node and the
          value is the list of the linked nodes.
 
-        :return:
+        :return: A dictionary representation of the links.
         """
         links: dict[Node, list[Node]] = defaultdict(list)
         self._get_all_links(links)
@@ -574,7 +574,7 @@ class PlayNode(CompositeNode):
 
     @property
     def handlers(self) -> list["HandlerNode"]:
-        """Return all the handlers visible to the play (including the ones defined in roles).
+        """Return all the handlers visible to the play (including the ones defined in roles used in the play).
 
         :return:
         """
@@ -583,13 +583,17 @@ class PlayNode(CompositeNode):
     def get_notified_handlers(
         self, notify: list[str]
     ) -> tuple[list["HandlerNode"], list[str]]:
-        """Return the handlers notified by the given names if they exist
+        """Return the handler nodes notified by the given names if they exist.
 
         You must calculate the indices before calling this method.
 
-        :param notify: The names of the handler to get from the play.
-        :return: A tuple of the notified handlers and the names of the handlers that were not found.
+        :param notify: The names of the handler nodes to get from the play.
+            This matches the 'notify' attribute of the task.
+        :return: A tuple of the notified handlers nodes and the names of the handlers that were not found in the play.
         """
+
+        # TODO: use a cache here or a faster way to get the notified handlers
+
         notified_handlers: list[HandlerNode] = []
         found: set[str] = set()
 
@@ -598,12 +602,30 @@ class PlayNode(CompositeNode):
                 continue
 
             for n in notify:
-                if h.matches_handler(n):
+                if h.matches_name(n):
                     notified_handlers.append(h)
                     found.add(n)
 
         not_found = set(notify) - found
         return sorted(notified_handlers, key=lambda x: x.index), list(not_found)
+
+    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+        """Recursively get the node links.
+
+        :return:
+        """
+        for nodes in list(self._compositions.values()):
+            for node in nodes:
+                if isinstance(node, CompositeNode):
+                    node._get_all_links(links)
+
+                # Managing the links between the tasks and the handlers
+                if isinstance(node, (TaskNode, HandlerNode)):
+                    handlers, not_found = self.get_notified_handlers(node.notify)
+                    if handlers:
+                        links[node].extend(handlers)
+
+                links[self].append(node)
 
     def to_dict(
         self,
@@ -684,7 +706,9 @@ class TaskNode(LoopMixin, Node):
         parent: "Node" = None,
         notify: list[str] | None = None,
     ) -> None:
-        """:param node_name:
+        """
+
+        :param node_name:
         :param node_id:
         :param raw_object:
         """
@@ -784,7 +808,7 @@ class HandlerNode(TaskNode):
         """
         return f"[handler] {self.name}"
 
-    def matches_handler(self, name: str) -> bool:
+    def matches_name(self, name: str) -> bool:
         """Check if the handler matches the given name.
 
         - The name can also be prefixed with the role name if the handler is defined in a role.
@@ -904,7 +928,7 @@ class RoleNode(LoopMixin, CompositeNode):
     def tasks(self) -> list[Node]:
         """The tasks attached to this block.
 
-        :return:
+        :return: The list of tasks
         """
         return self.get_nodes("tasks")
 
@@ -917,6 +941,28 @@ class RoleNode(LoopMixin, CompositeNode):
         :return:
         """
         return self.get_nodes("handlers")
+
+    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+        """Recursively get the node links.
+
+        :return:
+        """
+        play = self.get_first_parent_matching_type(PlayNode)
+        if not play:
+            raise ValueError("The role must be a child of a play node.")
+
+        for nodes in list(self._compositions.values()):
+            for node in nodes:
+                if isinstance(node, CompositeNode):
+                    node._get_all_links(links)
+
+                # Managing the links between the tasks and the handlers
+                if isinstance(node, (TaskNode, HandlerNode)):
+                    handlers, _ = play.get_notified_handlers(node.notify)
+                    if handlers:
+                        links[node].extend(handlers)
+
+                links[self].append(node)
 
     def is_empty(self) -> bool:
         """Return true if the role is empty, false otherwise.
