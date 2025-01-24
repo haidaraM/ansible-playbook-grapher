@@ -27,7 +27,7 @@ def test_links_structure() -> None:
     task_3 = TaskNode("task 3")
     play.add_node("tasks", task_3)
 
-    all_links = play.links_structure()
+    all_links = play.get_links_structure()
     assert len(all_links) == 2, "The links should contains only 2 elements"
 
     assert len(all_links[play]) == 2, "The play should be linked to 2 nodes"
@@ -66,7 +66,7 @@ def test_links_structure_with_handlers() -> None:
     task_3 = TaskNode("task 3", notify=["topic"])
     play.add_node("tasks", task_3)
 
-    all_links = play.links_structure()
+    all_links = play.get_links_structure()
 
     play_links = all_links[play]
     assert (

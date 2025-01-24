@@ -128,7 +128,7 @@ class GraphvizPostProcessor:
         :param playbook_node: One of the playbooks in the svg.
         """
         display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
-        links_structure = playbook_node.links_structure()
+        links_structure = playbook_node.get_links_structure()
 
         for node, node_links in links_structure.items():
             # Find the group g with the specified id

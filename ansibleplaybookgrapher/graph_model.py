@@ -315,26 +315,27 @@ class CompositeNode(Node):
                 elif isinstance(node, CompositeNode):
                     node._get_all_nodes_type(node_type, acc)
 
-    def links_structure(self) -> dict[Node, list[Node]]:
+    def get_links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
          value is the list of the linked nodes.
 
         :return: A dictionary representation of the links.
         """
-        links: dict[Node, list[Node]] = defaultdict(list)
-        self._get_all_links(links)
-        return links
+        links_acc: dict[Node, list[Node]] = defaultdict(list)
+        self._get_all_links(links_acc)
+        return links_acc
 
-    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
         """Recursively get the node links.
 
+        :param links_acc: The accumulator for the links
         :return:
         """
         for nodes in self._compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
-                    node._get_all_links(links)
-                links[self].append(node)
+                    node._get_all_links(links_acc)
+                links_acc[self].append(node)
 
     def is_empty(self) -> bool:
         """Return true if the composite node is empty, false otherwise.
@@ -470,7 +471,7 @@ class PlaybookNode(CompositeNode):
         :return: A dict with key as role node and value the list of uniq plays that use it.
         """
         usages = defaultdict(set)
-        links = self.links_structure()
+        links = self.get_links_structure()
 
         for node, linked_nodes in links.items():
             for linked_node in linked_nodes:
@@ -504,7 +505,70 @@ class PlaybookNode(CompositeNode):
                 play.is_hidden = True
 
 
-class PlayNode(CompositeNode):
+class CompositeHandlersNode(CompositeNode):
+    """A composite node that supports handlers."""
+
+    @property
+    def handlers(self) -> list["HandlerNode"]:
+        """Return the handlers defined in the role.
+
+        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
+        of a role.
+        :return:
+        """
+        return self.get_nodes("handlers")
+
+    def get_notified_handlers(
+        self, notify: list[str]
+    ) -> tuple[list["HandlerNode"], list[str]]:
+        """Return the handler nodes notified by the given names if they exist.
+
+        You must calculate the indices before calling this method.
+
+        :param notify: The names of the handler nodes to get from the play.
+            This matches the 'notify' attribute of the task.
+        :return: A tuple of the notified handlers nodes and the names of the handlers that were not found in the play.
+        """
+
+        # TODO: use a cache here or a faster way to get the notified handlers
+
+        notified_handlers: list[HandlerNode] = []
+        found: set[str] = set()
+
+        for h in reversed(self.handlers):
+            if h in notified_handlers:
+                continue
+
+            for n in notify:
+                if h.matches_name(n):
+                    notified_handlers.append(h)
+                    found.add(n)
+
+        not_found = set(notify) - found
+        return sorted(notified_handlers, key=lambda x: x.index), list(not_found)
+
+    def _traverse_nodes(self, links: dict[Node, list[Node]], play: "PlayNode") -> None:
+        """Traverse the nodes to get the links. Utility method to get the links of the nodes.
+
+        :param links: The links dictionary
+        :param play: The play node
+        :return:
+        """
+        for nodes in list(self._compositions.values()):
+            for node in nodes:
+                if isinstance(node, CompositeNode):
+                    node._get_all_links(links)
+
+                # Managing the links between the tasks and the handlers
+                if isinstance(node, (TaskNode, HandlerNode)):
+                    handlers, _ = play.get_notified_handlers(node.notify)
+                    if handlers:
+                        links[node].extend(handlers)
+
+                links[self].append(node)
+
+
+class PlayNode(CompositeHandlersNode):
     """A play is a list of:
     - pre_tasks
     - roles
@@ -574,60 +638,13 @@ class PlayNode(CompositeNode):
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
 
-    @property
-    def handlers(self) -> list["HandlerNode"]:
-        """Return all the handlers visible to the play (including the ones defined in roles used in the play).
-
-        :return:
-        """
-        return self.get_nodes("handlers")
-
-    def get_notified_handlers(
-        self, notify: list[str]
-    ) -> tuple[list["HandlerNode"], list[str]]:
-        """Return the handler nodes notified by the given names if they exist.
-
-        You must calculate the indices before calling this method.
-
-        :param notify: The names of the handler nodes to get from the play.
-            This matches the 'notify' attribute of the task.
-        :return: A tuple of the notified handlers nodes and the names of the handlers that were not found in the play.
-        """
-
-        # TODO: use a cache here or a faster way to get the notified handlers
-
-        notified_handlers: list[HandlerNode] = []
-        found: set[str] = set()
-
-        for h in reversed(self.handlers):
-            if h in notified_handlers:
-                continue
-
-            for n in notify:
-                if h.matches_name(n):
-                    notified_handlers.append(h)
-                    found.add(n)
-
-        not_found = set(notify) - found
-        return sorted(notified_handlers, key=lambda x: x.index), list(not_found)
-
-    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
         """Recursively get the node links.
 
+        :param links_acc: The accumulator for the links
         :return:
         """
-        for nodes in list(self._compositions.values()):
-            for node in nodes:
-                if isinstance(node, CompositeNode):
-                    node._get_all_links(links)
-
-                # Managing the links between the tasks and the handlers
-                if isinstance(node, (TaskNode, HandlerNode)):
-                    handlers, not_found = self.get_notified_handlers(node.notify)
-                    if handlers:
-                        links[node].extend(handlers)
-
-                links[self].append(node)
+        self._traverse_nodes(links_acc, self)
 
     def to_dict(
         self,
@@ -828,7 +845,7 @@ class HandlerNode(TaskNode):
         return False
 
 
-class RoleNode(LoopMixin, CompositeNode):
+class RoleNode(LoopMixin, CompositeHandlersNode):
     """A role node. A role is a composition of tasks."""
 
     def __init__(
@@ -934,37 +951,17 @@ class RoleNode(LoopMixin, CompositeNode):
         """
         return self.get_nodes("tasks")
 
-    @property
-    def handlers(self) -> list["HandlerNode"]:
-        """Return the handlers defined in the role.
-
-        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
-        of a role.
-        :return:
-        """
-        return self.get_nodes("handlers")
-
-    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
         """Recursively get the node links.
 
+        :param links_acc: The accumulator for the links
         :return:
         """
         play = self.get_first_parent_matching_type(PlayNode)
         if not play:
             raise ValueError(f"The role '{self}' must be a child of a play node.")
 
-        for nodes in list(self._compositions.values()):
-            for node in nodes:
-                if isinstance(node, CompositeNode):
-                    node._get_all_links(links)
-
-                # Managing the links between the tasks and the handlers
-                if isinstance(node, (TaskNode, HandlerNode)):
-                    handlers, _ = play.get_notified_handlers(node.notify)
-                    if handlers:
-                        links[node].extend(handlers)
-
-                links[self].append(node)
+        self._traverse_nodes(links_acc, play)
 
     def is_empty(self) -> bool:
         """Return true if the role is empty, false otherwise.
