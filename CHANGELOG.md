@@ -8,7 +8,11 @@ Here are a few break changes to expect in the next major release:
 
 # 2.9.0 (unreleased)
 
-WIP
+* feat: Improve support for Ansible handlers by @haidaram in https://github.com/haidaraM/ansible-playbook-grapher/pull/234
+  * The handlers are now linked to the tasks that notify them.
+  * Log warning when a handler is not found.
+* Improve graphviz renderer tests by checking the number of edges in the graph.
+* Simplify the format of the edge IDs in the graphviz renderer.
 
 # 2.8.0 (2025-01-01)
 
