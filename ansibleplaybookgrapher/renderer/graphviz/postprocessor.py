@@ -138,19 +138,19 @@ class GraphvizPostProcessor:
             )
             if xpath_result:
                 element = xpath_result[0]
-                root_subelement = etree.Element("links")
+                links = etree.Element("links")
                 for counter, link in enumerate(node_links, 1):
-                    root_subelement.append(
+                    links.append(
                         etree.Element(
                             "link",
                             attrib={
                                 "target": link.id,
-                                "edge": f"edge_{counter}_{node.id}_{link.id}",
+                                "edge": f"edge_{node.id}_{link.id}",
                             },
                         ),
                     )
 
-                element.append(root_subelement)
+                element.append(links)
 
     def _get_text_path_start_offset(self, path_element, text: str) -> str:  # noqa: ANN001
         """Get the start offset where the edge label should begin

@@ -202,7 +202,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             label=edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{task_node.index}_{task_node.parent.id}_{task_node.id}",
+            id=f"edge_{task_node.parent.id}_{task_node.id}",
             tooltip=edge_label,
             labeltooltip=edge_label,
             style=edge_style,
@@ -221,7 +221,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     handler.id,
                     color=color,
                     fontcolor=color,
-                    id=f"edge_{task_node.index}_{task_node.id}_{handler.id}",
+                    id=f"edge_{task_node.id}_{handler.id}",
                     style="dotted",
                     label=f"{counter}",
                     tooltip=handler.name,
@@ -248,7 +248,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{block_node.index}_{block_node.parent.id}_{block_node.id}",
+            id=f"edge_{block_node.parent.id}_{block_node.id}",
             labeltooltip=edge_label,
         )
 
@@ -306,7 +306,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{role_node.index}_{role_node.parent.id}_{role_node.id}",
+            id=f"edge_{role_node.parent.id}_{role_node.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
