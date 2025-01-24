@@ -410,12 +410,6 @@ class PlaybookGrapherCLI(CLI):
                 "The option --hide-empty-plays will be removed in the next major version (v3.0.0) to make it the default behavior.",
             )
 
-        if self.options.show_handlers:
-            display.warning(
-                "The handlers are only partially supported for the moment. They are added at the end of the play and roles, "
-                "but they might be executed before that. As such, expect some changes in the future.",
-            )
-
         return options
 
     def validate_open_protocol_custom_formats(self) -> None:

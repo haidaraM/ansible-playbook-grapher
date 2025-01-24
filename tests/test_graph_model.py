@@ -1,5 +1,6 @@
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
@@ -9,6 +10,7 @@ from ansibleplaybookgrapher.graph_model import (
 
 def test_links_structure() -> None:
     """Test links structure of a graph
+
     :return:
     """
     play = PlayNode("composite_node")
@@ -25,16 +27,72 @@ def test_links_structure() -> None:
     task_3 = TaskNode("task 3")
     play.add_node("tasks", task_3)
 
-    all_links = play.links_structure()
+    all_links = play.get_links_structure()
     assert len(all_links) == 2, "The links should contains only 2 elements"
 
     assert len(all_links[play]) == 2, "The play should be linked to 2 nodes"
-    for e in [role, task_3]:
-        assert e in all_links[play], f"The play should be linked to the task {task_1}"
+    for n in [role, task_3]:
+        assert n in all_links[play], f"The play should be linked to the task '{task_1}'"
 
     assert len(all_links[role]) == 2, "The role should be linked to two nodes"
-    for e in [task_1, task_2]:
-        assert e in all_links[role], f"The role should be linked to the edge {e}"
+    for n in [task_1, task_2]:
+        assert n in all_links[role], f"The role should be linked to the node '{n}'"
+
+
+def test_links_structure_with_handlers() -> None:
+    """Test links structure of a graph with handlers
+
+    :return:
+    """
+    play = PlayNode("composite_node")
+    play.add_node("handlers", HandlerNode("handler 1"))
+    play.add_node("handlers", HandlerNode("handler 2"))
+    play.add_node(
+        "handlers",
+        HandlerNode("handler 3", listen=["topic"], notify=["handler 1"]),
+    )
+
+    # play -> role -> task 1 and 2
+    role = RoleNode("my_role_1")
+    play.add_node("roles", role)
+    # task 1 -> handler 1
+    task_1 = TaskNode("task 1", notify=["handler 1"])
+    role.add_node("tasks", task_1)
+    # task 2 -> handler 2
+    task_2 = TaskNode("task 2", notify=["handler 2"])
+    role.add_node("tasks", task_2)
+
+    # play -> task 3 -> handler 3 via the listen 'topic'
+    task_3 = TaskNode("task 3", notify=["topic"])
+    play.add_node("tasks", task_3)
+
+    all_links = play.get_links_structure()
+
+    play_links = all_links[play]
+    assert (
+        len(play_links) == 5
+    ), "The play should be linked to 5 nodes: 1 role, 1 task, 3 handlers"
+
+    role_links = all_links[role]
+    assert len(role_links) == 2, "The role should be linked to 2 nodes"
+    for n in [task_1, task_2]:
+        assert n in role_links, f"The role should be linked to the node '{n}'"
+
+    assert all_links[task_1] == [
+        play.handlers[0]
+    ], "Task 1 should be linked to handler 1"
+    assert all_links[task_2] == [
+        play.handlers[1]
+    ], "Task 2 should be linked to handler 2"
+    assert all_links[task_3] == [
+        play.handlers[2]
+    ], "Task 3 should be linked to handler 3"
+
+    assert all_links[play.handlers[2]] == [
+        play.handlers[0]
+    ], "Handler 3 should be linked to handler 1"
+
+    print(all_links)
 
 
 def test_empty_play_method() -> None:
@@ -52,6 +110,7 @@ def test_empty_play_method() -> None:
     play.add_node("tasks", task)
     assert not play.is_empty(), "The play should not be empty here"
     play.remove_node("tasks", task)
+    assert task.parent is None, "The task should not have a parent anymore"
     assert play.is_empty(), "The play should be empty again"
 
     role.add_node("tasks", TaskNode("task 1"))
@@ -288,3 +347,35 @@ def test_calculate_indices():
     role.tasks[0].index = None
     assert nested_include_1.index == 1
     assert nested_include_2.index == 2
+
+
+def test_get_handlers_from_play():
+    """Test the method PlayNode.get_handler
+
+    :return:
+    """
+    play = PlayNode("play 1")
+    restart_nginx = HandlerNode("restart nginx")
+    restart_postgres = HandlerNode("restart postgres", listen=["restart dbs"])
+    restart_mysql_1 = HandlerNode("restart mysql", listen=["restart dbs"])
+    restart_mysql_2 = HandlerNode("restart mysql", listen=["restart dbs"])
+    play.add_node("handlers", restart_nginx)
+    play.add_node("handlers", restart_postgres)
+    play.add_node("handlers", restart_mysql_1)
+    play.add_node("handlers", restart_mysql_2)
+
+    play.calculate_indices()
+
+    assert play.get_notified_handlers(["fake handler"]) == ([], ["fake handler"])
+    assert play.get_notified_handlers(["restart nginx"]) == ([restart_nginx], [])
+    assert play.get_notified_handlers(["restart postgres"]) == ([restart_postgres], [])
+
+    mysql_handlers, _ = play.get_notified_handlers(["restart mysql"])
+    assert len(mysql_handlers) == 1
+    assert mysql_handlers[0].id == restart_mysql_2.id
+
+    # When multiple handlers have the same listen, we return them in the order they are defined
+    assert play.get_notified_handlers(["restart dbs"]) == (
+        [restart_postgres, restart_mysql_2],
+        [],
+    )

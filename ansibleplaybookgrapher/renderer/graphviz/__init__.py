@@ -19,12 +19,17 @@ from graphviz import Digraph
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
+from ansibleplaybookgrapher.renderer import (
+    PlaybookBuilder,
+    Renderer,
+    log_handlers_not_found,
+)
 from ansibleplaybookgrapher.renderer.graphviz.postprocessor import GraphvizPostProcessor
 
 display = Display()
@@ -33,7 +38,7 @@ DEFAULT_EDGE_ATTR = {"sep": "10", "esep": "5"}
 DEFAULT_GRAPH_ATTR = {
     "ratio": "fill",
     "rankdir": "LR",
-    "concentrate": "true",
+    "concentrate": "false",
     "ordering": "in",
 }
 
@@ -89,11 +94,10 @@ class GraphvizRenderer(Renderer):
                 roles_built=roles_built,
                 digraph=digraph,
                 include_role_tasks=include_role_tasks,
-            )
-
-            builder.build_playbook(
                 show_handlers=show_handlers,
             )
+
+            builder.build_playbook()
             roles_built.update(builder.roles_built)
 
         display.display("Rendering the graph...")
@@ -120,7 +124,7 @@ class GraphvizRenderer(Renderer):
 
 
 class GraphvizPlaybookBuilder(PlaybookBuilder):
-    """Build the graphviz graph."""
+    """Build the graphviz graph for a single playbook."""
 
     def __init__(
         self,
@@ -130,6 +134,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
+        show_handlers: bool,
         digraph: Digraph,
     ) -> None:
         """
@@ -143,17 +148,21 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             roles_usage=roles_usage,
             roles_built=roles_built,
             include_role_tasks=include_role_tasks,
+            show_handlers=show_handlers,
         )
         self.digraph = digraph
 
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
         """Build a task
+
+        :param play_node:
         :param task_node:
         :param color:
         :param fontcolor:
@@ -168,8 +177,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         node_shape = "rectangle"
         node_style = "solid"
 
-        if task_node.is_handler():
-            edge_style = "dotted"
+        if isinstance(task_node, HandlerNode):
+            edge_style = (
+                "invis"  # We don't want to see the edge from the parent to the handler
+            )
             node_shape = "hexagon"
             node_style = "dotted"
 
@@ -191,14 +202,35 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             label=edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{task_node.index}_{task_node.parent.id}_{task_node.id}",
+            id=f"edge_{task_node.parent.id}-{task_node.id}",
             tooltip=edge_label,
             labeltooltip=edge_label,
             style=edge_style,
         )
 
+        # Build the edge from the task to the handlers it notifies
+        if self.show_handlers:
+            notified_handlers, not_found = play_node.get_notified_handlers(
+                task_node.notify
+            )
+            log_handlers_not_found(play_node, task_node, not_found)
+
+            for counter, handler in enumerate(notified_handlers, 1):
+                digraph.edge(
+                    task_node.id,
+                    handler.id,
+                    color=color,
+                    fontcolor=color,
+                    id=f"edge_{task_node.id}-{handler.id}",
+                    style="dotted",
+                    label=f"{counter}",
+                    tooltip=handler.name,
+                    labeltooltip=handler.name,
+                )
+
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -216,7 +248,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             color=color,
             fontcolor=color,
             tooltip=edge_label,
-            id=f"edge_{block_node.index}_{block_node.parent.id}_{block_node.id}",
+            id=f"edge_{block_node.parent.id}-{block_node.id}",
             labeltooltip=edge_label,
         )
 
@@ -245,6 +277,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             #  Don't really know why for the moment neither if there is an attribute to change that.
             for task in reversed(block_node.tasks):
                 self.build_node(
+                    play_node=play_node,
                     node=task,
                     color=color,
                     fontcolor=fontcolor,
@@ -253,6 +286,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
@@ -272,7 +306,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
             label=role_edge_label,
             color=color,
             fontcolor=color,
-            id=f"edge_{role_node.index}_{role_node.parent.id}_{role_node.id}",
+            id=f"edge_{role_node.parent.id}-{role_node.id}",
             tooltip=role_edge_label,
             labeltooltip=role_edge_label,
         )
@@ -309,6 +343,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                 # role tasks
                 for role_task in role_node.tasks:
                     self.build_node(
+                        play_node=play_node,
                         node=role_task,
                         color=role_color,
                         fontcolor=fontcolor,
@@ -317,12 +352,10 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Convert the PlaybookNode to the graphviz dot format.
 
-        :param show_handlers: Whether to show the handlers or not.
         :return: The text representation of the graphviz dot format for the playbook.
         """
         display.vvv("Converting the graph to the dot format for graphviz")
@@ -341,18 +374,14 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
                     self.build_play(
                         play,
                         digraph=play_subgraph,
-                        show_handlers=show_handlers,
                         **kwargs,
                     )
 
         return self.digraph.source
 
-    def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """
 
-        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
@@ -382,7 +411,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         self.digraph.edge(
             self.playbook_node.id,
             play_node.id,
-            id=f"edge_{self.playbook_node.id}_{play_node.id}",
+            id=f"edge_{self.playbook_node.id}-{play_node.id}",
             label=playbook_to_play_label,
             color=color,
             fontcolor=color,
@@ -391,4 +420,4 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         )
 
         # traverse the play
-        self.traverse_play(play_node, show_handlers=show_handlers, **kwargs)
+        self.traverse_play(play_node, **kwargs)

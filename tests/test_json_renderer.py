@@ -134,7 +134,7 @@ def _common_tests(
 
     handlers = (
         jq.compile(
-            '.. | objects | select(.type == "TaskNode" and (.id | startswith("handler_")))',
+            '.. | objects | select(.type == "HandlerNode" and (.id | startswith("handler_")))',
         )
         .input(output)
         .all()
@@ -341,7 +341,7 @@ def test_handlers(
 
 @pytest.mark.parametrize(
     ("flag", "handlers_number"),
-    [("--", 0), ("--show-handlers", 2)],
+    [("--", 0), ("--show-handlers", 4)],
     ids=["no_handlers", "show_handlers"],
 )
 def test_handler_in_a_role(
@@ -367,7 +367,7 @@ def test_handler_in_a_role(
         plays_number=1,
         pre_tasks_number=1,
         post_tasks_number=1,
-        tasks_number=1,
+        tasks_number=2,
         handlers_number=handlers_number,
         roles_number=1,
     )

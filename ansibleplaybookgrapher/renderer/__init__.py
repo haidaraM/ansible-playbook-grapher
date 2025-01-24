@@ -88,6 +88,7 @@ class PlaybookBuilder(ABC):
         roles_usage: dict[RoleNode, set[PlayNode]] | None = None,
         roles_built: set[Node] | None = None,
         include_role_tasks: bool = False,
+        show_handlers: bool = False,
     ) -> None:
         """The base class for all playbook builders.
 
@@ -97,12 +98,14 @@ class PlaybookBuilder(ABC):
         :param roles_usage: The usage of the roles in the whole playbook
         :param roles_built: The roles that have been "built" so far.
         :param include_role_tasks: Whether to include the tasks of the roles in the graph or not.
+        :param show_handlers: Whether to show the handlers or not.
         """
         self.playbook_node = playbook_node
         self.roles_usage = roles_usage or playbook_node.roles_usage()
         # A map containing the roles that have been built so far
         self.roles_built = roles_built or set()
         self.include_role_tasks = include_role_tasks
+        self.show_handlers = show_handlers
 
         self.open_protocol_handler = open_protocol_handler
         self.open_protocol_formats = None
@@ -111,12 +114,15 @@ class PlaybookBuilder(ABC):
         if self.open_protocol_handler:
             self.open_protocol_formats = formats[self.open_protocol_handler]
 
-    def build_node(self, node: Node, color: str, fontcolor: str, **kwargs) -> None:
+    def build_node(
+        self, play_node: PlayNode, node: Node, color: str, fontcolor: str, **kwargs
+    ) -> None:
         """Build a generic node.
 
-        :param node: The RoleNode to render
-        :param color: The color to apply
-        :param fontcolor: The font color to apply
+        :param play_node: The PlayNode to which the node belongs.
+        :param node: The Node to render
+        :param color: The color to apply.
+        :param fontcolor: The font color to apply.
         :return:
         """
 
@@ -127,6 +133,7 @@ class PlaybookBuilder(ABC):
             # Only build the block if it is not empty or if it has a role node when we only want roles
             if not node.is_empty():
                 self.build_block(
+                    play_node=play_node,
                     block_node=node,
                     color=color,
                     fontcolor=fontcolor,
@@ -135,10 +142,15 @@ class PlaybookBuilder(ABC):
         elif isinstance(node, RoleNode):
             if not node.is_empty():
                 self.build_role(
-                    role_node=node, color=color, fontcolor=fontcolor, **kwargs
+                    play_node=play_node,
+                    role_node=node,
+                    color=color,
+                    fontcolor=fontcolor,
+                    **kwargs,
                 )
         elif isinstance(node, TaskNode):
             self.build_task(
+                play_node=play_node,
                 task_node=node,
                 color=color,
                 fontcolor=fontcolor,
@@ -153,34 +165,27 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_playbook(
         self,
-        show_handlers: bool,
         **kwargs,
     ) -> str:
         """Build the whole playbook
 
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return: The rendered playbook as a string.
         """
 
     @abstractmethod
-    def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """Build a single play to be rendered
 
         :param play_node: The play to render
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
 
-    def traverse_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
-        """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks
+    def traverse_play(self, play_node: PlayNode, **kwargs) -> None:
+        """Traverse a play to build the graph: pre_tasks, roles, tasks, post_tasks, handlers.
+
         :param play_node:
-        :param show_handlers: Whether to show the handlers or not.
         :param kwargs:
         :return:
         """
@@ -188,6 +193,7 @@ class PlaybookBuilder(ABC):
         # pre_tasks
         for pre_task in play_node.pre_tasks:
             self.build_node(
+                play_node=play_node,
                 node=pre_task,
                 color=color,
                 fontcolor=play_font_color,
@@ -200,24 +206,17 @@ class PlaybookBuilder(ABC):
                 continue
 
             self.build_role(
+                play_node=play_node,
                 color=color,
                 fontcolor=play_font_color,
                 role_node=role,
                 **kwargs,
             )
 
-            if show_handlers:
-                for r_handler in role.handlers:
-                    self.build_node(
-                        node=r_handler,
-                        color=color,
-                        fontcolor=play_font_color,
-                        **kwargs,
-                    )
-
         # tasks
         for task in play_node.tasks:
             self.build_node(
+                play_node=play_node,
                 node=task,
                 color=color,
                 fontcolor=play_font_color,
@@ -227,32 +226,36 @@ class PlaybookBuilder(ABC):
         # post_tasks
         for post_task in play_node.post_tasks:
             self.build_node(
+                play_node=play_node,
                 node=post_task,
                 color=color,
                 fontcolor=play_font_color,
                 **kwargs,
             )
 
-        if show_handlers:
+        if self.show_handlers:
             # play handlers
             for p_handler in play_node.handlers:
                 self.build_node(
+                    play_node=play_node,
                     node=p_handler,
                     color=color,
                     fontcolor=play_font_color,
-                    node_label_prefix="[handler] ",
                     **kwargs,
                 )
 
     @abstractmethod
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
-        """Build a single task to be rendered
+        """Build a single task to be rendered.
+
+        :param play_node: The play to which the task belongs
         :param task_node: The task
         :param fontcolor: The font color to apply
         :param color: Color from the play
@@ -263,12 +266,15 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
         **kwargs,
     ) -> None:
         """Render a role in the graph
+
+        :param play_node: The PlayNode to which the role belongs.
         :param role_node: The RoleNode to render
         :param color: The color to apply
         :param fontcolor: The font color to apply
@@ -278,6 +284,7 @@ class PlaybookBuilder(ABC):
     @abstractmethod
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -285,6 +292,8 @@ class PlaybookBuilder(ABC):
     ) -> None:
         """Build a block to be rendered.
         A BlockNode is a special node: a cluster is created instead of a normal node.
+
+        :param play_node: The PlayNode to which the block belongs.
         :param block_node: The BlockNode to build
         :param color: The color from the play to apply
         :param fontcolor: The font color to apply
@@ -310,3 +319,19 @@ class PlaybookBuilder(ABC):
             return url
 
         return None
+
+
+def log_handlers_not_found(
+    play_node: PlayNode, task_node: TaskNode, handlers_not_found: list[str]
+) -> None:
+    """Log the handlers that have not been found.
+
+    :param play_node: The play node
+    :param task_node: The task node
+    :param handlers_not_found: The handlers that have not been found.
+    :return:
+    """
+    for handler in handlers_not_found:
+        display.warning(
+            f"The handler '{handler}' notified by the task '{task_node.display_name()}' has not been found in the play '{play_node.display_name()}'."
+        )

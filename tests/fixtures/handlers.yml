@@ -2,19 +2,19 @@
   hosts: localhost
   gather_facts: false
   pre_tasks:
-    - name: My debug pre task
+    - name: notify mysql and nginx
       debug: msg="pre task"
       changed_when: true
       notify:
-        - restart mysql in the pre_tasks
+        - restart mysql
         - restart nginx
   tasks:
-    - name: foo
+    - name: notify mysql
       assert: { that: true }
       changed_when: true
       notify: restart mysql
 
-    - name: bar
+    - name: notify nginx
       assert: { that: true }
       changed_when: true
       notify: restart nginx
@@ -26,14 +26,14 @@
     - name: restart mysql
       assert: { that: true }
 
-    - name: restart mysql in the pre_tasks
+    - name: restart docker
       assert: { that: true }
 
-- name: play 2 - handlers with meta
+- name: play 2 - handlers with meta and listen
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: foo
+    - name: notify postgres
       assert: { that: true }
       changed_when: true
       notify: restart postgres
@@ -44,17 +44,20 @@
     - name: Flush handlers (meta)
       meta: flush_handlers
 
-    - name: bar
+    - name: notify web services
       assert: { that: true }
       changed_when: true
-      notify: stop traefik
+      notify: "restart web services"
 
   handlers:
     - name: restart postgres
       assert: { that: true }
+      notify: "restart web services"
 
     - name: stop traefik
       assert: { that: true }
+      listen: "restart web services"
 
     - name: restart apache
       assert: { that: true }
+      listen: "restart web services"

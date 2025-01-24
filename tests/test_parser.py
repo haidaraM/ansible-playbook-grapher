@@ -7,6 +7,7 @@ from ansibleplaybookgrapher.cli import PlaybookGrapherCLI
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
     CompositeNode,
+    HandlerNode,
     Node,
     RoleNode,
     TaskNode,
@@ -576,14 +577,20 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     play_1_expected_handlers = [
         "restart nginx",
         "restart mysql",
-        "restart mysql in the pre_tasks",
+        "restart docker",
     ]
     assert len(play_1.handlers) == len(play_1_expected_handlers)
     for idx, h in enumerate(play_1.handlers):
         assert (
             h.name == play_1_expected_handlers[idx]
         ), f"The handler should be '{play_1_expected_handlers[idx]}'"
-        assert h.is_handler()
+        assert isinstance(h, HandlerNode)
+        assert h.location is not None
+        assert h.listen == []
+
+    assert play_1.pre_tasks[0].notify == ["restart mysql", "restart nginx"]
+    assert play_1.tasks[0].notify == ["restart mysql"]
+    assert play_1.tasks[1].notify == ["restart nginx"]
 
     # Second play
     assert len(play_2.tasks) == 4, "The second play should have 6 tasks"
@@ -597,8 +604,14 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
         assert (
             h.name == play_1_expected_handler[idx]
         ), f"The handler should be '{play_1_expected_handler[idx]}'"
-        assert h.is_handler()
-        assert h.location is not None
+        assert isinstance(h, HandlerNode)
+
+    assert play_2.handlers[0].notify == ["restart web services"]
+    assert play_2.handlers[0].listen == []
+    assert play_2.handlers[1].notify == []
+    assert play_2.handlers[1].listen == ["restart web services"]
+    assert play_2.handlers[2].notify == []
+    assert play_2.handlers[2].listen == ["restart web services"]
 
 
 @pytest.mark.parametrize("grapher_cli", [["handlers-in-role.yml"]], indirect=True)
@@ -611,22 +624,30 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     plays = playbook_node.plays
 
     assert len(plays) == 1
-    play = plays[0]
-    assert len(play.handlers) == 1, "The play should have 1 handler"
-    handler = play.handlers[0]
-    assert handler.name == "restart postgres"
 
-    assert len(play.roles) == 1, "The play should have 1 role"
+    play = plays[0]
+    assert len(play.roles) == 1
     role = play.roles[0]
-    assert len(role.tasks) == 1, "The role should have 1 task"
-    assert len(role.handlers) == 1, "The role should have 1 handler"
+    assert len(role.tasks) == 2
+    assert len(role.handlers) == 1
+
+    assert (
+        len(play.handlers) == 3
+    ), "The play should have 3 handlers: 2 from the play itself and 1 from the role"
+
+    assert play.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert play.handlers[1].name == "restart postgres"
+    assert play.handlers[2].name == "restart traefik"
 
     assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
+    assert (
+        play.handlers[0].id == play.handlers[0].id
+    ), "The handler should be the same in the play and in the role"
     assert role.handlers[0].location is not None
 
     assert (
-        len(set(play.handlers + role.handlers)) == 2
-    ), "The total number of handlers should be 2"
+        len(set(play.handlers + role.handlers)) == 3
+    ), "The total number of unique handlers should be 3"
 
 
 @pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)

@@ -1,5 +1,10 @@
 ---
-- name: Debug 1
-  debug: msg="My role with a handler"
-  notify: restart postgres from the role
+- name: Debug with notify
+  debug: msg="Debug "
   changed_when: true
+  notify:
+    - restart traefik
+    - restart postgres from the role
+
+- name: Debug 2 WITHOUT notify
+  debug: msg="Debug 2 WITHOUT notify"

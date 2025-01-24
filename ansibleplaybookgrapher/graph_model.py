@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2025 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,12 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from abc import ABC
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Type, TypeVar
-
-from ansible.playbook.handler import Handler
+from typing import Any, Optional, Type, TypeVar
 
 from ansibleplaybookgrapher.utils import generate_id, get_play_colors
 
@@ -52,6 +51,10 @@ class NodeLocation:
             raise ValueError(
                 msg,
             )
+
+
+# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
+T = TypeVar("T", bound="Node")
 
 
 class Node:
@@ -131,7 +134,7 @@ class Node:
                 # Here we likely have a task with a validate argument spec task inserted by Ansible
                 pass
 
-    def get_first_parent_matching_type(self, node_type: type) -> type | None:
+    def get_first_parent_matching_type(self, node_type: Type[T]) -> T | None:
         """Get the first parent of this node matching the given type.
 
         :param node_type: The type of the parent node to get.
@@ -162,6 +165,8 @@ class Node:
         """Return a dictionary representation of this node. This representation is not meant to get the original object
         back.
 
+        This only returns the attributes for this object, so this may need to be overridden for any subclasses that wish
+        to add additional attributes.
         :return:
         """
         data = {
@@ -174,10 +179,6 @@ class Node:
         }
 
         return data
-
-
-# TypeVar is used to define a generic type T that is bound to Node. Once we switch to Python >=3.12, we can just use the recommended way: [T]
-T = TypeVar("T", bound=Node)
 
 
 class CompositeNode(Node):
@@ -236,6 +237,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
+        node.parent = self
         self._compositions[target_composition].append(node)
 
     def remove_node(self, target_composition: str, node: Node) -> None:
@@ -246,6 +248,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
+        node.parent = None
         self._compositions[target_composition].remove(node)
 
     def calculate_indices(self) -> None:
@@ -313,26 +316,27 @@ class CompositeNode(Node):
                 elif isinstance(node, CompositeNode):
                     node._get_all_nodes_type(node_type, acc)
 
-    def links_structure(self) -> dict[Node, list[Node]]:
+    def get_links_structure(self) -> dict[Node, list[Node]]:
         """Return a representation of the composite node where each key of the dictionary is the node and the
          value is the list of the linked nodes.
 
-        :return:
+        :return: A dictionary representation of the links.
         """
-        links: dict[Node, list[Node]] = defaultdict(list)
-        self._get_all_links(links)
-        return links
+        links_acc: dict[Node, list[Node]] = defaultdict(list)
+        self._get_all_links(links_acc)
+        return links_acc
 
-    def _get_all_links(self, links: dict[Node, list[Node]]) -> None:
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
         """Recursively get the node links.
 
+        :param links_acc: The accumulator for the links
         :return:
         """
         for nodes in self._compositions.values():
             for node in nodes:
                 if isinstance(node, CompositeNode):
-                    node._get_all_links(links)
-                links[self].append(node)
+                    node._get_all_links(links_acc)
+                links_acc[self].append(node)
 
     def is_empty(self) -> bool:
         """Return true if the composite node is empty, false otherwise.
@@ -468,7 +472,7 @@ class PlaybookNode(CompositeNode):
         :return: A dict with key as role node and value the list of uniq plays that use it.
         """
         usages = defaultdict(set)
-        links = self.links_structure()
+        links = self.get_links_structure()
 
         for node, linked_nodes in links.items():
             for linked_node in linked_nodes:
@@ -502,7 +506,70 @@ class PlaybookNode(CompositeNode):
                 play.is_hidden = True
 
 
-class PlayNode(CompositeNode):
+class CompositeHandlersNode(ABC, CompositeNode):
+    """A composite node that supports handlers."""
+
+    @property
+    def handlers(self) -> list["HandlerNode"]:
+        """Return the handlers defined in the role.
+
+        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
+        of a role.
+        :return:
+        """
+        return self.get_nodes("handlers")
+
+    def get_notified_handlers(
+        self, notify: list[str]
+    ) -> tuple[list["HandlerNode"], list[str]]:
+        """Return the handler nodes notified by the given names if they exist.
+
+        You must calculate the indices before calling this method.
+
+        :param notify: The names of the handler nodes to get from the play.
+            This matches the 'notify' attribute of the task.
+        :return: A tuple of the notified handlers nodes and the names of the handlers that were not found in the play.
+        """
+
+        # TODO: use a cache here or a faster way to get the notified handlers
+
+        notified_handlers: list[HandlerNode] = []
+        found: set[str] = set()
+
+        for h in reversed(self.handlers):
+            if h in notified_handlers:
+                continue
+
+            for n in notify:
+                if h.matches_name(n):
+                    notified_handlers.append(h)
+                    found.add(n)
+
+        not_found = set(notify) - found
+        return sorted(notified_handlers, key=lambda x: x.index), list(not_found)
+
+    def _traverse_nodes(self, links: dict[Node, list[Node]], play: "PlayNode") -> None:
+        """Traverse the nodes to get the links. Utility method to get the links of the nodes.
+
+        :param links: The links dictionary
+        :param play: The play node
+        :return:
+        """
+        for nodes in list(self._compositions.values()):
+            for node in nodes:
+                if isinstance(node, CompositeNode):
+                    node._get_all_links(links)
+
+                # Managing the links between the tasks and the handlers
+                if isinstance(node, (TaskNode, HandlerNode)):
+                    handlers, _ = play.get_notified_handlers(node.notify)
+                    if handlers:
+                        links[node].extend(handlers)
+
+                links[self].append(node)
+
+
+class PlayNode(CompositeHandlersNode):
     """A play is a list of:
     - pre_tasks
     - roles
@@ -572,14 +639,13 @@ class PlayNode(CompositeNode):
     def tasks(self) -> list["Node"]:
         return self.get_nodes("tasks")
 
-    @property
-    def handlers(self) -> list["TaskNode"]:
-        """Return the handlers defined at the play level.
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
+        """Recursively get the node links.
 
-        The handlers defined in roles are not included here.
+        :param links_acc: The accumulator for the links
         :return:
         """
-        return self.get_nodes("handlers")
+        self._traverse_nodes(links_acc, self)
 
     def to_dict(
         self,
@@ -658,8 +724,11 @@ class TaskNode(LoopMixin, Node):
         when: str = "",
         raw_object: Any = None,
         parent: "Node" = None,
+        notify: list[str] | None = None,
     ) -> None:
-        """:param node_name:
+        """
+
+        :param node_name:
         :param node_id:
         :param raw_object:
         """
@@ -670,6 +739,18 @@ class TaskNode(LoopMixin, Node):
             raw_object=raw_object,
             parent=parent,
         )
+        # The list of handlers to notify
+        self.notify: list[str] = notify or []
+
+    def to_dict(self, **kwargs) -> dict:
+        """Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
+
+        :return:
+        """
+        data = super().to_dict(**kwargs)
+        data["notify"] = self.notify
+        return data
 
     def display_name(self) -> str:
         """Return the display name of the node.
@@ -683,15 +764,89 @@ class TaskNode(LoopMixin, Node):
 
         return super().display_name()
 
-    def is_handler(self) -> bool:
-        """Return true if this task is a handler, false otherwise.
+
+class HandlerNode(TaskNode):
+    """A handler node. This matches an Ansible Handler.
+
+    Key things to note:
+
+    - Each handler should have a globally unique name. If multiple handlers are defined with the same name, only the last
+    one loaded into the play can be notified and executed, effectively shadowing all of the previous handlers with the same name.
+    - There is only one global scope for handlers (handler names and listen topics) regardless of where the handlers are
+    defined. This also includes handlers defined in roles.
+    - If a handler is defined in a role, it can be notified using the role name as a prefix. Example: notify: "role_name : handler_name"
+    """
+
+    def __init__(
+        self,
+        node_name: str,
+        node_id: str | None = None,
+        when: str = "",
+        raw_object: Any = None,
+        parent: "Node" = None,
+        notify: list[str] | None = None,
+        listen: list[str] | None = None,
+    ) -> None:
+        super().__init__(
+            node_name=node_name,
+            node_id=node_id or generate_id("handler_"),
+            when=when,
+            raw_object=raw_object,
+            parent=parent,
+            notify=notify,
+        )
+        self.listen = listen or []
+
+    def __repr__(self):
+        return f"{type(self).__name__}(name='{self.name}', id='{self.id}', index={self.index}, notify={self.notify}, listen={self.listen})"
+
+    def __eq__(self, other: "HandlerNode") -> bool:
+        """Handler uniqueness is based on the name
+
+        :param other:
+        :return:
+        """
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def to_dict(self, **kwargs) -> dict:
+        """Return a dictionary representation of this node. This representation is not meant to get the original object
+        back.
 
         :return:
         """
-        return isinstance(self.raw_object, Handler) or self.id.startswith("handler_")
+        data = super().to_dict(**kwargs)
+        data["listen"] = self.listen
+        return data
+
+    def display_name(self) -> str:
+        """Return the display name of the node.
+
+        :return:
+        """
+        return f"[handler] {self.name}"
+
+    def matches_name(self, name: str) -> bool:
+        """Check if the handler matches the given name.
+
+        - The name can also be prefixed with the role name if the handler is defined in a role.
+          Example: "role_name : handler_name".
+        - You can also pass the listen topic of the handler. Example: "handler_name : listen_topic"
+        :param name: The name of the handler to check (from the notify attribute)
+        """
+        if self.name == name or name in self.listen:
+            return True
+
+        if role_node := self.get_first_parent_matching_type(RoleNode):
+            name_candidate = f"{role_node.name} : {name}"
+            return self.name == name_candidate or name_candidate in self.listen
+
+        return False
 
 
-class RoleNode(LoopMixin, CompositeNode):
+class RoleNode(LoopMixin, CompositeHandlersNode):
     """A role node. A role is a composition of tasks."""
 
     def __init__(
@@ -793,19 +948,21 @@ class RoleNode(LoopMixin, CompositeNode):
     def tasks(self) -> list[Node]:
         """The tasks attached to this block.
 
-        :return:
+        :return: The list of tasks
         """
         return self.get_nodes("tasks")
 
-    @property
-    def handlers(self) -> list["TaskNode"]:
-        """Return the handlers defined in the role.
+    def _get_all_links(self, links_acc: dict[Node, list[Node]]) -> None:
+        """Recursively get the node links.
 
-        When parsing a role, the handlers are considered as tasks. This is just a convenient method to get the handlers
-        of a role.
+        :param links_acc: The accumulator for the links
         :return:
         """
-        return self.get_nodes("handlers")
+        play = self.get_first_parent_matching_type(PlayNode)
+        if not play:
+            raise ValueError(f"The role '{self}' must be a child of a play node.")
+
+        self._traverse_nodes(links_acc, play)
 
     def is_empty(self) -> bool:
         """Return true if the role is empty, false otherwise.

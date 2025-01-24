@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Mohamed El Mouctar HAIDARA
+# Copyright (C) 2025 Mohamed El Mouctar HAIDARA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,12 +23,17 @@ from ansible.utils.display import Display
 
 from ansibleplaybookgrapher.graph_model import (
     BlockNode,
+    HandlerNode,
     PlaybookNode,
     PlayNode,
     RoleNode,
     TaskNode,
 )
-from ansibleplaybookgrapher.renderer import PlaybookBuilder, Renderer
+from ansibleplaybookgrapher.renderer import (
+    PlaybookBuilder,
+    Renderer,
+    log_handlers_not_found,
+)
 
 display = Display()
 
@@ -93,11 +98,10 @@ class MermaidFlowChartRenderer(Renderer):
                 roles_built=roles_built,
                 link_order=link_order,
                 include_role_tasks=include_role_tasks,
-            )
-
-            mermaid_code += playbook_builder.build_playbook(
                 show_handlers=show_handlers,
             )
+
+            mermaid_code += playbook_builder.build_playbook()
             link_order = playbook_builder.link_order
             roles_built.update(playbook_builder.roles_built)
 
@@ -156,6 +160,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         roles_usage: dict[RoleNode, set[PlayNode]],
         roles_built: set[RoleNode],
         include_role_tasks: bool,
+        show_handlers: bool,
         link_order: int = 0,
     ) -> None:
         super().__init__(
@@ -165,6 +170,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             roles_usage,
             roles_built,
             include_role_tasks=include_role_tasks,
+            show_handlers=show_handlers,
         )
 
         self.mermaid_code = ""
@@ -175,12 +181,10 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_playbook(
         self,
-        show_handlers: bool = False,
         **kwargs,
     ) -> str:
         """Build a playbook.
 
-        :param show_handlers: Whether to show handlers or not
         :param kwargs:
         :return:
         """
@@ -200,19 +204,16 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         for play_node in self.playbook_node.plays:
             if not play_node.is_hidden:
-                self.build_play(play_node, show_handlers=show_handlers, **kwargs)
+                self.build_play(play_node, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the playbook '{self.playbook_node.display_name()}'\n")
 
         return self.mermaid_code
 
-    def build_play(
-        self, play_node: PlayNode, show_handlers: bool = False, **kwargs
-    ) -> None:
+    def build_play(self, play_node: PlayNode, **kwargs) -> None:
         """Build a play.
 
-        :param show_handlers:
         :param play_node:
         :param kwargs:
         :return:
@@ -238,13 +239,14 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
         # traverse the play
         self._indentation_level += 1
-        self.traverse_play(play_node, show_handlers, **kwargs)
+        self.traverse_play(play_node, **kwargs)
         self._indentation_level -= 1
 
         self.add_comment(f"End of the play '{play_node.display_name()}'")
 
     def build_task(
         self,
+        play_node: PlayNode,
         task_node: TaskNode,
         color: str,
         fontcolor: str,
@@ -252,6 +254,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a task.
 
+        :param play_node:
         :param task_node:
         :param color:
         :param fontcolor:
@@ -259,13 +262,15 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
 
-        link_type = "--"
+        link_type = "-->"
+        link_text = f"{task_node.index} {task_node.when}"
         node_shape = "rect"
         style = f"stroke:{color},fill:{fontcolor}"
 
-        if task_node.is_handler():
+        if isinstance(task_node, HandlerNode):
             # dotted style for handlers
-            link_type = "-.-"
+            link_type = "~~~"  # Invisible link
+            link_text = " "
             node_shape = "hexagon"
             style += ",stroke-dasharray: 2, 2"
 
@@ -277,14 +282,29 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             style=style,
         )
 
-        # From parent to task
+        # From the parent to the task
         self.add_link(
             source_id=task_node.parent.id,
-            text=f"{task_node.index} {task_node.when}",
             dest_id=task_node.id,
+            text=link_text,
             style=f"stroke:{color},color:{color}",
             link_type=link_type,
         )
+
+        if self.show_handlers:
+            notified_handlers, not_found = play_node.get_notified_handlers(
+                task_node.notify
+            )
+            log_handlers_not_found(play_node, task_node, not_found)
+
+            for counter, handler in enumerate(notified_handlers, 1):
+                self.add_link(
+                    source_id=task_node.id,
+                    dest_id=handler.id,
+                    text=f"{counter}",
+                    style=f"stroke:{color},color:{color}",
+                    link_type="-.->",
+                )
 
     def add_node(self, node_id: str, shape: str, label: str, style: str = "") -> None:
         """Add a node to the mermaid code.
@@ -315,6 +335,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_role(
         self,
+        play_node: PlayNode,
         role_node: RoleNode,
         color: str,
         fontcolor: str,
@@ -322,6 +343,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a role.
 
+        :param play_node:
         :param role_node:
         :param color:
         :param fontcolor:
@@ -363,6 +385,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
             self._indentation_level += 1
             for role_task in role_node.tasks:
                 self.build_node(
+                    play_node=play_node,
                     node=role_task,
                     color=node_color,
                     fontcolor=fontcolor,
@@ -373,6 +396,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
 
     def build_block(
         self,
+        play_node: PlayNode,
         block_node: BlockNode,
         color: str,
         fontcolor: str,
@@ -380,6 +404,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
     ) -> None:
         """Build a block.
 
+        :param play_node:
         :param block_node:
         :param color:
         :param fontcolor:
@@ -408,6 +433,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         self._indentation_level += 1
         for task in block_node.tasks:
             self.build_node(
+                play_node=play_node,
                 node=task,
                 color=color,
                 fontcolor=fontcolor,
@@ -423,7 +449,7 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         text: str,
         dest_id: str,
         style: str = "",
-        link_type: str = "--",
+        link_type: str = "-->",
     ) -> None:
         """Add the link between two nodes.
 
@@ -435,8 +461,8 @@ class MermaidFlowChartPlaybookBuilder(PlaybookBuilder):
         :return:
         """
         # Replace double quotes with single quotes. Mermaid doesn't like double quotes
-        text = text.replace('"', "'").strip()
-        self.add_text(f'{source_id} {link_type}> |"{text}"| {dest_id}')
+        text = text.replace('"', "'")
+        self.add_text(f'{source_id} {link_type} |"{text}"| {dest_id}')
 
         if style != "" or style is not None:
             self.add_text(f"linkStyle {self.link_order} {style}")

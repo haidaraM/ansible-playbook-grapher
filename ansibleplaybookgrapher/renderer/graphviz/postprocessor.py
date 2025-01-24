@@ -124,10 +124,11 @@ class GraphvizPostProcessor:
 
     def _insert_links(self, playbook_node: PlaybookNode) -> None:
         """Insert the links between nodes in the SVG file.
-        :param playbook_node: one of the playbook in the svg.
+
+        :param playbook_node: One of the playbooks in the svg.
         """
         display.vv(f"Inserting links structure for the playbook '{playbook_node.name}'")
-        links_structure = playbook_node.links_structure()
+        links_structure = playbook_node.get_links_structure()
 
         for node, node_links in links_structure.items():
             # Find the group g with the specified id
@@ -137,19 +138,19 @@ class GraphvizPostProcessor:
             )
             if xpath_result:
                 element = xpath_result[0]
-                root_subelement = etree.Element("links")
+                links = etree.Element("links")
                 for counter, link in enumerate(node_links, 1):
-                    root_subelement.append(
+                    links.append(
                         etree.Element(
                             "link",
                             attrib={
                                 "target": link.id,
-                                "edge": f"edge_{counter}_{node.id}_{link.id}",
+                                "edge": f"edge_{node.id}-{link.id}",
                             },
                         ),
                     )
 
-                element.append(root_subelement)
+                element.append(links)
 
     def _get_text_path_start_offset(self, path_element, text: str) -> str:  # noqa: ANN001
         """Get the start offset where the edge label should begin
