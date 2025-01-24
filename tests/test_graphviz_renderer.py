@@ -86,7 +86,7 @@ def _common_tests(
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
     handlers_number: int = 0,
-    delta_edges_number: int = 0,
+    additional_edges_number: int = 0,
 ) -> dict[str, list[Element]]:
     """Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -101,7 +101,7 @@ def _common_tests(
     :param post_tasks_number: Number of post tasks in the playbook
     :param blocks_number: Number of blocks in the playbook
     :param handlers_number: Number of handlers in the playbook
-    :param delta_edges_number: Delta number of edges in the playbook. This number is added to the inferred number of edges.
+    :param additional_edges_number: Additional number of edges in the playbook. This number is added to the inferred number of edges.
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
     # test if the file exists. It will exist only if we write in it.
@@ -171,7 +171,7 @@ def _common_tests(
         + post_tasks_number
         + blocks_number
         + handlers_number
-        + delta_edges_number
+        + additional_edges_number
     )
     print(f"Found Edges: {len(edges)}")
     assert (
@@ -564,7 +564,13 @@ def test_community_download_roles_and_collection(
 
 
 @pytest.mark.parametrize(
-    ("flag", "roles_number", "tasks_number", "post_tasks_number", "delta_edges_number"),
+    (
+        "flag",
+        "roles_number",
+        "tasks_number",
+        "post_tasks_number",
+        "additional_edges_number",
+    ),
     [("--", 6, 9, 8, 0), ("--group-roles-by-name", 3, 6, 2, 3)],
     ids=["no_group", "group"],
 )
@@ -574,7 +580,7 @@ def test_group_roles_by_name(
     roles_number: int,
     tasks_number: int,
     post_tasks_number: int,
-    delta_edges_number: int,
+    additional_edges_number: int,
 ) -> None:
     """Test group roles by name
 
@@ -594,7 +600,7 @@ def test_group_roles_by_name(
         post_tasks_number=post_tasks_number,
         blocks_number=1,
         # Some edges are added because of the grouped roles (3 edges). fake_role is used 3 times (+2 edges) and display_some_facts twice (+1 edge)
-        delta_edges_number=delta_edges_number,
+        additional_edges_number=additional_edges_number,
     )
 
 
@@ -749,7 +755,7 @@ def test_graphing_a_playbook_in_a_collection(
 
 
 @pytest.mark.parametrize(
-    ("flag", "handlers_number", "delta_edges_number"),
+    ("flag", "handlers_number", "additional_edges_number"),
     [("--", 0, 0), ("--show-handlers", 6, 3)],
     ids=["no_handlers", "show_handlers"],
 )
@@ -757,7 +763,7 @@ def test_handlers(
     request: pytest.FixtureRequest,
     flag: str,
     handlers_number: int,
-    delta_edges_number: int,
+    additional_edges_number: int,
 ) -> None:
     """Test graphing a playbook with handlers
 
@@ -778,19 +784,20 @@ def test_handlers(
         # 3 edges are added because of the handlers
         #  - the handler restart mysql is referenced twice (+1 edge)
         #  - the handler restart postgres notifies the handlers stop traefik (+1 edge) and restart apache (+1 edge)
-        delta_edges_number=delta_edges_number,
+        additional_edges_number=additional_edges_number,
     )
 
 
 @pytest.mark.parametrize(
-    ("flag", "handlers_number"),
-    [("--", 0), ("--show-handlers", 3)],
+    ("flag", "handlers_number", "additional_edges_number"),
+    [("--", 0, 0), ("--show-handlers", 3, 1)],
     ids=["no_handlers", "show_handlers"],
 )
 def test_handlers_in_role(
     request: pytest.FixtureRequest,
     flag: str,
     handlers_number: int,
+    additional_edges_number: int,
 ) -> None:
     """Test graphing a playbook with handlers
 
@@ -815,6 +822,7 @@ def test_handlers_in_role(
         post_tasks_number=1,
         roles_number=1,
         handlers_number=handlers_number,
+        additional_edges_number=additional_edges_number,
     )
 
 
