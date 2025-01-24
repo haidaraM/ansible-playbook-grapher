@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from abc import ABC
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -505,7 +506,7 @@ class PlaybookNode(CompositeNode):
                 play.is_hidden = True
 
 
-class CompositeHandlersNode(CompositeNode):
+class CompositeHandlersNode(ABC, CompositeNode):
     """A composite node that supports handlers."""
 
     @property
