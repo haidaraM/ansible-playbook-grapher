@@ -749,14 +749,15 @@ def test_graphing_a_playbook_in_a_collection(
 
 
 @pytest.mark.parametrize(
-    ("flag", "handlers_number"),
-    [("--", 0), ("--show-handlers", 6)],
+    ("flag", "handlers_number", "delta_edges_number"),
+    [("--", 0, 0), ("--show-handlers", 6, 3)],
     ids=["no_handlers", "show_handlers"],
 )
 def test_handlers(
     request: pytest.FixtureRequest,
     flag: str,
     handlers_number: int,
+    delta_edges_number: int,
 ) -> None:
     """Test graphing a playbook with handlers
 
@@ -774,6 +775,10 @@ def test_handlers(
         plays_number=2,
         tasks_number=6,
         handlers_number=handlers_number,
+        # 3 edges are added because of the handlers
+        #  - the handler restart mysql is referenced twice (+1 edge)
+        #  - the handler restart postgres notifies the handlers stop traefik (+1 edge) and restart apache (+1 edge)
+        delta_edges_number=delta_edges_number,
     )
 
 
