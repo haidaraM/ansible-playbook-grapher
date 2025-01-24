@@ -145,7 +145,7 @@ class GraphvizPostProcessor:
                             "link",
                             attrib={
                                 "target": link.id,
-                                "edge": f"edge_{node.id}_{link.id}",
+                                "edge": f"edge_{node.id}-{link.id}",
                             },
                         ),
                     )

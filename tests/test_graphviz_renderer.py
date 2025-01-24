@@ -86,6 +86,7 @@ def _common_tests(
     pre_tasks_number: int = 0,
     blocks_number: int = 0,
     handlers_number: int = 0,
+    delta_edges_number: int = 0,
 ) -> dict[str, list[Element]]:
     """Perform some common tests on the generated svg file:
      - Existence of svg file
@@ -98,7 +99,9 @@ def _common_tests(
     :param roles_number: Number of roles in the playbook
     :param tasks_number: Number of tasks in the playbook
     :param post_tasks_number: Number of post tasks in the playbook
+    :param blocks_number: Number of blocks in the playbook
     :param handlers_number: Number of handlers in the playbook
+    :param delta_edges_number: Delta number of edges in the playbook. This number is added to the inferred number of edges.
     :return: A dictionary with the different tasks, roles, pre_tasks as keys and a list of Elements (nodes) as values.
     """
     # test if the file exists. It will exist only if we write in it.
@@ -115,6 +118,7 @@ def _common_tests(
     pre_tasks: PyQuery = pq("g[id^='pre_task_']")
     blocks: PyQuery = pq("g[id^='block_']")
     roles: PyQuery = pq("g[id^='role_']")
+    edges: PyQuery = pq("g[id^='edge_']")
     handlers: PyQuery = pq("g[id^='handler_']")
 
     if expected_title:
@@ -137,7 +141,7 @@ def _common_tests(
 
     assert (
         len(pre_tasks) == pre_tasks_number
-    ), f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
+    ), f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tas(s("
 
     assert (
         len(roles) == roles_number
@@ -145,19 +149,34 @@ def _common_tests(
 
     assert (
         len(tasks) == tasks_number
-    ), f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
+    ), f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} task(s)"
 
     assert (
         len(post_tasks) == post_tasks_number
-    ), f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
+    ), f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post task(s)"
 
     assert (
         len(blocks) == blocks_number
-    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} blocks"
+    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} block(s)"
 
     assert (
         len(handlers) == handlers_number
-    ), f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handlers "
+    ), f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handler(s)"
+
+    expected_edges_number = (
+        plays_number
+        + pre_tasks_number
+        + roles_number
+        + tasks_number
+        + post_tasks_number
+        + blocks_number
+        + handlers_number
+        + delta_edges_number
+    )
+    print(f"Found Edges: {len(edges)}")
+    assert (
+        len(edges) == expected_edges_number
+    ), f"The graph should contains {expected_edges_number} edges but we found {len(edges)} edges."
 
     return {
         "tasks": tasks,
@@ -166,6 +185,7 @@ def _common_tests(
         "pre_tasks": pre_tasks,
         "roles": roles,
         "blocks": blocks,
+        "edges": edges,
         "handlers": handlers,
     }
 
@@ -544,8 +564,8 @@ def test_community_download_roles_and_collection(
 
 
 @pytest.mark.parametrize(
-    ("flag", "roles_number", "tasks_number", "post_tasks_number"),
-    [("--", 6, 9, 8), ("--group-roles-by-name", 3, 6, 2)],
+    ("flag", "roles_number", "tasks_number", "post_tasks_number", "delta_edges_number"),
+    [("--", 6, 9, 8, 0), ("--group-roles-by-name", 3, 6, 2, 3)],
     ids=["no_group", "group"],
 )
 def test_group_roles_by_name(
@@ -554,8 +574,10 @@ def test_group_roles_by_name(
     roles_number: int,
     tasks_number: int,
     post_tasks_number: int,
+    delta_edges_number: int,
 ) -> None:
     """Test group roles by name
+
     :return:
     """
     svg_path, playbook_paths = run_grapher(
@@ -571,6 +593,8 @@ def test_group_roles_by_name(
         tasks_number=tasks_number,
         post_tasks_number=post_tasks_number,
         blocks_number=1,
+        # Some edges are added because of the grouped roles (3 edges). fake_role is used 3 times (+2 edges) and display_some_facts twice (+1 edge)
+        delta_edges_number=delta_edges_number,
     )
 
 
