@@ -134,7 +134,6 @@ class BaseParser(ABC):
             "node_id": generate_id(f"{node_type}_"),
             "when": convert_when_to_str(task.when),
             "raw_object": task,
-            "parent": parent_node,
             "notify": _get_notified_handlers(task),
         }
 
@@ -258,7 +257,6 @@ class PlaybookParser(BaseParser):
                 play_name,
                 hosts=play_hosts,
                 raw_object=play,
-                parent=playbook_root_node,
             )
             playbook_root_node.add_node("plays", play_node)
 
@@ -296,7 +294,6 @@ class PlaybookParser(BaseParser):
                     clean_name(role.get_name()),
                     node_id=role_node_id,
                     raw_object=role,
-                    parent=play_node,
                 )
                 # edge from play to role
                 play_node.add_node("roles", role_node)
@@ -396,7 +393,6 @@ class PlaybookParser(BaseParser):
                 str(block.name),
                 when=convert_when_to_str(block.when),
                 raw_object=block,
-                parent=parent_nodes[-1],
             )
             parent_nodes[-1].add_node(f"{node_type}s", block_node)
             parent_nodes.append(block_node)
@@ -461,7 +457,6 @@ class PlaybookParser(BaseParser):
                         node_id=role_node_id,
                         when=convert_when_to_str(task_or_block.when),
                         raw_object=task_or_block,
-                        parent=parent_nodes[-1],
                         include_role=True,
                     )
                     parent_nodes[-1].add_node(

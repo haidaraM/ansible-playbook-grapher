@@ -16,15 +16,15 @@ def test_links_structure() -> None:
     play = PlayNode("composite_node")
 
     # play -> role -> task 1 and 2
-    role = RoleNode("my_role_1", parent=play)
+    role = RoleNode("my_role_1")
     play.add_node("roles", role)
-    task_1 = TaskNode("task 1", parent=role)
+    task_1 = TaskNode("task 1")
     role.add_node("tasks", task_1)
-    task_2 = TaskNode("task 2", parent=role)
+    task_2 = TaskNode("task 2")
     role.add_node("tasks", task_2)
 
     # play -> task 3
-    task_3 = TaskNode("task 3", parent=play)
+    task_3 = TaskNode("task 3")
     play.add_node("tasks", task_3)
 
     all_links = play.links_structure()
@@ -45,15 +45,15 @@ def test_links_structure_with_handlers() -> None:
     :return:
     """
     play = PlayNode("composite_node")
-    play.add_node("handlers", HandlerNode("handler 1", parent=play))
-    play.add_node("handlers", HandlerNode("handler 2", parent=play))
+    play.add_node("handlers", HandlerNode("handler 1"))
+    play.add_node("handlers", HandlerNode("handler 2"))
     play.add_node(
         "handlers",
-        HandlerNode("handler 3", listen=["topic"], notify=["handler 1"], parent=play),
+        HandlerNode("handler 3", listen=["topic"], notify=["handler 1"]),
     )
 
     # play -> role -> task 1 and 2
-    role = RoleNode("my_role_1", parent=play)
+    role = RoleNode("my_role_1")
     play.add_node("roles", role)
     # task 1 -> handler 1
     task_1 = TaskNode("task 1", notify=["handler 1"])
@@ -63,7 +63,7 @@ def test_links_structure_with_handlers() -> None:
     role.add_node("tasks", task_2)
 
     # play -> task 3 -> handler 3 via the listen 'topic'
-    task_3 = TaskNode("task 3", notify=["topic"], parent=play)
+    task_3 = TaskNode("task 3", notify=["topic"])
     play.add_node("tasks", task_3)
 
     all_links = play.links_structure()
@@ -110,6 +110,7 @@ def test_empty_play_method() -> None:
     play.add_node("tasks", task)
     assert not play.is_empty(), "The play should not be empty here"
     play.remove_node("tasks", task)
+    assert task.parent is None, "The task should not have a parent anymore"
     assert play.is_empty(), "The play should be empty again"
 
     role.add_node("tasks", TaskNode("task 1"))

@@ -236,6 +236,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
+        node.parent = self
         self._compositions[target_composition].append(node)
 
     def remove_node(self, target_composition: str, node: Node) -> None:
@@ -246,6 +247,7 @@ class CompositeNode(Node):
         :return:
         """
         self._check_target_composition(target_composition)
+        node.parent = None
         self._compositions[target_composition].remove(node)
 
     def calculate_indices(self) -> None:
@@ -949,7 +951,7 @@ class RoleNode(LoopMixin, CompositeNode):
         """
         play = self.get_first_parent_matching_type(PlayNode)
         if not play:
-            raise ValueError("The role must be a child of a play node.")
+            raise ValueError(f"The role '{self}' must be a child of a play node.")
 
         for nodes in list(self._compositions.values()):
             for node in nodes:
