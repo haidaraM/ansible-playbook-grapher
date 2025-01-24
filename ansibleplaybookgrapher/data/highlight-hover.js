@@ -1,6 +1,6 @@
 /**
  * This file contains the functions responsible to highlight the plays, roles and tasks when rendering the SVG file in a browser
- * or any SVG reader that support Javascript.
+ * or any SVG reader that support JavaScript.
  */
 
 /**
@@ -140,7 +140,7 @@ $("#svg").ready(function () {
     let plays = $("g[id^=play_]");
     let roles = $("g[id^=role_]");
     let blocks = $("g[id^=block_]");
-    let tasks = $("g[id^=pre_task_], g[id^=task_], g[id^=post_task_]");
+    let tasks = $("g[id^=pre_task_], g[id^=task_], g[id^=post_task_], g[id^=handler_]");
 
     playbooks.hover(hoverMouseEnter, hoverMouseLeave);
     playbooks.click(clickOnElement);
