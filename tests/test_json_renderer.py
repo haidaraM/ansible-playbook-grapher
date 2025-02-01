@@ -140,47 +140,47 @@ def _common_tests(
         .all()
     )
 
-    assert (
-        output["title"] == title
-    ), f"The title should be '{title}' but we found '{output['title']}'"
+    assert output["title"] == title, (
+        f"The title should be '{title}' but we found '{output['title']}'"
+    )
 
-    assert (
-        len(playbooks) == playbooks_number
-    ), f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
+    assert len(playbooks) == playbooks_number, (
+        f"The file '{json_path}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} playbook(s)"
+    )
 
-    assert (
-        len(plays) == plays_number
-    ), f"The file '{json_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
+    assert len(plays) == plays_number, (
+        f"The file '{json_path}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
+    )
 
-    assert (
-        len(pre_tasks) == pre_tasks_number
-    ), f"The file '{json_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
+    assert len(pre_tasks) == pre_tasks_number, (
+        f"The file '{json_path}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tasks"
+    )
 
-    assert (
-        len(roles) == roles_number
-    ), f"The file '{json_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    assert len(roles) == roles_number, (
+        f"The file '{json_path}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    )
 
-    assert (
-        len(tasks) == tasks_number
-    ), f"The file '{json_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
+    assert len(tasks) == tasks_number, (
+        f"The file '{json_path}' should contains {tasks_number} tasks(s) but we found {len(tasks)} tasks"
+    )
 
-    assert (
-        len(post_tasks) == post_tasks_number
-    ), f"The file '{json_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
+    assert len(post_tasks) == post_tasks_number, (
+        f"The file '{json_path}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post tasks"
+    )
 
-    assert (
-        len(blocks) == blocks_number
-    ), f"The file '{json_path}' should contains {blocks_number} block(s) but we found {len(blocks)} blocks"
+    assert len(blocks) == blocks_number, (
+        f"The file '{json_path}' should contains {blocks_number} block(s) but we found {len(blocks)} blocks"
+    )
 
-    assert (
-        len(handlers) == handlers_number
-    ), f"The file '{json_path}' should contains {handlers_number} handler(s) but we found {len(handlers)} handlers"
+    assert len(handlers) == handlers_number, (
+        f"The file '{json_path}' should contains {handlers_number} handler(s) but we found {len(handlers)} handlers"
+    )
 
     # Check the play
     for play in plays:
-        assert (
-            play.get("colors") is not None
-        ), f"The play '{play['name']}' is missing colors'"
+        assert play.get("colors") is not None, (
+            f"The play '{play['name']}' is missing colors'"
+        )
 
     return {
         "tasks": tasks,

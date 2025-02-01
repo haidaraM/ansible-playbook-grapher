@@ -140,7 +140,7 @@ class MermaidFlowChartRenderer(Renderer):
 
         compressed = zlib.compress(json.dumps(graph_state).encode("utf-8"), level=9)
 
-        url_path = f'pako:{urlsafe_b64encode(compressed).decode("utf-8")}'
+        url_path = f"pako:{urlsafe_b64encode(compressed).decode('utf-8')}"
         url = f"https://mermaid.live/edit#{url_path}"
 
         display.vvv(f"Mermaid live editor URL: {url}")

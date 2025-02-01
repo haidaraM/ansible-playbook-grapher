@@ -69,28 +69,28 @@ def test_links_structure_with_handlers() -> None:
     all_links = play.get_links_structure()
 
     play_links = all_links[play]
-    assert (
-        len(play_links) == 5
-    ), "The play should be linked to 5 nodes: 1 role, 1 task, 3 handlers"
+    assert len(play_links) == 5, (
+        "The play should be linked to 5 nodes: 1 role, 1 task, 3 handlers"
+    )
 
     role_links = all_links[role]
     assert len(role_links) == 2, "The role should be linked to 2 nodes"
     for n in [task_1, task_2]:
         assert n in role_links, f"The role should be linked to the node '{n}'"
 
-    assert all_links[task_1] == [
-        play.handlers[0]
-    ], "Task 1 should be linked to handler 1"
-    assert all_links[task_2] == [
-        play.handlers[1]
-    ], "Task 2 should be linked to handler 2"
-    assert all_links[task_3] == [
-        play.handlers[2]
-    ], "Task 3 should be linked to handler 3"
+    assert all_links[task_1] == [play.handlers[0]], (
+        "Task 1 should be linked to handler 1"
+    )
+    assert all_links[task_2] == [play.handlers[1]], (
+        "Task 2 should be linked to handler 2"
+    )
+    assert all_links[task_3] == [play.handlers[2]], (
+        "Task 3 should be linked to handler 3"
+    )
 
-    assert all_links[play.handlers[2]] == [
-        play.handlers[0]
-    ], "Handler 3 should be linked to handler 1"
+    assert all_links[play.handlers[2]] == [play.handlers[0]], (
+        "Handler 3 should be linked to handler 1"
+    )
 
     print(all_links)
 

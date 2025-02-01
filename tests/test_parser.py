@@ -61,9 +61,9 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     assert playbook_node.location.path == str(FIXTURES_DIR_PATH_ABS / "example.yml")
     assert playbook_node.location.line == 1
     assert playbook_node.location.column == 1
-    assert (
-        playbook_node.index is None
-    ), "The index of the playbook should be None (it has no parent)"
+    assert playbook_node.index is None, (
+        "The index of the playbook should be None (it has no parent)"
+    )
 
     play_node = playbook_node.plays[0]
     assert play_node.location.path == str(FIXTURES_DIR_PATH_ABS / "example.yml")
@@ -78,16 +78,16 @@ def test_example_parsing(grapher_cli: PlaybookGrapherCLI, display: Display) -> N
     tasks = play_node.tasks
     assert len(tasks) == 4
     for task_counter, task in enumerate(tasks):
-        assert (
-            task.index == task_counter + len(pre_tasks) + 1
-        ), "The index of the task should start after the pre_tasks"
+        assert task.index == task_counter + len(pre_tasks) + 1, (
+            "The index of the task should start after the pre_tasks"
+        )
 
     post_tasks = play_node.post_tasks
     assert len(post_tasks) == 2
     for post_task_counter, task in enumerate(post_tasks):
-        assert (
-            task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1
-        ), "The index of the post task should start after the pre_tasks and tasks"
+        assert task.index == post_task_counter + len(pre_tasks) + len(tasks) + 1, (
+            "The index of the post task should start after the pre_tasks and tasks"
+        )
 
 
 @pytest.mark.parametrize("grapher_cli", [["with_roles.yml"]], indirect=True)
@@ -113,15 +113,15 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     assert fake_role.index == 3
 
     for task_counter, task in enumerate(fake_role.tasks):
-        assert (
-            task.index == task_counter + 1
-        ), "The index of the task in the role should start at 1"
+        assert task.index == task_counter + 1, (
+            "The index of the task in the role should start at 1"
+        )
 
     display_some_facts = play_node.roles[1]
     for task_counter, task in enumerate(display_some_facts.tasks):
-        assert (
-            task.index == task_counter + 1
-        ), "The index of the task in the role the should start at 1"
+        assert task.index == task_counter + 1, (
+            "The index of the task in the role the should start at 1"
+        )
 
 
 @pytest.mark.parametrize("grapher_cli", [["include_role.yml"]], indirect=True)
@@ -151,12 +151,12 @@ def test_include_role_parsing(
     assert include_role_1.location.path == str(
         FIXTURES_DIR_PATH_ABS / "include_role.yml"
     )
-    assert (
-        include_role_1.location.line == 10
-    ), "The first include role should be at line 9"
-    assert (
-        len(include_role_1.tasks) == 0
-    ), "We don't support adding tasks from include_role with loop"
+    assert include_role_1.location.line == 10, (
+        "The first include role should be at line 9"
+    )
+    assert len(include_role_1.tasks) == 0, (
+        "We don't support adding tasks from include_role with loop"
+    )
     assert include_role_1.has_loop(), "The first include role has a loop"
 
     # first task
@@ -189,9 +189,9 @@ def test_include_role_parsing(
     include_role_4 = tasks[5]
     assert isinstance(include_role_4, RoleNode)
     assert include_role_4.include_role
-    assert (
-        len(include_role_4.tasks) == 0
-    ), "We don't support adding tasks from include_role with loop"
+    assert len(include_role_4.tasks) == 0, (
+        "We don't support adding tasks from include_role with loop"
+    )
     assert include_role_4.has_loop(), "The third include role has a loop"
 
 
@@ -210,9 +210,9 @@ def test_nested_include_role_parsing(
 
     play_node = playbook_node.plays[0]
 
-    assert (
-        len(play_node.roles) == 2
-    ), "Two roles should be at the play level (the ones in the 'roles:' section)"
+    assert len(play_node.roles) == 2, (
+        "Two roles should be at the play level (the ones in the 'roles:' section)"
+    )
 
     # The first task of the play is an include role in the block
     assert len(play_node.tasks) == 1
@@ -279,15 +279,15 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     total_tasks = get_all_tasks(tasks)
     total_post_tasks = get_all_tasks(post_tasks)
 
-    assert (
-        len(total_pre_tasks) == 4
-    ), f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
-    assert (
-        len(total_tasks) == 7
-    ), f"The play should contain 3 tasks but we found {len(total_tasks)} task(s)"
-    assert (
-        len(total_post_tasks) == 2
-    ), f"The play should contain 2 post tasks but we found {len(total_post_tasks)} post task(s)"
+    assert len(total_pre_tasks) == 4, (
+        f"The play should contain 4 pre tasks but we found {len(total_pre_tasks)} pre task(s)"
+    )
+    assert len(total_tasks) == 7, (
+        f"The play should contain 3 tasks but we found {len(total_tasks)} task(s)"
+    )
+    assert len(total_post_tasks) == 2, (
+        f"The play should contain 2 post tasks but we found {len(total_post_tasks)} post task(s)"
+    )
 
     # Check pre tasks
     assert isinstance(
@@ -314,9 +314,9 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(first_block.tasks) == 4
     assert first_block.index == 4
     for task_counter, task in enumerate(first_block.tasks):
-        assert (
-            task.index == task_counter + 1
-        ), "The index of the task in the block should start at 1"
+        assert task.index == task_counter + 1, (
+            "The index of the task in the block should start at 1"
+        )
 
     assert first_block.tasks[0].name == "Install some packages"
     assert first_block.tasks[0].has_loop(), "The task has a 'with_items'"
@@ -330,9 +330,9 @@ def test_block_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
     assert nested_block.index == 3
 
     for task_counter, task in enumerate(nested_block.tasks):
-        assert (
-            task.index == task_counter + 1
-        ), "The index of the task in the block should start at 1"
+        assert task.index == task_counter + 1, (
+            "The index of the task in the block should start at 1"
+        )
 
     # Check the post_tasks
     assert post_tasks[0].name == "Debug"
@@ -382,7 +382,7 @@ def test_parsing_multiple_plays(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(plays) == len(expected_plays)
     for idx, play in enumerate(plays, 0):
         assert play.index == idx + 1
-        assert play.display_name() == f"play #{idx+1} ({expected_plays[idx]}): 0"
+        assert play.display_name() == f"play #{idx + 1} ({expected_plays[idx]}): 0"
 
 
 @pytest.mark.parametrize("grapher_cli", [["multi-plays.yml"]], indirect=True)
@@ -439,9 +439,9 @@ def test_roles_usage_multi_plays(
 
         nb_plays_for_the_role = len(plays)
 
-        assert (
-            expectation.get(role.name) == nb_plays_for_the_role
-        ), f"The role '{role.name}' is used {nb_plays_for_the_role} times but we expect {expectation.get(role.name)}"
+        assert expectation.get(role.name) == nb_plays_for_the_role, (
+            f"The role '{role.name}' is used {nb_plays_for_the_role} times but we expect {expectation.get(role.name)}"
+        )
 
 
 @pytest.mark.parametrize("grapher_cli", [["group-roles-by-name.yml"]], indirect=True)
@@ -485,14 +485,14 @@ def test_roles_dependencies(grapher_cli: PlaybookGrapherCLI) -> None:
 
     expected_tasks = 5
     dependant_role_name = "fake_role"
-    assert (
-        len(tasks) == expected_tasks
-    ), f"There should be {expected_tasks} tasks in the graph"
+    assert len(tasks) == expected_tasks, (
+        f"There should be {expected_tasks} tasks in the graph"
+    )
     # The first 3 tasks are coming from the dependency
     for task_from_dependency in tasks[:3]:
-        assert (
-            dependant_role_name in task_from_dependency.name
-        ), f"The task name should include the dependant role name '{dependant_role_name}'"
+        assert dependant_role_name in task_from_dependency.name, (
+            f"The task name should include the dependant role name '{dependant_role_name}'"
+        )
 
 
 @pytest.mark.parametrize(
@@ -515,9 +515,9 @@ def test_roles_with_argument_validation(grapher_cli: PlaybookGrapherCLI) -> None
     tasks = role_with_dependencies.tasks
 
     expected_tasks = 1 + 2  # 1 validation task added by ansible and 2 tasks in the role
-    assert (
-        len(tasks) == expected_tasks
-    ), f"There should be {expected_tasks} tasks in the graph"
+    assert len(tasks) == expected_tasks, (
+        f"There should be {expected_tasks} tasks in the graph"
+    )
 
 
 @pytest.mark.parametrize(
@@ -554,9 +554,9 @@ def test_parsing_playbook_in_collection(
     assert len(roles) == 2, "Two roles should be in the play"
 
     all_tasks = get_all_tasks([playbook_node])
-    assert (
-        len(all_tasks) == 4 + 2
-    ), "There should be 6 tasks in the playbook: 4 from the roles and 2 from the tasks at the playbook level"
+    assert len(all_tasks) == 4 + 2, (
+        "There should be 6 tasks in the playbook: 4 from the roles and 2 from the tasks at the playbook level"
+    )
 
 
 @pytest.mark.parametrize("grapher_cli", [["handlers.yml"]], indirect=True)
@@ -581,9 +581,9 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     ]
     assert len(play_1.handlers) == len(play_1_expected_handlers)
     for idx, h in enumerate(play_1.handlers):
-        assert (
-            h.name == play_1_expected_handlers[idx]
-        ), f"The handler should be '{play_1_expected_handlers[idx]}'"
+        assert h.name == play_1_expected_handlers[idx], (
+            f"The handler should be '{play_1_expected_handlers[idx]}'"
+        )
         assert isinstance(h, HandlerNode)
         assert h.location is not None
         assert h.listen == []
@@ -601,9 +601,9 @@ def test_parsing_of_handlers(grapher_cli: PlaybookGrapherCLI) -> None:
     ]
     assert len(play_2.handlers) == len(play_1_expected_handler)
     for idx, h in enumerate(play_2.handlers):
-        assert (
-            h.name == play_1_expected_handler[idx]
-        ), f"The handler should be '{play_1_expected_handler[idx]}'"
+        assert h.name == play_1_expected_handler[idx], (
+            f"The handler should be '{play_1_expected_handler[idx]}'"
+        )
         assert isinstance(h, HandlerNode)
 
     assert play_2.handlers[0].notify == ["restart web services"]
@@ -631,23 +631,23 @@ def test_parsing_handler_in_role(grapher_cli: PlaybookGrapherCLI) -> None:
     assert len(role.tasks) == 2
     assert len(role.handlers) == 1
 
-    assert (
-        len(play.handlers) == 3
-    ), "The play should have 3 handlers: 2 from the play itself and 1 from the role"
+    assert len(play.handlers) == 3, (
+        "The play should have 3 handlers: 2 from the play itself and 1 from the role"
+    )
 
     assert play.handlers[0].name == f"{role.name} : restart postgres from the role"
     assert play.handlers[1].name == "restart postgres"
     assert play.handlers[2].name == "restart traefik"
 
     assert role.handlers[0].name == f"{role.name} : restart postgres from the role"
-    assert (
-        play.handlers[0].id == play.handlers[0].id
-    ), "The handler should be the same in the play and in the role"
+    assert play.handlers[0].id == play.handlers[0].id, (
+        "The handler should be the same in the play and in the role"
+    )
     assert role.handlers[0].location is not None
 
-    assert (
-        len(set(play.handlers + role.handlers)) == 3
-    ), "The total number of unique handlers should be 3"
+    assert len(set(play.handlers + role.handlers)) == 3, (
+        "The total number of unique handlers should be 3"
+    )
 
 
 @pytest.mark.parametrize("grapher_cli", [["tags-and-roles.yml"]], indirect=True)

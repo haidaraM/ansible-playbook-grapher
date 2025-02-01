@@ -122,46 +122,46 @@ def _common_tests(
     handlers: PyQuery = pq("g[id^='handler_']")
 
     if expected_title:
-        assert (
-            graph_title == expected_title
-        ), f"The title should be '{graph_title}' but we found '{expected_title}'"
+        assert graph_title == expected_title, (
+            f"The title should be '{graph_title}' but we found '{expected_title}'"
+        )
 
     playbooks_file_names = [e.text for e in playbooks.find("text")]
-    assert (
-        playbooks_file_names == playbook_paths
-    ), "The playbook file names should be in the svg file"
+    assert playbooks_file_names == playbook_paths, (
+        "The playbook file names should be in the svg file"
+    )
 
-    assert (
-        len(playbooks) == playbooks_number
-    ), f"The graph '{svg_filename}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
+    assert len(playbooks) == playbooks_number, (
+        f"The graph '{svg_filename}' should contains {playbooks_number} playbook(s) but we found {len(playbooks)} play(s)"
+    )
 
-    assert (
-        len(plays) == plays_number
-    ), f"The graph '{svg_filename}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
+    assert len(plays) == plays_number, (
+        f"The graph '{svg_filename}' should contains {plays_number} play(s) but we found {len(plays)} play(s)"
+    )
 
-    assert (
-        len(pre_tasks) == pre_tasks_number
-    ), f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tas(s("
+    assert len(pre_tasks) == pre_tasks_number, (
+        f"The graph '{svg_filename}' should contains {pre_tasks_number} pre tasks(s) but we found {len(pre_tasks)} pre tas(s("
+    )
 
-    assert (
-        len(roles) == roles_number
-    ), f"The graph '{svg_filename}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    assert len(roles) == roles_number, (
+        f"The graph '{svg_filename}' should contains {roles_number} role(s) but we found {len(roles)} role(s)"
+    )
 
-    assert (
-        len(tasks) == tasks_number
-    ), f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} task(s)"
+    assert len(tasks) == tasks_number, (
+        f"The graph '{svg_filename}' should contains {tasks_number} tasks(s) but we found {len(tasks)} task(s)"
+    )
 
-    assert (
-        len(post_tasks) == post_tasks_number
-    ), f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post task(s)"
+    assert len(post_tasks) == post_tasks_number, (
+        f"The graph '{svg_filename}' should contains {post_tasks_number} post tasks(s) but we found {len(post_tasks)} post task(s)"
+    )
 
-    assert (
-        len(blocks) == blocks_number
-    ), f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} block(s)"
+    assert len(blocks) == blocks_number, (
+        f"The graph '{svg_filename}' should contains {blocks_number} blocks(s) but we found {len(blocks)} block(s)"
+    )
 
-    assert (
-        len(handlers) == handlers_number
-    ), f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handler(s)"
+    assert len(handlers) == handlers_number, (
+        f"The graph '{svg_filename}' should contains {handlers_number} handlers(s) but we found {len(handlers)} handler(s)"
+    )
 
     expected_edges_number = (
         plays_number
@@ -174,9 +174,9 @@ def _common_tests(
         + additional_edges_number
     )
     print(f"Found Edges: {len(edges)}")
-    assert (
-        len(edges) == expected_edges_number
-    ), f"The graph should contains {expected_edges_number} edges but we found {len(edges)} edges."
+    assert len(edges) == expected_edges_number, (
+        f"The graph should contains {expected_edges_number} edges but we found {len(edges)} edges."
+    )
 
     return {
         "tasks": tasks,
@@ -435,12 +435,12 @@ def test_relative_var_files(request: pytest.FixtureRequest) -> None:
     )
 
     # check if the plays title contains the interpolated variables
-    assert (
-        "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text
-    ), "The title should contain player name"
-    assert (
-        "Lionel Messi" in res["tasks"][1].find("g/a/text").text
-    ), "The title should contain player name"
+    assert "Cristiano Ronaldo" in res["tasks"][0].find("g/a/text").text, (
+        "The title should contain player name"
+    )
+    assert "Lionel Messi" in res["tasks"][1].find("g/a/text").text, (
+        "The title should contain player name"
+    )
 
 
 def test_tags(request: pytest.FixtureRequest) -> None:

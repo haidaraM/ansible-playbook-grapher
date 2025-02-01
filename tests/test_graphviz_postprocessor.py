@@ -123,6 +123,6 @@ def test_post_processor_with_graph_representation(
         namespaces={"ns": SVG_NAMESPACE},
     )
     assert len(elements_links) == 2, "Play should have two links"
-    assert [task_1.id, task_2.id] == [
-        e.get("target") for e in elements_links
-    ], "The tasks ID should equal to the targets"
+    assert [task_1.id, task_2.id] == [e.get("target") for e in elements_links], (
+        "The tasks ID should equal to the targets"
+    )

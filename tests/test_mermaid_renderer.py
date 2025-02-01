@@ -66,17 +66,17 @@ def _common_tests(mermaid_file_path: str, playbook_paths: list[str], **kwargs) -
     #  Need a parser to make sure the outputs contain all the playbooks, plays, tasks and roles
     # Test if the file exist. It will exist only if we write in it.
     mermaid_path_obj = Path(mermaid_file_path)
-    assert (
-        mermaid_path_obj.is_file()
-    ), f"The mermaid file should exist at '{mermaid_file_path}'"
+    assert mermaid_path_obj.is_file(), (
+        f"The mermaid file should exist at '{mermaid_file_path}'"
+    )
 
     with mermaid_path_obj.open() as mermaid_file:
         mermaid_data = mermaid_file.read()
 
     for playbook_path in playbook_paths:
-        assert (
-            playbook_path in mermaid_data
-        ), "The playbook path should be in the generated code"
+        assert playbook_path in mermaid_data, (
+            "The playbook path should be in the generated code"
+        )
 
 
 @pytest.mark.parametrize(
