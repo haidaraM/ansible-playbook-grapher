@@ -6,13 +6,18 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
-# 2.9.0 (unreleased)
+# 2.9.0 (2025-02-01)
 
 * feat: Improve support for Ansible handlers by @haidaram in https://github.com/haidaraM/ansible-playbook-grapher/pull/234
   * The handlers are now linked to the tasks that notify them.
   * Log warning when a handler is not found.
 * Improve graphviz renderer tests by checking the number of edges in the graph.
 * Simplify the format of the edge IDs in the graphviz renderer.
+* chore(deps): bump ruff from 0.8.4 to 0.9.4 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/237
+* chore(deps): update ansible-core requirement from <2.18.2,>=2.16 to >=2.16,<2.18.3 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/236
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.8.0...v2.9.0
+
 
 # 2.8.0 (2025-01-01)
 
