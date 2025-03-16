@@ -510,10 +510,6 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
   Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
   the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
-- **Ansible Handlers**: The handlers are partially supported for the moment. Their position in the graph doesn't
-  entirely
-  reflect their real order of execution in the playbook. They are displayed at the end of the play and roles, but they
-  might be executed before that.
 - Looping on tasks and roles is not supported. The tasks using loop are displayed as a single task.
 
 ## Contribution
