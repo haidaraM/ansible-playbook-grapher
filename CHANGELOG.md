@@ -6,6 +6,14 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.9.1 (2025-03-18)
+
+* fix: Remove unnecessary assert and make ruff check assert by @haidaram in https://github.com/haidaraM/ansible-playbook-grapher/pull/240
+* chore(deps): bump ruff from 0.9.4 to 0.9.9 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/238
+* doc: Remove now misleading limitation about the handlers
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.9.0...v2.9.1
+
 # 2.9.0 (2025-02-01)
 
 * feat: Improve support for Ansible handlers by @haidaram in https://github.com/haidaraM/ansible-playbook-grapher/pull/234
