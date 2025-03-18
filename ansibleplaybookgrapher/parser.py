@@ -464,7 +464,6 @@ class PlaybookParser(BaseParser):
                         role_node,
                     )
 
-                    assert isinstance(task_or_block.loop, (AnsibleSequence, NoneType))
                     if (
                         task_or_block.loop
                     ):  # Looping on include_role is not supported yet

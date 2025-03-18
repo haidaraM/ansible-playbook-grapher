@@ -128,7 +128,7 @@ def test_with_roles_parsing(grapher_cli: PlaybookGrapherCLI) -> None:
 def test_include_role_parsing(
     grapher_cli: PlaybookGrapherCLI,
 ) -> None:
-    """Test parsing of include_role
+    """Test parsing of include_role with simple loop and when condition.
 
     :param grapher_cli:
     :return:
@@ -193,6 +193,32 @@ def test_include_role_parsing(
         "We don't support adding tasks from include_role with loop"
     )
     assert include_role_4.has_loop(), "The third include role has a loop"
+
+
+@pytest.mark.parametrize(
+    "grapher_cli", [["include_role_complex_loop.yml"]], indirect=True
+)
+def test_include_role_parsing_with_complex_loop(
+    grapher_cli: PlaybookGrapherCLI,
+) -> None:
+    """Test parsing of include_role with a complex loop.
+
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+    )
+    playbook_node = parser.parse()
+    assert len(playbook_node.plays) == 1
+    play_node = playbook_node.plays[0]
+
+    assert len(play_node.tasks) == 2
+    assert isinstance(play_node.tasks[0], RoleNode)
+    assert play_node.tasks[0].has_loop()
+    assert play_node.tasks[0].tasks == [], "The role should not have any tasks"
+
+    assert isinstance(play_node.tasks[1], TaskNode)
 
 
 @pytest.mark.parametrize("grapher_cli", [["nested-include-role.yml"]], indirect=True)

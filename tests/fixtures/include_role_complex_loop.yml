@@ -1,0 +1,18 @@
+---
+- hosts: all
+  tasks:
+    - name: Tasks from Roles
+      ansible.builtin.include_role:
+        name: display_some_facts
+        tasks_from: "{{ item.file }}"
+      vars:
+        role_tasks:
+          - { file: main.yml, title: 'Main file' }
+          - { file: debian.yml, title: 'Debian' }
+      loop: '{{ role_tasks }}'
+      loop_control:
+        label: "{{ item.title }}"
+
+    - name: Hello world
+      debug:
+        msg: Hello world
