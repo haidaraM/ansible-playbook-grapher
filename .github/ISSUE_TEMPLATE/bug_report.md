@@ -23,6 +23,7 @@ If applicable, add screenshots to help explain your problem.
 Outputs of :
  - `ansible --version`
  - `ansible-playbook-grapher --version`
+ - `ansible-galaxy collection list`
 
 **Additional context**
 Add any other context about the problem here.
