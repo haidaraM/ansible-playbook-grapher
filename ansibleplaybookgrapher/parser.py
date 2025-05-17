@@ -140,10 +140,13 @@ class BaseParser(ABC):
         if node_type == "handler":
             # If we are here, the task is a Handler
             task: Handler
-            if isinstance(task.listen, list):
-                listen = task.listen
+            # It seems like the 'listen' attribute is not available in some cases. There might be a bug somewhere. For now, I avoid the error.
+            # See https://github.com/haidaraM/ansible-playbook-grapher/issues/243
+            task_listen = getattr(task, "listen", [])
+            if isinstance(task_listen, list):
+                listen = task_listen
             else:
-                listen = [task.listen]
+                listen = [task_listen]
 
             node = HandlerNode(**node_params, listen=listen)
 
