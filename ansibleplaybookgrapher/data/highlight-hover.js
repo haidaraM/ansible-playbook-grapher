@@ -161,7 +161,7 @@ function setCollapsedRecursive(nodeId, collapse) {
 /**
  * Collapse/Expand logic for play, block, and role nodes using <link> elements
  */
-function toggleRoleTasks(nodeId) {
+function toggleNode(nodeId) {
     // Find the collapse button
     const btn = $(`#collapse-btn-${nodeId}`);
     const btnText = btn.find('text');
@@ -214,6 +214,6 @@ $("#svg").ready(function () {
     $(".collapse-btn").on('click', function (e) {
         e.stopPropagation();
         const nodeId = $(this).data('role-id');
-        toggleRoleTasks(nodeId);
+        toggleNode(nodeId);
     });
 });
