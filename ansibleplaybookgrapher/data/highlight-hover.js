@@ -134,6 +134,50 @@ function dblClickElement(event) {
     }
 }
 
+/**
+ * Recursively hide/show all linked nodes and edges for a given node id
+ */
+function setCollapsedRecursive(nodeId, collapse) {
+    const nodeGroup = $(`g#${nodeId}`);
+    // Do NOT hide the button for the current node
+    const links = nodeGroup.find('link');
+    links.each(function (_, link) {
+        const targetId = $(link).attr('target');
+        const edgeId = $(link).attr('edge');
+        if (collapse) {
+            $(`g#${targetId}`).addClass('collapsed');
+            $(`g#${edgeId}`).addClass('collapsed');
+            $(`#collapse-btn-${targetId}`).addClass('collapsed');
+        } else {
+            $(`g#${targetId}`).removeClass('collapsed');
+            $(`g#${edgeId}`).removeClass('collapsed');
+            $(`#collapse-btn-${targetId}`).removeClass('collapsed');
+        }
+        // Recurse for the child node
+        setCollapsedRecursive(targetId, collapse);
+    });
+}
+
+/**
+ * Collapse/Expand logic for play, block, and role nodes using <link> elements
+ */
+function toggleRoleTasks(nodeId) {
+    // Find the collapse button
+    const btn = $(`#collapse-btn-${nodeId}`);
+    const btnText = btn.find('text');
+    let isCollapsed = false;
+    if (btnText.text() === '-') {
+        // Collapse: recursively hide all linked nodes and edges
+        setCollapsedRecursive(nodeId, true);
+        btnText.text('+');
+        isCollapsed = true;
+    } else {
+        // Expand: recursively show all linked nodes and edges
+        setCollapsedRecursive(nodeId, false);
+        btnText.text('-');
+        isCollapsed = false;
+    }
+}
 
 $("#svg").ready(function () {
     let playbooks = $("g[id^=playbook_]");
@@ -166,4 +210,10 @@ $("#svg").ready(function () {
     tasks.click(clickOnElement);
     tasks.dblclick(dblClickElement);
 
+    // Add collapse/expand button event
+    $(".collapse-btn").on('click', function (e) {
+        e.stopPropagation();
+        const nodeId = $(this).data('role-id');
+        toggleRoleTasks(nodeId);
+    });
 });
