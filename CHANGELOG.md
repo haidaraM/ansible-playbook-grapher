@@ -6,6 +6,20 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.9.2 (2025-05-18)
+
+## What's Changed
+
+* chore(deps): bump ruff from 0.9.9 to 0.11.2 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/242
+* chore(deps): bump pytest from 8.3.4 to 8.3.5 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/241
+* chore(deps): bump pytest-cov from 6.0.0 to 6.1.1 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/244
+* chore(deps): bump ruff from 0.11.2 to 0.11.7 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/245
+* docs: add "ansible-galaxy collection list" to issue template
+* fix: Do not fail when a Task is missing the listen attribute by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/246
+
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.9.1...v2.9.2
+
 # 2.9.1 (2025-03-18)
 
 * fix: Remove unnecessary assert and make ruff check assert by @haidaram in https://github.com/haidaraM/ansible-playbook-grapher/pull/240
