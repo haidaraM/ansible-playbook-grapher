@@ -109,6 +109,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
                     save_dot_file=self.options.save_dot_file,
+                    collapsible_nodes=self.options.collapsible_nodes,
                 )
 
             case "mermaid-flowchart":
@@ -221,6 +222,14 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="Save the graphviz dot file used to generate the graph.",
+        )
+
+        self.parser.add_argument(
+            "--collapsible-nodes",
+            dest="collapsible_nodes",
+            action="store_true",
+            default=False,
+            help="Add collapse/expand buttons to play, role, and block nodes in the SVG output. Default: %(default)s",
         )
 
         self.parser.add_argument(

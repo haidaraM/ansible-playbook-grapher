@@ -75,6 +75,7 @@ class GraphvizRenderer(Renderer):
         :return: The path of the rendered file.
         """
         save_dot_file = kwargs.get("save_dot_file", False)
+        collapsible_nodes = kwargs.get("collapsible_nodes", False)
 
         # Set of the roles that have been built so far for all the playbooks
         roles_built = set()
@@ -110,7 +111,9 @@ class GraphvizRenderer(Renderer):
 
         post_processor = GraphvizPostProcessor(svg_path=svg_path)
         display.v("Post processing the SVG...")
-        post_processor.post_process(self.playbook_nodes)
+        post_processor.post_process(
+            self.playbook_nodes, collapsible_nodes=collapsible_nodes
+        )
         post_processor.write()
 
         display.display(f"The graph has been exported to {svg_path}", color="green")

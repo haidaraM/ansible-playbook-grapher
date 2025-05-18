@@ -72,10 +72,14 @@ class GraphvizPostProcessor:
     def post_process(
         self,
         playbook_nodes: list[PlaybookNode] | None = None,
+        collapsible_nodes: bool = False,
         *args,
         **kwargs,
     ) -> None:
-        """:param playbook_nodes:
+        """
+        Post process the svg file by adding some javascript, css and hover effects.
+        :param playbook_nodes:
+        :param collapsible_nodes:
         :param args:
         :param kwargs:
         :return:
@@ -96,7 +100,7 @@ class GraphvizPostProcessor:
             cdata_text=_read_data("highlight-hover.js"),
         )
 
-        # insert my css
+        # insert my CSS
         self.insert_cdata(
             2,
             "style",
@@ -107,7 +111,9 @@ class GraphvizPostProcessor:
         # Curve the text on the edges
         self._curve_text_on_edges()
 
-        self._add_collapse_buttons_and_data_attrs()
+        # Add collapse/expand buttons only if requested
+        if collapsible_nodes:
+            self._add_collapse_buttons_and_data_attrs()
 
         playbook_nodes = playbook_nodes or []
         for p_node in playbook_nodes:
@@ -212,7 +218,7 @@ class GraphvizPostProcessor:
             text_element.text = None
 
     def _add_collapse_buttons_and_data_attrs(self):
-        # For each play, block, or role node, add a collapse/expand button (outside the group) for toggling
+        """For each play, block, or role node, add a collapse/expand button (outside the group) for toggling"""
         ns = {"svg": SVG_NAMESPACE}
         for node_g in self.root.xpath(
             ".//svg:g[starts-with(@id, 'role_') or starts-with(@id, 'play_') or starts-with(@id, 'block_')]",
