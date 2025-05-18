@@ -18,7 +18,7 @@ from ansible.utils.display import Display
 from lxml import etree
 from svg.path import parse_path
 
-from ansibleplaybookgrapher.graph_model import PlaybookNode
+from ansibleplaybookgrapher.graph_model import BlockNode, PlaybookNode
 
 display = Display()
 
@@ -72,10 +72,14 @@ class GraphvizPostProcessor:
     def post_process(
         self,
         playbook_nodes: list[PlaybookNode] | None = None,
+        collapsible_nodes: bool = False,
         *args,
         **kwargs,
     ) -> None:
-        """:param playbook_nodes:
+        """
+        Post process the svg file by adding some javascript, css and hover effects.
+        :param playbook_nodes:
+        :param collapsible_nodes:
         :param args:
         :param kwargs:
         :return:
@@ -96,7 +100,7 @@ class GraphvizPostProcessor:
             cdata_text=_read_data("highlight-hover.js"),
         )
 
-        # insert my css
+        # insert my CSS
         self.insert_cdata(
             2,
             "style",
@@ -106,6 +110,10 @@ class GraphvizPostProcessor:
 
         # Curve the text on the edges
         self._curve_text_on_edges()
+
+        # Add collapse/expand buttons only if requested
+        if collapsible_nodes:
+            self._add_collapse_buttons_and_data_attrs()
 
         playbook_nodes = playbook_nodes or []
         for p_node in playbook_nodes:
@@ -139,7 +147,7 @@ class GraphvizPostProcessor:
             if xpath_result:
                 element = xpath_result[0]
                 links = etree.Element("links")
-                for counter, link in enumerate(node_links, 1):
+                for link in node_links:
                     links.append(
                         etree.Element(
                             "link",
@@ -149,6 +157,18 @@ class GraphvizPostProcessor:
                             },
                         ),
                     )
+
+                    if isinstance(link, BlockNode):
+                        # The link is a block, let's add a link to the Block subgraph so that is highlighted and collapsed
+                        links.append(
+                            etree.Element(
+                                "link",
+                                attrib={
+                                    "target": f"cluster_{link.id}",
+                                    "edge": f"edge_{node.id}-{link.id}",
+                                },
+                            ),
+                        )
 
                 element.append(links)
 
@@ -208,3 +228,52 @@ class GraphvizPostProcessor:
             text_element.attrib.pop("x", "")
             text_element.attrib.pop("y", "")
             text_element.text = None
+
+    def _add_collapse_buttons_and_data_attrs(self):
+        """For each play, block, or role node, add a collapse/expand button (outside the group) for toggling"""
+        ns = {"svg": SVG_NAMESPACE}
+        for node_g in self.root.xpath(
+            ".//svg:g[starts-with(@id, 'role_') or starts-with(@id, 'play_') or starts-with(@id, 'block_')]",
+            namespaces=ns,
+        ):
+            node_id = node_g.get("id")
+            # Find the first <text> element (the label)
+            text_elem = node_g.find(".//svg:text", namespaces=ns)
+            if text_elem is not None:
+                # Place the button above the label (y - 20)
+                x = float(text_elem.get("x", "0"))
+                y = float(text_elem.get("y", "0")) - 20
+                btn = etree.Element(
+                    "g",
+                    attrib={"class": "collapse-btn", "id": f"collapse-btn-{node_id}"},
+                )
+                circle = etree.Element(
+                    "circle",
+                    attrib={
+                        "cx": str(x),
+                        "cy": str(y),
+                        "r": "8",
+                        "fill": "#eee",
+                        "stroke": "#333",
+                        "stroke-width": "1",
+                    },
+                )
+                btn.append(circle)
+                # Add a text label (+/-)
+                btn_text = etree.Element(
+                    "text",
+                    attrib={
+                        "x": str(x),
+                        "y": str(y + 3),
+                        "text-anchor": "middle",
+                        "font-size": "12",
+                        "fill": "#333",
+                    },
+                )
+                btn_text.text = "-"
+                btn.append(btn_text)
+                # Insert the button as a sibling after the node group
+                parent = node_g.getparent()
+                if parent is not None:
+                    idx = list(parent).index(node_g)
+                    parent.insert(idx + 1, btn)

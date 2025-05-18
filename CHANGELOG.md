@@ -6,6 +6,15 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.10.0 (unreleased)
+
+## What's Changed
+
+* feat(svg): Add collapsible nodes for plays, roles and blocks in SVG output by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/247
+  * Added a new `--collapsible-nodes` flag to enable collapse/expand buttons on play, role, and block nodes
+  * Clicking the buttons recursively hides or shows descendant nodes and edges
+  * Helps manage complexity in large graphs with many nested components
+
 # 2.9.2 (2025-05-18)
 
 ## What's Changed

@@ -11,14 +11,15 @@ const HIGHLIGHT_CLASS = "highlight";
 
 /**
  * The current selected element on the graph
- * @type {null}
+ * @type {Element|null}
  */
 let currentSelectedElement = null;
 
 /**
  * Highlight the linked nodes of the given root element
- * @param {Element} parentElement
- * @param {string[]} visitedElements
+ * @param {Element} parentElement - The element whose linked nodes should be highlighted
+ * @param {string[]} visitedElements - Array of element IDs that have already been processed
+ * @returns {void}
  */
 function highlightLinkedNodes(parentElement, visitedElements = []) {
     $(parentElement).find('link').each(function (index, element) {
@@ -42,10 +43,11 @@ function highlightLinkedNodes(parentElement, visitedElements = []) {
 
 /**
  * Unhighlight the linked nodes of the given root element
- * @param {Element} parentElement
- * @param {string[]} visitedElements
- * @param {boolean} isHover True when we are coming from a mouseleave event. In that case, we should not unhighlight if
+ * @param {Element} parentElement - The element whose linked nodes should be unhighlighted
+ * @param {string[]} visitedElements - Array of element IDs that have already been processed
+ * @param {boolean} isHover - True when we are coming from a mouseleave event. In that case, we should not unhighlight if
  * the parentElement is the current selected element
+ * @returns {void}
  */
 function unHighlightLinkedNodes(parentElement, visitedElements = [], isHover) {
     const currentSelectedElementId = $(currentSelectedElement).attr('id');
@@ -78,7 +80,8 @@ function unHighlightLinkedNodes(parentElement, visitedElements = [], isHover) {
 
 /**
  * Hover handler for mouseenter event
- * @param {Event} event
+ * @param {MouseEvent} event - The mouseenter event
+ * @returns {void}
  */
 function hoverMouseEnter(event) {
     highlightLinkedNodes(event.currentTarget, []);
@@ -86,7 +89,8 @@ function hoverMouseEnter(event) {
 
 /**
  * Hover handler for mouseleave event
- * @param {Event} event
+ * @param {MouseEvent} event - The mouseleave event
+ * @returns {void}
  */
 function hoverMouseLeave(event) {
     unHighlightLinkedNodes(event.currentTarget, [], true);
@@ -94,7 +98,8 @@ function hoverMouseLeave(event) {
 
 /**
  * Handler when clicking on some elements
- * @param {Event} event
+ * @param {MouseEvent} event - The click event
+ * @returns {void}
  */
 function clickOnElement(event) {
     const newClickedElement = $(event.currentTarget);
@@ -121,7 +126,8 @@ function clickOnElement(event) {
 
 /**
  * Handler when double clicking on some elements
- * @param {Event} event
+ * @param {MouseEvent} event - The double click event
+ * @returns {void}
  */
 function dblClickElement(event) {
     const newElementDlbClicked = event.currentTarget;
@@ -134,6 +140,56 @@ function dblClickElement(event) {
     }
 }
 
+/**
+ * Recursively hide/show all linked nodes and edges for a given node id
+ * @param {string} nodeId - The ID of the node to process
+ * @param {boolean} collapse - Whether to collapse (true) or expand (false) the node
+ * @returns {void}
+ */
+function setCollapsedRecursive(nodeId, collapse) {
+    const nodeGroup = $(`g#${nodeId}`);
+    // Do NOT hide the button for the current node
+    const links = nodeGroup.find('link');
+    links.each(function (_, link) {
+        const targetId = $(link).attr('target');
+        const edgeId = $(link).attr('edge');
+        if (collapse) {
+            $(`g#${targetId}`).addClass('collapsed');
+            $(`g#${edgeId}`).addClass('collapsed');
+            $(`#collapse-btn-${targetId}`).addClass('collapsed');
+        } else {
+            $(`g#${targetId}`).removeClass('collapsed');
+            $(`g#${edgeId}`).removeClass('collapsed');
+            $(`#collapse-btn-${targetId}`).removeClass('collapsed');
+            // Always reset the button text to '-' when expanding
+            $(`#collapse-btn-${targetId} text`).text('-');
+        }
+        // Recurse for the child node
+        setCollapsedRecursive(targetId, collapse);
+    });
+}
+/**
+ * Collapse/Expand logic for play, block, and role nodes using <link> elements
+ * @param {string} nodeId - The ID of the node to toggle
+ * @returns {void}
+ */
+function toggleNode(nodeId) {
+    // Find the collapse button
+    const btn = $(`#collapse-btn-${nodeId}`);
+    const btnText = btn.find('text');
+    let isCollapsed = false;
+    if (btnText.text() === '-') {
+        // Collapse: recursively hide all linked nodes and edges
+        setCollapsedRecursive(nodeId, true);
+        btnText.text('+');
+        isCollapsed = true;
+    } else {
+        // Expand: recursively show all linked nodes and edges
+        setCollapsedRecursive(nodeId, false);
+        btnText.text('-');
+        isCollapsed = false;
+    }
+}
 
 $("#svg").ready(function () {
     let playbooks = $("g[id^=playbook_]");
@@ -166,4 +222,11 @@ $("#svg").ready(function () {
     tasks.click(clickOnElement);
     tasks.dblclick(dblClickElement);
 
+    // Add collapse/expand button event
+    $(".collapse-btn").on('click', function (e) {
+        e.stopPropagation();
+        // Extract nodeId from the button's id
+        const nodeId = this.id.replace('collapse-btn-', '');
+        toggleNode(nodeId);
+    });
 });

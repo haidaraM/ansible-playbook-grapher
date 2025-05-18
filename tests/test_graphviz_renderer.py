@@ -173,7 +173,7 @@ def _common_tests(
         + handlers_number
         + additional_edges_number
     )
-    print(f"Found Edges: {len(edges)}")
+
     assert len(edges) == expected_edges_number, (
         f"The graph should contains {expected_edges_number} edges but we found {len(edges)} edges."
     )
@@ -323,7 +323,9 @@ def test_include_role(
 def test_with_block(request: pytest.FixtureRequest) -> None:
     """Test with_block.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
-        ["with_block.yml"], output_filename=request.node.name
+        ["with_block.yml"],
+        output_filename=request.node.name,
+        additional_args=["--collapsible-nodes"],
     )
 
     _common_tests(
@@ -880,3 +882,58 @@ def test_only_roles_with_nested_include_roles_with_a_tag(
         blocks_number=1,
         roles_number=1,
     )
+
+
+@pytest.mark.parametrize(
+    ("flag", "expected_buttons"),
+    [("--", 0), ("--collapsible-nodes", 6)],
+    ids=["no_collapsible_nodes", "with_collapsible_nodes"],
+)
+def test_collapsible_nodes(
+    request: pytest.FixtureRequest,
+    flag: str,
+    expected_buttons: int,
+) -> None:
+    """Test the --collapsible-nodes flag.
+
+    When the flag is used, collapse/expand buttons should be added to play, block, and role nodes.
+    """
+    svg_path, playbook_paths = run_grapher(
+        ["with_block.yml"], output_filename=request.node.name, additional_args=[flag]
+    )
+
+    # First run common tests to verify the basic structure (same as test_with_block)
+    _common_tests(
+        svg_filename=svg_path,
+        playbook_paths=playbook_paths,
+        plays_number=1,
+        tasks_number=7,
+        post_tasks_number=2,
+        roles_number=1,
+        pre_tasks_number=1,
+        blocks_number=4,
+    )
+
+    # Check for collapse buttons
+    pq = PyQuery(filename=svg_path)
+    pq.remove_namespaces()
+
+    # Find collapse buttons in SVG
+    collapse_buttons = pq("g.collapse-btn")
+
+    # Verify the expected number of buttons (1 play + 4 blocks + 1 role = 6 buttons)
+    assert len(collapse_buttons) == expected_buttons, (
+        f"The SVG should contain {expected_buttons} collapse button(s) but found {len(collapse_buttons)}"
+    )
+
+    # Verify the structure of buttons when they exist
+    assert collapse_buttons.find("circle").length == expected_buttons, (
+        "Each collapse button should have a circle element"
+    )
+    assert collapse_buttons.find("text").length == expected_buttons, (
+        "Each collapse button should have a text element"
+    )
+
+    # Check that all text elements in buttons have the correct content
+    for text_elem in collapse_buttons.find("text"):
+        assert PyQuery(text_elem).text() == "-", "The default button text should be '-'"

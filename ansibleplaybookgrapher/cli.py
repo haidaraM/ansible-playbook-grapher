@@ -109,6 +109,7 @@ class PlaybookGrapherCLI(CLI):
                     view=self.options.view,
                     show_handlers=self.options.show_handlers,
                     save_dot_file=self.options.save_dot_file,
+                    collapsible_nodes=self.options.collapsible_nodes,
                 )
 
             case "mermaid-flowchart":
@@ -221,6 +222,14 @@ class PlaybookGrapherCLI(CLI):
             action="store_true",
             default=False,
             help="Save the graphviz dot file used to generate the graph.",
+        )
+
+        self.parser.add_argument(
+            "--collapsible-nodes",
+            dest="collapsible_nodes",
+            action="store_true",
+            default=False,
+            help="Add collapse/expand buttons to play, role, and block nodes in the SVG output. Default: %(default)s",
         )
 
         self.parser.add_argument(
@@ -408,6 +417,11 @@ class PlaybookGrapherCLI(CLI):
         if self.options.hide_empty_plays:
             display.warning(
                 "The option --hide-empty-plays will be removed in the next major version (v3.0.0) to make it the default behavior.",
+            )
+
+        if self.options.renderer != "graphviz" and self.options.collapsible_nodes:
+            display.warning(
+                "The option --collapsible-nodes is only available for the graphviz renderer. It will be ignored.",
             )
 
         return options

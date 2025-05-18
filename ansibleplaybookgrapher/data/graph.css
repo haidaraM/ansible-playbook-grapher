@@ -15,3 +15,8 @@
     stroke-width: 3;
     font-weight: bolder;
 }
+
+/* Hide elements when collapsed */
+.collapsed {
+    display: none;
+}
