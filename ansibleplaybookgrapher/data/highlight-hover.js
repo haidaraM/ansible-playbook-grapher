@@ -213,7 +213,8 @@ $("#svg").ready(function () {
     // Add collapse/expand button event
     $(".collapse-btn").on('click', function (e) {
         e.stopPropagation();
-        const nodeId = $(this).data('role-id');
+        // Extract nodeId from the button's id
+        const nodeId = this.id.replace('collapse-btn-', '');
         toggleNode(nodeId);
     });
 });
