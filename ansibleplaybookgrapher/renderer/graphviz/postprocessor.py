@@ -18,7 +18,7 @@ from ansible.utils.display import Display
 from lxml import etree
 from svg.path import parse_path
 
-from ansibleplaybookgrapher.graph_model import PlaybookNode
+from ansibleplaybookgrapher.graph_model import BlockNode, PlaybookNode
 
 display = Display()
 
@@ -147,7 +147,7 @@ class GraphvizPostProcessor:
             if xpath_result:
                 element = xpath_result[0]
                 links = etree.Element("links")
-                for counter, link in enumerate(node_links, 1):
+                for link in node_links:
                     links.append(
                         etree.Element(
                             "link",
@@ -157,6 +157,18 @@ class GraphvizPostProcessor:
                             },
                         ),
                     )
+
+                    if isinstance(link, BlockNode):
+                        # The link is a block, let's add a link to the Block subgraph so that is highlighted and collapsed
+                        links.append(
+                            etree.Element(
+                                "link",
+                                attrib={
+                                    "target": f"cluster_{link.id}",
+                                    "edge": f"edge_{node.id}-{link.id}",
+                                },
+                            ),
+                        )
 
                 element.append(links)
 

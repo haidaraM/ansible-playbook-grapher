@@ -258,6 +258,7 @@ class GraphvizPlaybookBuilder(PlaybookBuilder):
         # BlockNode is a special node: a cluster is created instead of a normal node
         with digraph.subgraph(
             name=f"cluster_{block_node.id}",
+            graph_attr={"id": f"cluster_{block_node.id}"},
         ) as cluster_block_subgraph:
             # Prevents the cluster from having the root graph label (not needed)
             cluster_block_subgraph.attr(label="")
