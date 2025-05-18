@@ -323,8 +323,9 @@ def test_include_role(
 def test_with_block(request: pytest.FixtureRequest) -> None:
     """Test with_block.yml, an example with roles."""
     svg_path, playbook_paths = run_grapher(
-        ["with_block.yml"], output_filename=request.node.name,
-        additional_args=["--collapsible-nodes"]
+        ["with_block.yml"],
+        output_filename=request.node.name,
+        additional_args=["--collapsible-nodes"],
     )
 
     _common_tests(
