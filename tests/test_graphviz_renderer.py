@@ -173,7 +173,7 @@ def _common_tests(
         + handlers_number
         + additional_edges_number
     )
-    print(f"Found Edges: {len(edges)}")
+
     assert len(edges) == expected_edges_number, (
         f"The graph should contains {expected_edges_number} edges but we found {len(edges)} edges."
     )

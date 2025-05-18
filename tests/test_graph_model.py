@@ -92,8 +92,6 @@ def test_links_structure_with_handlers() -> None:
         "Handler 3 should be linked to handler 1"
     )
 
-    print(all_links)
-
 
 def test_empty_play_method() -> None:
     """Testing the emptiness of a play
