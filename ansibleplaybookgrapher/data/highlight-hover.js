@@ -152,12 +152,13 @@ function setCollapsedRecursive(nodeId, collapse) {
             $(`g#${targetId}`).removeClass('collapsed');
             $(`g#${edgeId}`).removeClass('collapsed');
             $(`#collapse-btn-${targetId}`).removeClass('collapsed');
+            // Always reset the button text to '-' when expanding
+            $(`#collapse-btn-${targetId} text`).text('-');
         }
         // Recurse for the child node
         setCollapsedRecursive(targetId, collapse);
     });
 }
-
 /**
  * Collapse/Expand logic for play, block, and role nodes using <link> elements
  */
