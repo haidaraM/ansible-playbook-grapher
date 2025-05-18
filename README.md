@@ -20,6 +20,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Support for `import_*` and `include_*`.
 - Multiple flags to hide empty plays, group roles by name, etc...
 - Support for playbooks in collections.
+doc- Collapsible play, role and block nodes in SVG output to help manage graph complexity (with `--collapsible-nodes` flag).
 
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
@@ -412,7 +413,7 @@ The available options:
 
 ```
 usage: ansible-playbook-grapher [-h] [-v] [--exclude-roles EXCLUDE_ROLES] [--only-roles] [-i INVENTORY] [--include-role-tasks] [-s]
-                                [--view] [-o OUTPUT_FILENAME] [--open-protocol-handler {default,vscode,custom}]
+                                [--collapsible-nodes] [--view] [-o OUTPUT_FILENAME] [--open-protocol-handler {default,vscode,custom}]
                                 [--open-protocol-custom-formats OPEN_PROTOCOL_CUSTOM_FORMATS] [--group-roles-by-name]
                                 [--renderer {graphviz,mermaid-flowchart,json}]
                                 [--renderer-mermaid-directive RENDERER_MERMAID_DIRECTIVE]
@@ -428,6 +429,7 @@ positional arguments:
                         collections.
 
 options:
+  --collapsible-nodes   Add collapse/expand buttons to play, role, and block nodes in the SVG output. Default: False
   --exclude-roles EXCLUDE_ROLES
                         Specify file path or comma separated list of roles, which should be excluded. This argument may be specified
                         multiple times.
@@ -527,7 +529,7 @@ To set up a new local development environment:
 > The project contains some collections in [collections](tests/fixtures/collections). If you modify them, you need to do
 > a force install with `ansible-galaxy install -r requirements.yml --force`
 
-Run the tests and open the generated files in your system’s default viewer application:
+Run the tests and open the generated files in your system's default viewer application:
 
 ```shell script
 export TEST_VIEW_GENERATED_FILE=1
