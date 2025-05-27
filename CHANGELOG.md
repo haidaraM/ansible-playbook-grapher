@@ -6,7 +6,7 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
-# 2.10.0 (unreleased)
+# 2.10.0 (2025-05-27)
 
 ## What's Changed
 
@@ -14,6 +14,7 @@ Here are a few break changes to expect in the next major release:
   * Added a new `--collapsible-nodes` flag to enable collapse/expand buttons on play, role, and block nodes
   * Clicking the buttons recursively hides or shows descendant nodes and edges
   * Helps manage complexity in large graphs with many nested components
+* chore(deps): bump ruff from 0.11.8 to 0.11.10 by @dependabot in https://github.com/haidaraM/ansible-playbook-grapher/pull/248
 
 # 2.9.2 (2025-05-18)
 
