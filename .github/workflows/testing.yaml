@@ -41,7 +41,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Setup Python ${{ matrix.python-version }}
         with:
           python-version: ${{ matrix.python-version }}
