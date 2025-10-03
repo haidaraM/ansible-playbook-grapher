@@ -1,5 +1,5 @@
 pytest==8.4.2
-pytest-cov==6.2.1
+pytest-cov==7.0.0
 pyquery==2.0.1
 ruff==0.13.2
 jq==1.10.0
