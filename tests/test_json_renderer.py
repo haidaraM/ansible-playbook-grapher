@@ -195,7 +195,7 @@ def _common_tests(
 
 def test_simple_playbook(request: pytest.FixtureRequest) -> None:
     """:return:"""
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -212,7 +212,7 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
 
 def test_with_block(request: pytest.FixtureRequest) -> None:
     """:return:"""
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -238,7 +238,7 @@ def test_with_block_with_skip_tags(
 
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["with_block.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -271,7 +271,7 @@ def test_group_roles_by_name(request: pytest.FixtureRequest, flag: str) -> None:
     :param request:
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["group-roles-by-name.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks", flag],
@@ -291,7 +291,7 @@ def test_multi_playbooks(request: pytest.FixtureRequest) -> None:
     """:param request:
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["multi-plays.yml", "relative_var_files.yml", "with_roles.yml"],
         output_filename=request.node.name,
         additional_args=["--include-role-tasks"],
@@ -320,7 +320,7 @@ def test_handlers(
 
     :param request:
     :return:"""
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["handlers.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -352,7 +352,7 @@ def test_handler_in_a_role(
     :param request:
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["handlers-in-role.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -379,7 +379,7 @@ def test_hide_plays_without_roles(request: pytest.FixtureRequest) -> None:
     :param request:
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["play-hiding.yml"],
         output_filename=request.node.name,
         additional_args=[
@@ -409,7 +409,7 @@ def test_only_roles_with_nested_include_roles(
     :param request:
     :return:
     """
-    json_path, playbook_paths = run_grapher(
+    json_path, _playbook_paths = run_grapher(
         ["nested-include-role.yml"],
         output_filename=request.node.name,
         additional_args=[

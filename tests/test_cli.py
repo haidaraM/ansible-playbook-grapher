@@ -144,7 +144,7 @@ def test_cli_help(help_option: str, capfd: pytest.CaptureFixture) -> None:
     with pytest.raises(SystemExit):
         cli.parse()
 
-    out, err = capfd.readouterr()
+    out, _err = capfd.readouterr()
 
     assert "Make graphs from your Ansible Playbooks." in out
 
@@ -157,7 +157,7 @@ def test_cli_version(capfd: pytest.CaptureFixture) -> None:
     with pytest.raises(SystemExit):
         cli.parse()
 
-    out, err = capfd.readouterr()
+    out, _err = capfd.readouterr()
     assert out == f"{__prog__} {__version__} (with ansible {ansible_version})\n"
 
 

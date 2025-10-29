@@ -209,7 +209,7 @@ def test_simple_playbook(request: pytest.FixtureRequest) -> None:
 
 def test_if_dot_file_is_saved(request: pytest.FixtureRequest) -> None:
     """Test if the dot file is saved at the expected path."""
-    svg_path, playbook_paths = run_grapher(
+    svg_path, _playbook_paths = run_grapher(
         ["simple_playbook.yml"],
         output_filename=request.node.name,
         additional_args=["--save-dot-file"],
