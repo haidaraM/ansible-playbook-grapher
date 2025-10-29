@@ -717,9 +717,14 @@ def test_parsing_blocks_inside_include_tasks(grapher_cli: PlaybookGrapherCLI) ->
     )
 
     block_2 = block_1.tasks[0]
+    assert block_2.name == "block2"
     assert isinstance(block_2, BlockNode)
     assert len(block_2.tasks) == 1
+    assert block_2.tasks[0].name == "b2 - task1"
 
     block_3 = block_1.tasks[1]
+    assert block_3.name == "block3"
     assert isinstance(block_3, BlockNode)
     assert len(block_3.tasks) == 2
+    assert block_3.tasks[0].name == "b3 - task1"
+    assert block_3.tasks[1].name == "b3 - task2"
