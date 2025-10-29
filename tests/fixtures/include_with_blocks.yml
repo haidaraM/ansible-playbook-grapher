@@ -8,17 +8,3 @@
         - name: include
           include_tasks: tasks/consecutive_block_tasks.yml
 
-    - name: block2
-      block:
-        - name: b2 - task1
-          debug:
-            msg: task1
-    - name: block3
-      block:
-        - name: b3 - task1
-          debug:
-            msg: task1
-        - name: b3 - task2
-          debug:
-            msg: task2
-
