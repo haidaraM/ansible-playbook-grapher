@@ -695,3 +695,31 @@ def test_parsing_tasks_with_tags_in_roles(grapher_cli: PlaybookGrapherCLI) -> No
     assert len(play_node.roles) == 1, "Only one role should be in the play"
     role = play_node.roles[0]
     assert len(role.tasks) == 1, "Only the tagged task should be included in the graph"
+
+
+@pytest.mark.parametrize("grapher_cli", [["include_with_blocks.yml"]], indirect=True)
+def test_parsing_blocks_inside_include_tasks(grapher_cli: PlaybookGrapherCLI) -> None:
+    """Test a case where consecutive blocks are defined inside an included task.
+
+    :param grapher_cli:
+    :return:
+    """
+    parser = PlaybookParser(
+        grapher_cli.options.playbooks[0],
+    )
+    playbook_node = parser.parse()
+
+    assert len(playbook_node.plays) == 1
+    block_1 = playbook_node.plays[0].tasks[0]
+    assert isinstance(block_1, BlockNode)
+    assert len(block_1.tasks) == 2, (
+        "The outer block should have 2 tasks from the include_task"
+    )
+
+    block_2 = block_1.tasks[0]
+    assert isinstance(block_2, BlockNode)
+    assert len(block_2.tasks) == 1
+
+    block_3 = block_1.tasks[1]
+    assert isinstance(block_3, BlockNode)
+    assert len(block_3.tasks) == 2
