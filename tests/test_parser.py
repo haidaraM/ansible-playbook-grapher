@@ -710,6 +710,7 @@ def test_parsing_blocks_inside_include_tasks(grapher_cli: PlaybookGrapherCLI) ->
     playbook_node = parser.parse()
 
     assert len(playbook_node.plays) == 1
+    assert len(playbook_node.plays[0].tasks) == 1
     block_1 = playbook_node.plays[0].tasks[0]
     assert isinstance(block_1, BlockNode)
     assert len(block_1.tasks) == 2, (
