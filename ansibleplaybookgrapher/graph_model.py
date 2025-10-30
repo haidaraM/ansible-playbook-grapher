@@ -771,7 +771,7 @@ class HandlerNode(TaskNode):
     Key things to note:
 
     - Each handler should have a globally unique name. If multiple handlers are defined with the same name, only the last
-    one loaded into the play can be notified and executed, effectively shadowing all of the previous handlers with the same name.
+    one loaded into the play can be notified and executed, effectively shadowing all the previous handlers with the same name.
     - There is only one global scope for handlers (handler names and listen topics) regardless of where the handlers are
     defined. This also includes handlers defined in roles.
     - If a handler is defined in a role, it can be notified using the role name as a prefix. Example: notify: "role_name : handler_name"

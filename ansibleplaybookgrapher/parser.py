@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABC, abstractmethod
-from types import NoneType
 
 from ansible.cli import CLI
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
@@ -243,7 +242,7 @@ class PlaybookParser(BaseParser):
                 self.data_loader.set_basedir(play._included_path)
             else:
                 self.data_loader.set_basedir(playbook._basedir)
-            display.vvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
+            display.vvvv(f"Loader basedir set to {self.data_loader.get_basedir()}")
 
             play_vars = self.variable_manager.get_vars(play)
             play_hosts = [
@@ -390,6 +389,7 @@ class PlaybookParser(BaseParser):
         :param node_type: The type of the node. It can be a task, a pre_task, a post_task or a handler.
         :return:
         """
+        block_node = None
         if Block.is_block(block.get_ds()):
             # Here we have an explicit block. Ansible internally converts all normal tasks to Block
             block_node = BlockNode(
@@ -567,3 +567,7 @@ class PlaybookParser(BaseParser):
                     node_type=node_type,
                     parent_node=parent_nodes[-1],
                 )
+
+        if block_node:
+            # We remove the block node from the parent nodes given we are done processing it
+            parent_nodes.pop()
