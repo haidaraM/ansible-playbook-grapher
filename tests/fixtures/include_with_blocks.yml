@@ -1,0 +1,10 @@
+---
+- name: blocker
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: including block tasks - block 1
+      block:
+        - name: include
+          include_tasks: tasks/consecutive_block_tasks.yml
+
