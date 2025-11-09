@@ -6,6 +6,38 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.10.1 (2025-11-09)
+
+## What's Changed
+
+* chore(deps): bump jsonschema[format] from 4.23.0 to 4.24.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/250
+* chore(deps): bump ruff from 0.11.10 to 0.11.12 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/249
+* chore(deps): bump pytest-cov from 6.1.1 to 6.2.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/256
+* chore(deps): bump jq from 1.8.0 to 1.9.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/253
+* chore(deps): bump pytest from 8.3.5 to 8.4.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/254
+* chore(deps): bump ruff from 0.11.12 to 0.12.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/255
+* chore(deps): bump stefanzweifel/git-auto-commit-action from 5 to 6 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/252
+* chore(deps): update lxml requirement from <6 to <7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/251
+* chore(deps): bump jsonschema[format] from 4.24.0 to 4.25.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/260
+* chore(deps): bump ruff from 0.12.2 to 0.12.7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/258
+* chore(deps): bump jq from 1.9.1 to 1.10.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/257
+* chore(deps): update svg-path requirement from <7 to <8 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/259
+* chore(deps): bump ruff from 0.12.7 to 0.12.11 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/263
+* chore(deps): bump actions/checkout from 4 to 5 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/261
+* chore(deps): bump jsonschema[format] from 4.25.0 to 4.25.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/262
+* chore(deps): bump pytest from 8.4.1 to 8.4.2 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/266
+* chore(deps): bump ruff from 0.12.11 to 0.13.2 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/265
+* chore(deps): bump actions/setup-python from 5 to 6 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/264
+* chore(deps): bump pytest-cov from 6.2.1 to 7.0.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/267
+* chore(deps): bump stefanzweifel/git-auto-commit-action from 6 to 7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/273
+* chore(deps): bump actions/upload-artifact from 4 to 5 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/272
+* chore(deps): bump ruff from 0.13.2 to 0.14.3 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/271
+* **fix(parser): Remove the last parent node when consecutive block nodes are found in an include_task by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/269**
+
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.10.0...v2.10.1
+
+
 # 2.10.0 (2025-05-27)
 
 ## What's Changed
