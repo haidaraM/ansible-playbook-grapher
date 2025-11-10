@@ -465,7 +465,7 @@ options:
                         }%%'
   --renderer-mermaid-orientation {TD,RL,BT,RL,LR}
                         The orientation of the flow chart. Default: 'LR'
-  --show-handlers       Show the handlers in the graph. See the limitations in the project README on GitHub.
+  --show-handlers       Show the handlers in the graph.
   --skip-tags SKIP_TAGS
                         only run plays and tasks whose tags do not match these values. This argument may be specified multiple times.
   --title TITLE         The title to display in the graph. Default: 'Ansible Playbook Grapher'. Set it to an empty string to remove the

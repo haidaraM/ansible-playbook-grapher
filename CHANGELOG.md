@@ -6,7 +6,7 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
-# 2.10.1 (2025-11-09)
+# 2.10.1 (2025-11-10)
 
 ## What's Changed
 

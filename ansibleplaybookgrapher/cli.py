@@ -338,7 +338,7 @@ class PlaybookGrapherCLI(CLI):
             dest="show_handlers",
             action="store_true",
             default=False,
-            help="Show the handlers in the graph. See the limitations in the project README on GitHub.",
+            help="Show the handlers in the graph.",
         )
 
         self.parser.add_argument(
