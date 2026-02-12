@@ -24,17 +24,13 @@ jobs:
       matrix:
         # See https://www.ansible.com/blog/ansible-3.0.0-qa and https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html
         include:
-          - ansible-core-version: '2.16.*'
-            python-version: '3.10'
-          - ansible-core-version: '2.16.*'
-            python-version: '3.11'
-          - ansible-core-version: '2.17.*'
-            python-version: '3.10'
-          - ansible-core-version: '2.17.*'
-            python-version: '3.11'
           - ansible-core-version: '2.18.*'
             python-version: '3.11'
           - ansible-core-version: '2.18.*'
+            python-version: '3.12'
+          - ansible-core-version: '2.19.*'
+            python-version: '3.11'
+          - ansible-core-version: '2.19.*'
             python-version: '3.12'
 
     steps:
