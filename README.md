@@ -1,9 +1,9 @@
 # Ansible Playbook Grapher
 
-[![Testing](https://github.com/haidaraM/ansible-playbook-grapher/actions/workflows/testing.yaml/badge.svg)](https://github.com/haidaraM/ansible-playbook-grapher/actions/workflows/testing.yaml)
-[![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)](https://badge.fury.io/py/ansible-playbook-grapher)
-[![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=main)](https://coveralls.io/github/haidaraM/ansible-playbook-grapher?branch=main)
-[![PyPI Downloads](https://static.pepy.tech/badge/ansible-playbook-grapher)](https://pepy.tech/projects/ansible-playbook-grapher)
+![Testing](https://github.com/haidaraM/ansible-playbook-grapher/actions/workflows/testing.yaml/badge.svg)
+![PyPI version](https://badge.fury.io/py/ansible-playbook-grapher.svg)
+![Coverage Status](https://coveralls.io/repos/github/haidaraM/ansible-playbook-grapher/badge.svg?branch=main)
+![PyPI Downloads](https://static.pepy.tech/badge/ansible-playbook-grapher)
 
 [ansible-playbook-grapher](https://github.com/haidaraM/ansible-playbook-grapher) is a command line tool to create a
 graph representing your Ansible playbooks, plays, tasks and roles. The aim of this project is to have an overview of
@@ -21,51 +21,53 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Multiple flags to hide empty plays, group roles by name, etc...
 - Support for playbooks in collections.
 doc- Collapsible play, role and block nodes in SVG output to help manage graph complexity (with `--collapsible-nodes` flag).
-
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
 
 - Highlighting of all the related nodes of a given node when clicking or hovering. Example: Click on a role to select
-  all its tasks when `--include-role-tasks` is set.
+all its tasks when `--include-role-tasks` is set.
 - A double click on a node opens the corresponding file or folder depending on whether it's a playbook, a play, a task
-  or a role. By default, the browser will open folders and download files since it may not be able to render the YAML
-  file.  
-  Optionally, you can
-  set [the open protocol to use VSCode](https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls)
-  with `--open-protocol-handler vscode`: it will open the folders when double-clicking on roles (not `include_role`) and
-  the files for the other nodes. The cursor will be at the task exact position in the file.  
-  Lastly, you can provide your own protocol formats
-  with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
-  and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
-  To not confuse
-  with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
+or a role. By default, the browser will open folders and download files since it may not be able to render the YAML
+file.  
+Optionally, you can
+set [the open protocol to use VSCode](https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls)
+with `--open-protocol-handler vscode`: it will open the folders when double-clicking on roles (not `include_role`) and
+the files for the other nodes. The cursor will be at the task exact position in the file.  
+Lastly, you can provide your own protocol formats
+with `--open-protocol-handler custom --open-protocol-custom-formats '{}'`. See the help
+and [an example.](https://github.com/haidaraM/ansible-playbook-grapher/blob/34e0aef74b82808dceb6ccfbeb333c0b531eac12/ansibleplaybookgrapher/renderer/__init__.py#L32-L41)
+To not confuse
+with [Ansible Handlers.](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html)
 - Export the dot file used to generate the graph with Graphviz.
-
+- w
 ## Prerequisites
 
 - Python 3.10 at least. It might work with previous versions, but the code is NOT tested against them.
-  See
-  the [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
-  and the matrix in the [testing workflow](.github/workflows/testing.yaml).
+See
+the [support matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
+and the matrix in the [testing workflow](.github/workflows/testing.yaml).
 - A virtual environment from which to run the grapher. This is **highly recommended** because the grapher depends on
-  some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
-  some older versions of Ansible (
-  since `ansible` [package has been split](https://www.ansible.com/blog/ansible-3.0.0-qa)).
+some versions of ansible-core which are not necessarily installed in your environment and may cause issues if you use
+some older versions of Ansible (
+since `ansible` [package has been split](https://www.ansible.com/blog/ansible-3.0.0-qa)).
 - **Graphviz**: The tool used to generate the graph in SVG. Optional if you don't plan to use the `graphviz` renderer.
-  ```shell script
-  sudo apt-get install graphviz # or yum install or brew install
-  ```
+
+```shell
+sudo apt-get install graphviz # or yum install or brew install
+```
 
 I try to respect [Red Hat Ansible Engine Life Cycle](https://access.redhat.com/support/policy/updates/ansible-engine)
 for the supported Ansible version.
 
 ## Installation
 
+
 ```shell
 pip install ansible-playbook-grapher
 ```
 
 You can also install the unpublished version from GitHub direction. Examples:
+
 
 ```shell
 # Install the version from the main branch
@@ -80,28 +82,28 @@ pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-
 At the time of writing, two renderers are supported:
 
 1. `graphviz` (default): Generate the graph in SVG. Has more features than the other renderers.
-2. `mermaid-flowchart`: Generate the graph in [Mermaid](https://mermaid.js.org/syntax/flowchart.html) format. You can
-   directly embed the graph in your Markdown and GitHub (
-   and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
-3. `json`: Generate a JSON representation of the graph. The corresponding JSON schema
-   is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas) The JSON
-   output will give you more flexibility to create your own renderer outside the grapher.
-
+1. `mermaid-flowchart`: Generate the graph in [Mermaid](https://mermaid.js.org/syntax/flowchart.html) format. You can
+directly embed the graph in your Markdown and GitHub (
+and [other integrations](https://mermaid.js.org/ecosystem/integrations.html)) will render it.
+1. `json`: Generate a JSON representation of the graph. The corresponding JSON schema
+is [here.](https://github.com/haidaraM/ansible-playbook-grapher/tree/main/tests/fixtures/json-schemas) The JSON
+output will give you more flexibility to create your own renderer outside the grapher.
 Comparison of the renderers:
 
-|                                                          | `graphviz` (.svg) | `mermaid-flowchart` (.mmd) |                      `json` (.json)                      |
-|----------------------------------------------------------|:-----------------:|:--------------------------:|:--------------------------------------------------------:|
-| Click on nodes to open the files (open protocol handler) |         ✅         |             ❌              |          ✅: the file location is in the output           |
-| Highlight on hover                                       |         ✅         |             ❌              |                          ❌: NA                           |
-| Change graph orientation                                 |         ❌         |             ✅              |                          ❌: NA                           |
-| Group roles by name                                      |         ✅         |             ✅              | ✅: the roles with the same names will have the same IDs. |
-| View the output file in your the OS default viewer       |         ✅         | ✅ on https://mermaid.live/ |                            ✅                             |
-| Tests of the output                                      |     Automatic     |   Manual (need a parser)   |                        Automatic                         |
+|                                                          | `graphviz` (.svg) | `mermaid-flowchart` (.mmd)                          | `json` (.json)                                           |
+|----------------------------------------------------------|-------------------|-----------------------------------------------------|----------------------------------------------------------|
+| Click on nodes to open the files (open protocol handler) | ✅                 | ❌                                                   | ✅: the file location is in the output                    |
+| Highlight on hover                                       | ✅                 | ❌                                                   | ❌: NA                                                    |
+| Change graph orientation                                 | ❌                 | ✅                                                   | ❌: NA                                                    |
+| Group roles by name                                      | ✅                 | ✅                                                   | ✅: the roles with the same names will have the same IDs. |
+| View the output file in your the OS default viewer       | ✅                 | ✅ on [https://mermaid.live/](https://mermaid.live/) | ✅                                                        |
+| Tests of the output                                      | Automatic         | Manual (need a parser)                              | Automatic                                                |
 
 If you are interested to support more renderers, feel free to create an issue or raise a PR based on the existing
 renderers.
 
 ## Usage
+
 
 ```shell
 ansible-playbook-grapher tests/fixtures/example.yml
@@ -109,11 +111,13 @@ ansible-playbook-grapher tests/fixtures/example.yml
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/example.png)
 
+
 ```shell
 ansible-playbook-grapher --include-role-tasks  tests/fixtures/with_roles.yml
 ```
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/with_roles.png)
+
 
 ```shell
 ansible-playbook-grapher tests/fixtures/with_block.yml
@@ -121,11 +125,9 @@ ansible-playbook-grapher tests/fixtures/with_block.yml
 
 ![Example](https://raw.githubusercontent.com/haidaraM/ansible-playbook-grapher/main/img/block.png)
 
+
 ```shell
 ansible-playbook-grapher --include-role-tasks --renderer mermaid-flowchart tests/fixtures/multi-plays.yml
-```
-
-```mermaid
 ---
 title: Ansible Playbook Grapher
 ---
@@ -316,9 +318,6 @@ flowchart LR
 			%% End of the role '[role] display_some_facts'
 		%% End of the play 'Play: webserver (0)'
 	%% End of the playbook 'tests/fixtures/multi-plays.yml'
-```
-
-```shell
 ansible-playbook-grapher --renderer json tests/fixtures/simple_playbook.yml
 ```
 
@@ -402,6 +401,8 @@ ansible-playbook-grapher --renderer json tests/fixtures/simple_playbook.yml
 
 </details>
 
+<summary>Json output</summary>
+
 Note on block: Since a `block` is a logical group of tasks, the conditional `when` is not displayed on the edges
 pointing to them but on the tasks inside the block. This
 mimics [Ansible behavior](https://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html#grouping-tasks-with-blocks)
@@ -410,6 +411,7 @@ regarding the blocks.
 ### CLI options
 
 The available options:
+
 
 ```
 usage: ansible-playbook-grapher [-h] [-v] [--exclude-roles EXCLUDE_ROLES] [--only-roles] [-i INVENTORY] [--include-role-tasks] [-s]
@@ -505,15 +507,14 @@ More information [here](https://docs.ansible.com/ansible/latest/reference_append
 ## Limitations and notes
 
 - Since Ansible Playbook Grapher is a static analyzer that parses your playbook, it's limited to what can be determined
-  statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
-  only available when running your playbook ( `ansible_os_family`, `ansible_system`, etc.). The tasks inside any
-  `import_*` or `include_*` with some variables in their arguments may not appear in the graph.
+statically: no task is run against your inventory. The parser tries to interpolate the variables, but some of them are
+only available when running your playbook ( `ansible_os_family`, `ansible_system`, etc.). The tasks inside any
+`import_*` or `include_*` with some variables in their arguments may not appear in the graph.
 - The rendered SVG graph may sometime display tasks in a wrong order. I cannot control this behavior of Graphviz yet.
-  Always check the edge label to know the task order.
+Always check the edge label to know the task order.
 - The label of the edges may overlap with each other. They are positioned so that they are as close as possible to
-  the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
+the target nodes. If the same role is used in multiple plays or playbooks, the labels can overlap.
 - Looping on tasks and roles is not supported. The tasks using loop are displayed as a single task.
-
 ## Contribution
 
 Contributions are welcome. Feel free to contribute by creating an issue or submitting a PR :smiley:
@@ -525,13 +526,12 @@ To set up a new local development environment:
 - Install graphviz (see above)
 - pip install -r requirements.txt -r tests/requirements_tests.txt
 - (cd tests/fixtures && ansible-galaxy install -r requirements.yml)
-
 > The project contains some collections in [collections](tests/fixtures/collections). If you modify them, you need to do
-> a force install with `ansible-galaxy install -r requirements.yml --force`
-
+a force install with `ansible-galaxy install -r requirements.yml --force`
 Run the tests and open the generated files in your system's default viewer application:
 
-```shell script
+
+```shell
 export TEST_VIEW_GENERATED_FILE=1
 make test # run all tests
 ```
