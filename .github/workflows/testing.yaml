@@ -54,7 +54,7 @@ jobs:
           uv pip install coveralls
           sudo apt-get install -yq graphviz
           cd tests/fixtures
-          ansible-galaxy install -r requirements.yml
+          uv run ansible-galaxy install -r requirements.yml --force
 
       - name: Pytest
         env:
