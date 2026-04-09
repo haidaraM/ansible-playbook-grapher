@@ -17,7 +17,7 @@ ANSIBLE_VERSION=$2
 
 uv venv ${VIRTUALENV_DIR}
 
-package=dist/$(ls dist/*.whl)
+package=$(ls dist/*.whl)
 
 echo -e "${GREEN}Installing the packages ${package} and ansible ${ANSIBLE_VERSION} ${NC}"
 
