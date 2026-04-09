@@ -41,20 +41,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
-        name: Setup Python ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
+          enable-cache: true
           python-version: ${{ matrix.python-version }}
-          cache: pip
 
       - name: Install prereqs
         run: |
-          pip install -q ansible-core=='${{ matrix.ansible-core-version }}' virtualenv setuptools wheel coveralls
-          pip install -q -r requirements.txt -r tests/requirements_tests.txt
-          pip freeze
+          uv sync --dev
+          uv pip install "ansible-core==${{ matrix.ansible-core-version }}" --upgrade
+          uv pip install coveralls
           sudo apt-get install -yq graphviz
           cd tests/fixtures
-          ansible-galaxy install -r requirements.yml
+          uv run ansible-galaxy install -r requirements.yml --force
 
       - name: Pytest
         env:
@@ -76,13 +76,13 @@ jobs:
           if-no-files-found: error # the tests should generate SVGs files
 
       - name: Publish job summary
-        run: python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
+        run: uv run python tests/generate-job-summary.py >> $GITHUB_STEP_SUMMARY
 
       - name: Test installation in virtualenv
         run: make test_install ANSIBLE_CORE_VERSION=${{ matrix.ansible-core-version }}
 
       - name: Upload Coverage
-        run: cd tests && coveralls --service=github
+        run: uv run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-core-version }}
@@ -92,10 +92,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Finish coverage
     needs: pytest
-    container: python:3-slim # just need a simple python container to finish the coverage
+    container: python:3-slim
     steps:
       - name: Coveralls finish
         run: pip install coveralls && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
