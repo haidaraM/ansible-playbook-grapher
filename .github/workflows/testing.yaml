@@ -12,6 +12,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COVERALLS_VERSION: 4.1.0
+
 jobs:
   pytest:
     name: Tests Py${{ matrix.python-version }} - Ansible ${{ matrix.ansible-core-version }}
@@ -51,7 +54,7 @@ jobs:
         run: |
           uv sync --dev
           uv pip install "ansible-core==${{ matrix.ansible-core-version }}" --upgrade
-          uv pip install coveralls
+          uv pip install coveralls==${{ env.COVERALLS_VERSION }}
           sudo apt-get install -yq graphviz
           cd tests/fixtures
           uv run ansible-galaxy install -r requirements.yml --force
@@ -95,6 +98,6 @@ jobs:
     container: python:3-slim
     steps:
       - name: Coveralls finish
-        run: pip install coveralls && coveralls --finish
+        run: pip install coveralls==${{ env.COVERALLS_VERSION }} && coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
