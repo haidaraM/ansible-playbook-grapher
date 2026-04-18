@@ -20,7 +20,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Support for `import_*` and `include_*`.
 - Multiple flags to hide empty plays, group roles by name, etc...
 - Support for playbooks in collections.
-doc- Collapsible play, role and block nodes in SVG output to help manage graph complexity (with `--collapsible-nodes` flag).
+- Collapsible play, role and block nodes in the SVG output with (`--collapsible-nodes`).
 
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
