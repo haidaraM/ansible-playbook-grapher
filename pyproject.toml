@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ansible-playbook-grapher"
+version = "2.11.0-dev0"
+description = "A command line tool to create a graph representing your Ansible playbook tasks and roles."
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "HAIDARA Mohamed El Mouctar", email = "elmhaidara@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Environment :: Console",
+    "Topic :: Utilities",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "ansible-core>=2.16,<2.18.3",
+    "graphviz>=0.18,<1",
+    "colour<1",
+    "lxml<7",
+    "svg.path<8",
+]
+
+[project.scripts]
+ansible-playbook-grapher = "ansibleplaybookgrapher.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/haidaraM/ansible-playbook-grapher"
+Repository = "https://github.com/haidaraM/ansible-playbook-grapher"
+Download = "https://github.com/haidaraM/ansible-playbook-grapher/releases"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "pyquery>=2.0.1",
+    "ruff>=0.15.8",
+    "jq>=1.11.0",
+    "jsonschema[format]>=4.26.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ansibleplaybookgrapher"]
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "RUF", "PTH", "ANN001", "PT", "W293", "S101"]
+ignore = [
+    "F401", # Ignore unused imports because of this https://github.com/astral-sh/ruff/issues/1619
+]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "S101", # Ignore assert in test files
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

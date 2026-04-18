@@ -20,7 +20,7 @@ Inspired by [Ansible Inventory Grapher](https://github.com/willthames/ansible-in
 - Support for `import_*` and `include_*`.
 - Multiple flags to hide empty plays, group roles by name, etc...
 - Support for playbooks in collections.
-doc- Collapsible play, role and block nodes in SVG output to help manage graph complexity (with `--collapsible-nodes` flag).
+- Collapsible play, role and block nodes in the SVG output with (`--collapsible-nodes`).
 
 The following features are available when opening the SVGs in a browser (recommended) or a viewer that supports
 JavaScript:
@@ -61,18 +61,26 @@ for the supported Ansible version.
 
 ## Installation
 
+### Using [uv](https://docs.astral.sh/uv/) (recommended)
+
+```shell
+uv tool install ansible-playbook-grapher
+```
+
+### Using pip
+
 ```shell
 pip install ansible-playbook-grapher
 ```
 
-You can also install the unpublished version from GitHub direction. Examples:
+You can also install the unpublished version from GitHub directly. Examples:
 
 ```shell
-# Install the version from the main branch
-pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher"
+# Using uv
+uv tool install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher"
 
-# Install the version from a specific branch
-pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher@specific-branch"
+# Using pip
+pip install "ansible-playbook-grapher @ git+https://github.com/haidaraM/ansible-playbook-grapher"
 ```
 
 ### Renderers
@@ -523,8 +531,9 @@ Contributions are welcome. Feel free to contribute by creating an issue or submi
 To set up a new local development environment:
 
 - Install graphviz (see above)
-- pip install -r requirements.txt -r tests/requirements_tests.txt
-- (cd tests/fixtures && ansible-galaxy install -r requirements.yml)
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- `uv sync --dev`
+- `(cd tests/fixtures && ansible-galaxy install -r requirements.yml)`
 
 > The project contains some collections in [collections](tests/fixtures/collections). If you modify them, you need to do
 > a force install with `ansible-galaxy install -r requirements.yml --force`
