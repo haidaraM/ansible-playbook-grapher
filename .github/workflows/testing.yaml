@@ -82,7 +82,7 @@ jobs:
         run: make test_install ANSIBLE_CORE_VERSION=${{ matrix.ansible-core-version }}
 
       - name: Upload Coverage
-        run: uv run coveralls --service=github
+        run: cd tests && uv run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: py${{ matrix.python-version }}-ansible${{ matrix.ansible-core-version }}
