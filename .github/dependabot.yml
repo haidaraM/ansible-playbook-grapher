@@ -6,9 +6,17 @@ updates:
       interval: monthly
       time: "04:00"
     open-pull-requests-limit: 10
+    groups:
+      python:
+        patterns: '*'
+    rebase-strategy: disabled
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: monthly
       time: "04:00"
+    groups:
+      github-actions:
+        patterns: '*'
+    rebase-strategy: disabled
