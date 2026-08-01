@@ -6,6 +6,43 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.11.0 (2026-08-01)
+
+## What's Changed
+
+* chore(deps): bump actions/checkout from 5 to 6 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/276
+* chore(deps): bump ruff from 0.14.3 to 0.14.7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/274
+* chore(deps): bump pytest from 8.4.2 to 9.0.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/275
+* chore(deps): bump ruff from 0.14.7 to 0.14.10 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/278
+* chore(deps): bump actions/upload-artifact from 5 to 6 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/279
+* chore(deps): bump pytest from 9.0.1 to 9.0.2 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/277
+* chore(deps): bump jsonschema[format] from 4.25.1 to 4.26.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/282
+* chore(deps): bump ruff from 0.14.10 to 0.14.14 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/281
+* chore(deps): bump jq from 1.10.0 to 1.11.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/280
+* chore(deps): bump actions/upload-artifact from 6 to 7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/285
+* chore(deps): bump ruff from 0.14.14 to 0.15.4 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/284
+* chore(deps): bump pytest-cov from 7.0.0 to 7.1.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/286
+* chore(deps): bump ruff from 0.15.4 to 0.15.8 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/287
+* **Migrate project from setuptools to uv by @haidaraM in https://github.com/haidaraM/ansible-playbook-grapher/pull/288**
+* chore(deps): bump lxml from 6.0.3 to 6.1.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/292
+* chore(deps): bump astral-sh/setup-uv from 8.0.0 to 8.1.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/290
+* chore(deps-dev): bump ruff from 0.15.10 to 0.15.11 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/291
+* chore(deps): bump idna from 3.11 to 3.15 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/294
+* chore(deps-dev): bump ruff from 0.15.11 to 0.15.12 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/293
+* chore(deps-dev): bump ruff from 0.15.12 to 0.15.15 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/295
+* chore(deps): bump lxml from 6.1.0 to 6.1.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/296
+* chore(deps): bump cryptography from 46.0.7 to 48.0.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/297
+* chore(deps-dev): bump jq from 1.11.0 to 1.12.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/306
+* chore(deps-dev): bump ruff from 0.15.15 to 0.16.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/304
+* chore(deps): bump astral-sh/setup-uv from 8.1.0 to 9.0.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/302
+* chore(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/298
+* chore(deps): bump svg-path from 7.0 to 7.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/303
+* chore(deps-dev): bump pytest from 9.0.3 to 9.1.1 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/301
+* chore(deps-dev): bump pyquery from 2.0.1 to 2.1.0 by @dependabot[bot] in https://github.com/haidaraM/ansible-playbook-grapher/pull/305
+
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.10.1...v2.11.0
+
 # 2.10.1 (2025-11-10)
 
 ## What's Changed
