@@ -1131,11 +1131,11 @@ wheels = [
 
 [[package]]
 name = "svg-path"
-version = "7.0"
+version = "7.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/66/b9/649abbe870842c185b12920e937e9b95d4c2b18de50af98d2c140df3e179/svg_path-7.0.tar.gz", hash = "sha256:9037486957cb1dcf4375ef42206499a47c111b8ffcbac6e3e55f9d079d875bb0", size = 23552, upload-time = "2025-07-06T15:20:40.823Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/4c/561a320906f9e4ccb7ed9ef18885e8a1afccc7813080a6dbd3e38bd16403/svg_path-7.1.tar.gz", hash = "sha256:1cd254c974dc96cbee3a0cfc6528356866356b712f241b4e9066043ab8703d9b", size = 24175, upload-time = "2026-07-07T18:29:52.268Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/83/4f5b250220e1a5acd31345a5ec1c95a7769725d0d8135276f399f44062f8/svg_path-7.0-py2.py3-none-any.whl", hash = "sha256:447cb1e16a95acea2dd867fe737fa99cb75d587b4fc64dbee709a8dd6891ad9c", size = 18208, upload-time = "2025-07-06T15:20:39.59Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/a1/219769f90ba167b87b5bc4566bafddd2dba05ce55aa82430fe12aaa2b782/svg_path-7.1-py2.py3-none-any.whl", hash = "sha256:2c4afb1457da48ff3b3ef802aacf50fd0f23f99e82b77c6f60abc0f1ddb9c312", size = 18633, upload-time = "2026-07-07T18:29:50.856Z" },
 ]
 
 [[package]]
