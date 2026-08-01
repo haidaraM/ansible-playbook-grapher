@@ -6,6 +6,12 @@ Here are a few break changes to expect in the next major release:
 - Rename the flag `--include-role-tasks` to `--show-role-tasks` (or something else) to avoid confusion with an
   `include_role` task.
 
+# 2.11.1 (2026-08-01)
+
+* fix: Bump the pyproject version
+
+**Full Changelog**: https://github.com/haidaraM/ansible-playbook-grapher/compare/v2.11.0...v2.11.1
+
 # 2.11.0 (2026-08-01)
 
 ## What's Changed
