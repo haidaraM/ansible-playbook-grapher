@@ -302,7 +302,7 @@ class PlaybookGrapherCLI(CLI):
         self.parser.add_argument(
             "--renderer-mermaid-orientation",
             default=MERMAID_DEFAULT_ORIENTATION,
-            choices=["TD", "RL", "BT", "RL", "LR"],
+            choices=["TB", "TD", "BT", "RL", "LR"],
             help="The orientation of the flow chart. Default: '%(default)s'",
         )
 
