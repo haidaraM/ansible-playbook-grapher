@@ -451,3 +451,25 @@ def test_cli_resolve_playbook_path_from_collection():
 
     assert cli.get_playbook_path(playbooks[0]) == f"{expected_collection_path}"
     assert cli.get_playbook_path(playbooks[1]) == "second-playbook.yml"
+
+
+@pytest.mark.parametrize(
+    ("orientation",),
+    [("TB",), ("TD",), ("BT",), ("RL",), ("LR",)],
+    ids=["TB", "TD", "BT", "RL", "LR"],
+)
+def test_cli_mermaid_orientation(orientation: str) -> None:
+    """All documented Mermaid flowchart orientations should be accepted."""
+    args = [
+        __prog__,
+        "--renderer",
+        "mermaid-flowchart",
+        "--renderer-mermaid-orientation",
+        orientation,
+        "playbook.yml",
+    ]
+
+    cli = PlaybookGrapherCLI(args)
+    cli.parse()
+
+    assert cli.options.renderer_mermaid_orientation == orientation
